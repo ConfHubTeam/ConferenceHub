@@ -1,23 +1,50 @@
 import { useContext, useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { UserContext } from "./UserContext";
 
 export default function Header() {
   const {user} = useContext(UserContext);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [filterExpanded, setFilterExpanded] = useState(false);
   const navigate = useNavigate();
   const menuRef = useRef(null);
   const menuButtonRef = useRef(null);
+  const filterRef = useRef(null);
+  const filterDropdownRef = useRef(null);
+  const mobileFilterRef = useRef(null);
+  const location = useLocation();
   
   // Form state for search
   const [searchLocation, setSearchLocation] = useState('');
   const [checkInDate, setCheckInDate] = useState('');
   const [checkOutDate, setCheckOutDate] = useState('');
   const [guestCount, setGuestCount] = useState('');
+  const [roomType, setRoomType] = useState('');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [selectedTags, setSelectedTags] = useState([]);
+  
+  // Room types and tags (matching the IndexPage options)
+  const roomTypes = ['Conference', 'Meeting', 'Workshop', 'Training', 'Coworking'];
+  const availableTags = ['Projector', 'Whiteboard', 'Video Conference', 'Catering', 'WiFi', 'Accessible'];
+
+  // Effect to read URL params and set states on initial load
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.has('location')) setSearchLocation(params.get('location'));
+    if (params.has('checkIn')) setCheckInDate(params.get('checkIn'));
+    if (params.has('checkOut')) setCheckOutDate(params.get('checkOut'));
+    if (params.has('guests')) setGuestCount(params.get('guests'));
+    if (params.has('type')) setRoomType(params.get('type'));
+    if (params.has('minPrice')) setMinPrice(params.get('minPrice'));
+    if (params.has('maxPrice')) setMaxPrice(params.get('maxPrice'));
+    if (params.has('tags')) setSelectedTags(params.get('tags').split(','));
+  }, [location.search]);
 
   // Handle clicks outside the menu to close it
   useEffect(() => {
     function handleClickOutside(event) {
+      // Handle mobile menu closing
       if (
         mobileMenuOpen && 
         menuRef.current && 
@@ -27,13 +54,26 @@ export default function Header() {
       ) {
         setMobileMenuOpen(false);
       }
+      
+      // Handle filter menu closing - check if the click was outside both the filter trigger and dropdown
+      if (
+        filterExpanded &&
+        filterRef.current &&
+        !filterRef.current.contains(event.target) &&
+        filterDropdownRef.current &&
+        !filterDropdownRef.current.contains(event.target) &&
+        mobileFilterRef.current &&
+        !mobileFilterRef.current.contains(event.target)
+      ) {
+        setFilterExpanded(false);
+      }
     }
     
     // Add event listener when component mounts
     document.addEventListener('mousedown', handleClickOutside);
     
     // Prevent body scrolling when menu is open
-    if (mobileMenuOpen) {
+    if (mobileMenuOpen || filterExpanded) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -44,7 +84,7 @@ export default function Header() {
       document.removeEventListener('mousedown', handleClickOutside);
       document.body.style.overflow = '';
     };
-  }, [mobileMenuOpen]);
+  }, [mobileMenuOpen, filterExpanded]);
 
   // Function to get the first letter of the user's name
   const getFirstLetter = () => {
@@ -56,9 +96,10 @@ export default function Header() {
 
   // Function to handle search submission
   const handleSearch = (e) => {
-    e.preventDefault();
-    // Close the menu
+    if (e) e.preventDefault();
+    // Close the menus
     setMobileMenuOpen(false);
+    setFilterExpanded(false);
     
     // Build query parameters
     const params = new URLSearchParams();
@@ -66,6 +107,10 @@ export default function Header() {
     if (checkInDate) params.append('checkIn', checkInDate);
     if (checkOutDate) params.append('checkOut', checkOutDate);
     if (guestCount) params.append('guests', guestCount);
+    if (roomType) params.append('type', roomType);
+    if (minPrice) params.append('minPrice', minPrice);
+    if (maxPrice) params.append('maxPrice', maxPrice);
+    if (selectedTags.length > 0) params.append('tags', selectedTags.join(','));
     
     // Navigate to home page with search filters
     navigate(`/?${params.toString()}`);
@@ -75,21 +120,67 @@ export default function Header() {
   const handleMenuLinkClick = () => {
     setMobileMenuOpen(false);
   };
+  
+  // Function to handle tag selection
+  const handleTagToggle = (tag) => {
+    if (selectedTags.includes(tag)) {
+      setSelectedTags(selectedTags.filter(t => t !== tag));
+    } else {
+      setSelectedTags([...selectedTags, tag]);
+    }
+  };
+
+  // Function to toggle filter expanded state
+  const toggleFilterExpanded = (e) => {
+    if (e) e.stopPropagation();
+    setFilterExpanded(!filterExpanded);
+  };
+
+  // Summary text for search bar based on selected filters
+  const getFilterSummary = () => {
+    let locationText = searchLocation || 'Anywhere';
+    let dateText = (checkInDate && checkOutDate) ? 'Selected dates' : 'Any week';
+    let guestsText = guestCount ? `${guestCount} guests` : 'Add guests';
+    
+    return { locationText, dateText, guestsText };
+  };
+
+  const { locationText, dateText, guestsText } = getFilterSummary();
+
+  // Styles for filter dropdown animation
+  const filterDropdownStyle = {
+    animation: filterExpanded ? 'filterDropdown 0.3s ease-out forwards' : 'none',
+    opacity: filterExpanded ? 1 : 0,
+    transform: filterExpanded ? 'scale(1)' : 'scale(0.95)',
+    maxHeight: filterExpanded ? '1000px' : '0',
+    overflow: 'hidden',
+    transition: 'opacity 0.3s ease, transform 0.3s ease, max-height 0.3s ease'
+  };
 
   return (
-    <header className="flex justify-between items-center px-4 md:px-14 relative z-10">
+    <header className="flex justify-between items-center px-4 md:px-14 relative z-50">
       <Link to={"/"} className="logo flex items-center gap-1 text-primary">
         <span className="font-bold text-xl">ConferenceHub</span>
       </Link>
       
       {/* Desktop search bar - hidden on mobile */}
-      <div className="search hidden md:flex border border-gray-300 rounded-full py-2 px-4 gap-2 shadow-md shadow-gray-200">
-        <div className="pt-0.5">Anywhere</div>
-        <div className="border-l border-gray-300"></div>
-        <div className="pt-0.5">Any week</div>
-        <div className="border-l border-gray-300"></div>
-        <div className="pt-0.5">Add guests</div>
-        <button className="bg-primary text-white rounded-full p-1">
+      <div 
+        ref={filterRef} 
+        className={`search hidden md:flex border border-gray-300 rounded-full py-2 px-4 gap-2 shadow-md shadow-gray-200 cursor-pointer hover:shadow-lg transition-shadow relative ${filterExpanded ? 'border-primary' : ''}`}
+        onClick={toggleFilterExpanded}
+      >
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="pt-0.5 font-medium truncate max-w-[120px]">{locationText}</div>
+          <div className="border-l border-gray-300"></div>
+          <div className="pt-0.5 text-gray-700 truncate max-w-[100px]">{dateText}</div>
+          <div className="border-l border-gray-300"></div>
+          <div className="pt-0.5 text-gray-700 truncate max-w-[100px]">{guestsText}</div>
+        </div>
+        <button 
+          className="bg-primary text-white rounded-full p-1"
+          onClick={toggleFilterExpanded}
+          aria-label="Toggle search filters"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -108,6 +199,29 @@ export default function Header() {
       </div>
       
       <div className="flex items-center gap-2 relative z-30">
+        {/* Mobile search button - only shown on mobile */}
+        <button 
+          ref={mobileFilterRef}
+          onClick={toggleFilterExpanded} 
+          className="md:hidden border border-gray-300 rounded-full p-2 bg-white hover:shadow-md transition-shadow"
+          aria-label="Toggle mobile search"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-5 h-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+            />
+          </svg>
+        </button>
+        
         {/* Hamburger menu button - only shown on mobile */}
         <button 
           ref={menuButtonRef}
@@ -161,79 +275,17 @@ export default function Header() {
       </div>
       
       {/* Semi-transparent overlay when menu is open */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden" />
+      {(mobileMenuOpen || filterExpanded) && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-20" />
       )}
       
-      {/* Mobile menu with search and user sections */}
+      {/* Mobile menu with user sections */}
       {mobileMenuOpen && (
         <div 
           ref={menuRef}
           className="absolute top-16 left-0 right-0 bg-white p-4 shadow-md z-20 md:hidden rounded-b-lg"
         >
           <div className="flex flex-col gap-4">
-            {/* Mobile search section */}
-            <form onSubmit={handleSearch} className="p-3 bg-gray-50 rounded-lg">
-              <h3 className="font-semibold text-gray-700 mb-2">Search filters</h3>
-              
-              {/* Location search */}
-              <div className="mb-3">
-                <label className="block text-sm text-gray-600 mb-1">Location</label>
-                <div className="border border-gray-300 rounded-full py-2 px-4 flex items-center">
-                  <input 
-                    type="text" 
-                    placeholder="Location you are looking for?" 
-                    className="w-full border-none focus:outline-none p-0 m-0 bg-transparent"
-                    value={searchLocation}
-                    onChange={(e) => setSearchLocation(e.target.value)}
-                  />
-                </div>
-              </div>
-              
-              {/* Date filters */}
-              <div className="grid grid-cols-2 gap-2 mb-3">
-                <div>
-                  <label className="block text-sm text-gray-600 mb-1">Check in</label>
-                  <input 
-                    type="date" 
-                    className="w-full border border-gray-300 rounded-2xl py-2 px-3"
-                    value={checkInDate}
-                    onChange={(e) => setCheckInDate(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-600 mb-1">Check out</label>
-                  <input 
-                    type="date" 
-                    className="w-full border border-gray-300 rounded-2xl py-2 px-3"
-                    value={checkOutDate}
-                    onChange={(e) => setCheckOutDate(e.target.value)}
-                  />
-                </div>
-              </div>
-              
-              {/* Guests */}
-              <div className="mb-3">
-                <label className="block text-sm text-gray-600 mb-1">Guests</label>
-                <input 
-                  type="number" 
-                  placeholder="Number of guests" 
-                  min="1"
-                  className="w-full border border-gray-300 rounded-full py-2 px-3"
-                  value={guestCount}
-                  onChange={(e) => setGuestCount(e.target.value)}
-                />
-              </div>
-              
-              {/* Search button */}
-              <button 
-                type="submit" 
-                className="bg-primary text-white py-2 px-4 rounded-full w-full mt-2"
-              >
-                Search
-              </button>
-            </form>
-            
             {/* User menu section */}
             <div className="border-t pt-3">
               {user ? (
@@ -307,6 +359,171 @@ export default function Header() {
           </div>
         </div>
       )}
+      
+      {/* Expanded filter dropdown - shared between mobile and desktop */}
+      {filterExpanded && (
+        <div 
+          ref={filterDropdownRef}
+          onClick={(e) => e.stopPropagation()}
+          className="fixed inset-x-0 top-16 z-30 bg-white shadow-lg rounded-b-xl p-4 mx-auto"
+          style={{
+            ...filterDropdownStyle,
+            width: '100%',
+            maxWidth: '1200px',
+          }}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            {/* Location filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+              <input
+                type="text"
+                placeholder="City, address, etc."
+                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                value={searchLocation}
+                onChange={(e) => setSearchLocation(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+
+            {/* Room type filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Room type</label>
+              <select
+                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                value={roomType}
+                onChange={(e) => setRoomType(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <option value="">All types</option>
+                {roomTypes.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+            
+            {/* Date filters */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Check in</label>
+              <input
+                type="date"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                value={checkInDate}
+                onChange={(e) => setCheckInDate(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Check out</label>
+              <input
+                type="date"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                value={checkOutDate}
+                onChange={(e) => setCheckOutDate(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          
+            {/* Guests count */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Guests</label>
+              <input 
+                type="number" 
+                placeholder="Number of guests" 
+                min="1"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                value={guestCount}
+                onChange={(e) => setGuestCount(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+            
+            {/* Price range */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Price range ($/hour)</label>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="number"
+                  placeholder="Min"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  value={minPrice}
+                  onChange={(e) => setMinPrice(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <span className="text-gray-500">to</span>
+                <input
+                  type="number"
+                  placeholder="Max"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Tags */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Features & Services</label>
+            <div className="flex flex-wrap gap-2">
+              {availableTags.map(tag => (
+                <button
+                  key={tag}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleTagToggle(tag);
+                  }}
+                  className={`px-3 py-1 text-sm rounded-full transition-all ${
+                    selectedTags.includes(tag)
+                      ? 'bg-primary text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          <div className="flex justify-end space-x-2">
+            <button 
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setFilterExpanded(false);
+              }}
+              className="text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100"
+            >
+              Cancel
+            </button>
+            <button 
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSearch();
+              }}
+              className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-opacity-90"
+            >
+              Apply Filters
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* Add keyframes for filter dropdown animation */}
+      <style jsx="true">{`
+        @keyframes filterDropdown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </header>
   );
 }
