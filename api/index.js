@@ -13,7 +13,7 @@ const fs = require("fs");
 const bodyParser = require("body-parser");
 const cloudinary = require('./config/cloudinary');
 const streamifier = require('streamifier');
-
+const path = require('path');
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -21,16 +21,17 @@ app.use(express.json());
 app.use(cookieParser()); // to read cookies
 // We're keeping this line for any static files, but primary image hosting will be on Cloudinary
 app.use("/uploads", express.static(__dirname + "/uploads")); 
+
+// Updated CORS configuration for both development and production
 app.use(
   cors({
-    // enable two sites to communicate
     credentials: true,
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   })
 );
 
 const bcryptSalt = bcrypt.genSaltSync(8);
-const jwtSecret = "fshewfbjhcdsbchdbsckjf";
+const jwtSecret = process.env.JWT_SECRET;
 
 // Replace MongoDB connection with PostgreSQL connection
 sequelize.authenticate()
@@ -46,11 +47,15 @@ sequelize.authenticate()
     console.error('Unable to connect to the database:', err);
   });
 
-app.get("/test", (req, res) => {
+// Create API router for all API endpoints
+const apiRouter = express.Router();
+
+// Move all API endpoints to the apiRouter
+apiRouter.get("/test", (req, res) => {
   res.json("test ok");
 });
 
-app.post("/register", async (req, res) => {
+apiRouter.post("/register", async (req, res) => {
   const { name, email, password, userType } = req.body;
   try {
     const userData = await User.create({
@@ -70,7 +75,7 @@ app.post("/register", async (req, res) => {
   }
 });
 
-app.post("/login", async (req, res) => {
+apiRouter.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
     // Update Mongoose query to Sequelize query
@@ -112,7 +117,7 @@ function getUserDataFromToken(req) {
   });
 }
 
-app.get("/profile", (req, res) => {
+apiRouter.get("/profile", (req, res) => {
   const { token } = req.cookies;
   if (token) {
     // reloading info of the logged in user after refreshing
@@ -129,16 +134,16 @@ app.get("/profile", (req, res) => {
   }
 });
 
-app.post("/logout", (req, res) => {
+apiRouter.post("/logout", (req, res) => {
   res.cookie("token", "").json(true);
 });
 
-app.post("/upload-by-link", async (req, res) => {
+apiRouter.post("/upload-by-link", async (req, res) => {
   const { link } = req.body;
   try {
     // Upload directly to cloudinary using the external URL
     const result = await cloudinary.uploader.upload(link, {
-      folder: 'airbnb_clone',
+      folder: 'conferencehub',
     });
     
     // Return the secure URL and public ID for storage in the database
@@ -151,7 +156,7 @@ app.post("/upload-by-link", async (req, res) => {
 
 // Modified upload function for Cloudinary
 const photoMiddleware = multer({ storage: multer.memoryStorage() });
-app.post("/upload", photoMiddleware.array("photos", 100), async (req, res) => {
+apiRouter.post("/upload", photoMiddleware.array("photos", 100), async (req, res) => {
   const uploadedFiles = [];
   try {
     // Process each file with Cloudinary
@@ -161,7 +166,7 @@ app.post("/upload", photoMiddleware.array("photos", 100), async (req, res) => {
       // Create upload stream to Cloudinary
       const uploadPromise = new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream({
-          folder: 'airbnb_clone',
+          folder: 'conferencehub',
         }, (error, result) => {
           if (error) return reject(error);
           resolve({ url: result.secure_url, publicId: result.public_id });
@@ -183,12 +188,12 @@ app.post("/upload", photoMiddleware.array("photos", 100), async (req, res) => {
 });
 
 // submit new place form
-app.post("/places", async (req, res) => {
+apiRouter.post("/places", async (req, res) => {
   const {
     title, address, photos,
     description, perks, extraInfo, 
     checkIn, checkOut, maxGuests, 
-    price, startDate, endDate
+    price, startDate, endDate, roomType
   } = req.body;
 
   try {
@@ -221,7 +226,8 @@ app.post("/places", async (req, res) => {
       maxGuests: maxGuests ? parseInt(maxGuests, 10) : 1,
       price: price ? parseFloat(price) : 0,
       startDate: startDate || null,
-      endDate: endDate || null
+      endDate: endDate || null,
+      roomType: roomType || "Conference Room"
     };
 
     const placeDoc = await Place.create(processedData);
@@ -235,7 +241,7 @@ app.post("/places", async (req, res) => {
   }
 });
 
-app.get("/user-places", async (req, res) => {
+apiRouter.get("/user-places", async (req, res) => {
   try {
     const userData = await getUserDataFromToken(req);
     // Update Mongoose find to Sequelize findAll
@@ -248,7 +254,7 @@ app.get("/user-places", async (req, res) => {
   }
 });
 
-app.get("/place/:id", async (req, res) => {
+apiRouter.get("/place/:id", async (req, res) => {
   const {id} = req.params;
   try {
     // Update Mongoose findById to Sequelize findByPk
@@ -259,7 +265,7 @@ app.get("/place/:id", async (req, res) => {
   }
 });
 
-app.get("/place/:placeId/:bookingId", async (req, res) => {
+apiRouter.get("/place/:placeId/:bookingId", async (req, res) => {
   const {bookingId} = req.params;
   try {
     // Update Mongoose findById to Sequelize findByPk
@@ -270,11 +276,11 @@ app.get("/place/:placeId/:bookingId", async (req, res) => {
   }
 });
 
-app.put("/places", async (req, res) => { 
+apiRouter.put("/places", async (req, res) => { 
   const {
     id, title, address, photos, description,
     perks, extraInfo, checkIn, checkOut, maxGuests,
-    price, startDate, endDate
+    price, startDate, endDate, roomType
   } = req.body;
   
   try {
@@ -310,6 +316,7 @@ app.put("/places", async (req, res) => {
     place.price = price;
     place.startDate = startDate;
     place.endDate = endDate;
+    place.roomType = roomType || "Conference Room";
     
     await place.save();
     res.json("ok");
@@ -318,17 +325,98 @@ app.put("/places", async (req, res) => {
   }
 });
 
-app.get("/home", async (req, res) => {
+apiRouter.get("/home", async (req, res) => {
   try {
-    // Update Mongoose find to Sequelize findAll
-    const places = await Place.findAll();
+    // Extract filter parameters from query
+    const { 
+      location, 
+      checkIn, 
+      checkOut, 
+      guests, 
+      type, 
+      minPrice, 
+      maxPrice, 
+      tags 
+    } = req.query;
+    
+    // Build where conditions for Sequelize query
+    const whereConditions = {};
+    const { Op } = require('sequelize');
+    
+    // Filter by location (address)
+    if (location) {
+      whereConditions.address = {
+        [Op.iLike]: `%${location}%` // Case-insensitive search
+      };
+    }
+    
+    // Filter by date availability (conference room should be available during the requested period)
+    if (checkIn && checkOut) {
+      whereConditions[Op.and] = [
+        {
+          startDate: {
+            [Op.lte]: new Date(checkIn)  // Room is available from before or on checkIn date
+          }
+        },
+        {
+          endDate: {
+            [Op.gte]: new Date(checkOut) // Room is available until after or on checkOut date
+          }
+        }
+      ];
+    }
+    
+    // Filter by maximum guests
+    if (guests) {
+      whereConditions.maxGuests = {
+        [Op.gte]: parseInt(guests) // Capacity is at least the requested number of guests
+      };
+    }
+    
+    // Filter by room type
+    if (type) {
+      whereConditions.roomType = {
+        [Op.eq]: type // Exact match on room type
+      };
+    }
+    
+    // Filter by price range
+    if (minPrice) {
+      whereConditions.price = {
+        ...(whereConditions.price || {}),
+        [Op.gte]: parseFloat(minPrice)
+      };
+    }
+    
+    if (maxPrice) {
+      whereConditions.price = {
+        ...(whereConditions.price || {}),
+        [Op.lte]: parseFloat(maxPrice)
+      };
+    }
+
+    // Filter by tags/perks
+    if (tags) {
+      const tagList = tags.split(',');
+      whereConditions.perks = {
+        [Op.overlap]: tagList // Match any of the selected perks (PostgreSQL array overlap)
+      };
+    }
+    
+    // Get all places matching the filters
+    const places = await Place.findAll({
+      where: whereConditions,
+      order: [['createdAt', 'DESC']] // Show newest places first
+    });
+    
     res.json(places);
   } catch (error) {
+    console.error("Error fetching places:", error);
     res.status(422).json({ error: error.message });
   }
 });
 
-app.post("/bookings", async (req, res) => {
+apiRouter.post("/bookings", async (req, res) => {
   try {
     const userData = await getUserDataFromToken(req);
     const {place, checkInDate, checkOutDate, 
@@ -353,7 +441,7 @@ app.post("/bookings", async (req, res) => {
   }
 });
 
-app.get("/bookings", async (req, res) => {
+apiRouter.get("/bookings", async (req, res) => {
   try {
     const userData = await getUserDataFromToken(req);
     
@@ -406,7 +494,7 @@ app.get("/bookings", async (req, res) => {
 });
 
 // New endpoint: Update booking status (approve/reject)
-app.put("/bookings/:id", async (req, res) => {
+apiRouter.put("/bookings/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -466,7 +554,7 @@ app.put("/bookings/:id", async (req, res) => {
 });
 
 // New endpoint to count pending booking requests for hosts
-app.get("/bookings/counts", async (req, res) => {
+apiRouter.get("/bookings/counts", async (req, res) => {
   try {
     const userData = await getUserDataFromToken(req);
     
@@ -496,7 +584,7 @@ app.get("/bookings/counts", async (req, res) => {
 });
 
 // New endpoint: Delete a place and all its associated bookings
-app.delete("/places/:id", async (req, res) => {
+apiRouter.delete("/places/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const userData = await getUserDataFromToken(req);
@@ -546,6 +634,32 @@ app.delete("/places/:id", async (req, res) => {
   }
 });
 
-app.listen(4000, () => {
-  console.log('Server running on port 4000');
+// Mount the API router at /api prefix
+app.use('/api', apiRouter);
+
+// Update the port to use environment variable
+const PORT = process.env.PORT || 4000;
+
+// For production: Serve static files from the client build folder
+if (process.env.NODE_ENV === 'production') {
+  const clientBuildPath = path.join(__dirname, '../client/dist');
+  
+  // Serve static assets from the build folder
+  app.use(express.static(clientBuildPath));
+  
+  // All routes that aren't API routes should serve the index.html
+  app.get('*', (req, res) => {
+    // Only handle non-API routes for the React app
+    if (!req.path.startsWith('/api/')) {
+      console.log(`Serving index.html for path: ${req.path}`);
+      return res.sendFile(path.join(clientBuildPath, 'index.html'));
+    }
+    
+    // Let Express continue to handle API routes
+    return res.status(404).json({ error: "API endpoint not found" });
+  });
+}
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });

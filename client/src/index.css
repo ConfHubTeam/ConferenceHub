@@ -23,3 +23,22 @@ button.primary {
 button.normal {
   @apply bg-normal p-2 w-full text-white rounded-2xl;
 }
+
+/* Animation for filter dropdown */
+@keyframes filterDropdown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Make sure dropdown is full width on smaller screens */
+@media (max-width: 640px) {
+  header .search {
+    width: 100%;
+  }
+}

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import axios from "axios";
 import CloudinaryImage from "./CloudinaryImage";
+import api from "../utils/api";
 
 export default function PhotoUploader({ addedPhotos, setAddedPhotos }) {
   const [photoLink, setPhotoLink] = useState("");
@@ -18,7 +18,7 @@ export default function PhotoUploader({ addedPhotos, setAddedPhotos }) {
     }
 
     try {
-      const { data } = await axios.post("/upload-by-link", {
+      const { data } = await api.post("/upload-by-link", {
         link: photoLink,
       });
       setAddedPhotos((prev) => {
@@ -46,7 +46,7 @@ export default function PhotoUploader({ addedPhotos, setAddedPhotos }) {
     }
     
     try {
-      const { data: uploadedFiles } = await axios.post("/upload", data, {
+      const { data: uploadedFiles } = await api.post("/upload", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       

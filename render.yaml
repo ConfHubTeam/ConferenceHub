@@ -1,0 +1,32 @@
+services:
+  # Web service for the full stack application
+  - type: web
+    name: conferencehub-app
+    env: node
+    buildCommand: npm install && cd client && npm install && npx vite build && cd ..
+    startCommand: cd api && node index.js
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        value: https://${RENDER_EXTERNAL_HOSTNAME}
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: DB_URL
+        fromDatabase:
+          name: conferencehub-db
+          property: connectionString
+
+databases:
+  - name: conferencehub-db
+    plan: free
+    databaseName: conferencehub

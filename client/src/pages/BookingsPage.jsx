@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import AccountNav from "../components/AccountNav";
-import axios from "axios";
+import api from "../utils/api";
 import { UserContext } from "../components/UserContext";
 import BookingCard from "../components/BookingCard";
 
@@ -18,7 +18,7 @@ export default function BookingsPage() {
   async function loadBookings() {
     setLoading(true);
     try {
-      const { data } = await axios.get("/bookings");
+      const { data } = await api.get("/bookings");
       setBookings(data);
       setLoading(false);
     } catch (error) {

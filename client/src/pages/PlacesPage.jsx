@@ -1,7 +1,7 @@
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
 import AccountNav from "../components/AccountNav";
-import axios from "axios";
+import api from "../utils/api";
 import List from "../components/List";
 import { UserContext } from "../components/UserContext";
 
@@ -10,7 +10,7 @@ export default function PlacesPage() {
   const { user } = useContext(UserContext);
   
   useEffect(() => {
-    axios.get("/user-places").then(({ data }) => {
+    api.get("/user-places").then(({ data }) => {
       setPlaces(data);
     });
   }, []);

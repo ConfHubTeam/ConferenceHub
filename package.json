@@ -1,4 +1,16 @@
 {
+  "name": "conferencehub",
+  "version": "1.0.0",
+  "description": "ConferenceHub PERN Stack",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "cd api && node index.js",
+    "dev:api": "cd api && nodemon index.js",
+    "dev:client": "cd client && npm run dev",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:client\"",
+    "build": "cd client && npm install && npm run build",
+    "render-postbuild": "npm install"
+  },
   "dependencies": {
     "@cloudinary/react": "^1.14.1",
     "@cloudinary/url-gen": "^1.21.0",
@@ -19,6 +31,15 @@
     "sequelize": "^6.37.7",
     "sequelize-cli": "^6.6.2",
     "streamifier": "^0.1.1",
-    "xtypejs": "^0.7.1"
+    "xtypejs": "^0.7.1",
+    "@vitejs/plugin-react": "^4.0.3",
+    "vite": "^6.3.1"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.1",
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=14"
   }
 }

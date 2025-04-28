@@ -3,9 +3,9 @@ version: '3.8'
 services:
   postgres:
     image: postgres:15
-    container_name: airbnb_clone_postgres
+    container_name: conferencehub_postgres
     environment:
-      POSTGRES_DB: airbnb_clone
+      POSTGRES_DB: conferencehub
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:

@@ -1,8 +1,10 @@
 import { useContext, useEffect, useState } from "react";
 import { differenceInCalendarDays } from "date-fns";
-import axios from "axios";
 import { Navigate } from "react-router-dom";
+import api from "../utils/api";
 import { UserContext } from "./UserContext";
+import { useNotification } from "./NotificationContext";
+import { validateForm } from "../utils/formUtils";
 
 export default function BookingWidget({ placeDetail, buttonDisabled }) {
   const [numOfGuests, setNumOfGuests] = useState(1);
@@ -13,6 +15,7 @@ export default function BookingWidget({ placeDetail, buttonDisabled }) {
   const [redirect, setRedirect] = useState();
   const [error, setError] = useState("");
   const { user } = useContext(UserContext);
+  const { notify } = useNotification();
 
   useEffect(() => {
     if (user) {
@@ -50,21 +53,45 @@ export default function BookingWidget({ placeDetail, buttonDisabled }) {
     event.preventDefault();
     setError("");
 
-    // Basic validation
-    if (!checkInDate) {
-      setError("Please select a check-in date");
-      return;
-    }
-    if (!checkOutDate) {
-      setError("Please select a check-out date");
-      return;
-    }
-    if (!guestName) {
-      setError("Please provide your name");
-      return;
-    }
-    if (!guestPhone) {
-      setError("Please provide your phone number for contact");
+    // Use the form validation util
+    const { isValid, errorMessage } = validateForm(
+      { 
+        checkInDate, 
+        checkOutDate, 
+        guestName, 
+        guestPhone, 
+        numOfGuests 
+      },
+      {
+        checkInDate: { 
+          required: true, 
+          errorMessage: "Please select a check-in date"
+        },
+        checkOutDate: { 
+          required: true, 
+          errorMessage: "Please select a check-out date"
+        },
+        guestName: { 
+          required: true, 
+          errorMessage: "Please provide your name"
+        },
+        guestPhone: { 
+          required: true, 
+          errorMessage: "Please provide your phone number for contact"
+        },
+        numOfGuests: { 
+          type: "number", 
+          required: true,
+          min: 1, 
+          max: placeDetail.maxGuests,
+          minErrorMessage: "Number of guests must be at least 1",
+          maxErrorMessage: `Maximum capacity is ${placeDetail.maxGuests} people`
+        }
+      }
+    );
+    
+    if (!isValid) {
+      setError(errorMessage);
       return;
     }
 
@@ -83,7 +110,7 @@ export default function BookingWidget({ placeDetail, buttonDisabled }) {
 
       const totalPrice = placeDetail.price * hours;
 
-      const response = await axios.post("/bookings", {
+      const response = await api.post("/bookings", {
         place: placeDetail.id,
         checkInDate,
         checkOutDate,
@@ -93,12 +120,11 @@ export default function BookingWidget({ placeDetail, buttonDisabled }) {
         totalPrice,
       });
 
+      notify("Booking request submitted successfully", "success");
       setRedirect("/account/bookings");
     } catch (err) {
-      setError(
-        err.response?.data?.error ||
-          "Failed to make reservation. Please try again."
-      );
+      const errorMsg = err.response?.data?.error || "Failed to make reservation. Please try again.";
+      setError(errorMsg);
     }
   }
 
@@ -110,7 +136,7 @@ export default function BookingWidget({ placeDetail, buttonDisabled }) {
     return (
       <div className="bg-white p-5 rounded-xl border shadow-md">
         <div className="text-left pb-1">
-          <span className="font-bold text-2xl">£{placeDetail.price}</span> per
+          <span className="font-bold text-2xl">${placeDetail.price}</span> per
           hour
         </div>
         <p className="my-4 text-center">
@@ -128,7 +154,7 @@ export default function BookingWidget({ placeDetail, buttonDisabled }) {
     <form onSubmit={(event) => handleReserve(event)}>
       <div className="bg-white p-5 rounded-xl border shadow-md">
         <div className="text-left pb-1">
-          <span className="font-bold text-2xl">£{placeDetail.price}</span> per
+          <span className="font-bold text-2xl">${placeDetail.price}</span> per
           hour
         </div>
 
@@ -141,8 +167,9 @@ export default function BookingWidget({ placeDetail, buttonDisabled }) {
         <div className="my-2 border rounded-xl">
           <div className="flex border-b">
             <div className="px-3 py-4 w-1/2">
-              <label>Start date: </label>
+              <label htmlFor="checkInDate">Start date: </label>
               <input
+                id="checkInDate"
                 type="date"
                 className="cursor-pointer"
                 value={checkInDate}
@@ -160,8 +187,9 @@ export default function BookingWidget({ placeDetail, buttonDisabled }) {
               />
             </div>
             <div className="px-3 py-4 border-l">
-              <label>End date: </label>
+              <label htmlFor="checkOutDate">End date: </label>
               <input
+                id="checkOutDate"
                 type="date"
                 className="cursor-pointer"
                 value={checkOutDate}
@@ -181,8 +209,9 @@ export default function BookingWidget({ placeDetail, buttonDisabled }) {
             </div>
           </div>
           <div className="px-3 py-4 border-b">
-            <label>Number of attendees</label>
+            <label htmlFor="numOfGuests">Number of attendees</label>
             <input
+              id="numOfGuests"
               type="number"
               value={numOfGuests}
               onChange={(event) => setNumOfGuests(event.target.value)}
@@ -197,15 +226,17 @@ export default function BookingWidget({ placeDetail, buttonDisabled }) {
             )}
           </div>
           <div className="px-3 py-4">
-            <label>Your full name</label>
+            <label htmlFor="guestName">Your full name</label>
             <input
+              id="guestName"
               type="text"
               value={guestName}
               onChange={(event) => setGuestName(event.target.value)}
               placeholder="Jane Doe"
             />
-            <label>Phone number</label>
+            <label htmlFor="guestPhone">Phone number</label>
             <input
+              id="guestPhone"
               type="text"
               value={guestPhone}
               onChange={(event) => setGuestPhone(event.target.value)}
@@ -217,20 +248,20 @@ export default function BookingWidget({ placeDetail, buttonDisabled }) {
               <div className="border-b border-t">
                 <div className="flex px-3 py-4 justify-between items-center text-gray-600">
                   <p className="underline">
-                    £{placeDetail.price} x {hours} hours{" "}
+                    ${placeDetail.price} x {hours} hours{" "}
                   </p>
-                  <p className="">£{placeDetail.price * hours}</p>
+                  <p className="">${placeDetail.price * hours}</p>
                 </div>
                 <div className="flex px-3 pb-4 justify-between items-center text-gray-600">
                   <p className="underline">Service fee</p>
-                  <p className="">£{hours && "20"}</p>
+                  <p className="">${hours && "20"}</p>
                 </div>
               </div>
               <div>
                 <div className="flex px-3 py-4 justify-between items-center">
                   <p className="underline">Total</p>
                   <p className="">
-                    £{hours && placeDetail.price * hours + 20}
+                    ${hours && placeDetail.price * hours + 20}
                   </p>
                 </div>
               </div>

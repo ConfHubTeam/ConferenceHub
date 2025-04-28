@@ -1,4 +1,5 @@
 import { Cloudinary } from '@cloudinary/url-gen';
+import api from './api';
 
 // Create a Cloudinary instance
 const cld = new Cloudinary({
@@ -40,9 +41,14 @@ export const getCloudinaryImageUrl = (photo, options = {}) => {
     return photoObj;
   }
 
-  // Case 3: If it's a local file path, return the local URL
+  // Case 3: If it's a local file path, use the base URL from our API config
   if (typeof photoObj === 'string') {
-    return `http://localhost:4000/uploads/${photoObj}`;
+    // Get the base URL without the api prefix
+    const baseUrl = import.meta.env.PROD ? 
+      window.location.origin : // In production, use the origin
+      (import.meta.env.VITE_API_URL || 'http://localhost:4000'); // In dev, use env or default
+    
+    return `${baseUrl}/uploads/${photoObj}`;
   }
 
   return '';
@@ -69,7 +75,7 @@ export const getOptimizedImage = (photo, options = {}) => {
   // For Cloudinary URLs, try to add optimizations
   try {
     // Extract the public ID from the URL
-    // Example: https://res.cloudinary.com/dxb10mtcp/image/upload/v1650123456/airbnb_clone/image1.jpg
+    // Example: https://res.cloudinary.com/dxb10mtcp/image/upload/v1650123456/conferencehub/image1.jpg
     const urlParts = url.split('/');
     const uploadIndex = urlParts.indexOf('upload');
     

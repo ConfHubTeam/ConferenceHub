@@ -1,5 +1,5 @@
-import axios from "axios";
 import { createContext, useEffect, useState } from "react";
+import api from "../utils/api";
 
 export const UserContext = createContext({});
 
@@ -9,7 +9,7 @@ export function UserContextProvider({ children }) {
 
   useEffect(() => {
     if (!user) {
-      axios.get("/profile").then(({data}) => {
+      api.get("/profile").then(({data}) => {
         setUser(data);
         setReady(true); // to check the user data is loaded from backend
       });

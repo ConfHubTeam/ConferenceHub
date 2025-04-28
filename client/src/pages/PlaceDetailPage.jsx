@@ -1,10 +1,11 @@
-import axios from "axios";
+import api from "../utils/api";
 import { useContext, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import BookingWidget from "../components/BookingWidget";
 import PhotoGallery from "../components/PhotoGallery";
 import BookingCard from "../components/BookingCard";
 import { UserContext } from "../components/UserContext";
+import { useNotification } from "../components/NotificationContext";
 
 export default function PlaceDetailPage() {
   const { placeId, bookingId } = useParams();
@@ -12,7 +13,9 @@ export default function PlaceDetailPage() {
   const [bookingDetail, setBookingDetail] = useState();
   const [buttonDisabled, setButtonDisabled] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState("");
   const { user } = useContext(UserContext);
+  const { notify } = useNotification();
   const navigate = useNavigate();
   const months = [
     "Jan","Feb","Mar","Apr",
@@ -24,12 +27,12 @@ export default function PlaceDetailPage() {
     if (!placeId) {
       return;
     }
-    axios.get("/place/" + placeId).then((response) => {
+    api.get("/place/" + placeId).then((response) => {
       setPlaceDetail(response.data);
     });
 
     if (placeId && bookingId) {
-      axios.get("/place/" + placeId + "/" + bookingId).then((response) => {
+      api.get("/place/" + placeId + "/" + bookingId).then((response) => {
         setBookingDetail(response.data);
       });
       setButtonDisabled(true);
@@ -40,12 +43,14 @@ export default function PlaceDetailPage() {
   async function handleDelete() {
     if (window.confirm('Are you sure you want to delete this conference room? This will also cancel all associated bookings and cannot be undone.')) {
       setIsDeleting(true);
+      setError("");
       try {
-        await axios.delete(`/places/${placeId}`);
-        alert('Conference room deleted successfully');
+        await api.delete(`/places/${placeId}`);
+        notify('Conference room deleted successfully', 'success');
         navigate('/account/user-places'); // Redirect to my conference rooms page
       } catch (error) {
-        alert(`Error: ${error.response?.data?.error || error.message}`);
+        setError(error.response?.data?.error || error.message);
+        notify(`Error: ${error.response?.data?.error || error.message}`, 'error');
         setIsDeleting(false);
       }
     }
@@ -57,12 +62,12 @@ export default function PlaceDetailPage() {
   const isOwner = user && placeDetail.ownerId === user.id;
 
   return (
-    <div className="mx-4 md:mx-8 lg:mx-14 -mt-4">
+    <div className="mx-3 md:mx-8 lg:mx-14 -mt-4">
       {/* Header section */}
       <div className="mb-4">
-        <h1 className="text-2xl mb-2 font-bold">{placeDetail.title}</h1>
+        <h1 className="text-xl md:text-2xl mb-2 font-bold">{placeDetail.title}</h1>
         <a
-          className="flex gap-1 font-semibold underline items-center"
+          className="flex gap-1 font-semibold underline items-center text-sm md:text-base"
           target="_blank"
           href={"http://maps.google.com/?q=" + placeDetail.address}
         >
@@ -70,7 +75,7 @@ export default function PlaceDetailPage() {
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="currentColor"
-            className="w-5 h-5"
+            className="w-4 h-4 md:w-5 md:h-5"
           >
             <path
               fillRule="evenodd"
@@ -85,7 +90,14 @@ export default function PlaceDetailPage() {
       {/* Owner notification */}
       {isOwner && (
         <div className="bg-green-100 p-4 mb-4 rounded-lg">
-          <p className="text-green-800 font-semibold">You are the owner of this conference room</p>
+          <p className="text-green-800 font-semibold text-sm md:text-base">You are the owner of this conference room</p>
+        </div>
+      )}
+
+      {/* Error notification */}
+      {error && (
+        <div className="bg-red-100 text-red-800 p-4 mb-4 rounded-lg">
+          {error}
         </div>
       )}
 
@@ -93,7 +105,7 @@ export default function PlaceDetailPage() {
       <BookingCard bookingDetail={bookingDetail}/>
 
       {/* Main content layout - photos and sidebar */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Left side - Photos and description */}
         <div className="lg:col-span-2">
           <div className="mb-6">
@@ -102,9 +114,9 @@ export default function PlaceDetailPage() {
           
           <div className="mt-6">
             <div className="mb-5">
-              <h2 className="text-2xl font-semibold mb-2">Description</h2>
-              <p className="leading-7">{placeDetail.description}</p>
-              <div className="my-4 mb-6 leading-7">
+              <h2 className="text-xl md:text-2xl font-semibold mb-2">Description</h2>
+              <p className="leading-6 md:leading-7 text-sm md:text-base">{placeDetail.description}</p>
+              <div className="my-4 mb-6 leading-6 md:leading-7 text-sm md:text-base">
                 <p>
                   Available dates: {new Date(placeDetail.startDate).getDate()}{" "}
                   {months[new Date(placeDetail.startDate).getMonth()]}
@@ -119,8 +131,8 @@ export default function PlaceDetailPage() {
               <hr />
             </div>
             <div className="mb-5 mt-2">
-              <h2 className="text-2xl font-semibold my-2">Extra information</h2>
-              <p className="leading-7">{placeDetail.extraInfo}</p>
+              <h2 className="text-xl md:text-2xl font-semibold my-2">Extra information</h2>
+              <p className="leading-6 md:leading-7 text-sm md:text-base">{placeDetail.extraInfo}</p>
             </div>
           </div>
         </div>
