@@ -374,11 +374,15 @@ export default function Header() {
         <div 
           ref={filterDropdownRef}
           onClick={(e) => e.stopPropagation()}
-          className="fixed inset-x-0 top-16 z-30 bg-white shadow-lg rounded-b-xl p-4 mx-auto"
+          className="fixed inset-x-0 top-16 z-30 bg-white shadow-lg rounded-b-xl p-4 pb-6 mx-auto overflow-auto"
           style={{
             ...filterDropdownStyle,
             width: '100%',
             maxWidth: '1200px',
+            maxHeight: 'calc(100vh - 180px)', // Limit height and allow scrolling
+            overflowY: 'auto',
+            bottom: 'auto', // Remove bottom positioning
+            marginBottom: '80px' // Add margin at the bottom
           }}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -548,6 +552,11 @@ export default function Header() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Add space at the bottom when filter is expanded on mobile */}
+      {filterExpanded && (
+        <div className="md:hidden h-32"></div>
       )}
       
       {/* Add keyframes for filter dropdown animation */}
