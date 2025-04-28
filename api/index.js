@@ -193,7 +193,7 @@ apiRouter.post("/places", async (req, res) => {
     title, address, photos,
     description, perks, extraInfo, 
     checkIn, checkOut, maxGuests, 
-    price, startDate, endDate
+    price, startDate, endDate, roomType
   } = req.body;
 
   try {
@@ -226,7 +226,8 @@ apiRouter.post("/places", async (req, res) => {
       maxGuests: maxGuests ? parseInt(maxGuests, 10) : 1,
       price: price ? parseFloat(price) : 0,
       startDate: startDate || null,
-      endDate: endDate || null
+      endDate: endDate || null,
+      roomType: roomType || "Conference Room"
     };
 
     const placeDoc = await Place.create(processedData);
@@ -279,7 +280,7 @@ apiRouter.put("/places", async (req, res) => {
   const {
     id, title, address, photos, description,
     perks, extraInfo, checkIn, checkOut, maxGuests,
-    price, startDate, endDate
+    price, startDate, endDate, roomType
   } = req.body;
   
   try {
@@ -315,6 +316,7 @@ apiRouter.put("/places", async (req, res) => {
     place.price = price;
     place.startDate = startDate;
     place.endDate = endDate;
+    place.roomType = roomType || "Conference Room";
     
     await place.save();
     res.json("ok");
@@ -325,10 +327,91 @@ apiRouter.put("/places", async (req, res) => {
 
 apiRouter.get("/home", async (req, res) => {
   try {
-    // Update Mongoose find to Sequelize findAll
-    const places = await Place.findAll();
+    // Extract filter parameters from query
+    const { 
+      location, 
+      checkIn, 
+      checkOut, 
+      guests, 
+      type, 
+      minPrice, 
+      maxPrice, 
+      tags 
+    } = req.query;
+    
+    // Build where conditions for Sequelize query
+    const whereConditions = {};
+    const { Op } = require('sequelize');
+    
+    // Filter by location (address)
+    if (location) {
+      whereConditions.address = {
+        [Op.iLike]: `%${location}%` // Case-insensitive search
+      };
+    }
+    
+    // Filter by date availability (conference room should be available during the requested period)
+    if (checkIn && checkOut) {
+      whereConditions[Op.and] = [
+        {
+          startDate: {
+            [Op.lte]: new Date(checkIn)  // Room is available from before or on checkIn date
+          }
+        },
+        {
+          endDate: {
+            [Op.gte]: new Date(checkOut) // Room is available until after or on checkOut date
+          }
+        }
+      ];
+    }
+    
+    // Filter by maximum guests
+    if (guests) {
+      whereConditions.maxGuests = {
+        [Op.gte]: parseInt(guests) // Capacity is at least the requested number of guests
+      };
+    }
+    
+    // Filter by room type
+    if (type) {
+      whereConditions.roomType = {
+        [Op.eq]: type // Exact match on room type
+      };
+    }
+    
+    // Filter by price range
+    if (minPrice) {
+      whereConditions.price = {
+        ...(whereConditions.price || {}),
+        [Op.gte]: parseFloat(minPrice)
+      };
+    }
+    
+    if (maxPrice) {
+      whereConditions.price = {
+        ...(whereConditions.price || {}),
+        [Op.lte]: parseFloat(maxPrice)
+      };
+    }
+
+    // Filter by tags/perks
+    if (tags) {
+      const tagList = tags.split(',');
+      whereConditions.perks = {
+        [Op.overlap]: tagList // Match any of the selected perks (PostgreSQL array overlap)
+      };
+    }
+    
+    // Get all places matching the filters
+    const places = await Place.findAll({
+      where: whereConditions,
+      order: [['createdAt', 'DESC']] // Show newest places first
+    });
+    
     res.json(places);
   } catch (error) {
+    console.error("Error fetching places:", error);
     res.status(422).json({ error: error.message });
   }
 });

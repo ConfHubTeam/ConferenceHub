@@ -25,8 +25,8 @@ export default function Header() {
   const [selectedTags, setSelectedTags] = useState([]);
   
   // Room types and tags (matching the IndexPage options)
-  const roomTypes = ['Conference', 'Meeting', 'Workshop', 'Training', 'Coworking'];
-  const availableTags = ['Projector', 'Whiteboard', 'Video Conference', 'Catering', 'WiFi', 'Accessible'];
+  const roomTypes = ['Conference Room', 'Meeting Room', 'Workshop Space', 'Training Room', 'Coworking Space'];
+  const availableTags = ['wifi', 'parking', 'projector', 'videoConference', 'whiteboard', 'coffee', 'catering', 'accessibility'];
 
   // Effect to read URL params and set states on initial load
   useEffect(() => {
@@ -157,67 +157,76 @@ export default function Header() {
     transition: 'opacity 0.3s ease, transform 0.3s ease, max-height 0.3s ease'
   };
 
+  // Function to reset all filters
+  const resetFilters = (e) => {
+    if (e) e.stopPropagation();
+    setSearchLocation('');
+    setCheckInDate('');
+    setCheckOutDate('');
+    setGuestCount('');
+    setRoomType('');
+    setMinPrice('');
+    setMaxPrice('');
+    setSelectedTags([]);
+    
+    // If we're on the home page with filters, navigate to home without filters
+    if (location.pathname === '/' && location.search) {
+      navigate('/');
+    }
+  };
+
   return (
     <header className="flex justify-between items-center px-4 md:px-14 relative z-50">
       <Link to={"/"} className="logo flex items-center gap-1 text-primary">
         <span className="font-bold text-xl">ConferenceHub</span>
       </Link>
       
-      {/* Desktop search bar - hidden on mobile */}
-      <div 
-        ref={filterRef} 
-        className={`search hidden md:flex border border-gray-300 rounded-full py-2 px-4 gap-2 shadow-md shadow-gray-200 cursor-pointer hover:shadow-lg transition-shadow relative ${filterExpanded ? 'border-primary' : ''}`}
-        onClick={toggleFilterExpanded}
-      >
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="pt-0.5 font-medium truncate max-w-[120px]">{locationText}</div>
-          <div className="border-l border-gray-300"></div>
-          <div className="pt-0.5 text-gray-700 truncate max-w-[100px]">{dateText}</div>
-          <div className="border-l border-gray-300"></div>
-          <div className="pt-0.5 text-gray-700 truncate max-w-[100px]">{guestsText}</div>
-        </div>
+      {/* Empty div for spacing in the center */}
+      <div className="hidden md:block flex-grow"></div>
+      
+      <div className="flex items-center gap-2 relative z-30">
+        {/* Desktop filter button - now next to account icon */}
         <button 
-          className="bg-primary text-white rounded-full p-1"
+          ref={filterRef} 
+          className="hidden md:flex border border-gray-300 rounded-full p-1.5 bg-white hover:shadow-md transition-shadow"
           onClick={toggleFilterExpanded}
           aria-label="Toggle search filters"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-5 h-5"
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            strokeWidth={1.8} 
+            stroke="currentColor" 
+            className="w-4 h-4"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" 
             />
           </svg>
         </button>
-      </div>
-      
-      <div className="flex items-center gap-2 relative z-30">
+
         {/* Mobile search button - only shown on mobile */}
         <button 
           ref={mobileFilterRef}
           onClick={toggleFilterExpanded} 
-          className="md:hidden border border-gray-300 rounded-full p-2 bg-white hover:shadow-md transition-shadow"
+          className="md:hidden border border-gray-300 rounded-full p-1.5 bg-white hover:shadow-md transition-shadow"
           aria-label="Toggle mobile search"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-5 h-5"
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            strokeWidth={1.8} 
+            stroke="currentColor" 
+            className="w-4 h-4"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" 
             />
           </svg>
         </button>
@@ -390,7 +399,7 @@ export default function Header() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Room type</label>
               <select
-                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 h-10 appearance-none bg-white"
                 value={roomType}
                 onChange={(e) => setRoomType(e.target.value)}
                 onClick={(e) => e.stopPropagation()}
@@ -467,46 +476,76 @@ export default function Header() {
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Features & Services</label>
             <div className="flex flex-wrap gap-2">
-              {availableTags.map(tag => (
-                <button
-                  key={tag}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleTagToggle(tag);
-                  }}
-                  className={`px-3 py-1 text-sm rounded-full transition-all ${
-                    selectedTags.includes(tag)
-                      ? 'bg-primary text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {tag}
-                </button>
-              ))}
+              {availableTags.map(tag => {
+                // Map tag keys to display-friendly names
+                const tagDisplayNames = {
+                  'wifi': 'High-Speed WiFi',
+                  'parking': 'On-site Parking',
+                  'projector': 'Projector',
+                  'videoConference': 'Video Conference',
+                  'whiteboard': 'Whiteboard',
+                  'coffee': 'Coffee Service',
+                  'catering': 'Catering',
+                  'accessibility': 'Accessibility'
+                };
+                
+                return (
+                  <button
+                    key={tag}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleTagToggle(tag);
+                    }}
+                    className={`px-3 py-1 text-sm rounded-full transition-all ${
+                      selectedTags.includes(tag)
+                        ? 'bg-primary text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {tagDisplayNames[tag] || tag}
+                  </button>
+                );
+              })}
             </div>
           </div>
           
-          <div className="flex justify-end space-x-2">
-            <button 
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setFilterExpanded(false);
-              }}
-              className="text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100"
-            >
-              Cancel
-            </button>
-            <button 
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSearch();
-              }}
-              className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-opacity-90"
-            >
-              Apply Filters
-            </button>
+          <div className="flex justify-between items-center">
+            {/* Check if any filters are active */}
+            {(searchLocation || checkInDate || checkOutDate || guestCount || roomType || 
+              minPrice || maxPrice || selectedTags.length > 0) && (
+              <button 
+                type="button"
+                onClick={resetFilters}
+                className="flex items-center gap-1 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-100"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
+                Reset Filters
+              </button>
+            )}
+            <div className="flex ml-auto space-x-2">
+              <button 
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setFilterExpanded(false);
+                }}
+                className="text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button 
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSearch();
+                }}
+                className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-opacity-90"
+              >
+                Apply Filters
+              </button>
+            </div>
           </div>
         </div>
       )}
