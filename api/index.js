@@ -7,9 +7,7 @@ const jwt = require("jsonwebtoken");
 // Import models from the index.js file
 const { sequelize, User, Place, Booking } = require('./models');
 const cookieParser = require("cookie-parser");
-const imageDownloader = require("image-downloader");
 const multer = require("multer");
-const fs = require("fs");
 const bodyParser = require("body-parser");
 const cloudinary = require('./config/cloudinary');
 const streamifier = require('streamifier');
@@ -212,12 +210,24 @@ apiRouter.post("/places", async (req, res) => {
       return res.status(403).json({ error: "Only hosts can create conference rooms" });
     }
     
+    // Process photos to ensure they're stored correctly
+    let processedPhotos = [];
+    if (Array.isArray(photos)) {
+      processedPhotos = photos.map(photo => {
+        // If photo is an object with url property, store just the URL
+        if (typeof photo === 'object' && photo !== null && photo.url) {
+          return photo.url;
+        }
+        return photo;
+      });
+    }
+    
     // Process numeric fields
     const processedData = {
       ownerId: userData.id,
       title, 
       address, 
-      photos: Array.isArray(photos) ? photos : [],
+      photos: processedPhotos,
       description: description || "",
       perks: Array.isArray(perks) ? perks : [],
       extraInfo: extraInfo || "",
@@ -303,10 +313,34 @@ apiRouter.put("/places", async (req, res) => {
       return res.status(403).json({ error: "You can only manage your own conference rooms" });
     }
     
+    // Process photos to ensure they're stored correctly
+    let processedPhotos = [];
+    if (Array.isArray(photos)) {
+      processedPhotos = photos.map(photo => {
+        // If photo is an object with url property, store just the URL
+        if (typeof photo === 'object' && photo !== null) {
+          if (photo.url) {
+            return photo.url;
+          }
+          // If photo is a stringified object, parse it
+          if (typeof photo === 'string' && photo.startsWith('{') && photo.endsWith('}')) {
+            try {
+              const parsedPhoto = JSON.parse(photo);
+              return parsedPhoto.url || photo;
+            } catch (e) {
+              return photo;
+            }
+          }
+        }
+        // If it's already a string URL, keep it that way
+        return photo;
+      });
+    }
+
     // Update place properties
     place.title = title;
     place.address = address;
-    place.photos = photos;
+    place.photos = processedPhotos;
     place.description = description;
     place.perks = perks;
     place.extraInfo = extraInfo;
@@ -321,6 +355,7 @@ apiRouter.put("/places", async (req, res) => {
     await place.save();
     res.json("ok");
   } catch (error) {
+    console.error("Error updating place:", error);
     res.status(422).json({ error: error.message });
   }
 });

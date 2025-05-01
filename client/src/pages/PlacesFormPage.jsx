@@ -101,31 +101,12 @@ export default function PlacesFormPage() {
     
     console.log("Photos before saving:", addedPhotos);
     
-    // Ensure photos are properly formatted for storage
-    const formattedPhotos = addedPhotos.map(photo => {
-      // If it's already a Cloudinary object with url and publicId, keep it as is
-      if (typeof photo === 'object' && photo.url && photo.publicId) {
-        return photo;
-      }
-      // If it's a plain string URL but from Cloudinary
-      if (typeof photo === 'string' && photo.includes('cloudinary.com')) {
-        // Try to extract the publicId from the URL
-        const urlParts = photo.split('/');
-        const fileNameWithExtension = urlParts[urlParts.length - 1];
-        const fileName = fileNameWithExtension.split('.')[0];
-        return {
-          url: photo,
-          publicId: `conferencehub/${fileName}` // Updated folder structure
-        };
-      }
-      // Otherwise, just pass it through (likely local file path)
-      return photo;
-    });
-
+    // No need to format photos extensively - just ensure we send the complete object
+    // The backend will handle the proper extraction of URLs
     const placeData = {
       title,
       address,
-      photos: formattedPhotos,
+      photos: addedPhotos,
       description,
       perks,
       extraInfo,

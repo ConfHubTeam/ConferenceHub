@@ -1,144 +1,290 @@
-# ConferenceHub - PERN Stack
+# ConferenceHub - Application Architecture
 
-A full-stack ConferenceHub built with the PERN stack (PostgreSQL, Express, React, Node.js).
+## Project Overview
 
-## Features
+ConferenceHub is a comprehensive platform designed to streamline the process of booking and managing conference spaces. Similar to how Airbnb revolutionized accommodation rentals, ConferenceHub focuses specifically on meeting and conference room bookings for business purposes. The application connects space hosts with clients needing professional meeting environments. Hosts can list their conference rooms with detailed information, while clients can easily search, view, and book these spaces based on their requirements. The platform handles the entire booking process, from discovery to confirmation, and includes a review and approval system for hosts to manage incoming booking requests.
 
-- User authentication (register, login, profile)
-- Conference room/accommodation booking system
-- Role-based access (host vs client users)
-- Image uploads with Cloudinary
-- Booking management for hosts and clients
-- Responsive UI using Tailwind CSS
+This document provides a comprehensive overview of the ConferenceHub application architecture, including how data flows through the system and the relationships between different components.
 
-## Project Structure
+## High-Level System Overview
 
-```
-conferencehub/
-├── api/                # Backend Express server
-│   ├── config/         # Configuration files (DB, Cloudinary)
-│   ├── models/         # Sequelize models
-│   ├── uploads/        # Local uploads directory (for development)
-│   └── index.js        # Main server file
-├── client/             # React frontend
-│   ├── src/            # React source code
-│   │   ├── components/ # Reusable components
-│   │   ├── pages/      # Page components
-│   │   ├── utils/      # Utility functions
-│   └── vite.config.js  # Vite configuration
-├── render.yaml         # Render deployment configuration
-└── package.json        # Project dependencies and scripts
+```mermaid
+graph TB
+    Client[Client Browser] --> Frontend[Frontend - React]
+    Frontend --> Backend[Backend - Express]
+    Backend --> Database[(Database - PostgreSQL)]
+    Backend --> ExternalServices[External Services]
+    
+    classDef primaryComponent fill:#f0f8ff,stroke:#333,stroke-width:2px,color:#000000;
+    classDef secondaryComponent fill:#e6f7ff,stroke:#333,stroke-width:1px,color:#000000;
+    
+    class Frontend,Backend primaryComponent;
+    class Database,ExternalServices,Client secondaryComponent;
 ```
 
-## Local Development Setup
+## Frontend Architecture
 
-1. Clone the repository:
-   ```bash
-   git clone <repository-url>
-   cd <repository-name>
-   ```
+```mermaid
+graph TB
+    subgraph "Frontend (React)"
+        direction TB
+        ReactApp[React Application]
+        
+        subgraph "Pages"
+            IndexPage[Home/Search Page]
+            LoginPage[Login Page]
+            RegisterPage[Register Page]
+            ProfilePage[User Profile]
+            BookingsPage[Bookings Management]
+            PlacesPage[Conference Rooms]
+            PlaceDetailPage[Room Details]
+            PlacesFormPage[Room Form]
+        end
+        
+        subgraph "Components"
+            Header[Header/Navigation]
+            UserContext[User Context]
+            NotificationContext[Notifications]
+            BookingWidget[Booking Widget]
+            PhotoUploader[Photo Uploader]
+            AccountNav[Account Navigation]
+            List[Room Listings]
+            BookingCard[Booking Card]
+        end
+        
+        subgraph "Utilities"
+            ApiUtil[API Utility]
+            FormUtils[Form Utilities]
+            CloudinaryUtil[Cloudinary Utils]
+        end
+        
+        ReactApp --> Pages
+        ReactApp --> Components
+        Components --> Utilities
+    end
+    
+    classDef primary fill:#f0e6ff,stroke:#333,stroke-width:2px,color:#000000;
+    classDef secondary fill:#e6e6ff,stroke:#333,stroke-width:1px,color:#000000;
+    classDef utility fill:#e6ffe6,stroke:#333,stroke-width:1px,color:#000000;
+    
+    class ReactApp primary;
+    class Pages,Components secondary;
+    class Utilities utility;
+```
 
-2. Install dependencies:
-   ```bash
-   npm install
-   cd client && npm install
-   ```
+## Backend Architecture
 
-3. Set up environment variables:
-   ```bash
-   # Copy the example env files
-   cp api/.env.example api/.env
-   cp client/.env.example client/.env
-   ```
+```mermaid
+graph TB
+    ExpressServer[Express Server]
+    
+    subgraph API[API Endpoints]
+        AuthAPI[Authentication API]
+        PlacesAPI[Places API]
+        BookingsAPI[Bookings API]
+        UploadAPI[Upload API]
+    end
+    
+    subgraph MW[Middleware]
+        JWT[JWT Authentication]
+        CORS[CORS Handler]
+        ErrorHandling[Error Handling]
+    end
+    
+    ExpressServer --> API
+    ExpressServer --> MW
+    
+    classDef primary fill:#f0e6ff,stroke:#333,stroke-width:2px,color:#000000;
+    classDef secondary fill:#e6e6ff,stroke:#333,stroke-width:1px,color:#000000;
+    
+    class ExpressServer primary;
+    class API,MW secondary;
+```
 
-4. Configure your PostgreSQL database settings in `api/.env`
+## Database Models
 
-5. Configure your Cloudinary credentials in `api/.env`
+```mermaid
+graph TB
+    subgraph "Database (PostgreSQL)"
+        direction TB
+        PostgreSQL[(PostgreSQL Database)]
+        
+        UsersModel[Users]
+        PlacesModel[Places]
+        BookingsModel[Bookings]
+        
+        PostgreSQL --> UsersModel
+        PostgreSQL --> PlacesModel
+        PostgreSQL --> BookingsModel
+        
+        %% Relationships between models
+        UsersModel -- "has many" --> PlacesModel
+        UsersModel -- "has many" --> BookingsModel
+        PlacesModel -- "has many" --> BookingsModel
+    end
+    
+    classDef dbNode fill:#e6f5f5,stroke:#333,stroke-width:1px,color:#000000;
+    classDef modelNode fill:#f0f9f9,stroke:#333,stroke-width:1px,color:#000000;
+    
+    class PostgreSQL dbNode;
+    class UsersModel,PlacesModel,BookingsModel modelNode;
+```
 
-6. Run the development servers:
-   ```bash
-   # Run backend and frontend concurrently
-   npm run dev
-   ```
+## Authentication Flow
 
-## Deployment to Render.com
+```mermaid
+sequenceDiagram
+    actor User
+    participant LoginPage
+    participant ApiUtil
+    participant AuthAPI
+    participant Database
+    participant UserContext
+    
+    User->>LoginPage: Enter credentials
+    LoginPage->>ApiUtil: Submit login request
+    ApiUtil->>AuthAPI: POST /login
+    AuthAPI->>Database: Verify credentials
+    Database-->>AuthAPI: Return user data
+    AuthAPI-->>ApiUtil: JWT token + user data
+    ApiUtil-->>LoginPage: Login result
+    LoginPage->>UserContext: Update authenticated user
+    UserContext-->>User: Show authenticated state
+```
 
-This project is configured for easy deployment on Render.com using the `render.yaml` file.
+## Room Listing Process
 
-### Prerequisites
+```mermaid
+sequenceDiagram
+    actor Host
+    participant PlacesFormPage
+    participant PhotoUploader
+    participant Cloudinary
+    participant ApiUtil
+    participant PlacesAPI
+    participant Database
+    
+    Host->>PlacesFormPage: Add room details
+    Host->>PhotoUploader: Upload images
+    PhotoUploader->>Cloudinary: Upload images
+    Cloudinary-->>PhotoUploader: Return image URLs
+    Host->>PlacesFormPage: Submit form
+    PlacesFormPage->>ApiUtil: Submit room data
+    ApiUtil->>PlacesAPI: POST /places
+    PlacesAPI->>Database: Store room data
+    Database-->>PlacesAPI: Confirmation
+    PlacesAPI-->>ApiUtil: Success response
+    ApiUtil-->>PlacesFormPage: Display success
+    PlacesFormPage-->>Host: Redirect to rooms list
+```
 
-1. Create an account on [Render.com](https://render.com/)
-2. Set up a [Cloudinary account](https://cloudinary.com/) for image hosting
-3. Have your PostgreSQL database ready (Render provides this service)
+## Booking Process
 
-### Deployment Steps
+```mermaid
+sequenceDiagram
+    actor Client
+    participant PlaceDetailPage
+    participant BookingWidget
+    participant ApiUtil
+    participant BookingsAPI
+    participant Database
+    participant Host
+    
+    Client->>PlaceDetailPage: View room details
+    Client->>BookingWidget: Enter booking details
+    BookingWidget->>ApiUtil: Submit booking request
+    ApiUtil->>BookingsAPI: POST /bookings
+    BookingsAPI->>Database: Store booking (pending)
+    Database-->>BookingsAPI: Confirmation
+    BookingsAPI-->>ApiUtil: Success response
+    ApiUtil-->>BookingWidget: Display success
+    BookingWidget-->>Client: Redirect to bookings
+    
+    Host->>BookingsAPI: GET /bookings
+    BookingsAPI->>Database: Fetch pending bookings
+    Database-->>BookingsAPI: Return bookings
+    BookingsAPI-->>Host: Display pending bookings
+    Host->>BookingsAPI: PUT /bookings/:id (approve/reject)
+    BookingsAPI->>Database: Update booking status
+    Database-->>BookingsAPI: Confirmation
+    BookingsAPI-->>Host: Display updated status
+```
 
-#### Option 1: Using the Deploy to Render Button
+## Component Explanations
 
-1. Fork/clone this repository to your GitHub account
-2. Add the "Deploy to Render" button to your repository:
-   ```markdown
-   [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
-   ```
-3. Click the button to start the deployment process
+### Frontend (Client-Side)
 
-#### Option 2: Manual Deployment
+#### Pages
+- **IndexPage**: Main landing page displaying available conference rooms with search functionality
+- **LoginPage/RegisterPage**: User authentication pages for clients and hosts
+- **ProfilePage**: User profile management
+- **BookingsPage**: For clients to see their bookings and for hosts to approve/reject booking requests
+- **PlacesPage**: For hosts to manage their conference rooms
+- **PlaceDetailPage**: Detailed view of a conference room with booking capability
+- **PlacesFormPage**: Form for hosts to create/edit conference room listings
 
-1. Log in to your Render dashboard
-2. Create a new "Blueprint" instance (Infrastructure as Code)
-3. Connect your repository
-4. Render will detect the `render.yaml` file and create the required services
+#### Components
+- **Header**: Navigation bar with search functionality
+- **UserContext**: React context for global user state management
+- **NotificationContext**: Handles system notifications and alerts
+- **BookingWidget**: Booking form for clients to reserve rooms
+- **PhotoUploader**: Component for uploading and managing room images
+- **AccountNav**: Navigation for account-related pages
+- **List**: Reusable component for displaying room listings
+- **BookingCard**: Display booking details with actions (approve/reject/cancel)
 
-### Required Environment Variables
+#### Utilities
+- **ApiUtil**: Centralized API request handling with Axios
+- **FormUtils**: Form validation and processing utilities
+- **CloudinaryUtil**: Helper functions for Cloudinary image operations
 
-Set the following environment variables in the Render dashboard:
+### Backend (Server-Side)
 
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_URL` | PostgreSQL connection string (provided by Render if using their database) |
-| `JWT_SECRET` | Secret key for JWT authentication |
-| `CLOUDINARY_CLOUD_NAME` | Your Cloudinary cloud name |
-| `CLOUDINARY_API_KEY` | Your Cloudinary API key |
-| `CLOUDINARY_API_SECRET` | Your Cloudinary API secret |
-| `NODE_ENV` | Set to "production" |
-| `PORT` | Default port (typically set automatically by Render) |
-| `FRONTEND_URL` | The URL of your deployed frontend (will be set automatically with the render.yaml) |
+#### API Endpoints
+- **AuthAPI**: Handles user registration, login, and authentication
+- **PlacesAPI**: Manages conference room listings (CRUD operations)
+- **BookingsAPI**: Manages booking requests and status updates
+- **UploadAPI**: Handles file uploads to Cloudinary
 
-### Database Setup
+#### Middleware
+- **JWT Authentication**: Verifies user identity with JSON Web Tokens
+- **CORS Handler**: Manages cross-origin requests
+- **Error Handling**: Standardized error responses
 
-1. Render will provision a PostgreSQL database based on the `render.yaml` configuration
-2. The application will automatically create the required tables on first run using Sequelize
+### Database (PostgreSQL)
 
-### After Deployment
+#### Models
+- **Users**: Stores user information with role-based access (host vs client)
+- **Places**: Stores conference room details (title, address, photos, description, amenities, etc.)
+- **Bookings**: Records booking requests with status tracking (pending, approved, rejected)
 
-1. Visit your deployed application using the URL provided by Render
-2. Register a new user account
-3. You may want to manually set some users as "host" users in the database to create listings
+### External Services
+- **Cloudinary**: Cloud-based image storage and delivery
 
-## Troubleshooting Deployment
+## Role-Based Functionality
 
-### Common Issues
+### Client Users
+- Browse and search conference rooms
+- View room details with photos and amenities
+- Make booking requests
+- Manage their bookings (view status, cancel)
+- Update profile information
 
-1. **Database Connection Errors**
-   - Verify DATABASE_URL is correctly set
-   - Check the database is properly provisioned
+### Host Users
+- All client capabilities
+- Create and manage conference room listings
+- Upload photos for their rooms
+- Review and respond to booking requests
+- View booking calendar and manage availability
 
-2. **Missing Environment Variables**
-   - Ensure all required environment variables are set in Render dashboard
-   - Check for any typos in variable names
+## Technical Implementation Details
 
-3. **Build Failures**
-   - Check the build logs in Render
-   - Ensure all dependencies are properly listed in package.json
-
-4. **White Screen/404 Errors**
-   - Check that the frontend builds correctly
-   - Verify API endpoints are accessible
-
-### Support and Debugging
-
-For deployment issues, check the service logs in the Render dashboard for detailed error messages and stack traces.
-
-## License
-
-MIT
+- **Frontend**: Built with React and Vite for fast development
+- **Styling**: Tailwind CSS for responsive, mobile-first design
+- **State Management**: React Context API for global state
+- **API Communication**: Axios for HTTP requests
+- **Backend**: Express.js RESTful API
+- **Database**: PostgreSQL with Sequelize ORM
+- **Authentication**: JWT-based authentication with HTTP-only cookies
+- **Image Handling**: Cloudinary integration for cloud storage
+- **Deployment**: Configured for Render.com using render.yaml

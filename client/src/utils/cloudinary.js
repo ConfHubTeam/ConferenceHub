@@ -1,5 +1,4 @@
 import { Cloudinary } from '@cloudinary/url-gen';
-import api from './api';
 
 // Create a Cloudinary instance
 const cld = new Cloudinary({
@@ -17,7 +16,7 @@ const cld = new Cloudinary({
 export const getCloudinaryImageUrl = (photo, options = {}) => {
   if (!photo) return '';
   
-  // Try to parse the photo if it's a JSON string
+  // Handle case when photo might be stringified JSON
   let photoObj = photo;
   if (typeof photo === 'string') {
     try {
@@ -32,17 +31,33 @@ export const getCloudinaryImageUrl = (photo, options = {}) => {
   }
   
   // Case 1: If it's a cloudinary object with url property (after potential parsing)
-  if (typeof photoObj === 'object' && photoObj.url) {
-    return photoObj.url;
+  if (typeof photoObj === 'object' && photoObj !== null) {
+    // Direct url property
+    if (photoObj.url) {
+      return photoObj.url;
+    }
+    
+    // Sometimes MongoDB might return the object differently
+    if (photoObj.secure_url) {
+      return photoObj.secure_url;
+    }
+    
+    // Last resort - check for any property that might contain a URL
+    for (const key in photoObj) {
+      if (typeof photoObj[key] === 'string' && 
+          (photoObj[key].includes('cloudinary.com') || photoObj[key].startsWith('http'))) {
+        return photoObj[key];
+      }
+    }
   }
 
   // Case 2: If it's a string that already looks like a full Cloudinary URL
-  if (typeof photoObj === 'string' && photoObj.includes('cloudinary.com')) {
-    return photoObj;
-  }
-
-  // Case 3: If it's a local file path, use the base URL from our API config
   if (typeof photoObj === 'string') {
+    if (photoObj.includes('cloudinary.com')) {
+      return photoObj;
+    }
+    
+    // Case 3: If it's a local file path, use the base URL from our API config
     // Get the base URL without the api prefix
     const baseUrl = import.meta.env.PROD ? 
       window.location.origin : // In production, use the origin
@@ -51,6 +66,7 @@ export const getCloudinaryImageUrl = (photo, options = {}) => {
     return `${baseUrl}/uploads/${photoObj}`;
   }
 
+  console.warn('Unable to determine image URL from:', photo);
   return '';
 };
 
