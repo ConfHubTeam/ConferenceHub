@@ -7,9 +7,7 @@ const jwt = require("jsonwebtoken");
 // Import models from the index.js file
 const { sequelize, User, Place, Booking } = require('./models');
 const cookieParser = require("cookie-parser");
-const imageDownloader = require("image-downloader");
 const multer = require("multer");
-const fs = require("fs");
 const bodyParser = require("body-parser");
 const cloudinary = require('./config/cloudinary');
 const streamifier = require('streamifier');

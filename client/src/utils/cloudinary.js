@@ -1,5 +1,4 @@
 import { Cloudinary } from '@cloudinary/url-gen';
-import api from './api';
 
 // Create a Cloudinary instance
 const cld = new Cloudinary({
