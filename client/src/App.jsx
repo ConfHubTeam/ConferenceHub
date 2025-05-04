@@ -11,6 +11,9 @@ import ProfilePage from "./pages/ProfilePage";
 import PlacesFormPage from "./pages/PlacesFormPage";
 import BookingsPage from "./pages/BookingsPage";
 import PlaceDetailPage from "./pages/PlaceDetailPage";
+import DashboardPage from "./pages/DashboardPage";
+import UsersPage from "./pages/UsersPage";
+import AllPlacesPage from "./pages/AllPlacesPage";
 
 function App() {
 
@@ -21,6 +24,7 @@ function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<IndexPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/admin" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/account" element={<ProfilePage />}/>
             <Route path="/account/user-places" element={<PlacesPage />}/>
@@ -29,6 +33,11 @@ function App() {
             <Route path="/place/:placeId" element={<PlaceDetailPage />}/>
             <Route path="/place/:placeId/:bookingId" element={<PlaceDetailPage />}/>
             <Route path="/account/bookings" element={<BookingsPage />}/>
+            
+            {/* Agent-specific routes */}
+            <Route path="/account/dashboard" element={<DashboardPage />}/>
+            <Route path="/account/users" element={<UsersPage />}/>
+            <Route path="/account/all-places" element={<AllPlacesPage />}/>
           </Route>
         </Routes>
       </NotificationProvider>

@@ -84,7 +84,7 @@ export default function BookingCard({bookingDetail, onBookingUpdate}) {
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"
+                      d="M21.752 15.002A9.718 9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"
                     />
                   </svg>
                   {differenceInCalendarDays(
@@ -124,14 +124,45 @@ export default function BookingCard({bookingDetail, onBookingUpdate}) {
                 </svg>
                 Booking #{bookingDetail.id}
               </p>
+
+              {/* For host: only show booking details, not client info */}
+              {user?.userType === 'host' && (
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                  <h3 className="font-medium mb-2">Booking Details</h3>
+                  <p>Number of Guests: {bookingDetail.numOfGuests}</p>
+                  <p>Total Price: ${bookingDetail.totalPrice}</p>
+                  <p className="mt-2 text-sm text-gray-500 italic">Client details are hidden for privacy reasons.</p>
+                </div>
+              )}
               
-              {/* Guest information for hosts */}
-              {user?.userType === 'host' && bookingDetail.user && (
+              {/* Guest information for agents */}
+              {user?.userType === 'agent' && (
                 <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                   <h3 className="font-medium mb-2">Guest Information</h3>
                   <p>Name: {bookingDetail.guestName}</p>
                   <p>Phone: {bookingDetail.guestPhone}</p>
-                  <p>Email: {bookingDetail.user.email}</p>
+                  {bookingDetail.user && (
+                    <p>Email: {bookingDetail.user.email}</p>
+                  )}
+                  <p>Number of Guests: {bookingDetail.numOfGuests}</p>
+                  
+                  {bookingDetail.place && bookingDetail.place.owner && (
+                    <div className="mt-2 pt-2 border-t">
+                      <h3 className="font-medium mb-1">Host Information</h3>
+                      <p>Host: {bookingDetail.place.owner.name}</p>
+                      <p>Email: {bookingDetail.place.owner.email}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Guest information for clients (their own bookings) */}
+              {user?.userType === 'client' && (
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                  <h3 className="font-medium mb-2">Your Information</h3>
+                  <p>Name: {bookingDetail.guestName}</p>
+                  <p>Phone: {bookingDetail.guestPhone}</p>
+                  <p>Number of Guests: {bookingDetail.numOfGuests}</p>
                 </div>
               )}
             </div>
@@ -142,7 +173,7 @@ export default function BookingCard({bookingDetail, onBookingUpdate}) {
                 <div className="text-2xl">${bookingDetail.totalPrice}</div>
               </div>
               
-              {/* Action buttons */}
+              {/* Action buttons for host */}
               {bookingDetail.status === 'pending' && user?.userType === 'host' && (
                 <div className="flex gap-2">
                   <button 
@@ -162,7 +193,28 @@ export default function BookingCard({bookingDetail, onBookingUpdate}) {
                 </div>
               )}
               
-              {bookingDetail.status === 'pending' && user?.userType !== 'host' && (
+              {/* Action buttons for agent - can approve on behalf of host */}
+              {bookingDetail.status === 'pending' && user?.userType === 'agent' && (
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => updateBookingStatus('approved')} 
+                    disabled={isUpdating}
+                    className="flex-1 bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 disabled:opacity-50"
+                  >
+                    {isUpdating ? 'Processing...' : 'Approve'}
+                  </button>
+                  <button 
+                    onClick={() => updateBookingStatus('rejected')} 
+                    disabled={isUpdating}
+                    className="flex-1 bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 disabled:opacity-50"
+                  >
+                    {isUpdating ? 'Processing...' : 'Reject'}
+                  </button>
+                </div>
+              )}
+              
+              {/* Cancel button for client */}
+              {bookingDetail.status === 'pending' && user?.userType === 'client' && (
                 <button 
                   onClick={() => updateBookingStatus('rejected')} 
                   disabled={isUpdating}

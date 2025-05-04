@@ -38,12 +38,47 @@ sequelize.authenticate()
     // Sync all models with the database
     return sequelize.sync({ alter: true }); // In production, use migrations instead
   })
-  .then(() => {
+  .then(async () => {
     console.log('All models were synchronized successfully.');
+    // Create admin account if it doesn't exist
+    await createAdminAccountIfNotExists();
   })
   .catch(err => {
     console.error('Unable to connect to the database:', err);
   });
+
+// Function to create admin account if it doesn't exist
+async function createAdminAccountIfNotExists() {
+  try {
+    // Admin credentials from environment variables
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@conferencehub.com';
+    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123!@#'; // Default password, should be changed in production
+    const adminName = process.env.ADMIN_NAME || 'System Administrator';
+    
+    // Check if admin account already exists
+    const existingAdmin = await User.findOne({ 
+      where: { 
+        email: adminEmail,
+        userType: 'agent' 
+      } 
+    });
+    
+    if (!existingAdmin) {
+      console.log('Creating admin account...');
+      await User.create({
+        name: adminName,
+        email: adminEmail,
+        password: bcrypt.hashSync(adminPassword, bcryptSalt),
+        userType: 'agent' // 'agent' is the admin role
+      });
+      console.log('Admin account created successfully.');
+    } else {
+      console.log('Admin account already exists.');
+    }
+  } catch (error) {
+    console.error('Error creating admin account:', error);
+  }
+}
 
 // Create API router for all API endpoints
 const apiRouter = express.Router();
@@ -479,6 +514,66 @@ apiRouter.post("/bookings", async (req, res) => {
 apiRouter.get("/bookings", async (req, res) => {
   try {
     const userData = await getUserDataFromToken(req);
+    const { userId } = req.query;
+    
+    // For agents with userId parameter - get bookings for a specific user
+    if (userData.userType === 'agent' && userId) {
+      const userBookings = await Booking.findAll({
+        where: { 
+          userId: userId
+        },
+        include: [
+          {
+            model: Place,
+            as: 'place',
+            include: [{
+              model: User,
+              as: 'owner',
+              attributes: ['id', 'name', 'email']
+            }],
+            attributes: ['id', 'title', 'address', 'photos', 'price', 'checkIn', 'checkOut', 'ownerId']
+          },
+          {
+            model: User,
+            as: 'user',
+            attributes: ['id', 'name', 'email']
+          }
+        ],
+        order: [
+          ['createdAt', 'DESC'] // Most recent bookings first
+        ]
+      });
+      
+      return res.json(userBookings);
+    }
+    
+    // Agents can see all bookings across the system
+    if (userData.userType === 'agent') {
+      const allBookings = await Booking.findAll({
+        include: [
+          {
+            model: Place,
+            as: 'place',
+            include: [{
+              model: User,
+              as: 'owner',
+              attributes: ['id', 'name', 'email']
+            }],
+            attributes: ['id', 'title', 'address', 'photos', 'price', 'checkIn', 'checkOut', 'ownerId']
+          },
+          {
+            model: User,
+            as: 'user',
+            attributes: ['id', 'name', 'email']
+          }
+        ],
+        order: [
+          ['createdAt', 'DESC'] // Most recent bookings first
+        ]
+      });
+      
+      return res.json(allBookings);
+    }
     
     if (userData.userType === 'host') {
       // For hosts: Find bookings for conference rooms they own
@@ -565,6 +660,12 @@ apiRouter.put("/bookings/:id", async (req, res) => {
         return res.status(403).json({ error: "You can only manage bookings for your own places" });
       }
       
+      booking.status = status;
+      await booking.save();
+      
+      return res.json({ success: true, booking });
+    } else if (userData.userType === 'agent') {
+      // Agents can update booking status for any booking
       booking.status = status;
       await booking.save();
       
@@ -665,6 +766,97 @@ apiRouter.delete("/places/:id", async (req, res) => {
     
   } catch (error) {
     console.error("Error deleting conference room:", error);
+    res.status(422).json({ error: error.message });
+  }
+});
+
+// New endpoint: Get all users (for agents only)
+apiRouter.get("/users", async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+    
+    // Verify user is an agent
+    if (userData.userType !== 'agent') {
+      return res.status(403).json({ error: "Only agents can access user lists" });
+    }
+    
+    // Get all users
+    const users = await User.findAll({
+      attributes: ['id', 'name', 'email', 'userType', 'createdAt']
+    });
+    
+    res.json(users);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(422).json({ error: error.message });
+  }
+});
+
+// New endpoint: Get all places (for agents only)
+apiRouter.get("/places", async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+    
+    // Verify user is an agent
+    if (userData.userType !== 'agent') {
+      return res.status(403).json({ error: "Only agents can access all places" });
+    }
+    
+    // Get all places with their owners
+    const places = await Place.findAll({
+      include: [{
+        model: User,
+        as: 'owner',
+        attributes: ['id', 'name', 'email']
+      }],
+      order: [['createdAt', 'DESC']]
+    });
+    
+    res.json(places);
+  } catch (error) {
+    console.error("Error fetching places:", error);
+    res.status(422).json({ error: error.message });
+  }
+});
+
+// New endpoint: Get booking statistics (for agents only)
+apiRouter.get("/stats", async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+    
+    // Verify user is an agent
+    if (userData.userType !== 'agent') {
+      return res.status(403).json({ error: "Only agents can access statistics" });
+    }
+    
+    // Count total users by type
+    const userCounts = await User.findAll({
+      attributes: [
+        'userType',
+        [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+      ],
+      group: ['userType']
+    });
+    
+    // Count bookings by status
+    const bookingCounts = await Booking.findAll({
+      attributes: [
+        'status',
+        [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+      ],
+      group: ['status']
+    });
+    
+    // Count total places
+    const totalPlaces = await Place.count();
+    
+    res.json({
+      users: userCounts,
+      bookings: bookingCounts,
+      places: { total: totalPlaces }
+    });
+  } catch (error) {
+    console.error("Error fetching statistics:", error);
     res.status(422).json({ error: error.message });
   }
 });
