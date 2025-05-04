@@ -86,7 +86,9 @@ export default function DashboardPage() {
               </div>
               <div className="bg-gray-50 p-3 rounded">
                 <div className="text-sm text-gray-500">Total</div>
-                <div className="text-2xl font-bold">{Object.values(userStats).reduce((a, b) => a + b, 0)}</div>
+                <div className="text-2xl font-bold">
+                  {Number(userStats.client || 0) + Number(userStats.host || 0) + Number(userStats.agent || 0)}
+                </div>
               </div>
             </div>
           </div>
@@ -109,7 +111,9 @@ export default function DashboardPage() {
               </div>
               <div className="bg-gray-50 p-3 rounded">
                 <div className="text-sm text-gray-500">Total</div>
-                <div className="text-2xl font-bold">{Object.values(bookingStats).reduce((a, b) => a + b, 0)}</div>
+                <div className="text-2xl font-bold">
+                  {Number(bookingStats.pending || 0) + Number(bookingStats.approved || 0) + Number(bookingStats.rejected || 0)}
+                </div>
               </div>
             </div>
           </div>
