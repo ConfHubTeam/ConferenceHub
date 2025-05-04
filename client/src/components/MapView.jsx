@@ -33,6 +33,9 @@ const defaultCenter = {
   lng: 69.2401
 };
 
+// Building icon SVG path for use in markers
+const buildingSvgPath = "M3 2.25a.75.75 0 0 0 0 1.5v16.5h-.75a.75.75 0 0 0 0 1.5H15v-18a.75.75 0 0 0 0-1.5H3ZM6.75 19.5v-2.25a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-.75.75h-3a.75.75 0 0 1-.75-.75ZM6 6.75A.75.75 0 0 1 6.75 6h.75a.75.75 0 0 1 0 1.5h-.75A.75.75 0 0 1 6 6.75ZM6.75 9a.75.75 0 0 0 0 1.5h.75a.75.75 0 0 0 0-1.5h-.75ZM6 12.75a.75.75 0 0 1 .75-.75h.75a.75.75 0 0 1 0 1.5h-.75a.75.75 0 0 1-.75-.75ZM10.5 6.75a.75.75 0 0 1 .75-.75h.75a.75.75 0 0 1 0 1.5h-.75a.75.75 0 0 1-.75-.75Zm.75 2.25a.75.75 0 0 0 0 1.5h.75a.75.75 0 0 0 0-1.5h-.75ZM10.5 12.75a.75.75 0 0 1 .75-.75h.75a.75.75 0 0 1 0 1.5h-.75a.75.75 0 0 1-.75-.75ZM16.5 6.75v15h5.25a.75.75 0 0 0 0-1.5H21v-12a.75.75 0 0 0-.75-.75h-3a.75.75 0 0 0-.75.75Z";
+
 export default function MapView({ places }) {
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
@@ -71,7 +74,17 @@ export default function MapView({ places }) {
         position,
         map,
         title: place.title,
-        placeData: place
+        placeData: place,
+        icon: {
+          path: buildingSvgPath,
+          fillColor: "#ef4444", // Red color
+          fillOpacity: 1,
+          strokeWeight: 0,
+          rotation: 0,
+          scale: 1.2,
+          anchor: new window.google.maps.Point(12, 24),
+          labelOrigin: new window.google.maps.Point(12, 12)
+        }
       });
     }).filter(Boolean); // Filter out any null values
     
@@ -140,7 +153,17 @@ export default function MapView({ places }) {
           position,
           map,
           title: place.title,
-          placeData: place
+          placeData: place,
+          icon: {
+            path: buildingSvgPath,
+            fillColor: "#ef4444", // Red color
+            fillOpacity: 1,
+            strokeWeight: 0,
+            rotation: 0,
+            scale: 1.2,
+            anchor: new window.google.maps.Point(12, 24),
+            labelOrigin: new window.google.maps.Point(12, 12)
+          }
         });
         
         marker.addListener("click", () => {
