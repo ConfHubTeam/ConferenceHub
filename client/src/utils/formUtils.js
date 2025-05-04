@@ -93,3 +93,40 @@ export const addFormFieldIds = (event) => {
     }
   }
 };
+
+/**
+ * A utility function to geocode addresses into coordinates
+ * 
+ * @param {string} address - The address to geocode
+ * @returns {Object|null} - { lat: number, lng: number } or null if geocoding fails
+ */
+export async function geocodeAddress(address) {
+  try {
+    // Use the Google Maps Geocoding API with the provided address
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    
+    if (!apiKey) {
+      console.warn('Google Maps API key is missing. Please check your .env file and ensure VITE_GOOGLE_MAPS_API_KEY is set.');
+      return null;
+    }
+
+    // Encode the address to use in URL
+    const encodedAddress = encodeURIComponent(address);
+    const response = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${apiKey}`
+    );
+    
+    const data = await response.json();
+    
+    if (data.status === 'OK' && data.results.length > 0) {
+      const { lat, lng } = data.results[0].geometry.location;
+      return { lat, lng };
+    } else {
+      console.warn('Geocoding failed for address:', address, 'Status:', data.status);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error geocoding address:', error);
+    return null;
+  }
+}

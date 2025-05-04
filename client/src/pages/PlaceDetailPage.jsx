@@ -6,6 +6,7 @@ import PhotoGallery from "../components/PhotoGallery";
 import BookingCard from "../components/BookingCard";
 import { UserContext } from "../components/UserContext";
 import { useNotification } from "../components/NotificationContext";
+import MapView from "../components/MapView";
 
 export default function PlaceDetailPage() {
   const { placeId, bookingId } = useParams();
@@ -60,6 +61,10 @@ export default function PlaceDetailPage() {
 
   // Check if current user is the owner of this conference room
   const isOwner = user && placeDetail.ownerId === user.id;
+
+  // Prepare place for map view (as an array with just this one place)
+  const mapPlaces = placeDetail.lat && placeDetail.lng ? [placeDetail] : [];
+  const hasCoordinates = placeDetail.lat && placeDetail.lng;
 
   return (
     <div className="mx-3 md:mx-8 lg:mx-14 -mt-4">
@@ -130,6 +135,17 @@ export default function PlaceDetailPage() {
               </div>
               <hr />
             </div>
+            
+            {/* Location Map */}
+            {hasCoordinates && (
+              <div className="mb-5">
+                <h2 className="text-xl md:text-2xl font-semibold mb-2">Location</h2>
+                <div className="h-64 rounded-lg overflow-hidden">
+                  <MapView places={mapPlaces} />
+                </div>
+              </div>
+            )}
+            
             <div className="mb-5 mt-2">
               <h2 className="text-xl md:text-2xl font-semibold my-2">Extra information</h2>
               <p className="leading-6 md:leading-7 text-sm md:text-base">{placeDetail.extraInfo}</p>

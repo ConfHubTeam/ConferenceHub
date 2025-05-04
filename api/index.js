@@ -226,7 +226,8 @@ apiRouter.post("/places", async (req, res) => {
     title, address, photos,
     description, perks, extraInfo, 
     checkIn, checkOut, maxGuests, 
-    price, startDate, endDate, roomType
+    price, startDate, endDate, roomType,
+    lat, lng
   } = req.body;
 
   try {
@@ -272,7 +273,9 @@ apiRouter.post("/places", async (req, res) => {
       price: price ? parseFloat(price) : 0,
       startDate: startDate || null,
       endDate: endDate || null,
-      roomType: roomType || "Conference Room"
+      roomType: roomType || "Conference Room",
+      lat: lat ? parseFloat(lat) : null,
+      lng: lng ? parseFloat(lng) : null
     };
 
     const placeDoc = await Place.create(processedData);
@@ -325,7 +328,7 @@ apiRouter.put("/places", async (req, res) => {
   const {
     id, title, address, photos, description,
     perks, extraInfo, checkIn, checkOut, maxGuests,
-    price, startDate, endDate, roomType
+    price, startDate, endDate, roomType, lat, lng
   } = req.body;
   
   try {
@@ -386,6 +389,8 @@ apiRouter.put("/places", async (req, res) => {
     place.startDate = startDate;
     place.endDate = endDate;
     place.roomType = roomType || "Conference Room";
+    place.lat = lat ? parseFloat(lat) : null;
+    place.lng = lng ? parseFloat(lng) : null;
     
     await place.save();
     res.json("ok");

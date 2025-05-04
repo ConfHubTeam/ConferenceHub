@@ -71,6 +71,21 @@ export default function MapView({ places }) {
     // Only adjust bounds if we have markers
     if (markersRef.current.length > 0) {
       map.fitBounds(bounds);
+      
+      // Add a zoom changed listener to ensure we don't zoom in too close
+      // This helps maintain a city-level view for better context
+      const zoomChangedListener = map.addListener('bounds_changed', () => {
+        // Get current zoom level
+        const zoom = map.getZoom();
+        
+        // If zoom is too close (higher than 13), set it back to city level
+        if (zoom > 13) {
+          map.setZoom(13);
+        }
+        
+        // Only need to run this once after initial bounds fitting
+        window.google.maps.event.removeListener(zoomChangedListener);
+      });
     }
     
     // Create a marker clusterer using SuperClusterAlgorithm instead of GridAlgorithm
@@ -79,7 +94,7 @@ export default function MapView({ places }) {
       markers: markersRef.current,
       algorithm: new SuperClusterAlgorithm({
         radius: 100, // Clustering radius in pixels
-        maxZoom: 15  // Maximum zoom level for clustering
+        maxZoom: 13  // Maximum zoom level for clustering - reduced to keep city context
       })
     });
     
