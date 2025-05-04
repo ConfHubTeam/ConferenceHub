@@ -5,6 +5,13 @@ import { SuperClusterAlgorithm } from "@googlemaps/markerclusterer";
 import { Link } from "react-router-dom";
 import CloudinaryImage from "./CloudinaryImage";
 
+// Custom styles to hide the InfoWindow close button
+const infoWindowStyles = `
+  .gm-ui-hover-effect {
+    display: none !important;
+  }
+`;
+
 // Get Google Maps API key from environment variables with fallback
 // This prevents runtime errors if the env variable is missing
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
@@ -195,12 +202,14 @@ export default function MapView({ places }) {
 
   return (
     <div className="h-full">
+      <style>{infoWindowStyles}</style>
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={defaultCenter}
         zoom={10}
         onLoad={onLoad}
         onUnmount={onUnmount}
+        onClick={() => setSelectedPlace(null)}
         options={{
           fullscreenControl: false,
           mapTypeControl: false,
@@ -215,11 +224,16 @@ export default function MapView({ places }) {
           <InfoWindow
             position={{ lat: parseFloat(selectedPlace.lat), lng: parseFloat(selectedPlace.lng) }}
             onCloseClick={() => setSelectedPlace(null)}
+            options={{
+              maxWidth: 200,
+              pixelOffset: new window.google.maps.Size(0, -30),
+              disableAutoPan: false
+            }}
           >
-            <div className="max-w-xs">
-              <Link to={`/place/${selectedPlace.id}`} className="hover:opacity-90">
+            <div className="w-full" style={{ overflow: 'hidden' }}>
+              <Link to={`/place/${selectedPlace.id}`} className="hover:opacity-90 block">
                 {selectedPlace.photos?.length > 0 && (
-                  <div className="h-32 overflow-hidden rounded-t-lg">
+                  <div className="h-28 w-full overflow-hidden rounded-t-lg">
                     <CloudinaryImage 
                       photo={selectedPlace.photos[0]} 
                       alt={selectedPlace.title}
@@ -227,12 +241,12 @@ export default function MapView({ places }) {
                     />
                   </div>
                 )}
-                <div className="p-3">
-                  <h3 className="font-semibold text-sm">{selectedPlace.title}</h3>
-                  <p className="text-xs text-gray-500 truncate">{selectedPlace.address}</p>
-                  <p className="text-sm font-bold mt-1">
+                <div className="p-2">
+                  <h3 className="font-semibold text-xs mb-1">{selectedPlace.title}</h3>
+                  <p className="text-xs text-gray-500 break-words">{selectedPlace.address}</p>
+                  <p className="text-xs font-bold mt-1">
                     {formatPrice(selectedPlace.price)}
-                    <span className="text-gray-500 font-normal text-xs"> / hour</span>
+                    <span className="text-gray-500 font-normal"> / hour</span>
                   </p>
                 </div>
               </Link>
