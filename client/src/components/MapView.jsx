@@ -270,15 +270,15 @@ export default function MapView({ places }) {
             position={{ lat: parseFloat(selectedPlace.lat), lng: parseFloat(selectedPlace.lng) }}
             onCloseClick={() => setSelectedPlace(null)}
             options={{
-              maxWidth: 200,
+              maxWidth: 250,
               pixelOffset: new window.google.maps.Size(0, -30),
               disableAutoPan: false
             }}
           >
-            <div className="w-full" style={{ overflow: 'hidden' }}>
+            <div className="w-full" style={{ maxWidth: "230px" }}>
               <Link to={`/place/${selectedPlace.id}`} className="hover:opacity-90 block">
                 {selectedPlace.photos?.length > 0 && (
-                  <div className="h-28 w-full overflow-hidden rounded-t-lg">
+                  <div className="h-24 w-full overflow-hidden rounded-t-lg">
                     <CloudinaryImage 
                       photo={selectedPlace.photos[0]} 
                       alt={selectedPlace.title}
@@ -287,8 +287,8 @@ export default function MapView({ places }) {
                   </div>
                 )}
                 <div className="p-2">
-                  <h3 className="font-semibold text-xs mb-1">{selectedPlace.title}</h3>
-                  <p className="text-xs text-gray-500 break-words">{selectedPlace.address}</p>
+                  <h3 className="font-semibold text-xs mb-1 truncate">{selectedPlace.title}</h3>
+                  <p className="text-xs text-gray-500 break-words line-clamp-2">{selectedPlace.address}</p>
                   <p className="text-xs font-bold mt-1">
                     {formatPrice(selectedPlace.price)}
                     <span className="text-gray-500 font-normal"> / hour</span>
