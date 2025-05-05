@@ -53,11 +53,37 @@ export default function MapView({ places }) {
     }).format(price);
   };
 
+  // Function to update marker visibility based on clusters
+  const updateMarkerVisibility = () => {
+    if (!map || !markerClusterer || !markersRef.current.length) return;
+
+    // Get current clusters
+    const clusters = markerClusterer.clusters;
+    
+    // Create a Set to keep track of markers that should be hidden (part of multi-marker clusters)
+    const markersInClusters = new Set();
+    
+    // Identify markers that are in clusters with multiple markers
+    clusters.forEach(cluster => {
+      if (cluster.markers.length > 1) {
+        // If cluster has multiple markers, add them to the hidden set
+        cluster.markers.forEach(marker => {
+          markersInClusters.add(marker);
+        });
+      }
+    });
+    
+    // Update visibility for all markers - only hide those in multi-marker clusters
+    markersRef.current.forEach(marker => {
+      marker.setVisible(!markersInClusters.has(marker));
+    });
+  };
+
   const onLoad = useCallback(function callback(map) {
     // Create new bounds object to fit all markers
     const bounds = new window.google.maps.LatLngBounds();
     
-    // Add markers to the map
+    // Add markers to the map but set them invisible initially
     markersRef.current = places.map(place => {
       // Skip places without proper coordinates
       if (!place.lat || !place.lng) return null;
@@ -72,7 +98,8 @@ export default function MapView({ places }) {
         map,
         title: place.title,
         placeData: place,
-        // Using the default Google Maps red pin marker
+        // Initially set all markers to invisible
+        visible: false,
         animation: window.google.maps.Animation.DROP
       });
     }).filter(Boolean); // Filter out any null values
@@ -82,7 +109,6 @@ export default function MapView({ places }) {
       map.fitBounds(bounds);
       
       // Add a zoom changed listener to ensure we don't zoom in too close
-      // This helps maintain a city-level view for better context
       const zoomChangedListener = map.addListener('bounds_changed', () => {
         // Get current zoom level
         const zoom = map.getZoom();
@@ -97,14 +123,18 @@ export default function MapView({ places }) {
       });
     }
     
-    // Create a marker clusterer using SuperClusterAlgorithm instead of GridAlgorithm
+    // Create a marker clusterer using SuperClusterAlgorithm
     const clusterer = new MarkerClusterer({ 
       map,
       markers: markersRef.current,
       algorithm: new SuperClusterAlgorithm({
         radius: 100, // Clustering radius in pixels
         maxZoom: 13  // Maximum zoom level for clustering - reduced to keep city context
-      })
+      }),
+      onClusterChanged: () => {
+        // Update marker visibility when clusters change
+        updateMarkerVisibility();
+      }
     });
     
     setMarkerClusterer(clusterer);
@@ -116,6 +146,14 @@ export default function MapView({ places }) {
         setSelectedPlace(marker.placeData);
       });
     });
+    
+    // Listen for zoom changes to update marker visibility
+    map.addListener('zoom_changed', () => {
+      updateMarkerVisibility();
+    });
+    
+    // Initial update of marker visibility
+    updateMarkerVisibility();
   }, [places]);
 
   const onUnmount = useCallback(function callback() {
@@ -132,7 +170,7 @@ export default function MapView({ places }) {
       // Clear existing markers
       markerClusterer.clearMarkers();
       
-      // Create new markers
+      // Create new markers with initial visibility set to false
       markersRef.current = places.map(place => {
         if (!place.lat || !place.lng) return null;
         
@@ -143,7 +181,7 @@ export default function MapView({ places }) {
           map,
           title: place.title,
           placeData: place,
-          // Using the default Google Maps red pin marker
+          visible: false, // Initialize as invisible
           animation: window.google.maps.Animation.DROP
         });
         
@@ -156,6 +194,9 @@ export default function MapView({ places }) {
       
       // Update the clusterer with new markers
       markerClusterer.addMarkers(markersRef.current);
+      
+      // Update marker visibility
+      updateMarkerVisibility();
     }
   }, [places, map, markerClusterer]);
 
