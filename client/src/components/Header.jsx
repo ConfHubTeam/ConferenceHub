@@ -6,6 +6,7 @@ export default function Header() {
   const {user} = useContext(UserContext);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [filterExpanded, setFilterExpanded] = useState(false);
+  const [adminLinkVisible, setAdminLinkVisible] = useState(false);
   const navigate = useNavigate();
   const menuRef = useRef(null);
   const menuButtonRef = useRef(null);
@@ -94,6 +95,19 @@ export default function Header() {
     return "";
   };
 
+  // Easter egg for admin login - show admin link when logo is clicked 5 times
+  const handleLogoClick = () => {
+    // Create a counter in sessionStorage
+    const currentCount = parseInt(sessionStorage.getItem('logoClickCount') || '0');
+    const newCount = currentCount + 1;
+    sessionStorage.setItem('logoClickCount', newCount.toString());
+    
+    // Show admin link after 5 clicks
+    if (newCount >= 5) {
+      setAdminLinkVisible(true);
+    }
+  };
+
   // Function to handle search submission
   const handleSearch = (e) => {
     if (e) e.preventDefault();
@@ -177,9 +191,11 @@ export default function Header() {
 
   return (
     <header className="flex justify-between items-center px-4 md:px-14 relative z-50">
-      <Link to={"/"} className="logo flex items-center gap-1 text-primary">
-        <span className="font-bold text-xl">ConferenceHub</span>
-      </Link>
+      <div className="flex flex-col">
+        <Link to={"/"} className="logo flex items-center gap-1 text-primary" onClick={handleLogoClick}>
+          <span className="font-bold text-xl">ConferenceHub</span>
+        </Link>
+      </div>
       
       {/* Empty div for spacing in the center */}
       <div className="hidden md:block flex-grow"></div>

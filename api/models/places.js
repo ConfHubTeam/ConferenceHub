@@ -64,6 +64,22 @@ const Place = sequelize.define('Place', {
     type: DataTypes.DATE,
     allowNull: true
   },
+  lat: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    validate: {
+      min: -90,
+      max: 90
+    }
+  },
+  lng: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    validate: {
+      min: -180,
+      max: 180
+    }
+  },
   ownerId: {
     type: DataTypes.INTEGER,
     allowNull: false,

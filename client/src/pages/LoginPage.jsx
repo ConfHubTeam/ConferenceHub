@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [redirect, setRedirect] = useState(false);
   const [error, setError] = useState("");
+  const [showAdminHint, setShowAdminHint] = useState(false);
 
   const {setUser} = useContext(UserContext);
   const { notify } = useNotification();
@@ -35,12 +36,24 @@ export default function LoginPage() {
     try {
       const {data} = await api.post("/login", {email, password});
       setUser(data); // get the user data
-      notify("Successfully logged in", "success");
+      
+      // Show appropriate notification based on user type
+      if (data.userType === 'agent') {
+        notify("Welcome, Administrator", "success");
+      } else {
+        notify("Successfully logged in", "success");
+      }
+      
       setRedirect(true);
     } catch (e) {
       setError(e.response?.data?.error || "Login failed. Please check your credentials.");
     }
   }
+
+  // Toggle admin hint when the title is clicked
+  const handleTitleClick = () => {
+    setShowAdminHint(prev => !prev);
+  };
 
   if (redirect) {
     return <Navigate to={"/"}/>
@@ -49,8 +62,20 @@ export default function LoginPage() {
   return (
     <div className="px-4 sm:px-6 lg:px-8 pt-10 sm:pt-12 md:pt-14">
       <div className="w-full max-w-sm mx-auto">
-        <h1 className="text-2xl sm:text-3xl font-bold text-center mb-1 sm:mb-2">Login</h1>
-        <p className="text-center text-gray-500 text-xs sm:text-sm mb-3 sm:mb-4">Welcome back!</p>
+        <h1 
+          className="text-2xl sm:text-3xl font-bold text-center mb-1 sm:mb-2 cursor-pointer" 
+          onClick={handleTitleClick}
+        >
+          Login
+        </h1>
+        <p className="text-center text-gray-500 text-xs sm:text-sm mb-3 sm:mb-4">
+          Welcome back!
+          {showAdminHint && (
+            <span className="block text-xs text-gray-400 mt-1">
+              Administrators can also login here
+            </span>
+          )}
+        </p>
         
         <form className="bg-white p-3 sm:p-6 rounded-xl shadow-sm" onSubmit={loginUser}>
           {error && (

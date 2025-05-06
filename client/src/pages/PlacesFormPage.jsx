@@ -4,6 +4,7 @@ import PhotoUploader from "../components/PhotoUploader";
 import { Navigate, useParams } from "react-router-dom";
 import { UserContext } from "../components/UserContext";
 import api from "../utils/api";
+import { geocodeAddress } from "../utils/formUtils";
 
 export default function PlacesFormPage() {
   const { id } = useParams();
@@ -21,6 +22,10 @@ export default function PlacesFormPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [roomType, setRoomType] = useState("Conference Room");
+  const [lat, setLat] = useState("");
+  const [lng, setLng] = useState("");
+  const [isGeocodingAddress, setIsGeocodingAddress] = useState(false);
+  const [geocodingSuccess, setGeocodingSuccess] = useState(null);
   const [redirect, setRedirect] = useState(false);
   const [error, setError] = useState("");
 
@@ -53,9 +58,51 @@ export default function PlacesFormPage() {
         // Format dates properly if they exist
         if (data.startDate) setStartDate(data.startDate.split("T")[0]);
         if (data.endDate) setEndDate(data.endDate.split("T")[0]);
+        // Load coordinates
+        setLat(data.lat || "");
+        setLng(data.lng || "");
       });
     }
   }, [id]); // reactive values referenced inside of the above setup code
+
+  // Geocode address when it changes (with debounce)
+  useEffect(() => {
+    // Skip geocoding if address is empty or too short
+    if (!address || address.length < 5) {
+      setGeocodingSuccess(null);
+      return;
+    }
+
+    // Set a timer to geocode the address after the user stops typing
+    const timer = setTimeout(() => {
+      handleGeocodeAddress();
+    }, 1000); // Wait 1 second after typing stops
+
+    return () => clearTimeout(timer); // Clean up the timer
+  }, [address]);
+
+  // Function to geocode the address
+  async function handleGeocodeAddress() {
+    setIsGeocodingAddress(true);
+    setGeocodingSuccess(null);
+    
+    try {
+      const coordinates = await geocodeAddress(address);
+      
+      if (coordinates) {
+        setLat(coordinates.lat);
+        setLng(coordinates.lng);
+        setGeocodingSuccess(true);
+      } else {
+        setGeocodingSuccess(false);
+      }
+    } catch (error) {
+      console.error("Error geocoding address:", error);
+      setGeocodingSuccess(false);
+    } finally {
+      setIsGeocodingAddress(false);
+    }
+  }
 
   function preInput(header, description) {
     return (
@@ -101,6 +148,19 @@ export default function PlacesFormPage() {
     
     console.log("Photos before saving:", addedPhotos);
     
+    // Try geocoding the address one last time if we don't have coordinates
+    let coordinates = { lat: parseFloat(lat), lng: parseFloat(lng) };
+    if ((!lat || !lng) && address) {
+      try {
+        const result = await geocodeAddress(address);
+        if (result) {
+          coordinates = result;
+        }
+      } catch (error) {
+        console.error("Last attempt geocoding failed:", error);
+      }
+    }
+    
     // No need to format photos extensively - just ensure we send the complete object
     // The backend will handle the proper extraction of URLs
     const placeData = {
@@ -116,7 +176,9 @@ export default function PlacesFormPage() {
       price: numPrice,
       startDate: startDate || null,
       endDate: endDate || null,
-      roomType
+      roomType,
+      lat: coordinates.lat,
+      lng: coordinates.lng
     };
 
     try {
@@ -177,14 +239,49 @@ export default function PlacesFormPage() {
           ))}
         </select>
         
-        {preInput("Address", "address of this conference room. ")}
-        <input
-          type="text"
-          placeholder="address"
-          value={address}
-          onChange={(event) => setAddress(event.target.value)}
-          className="w-full border my-2 py-2 px-3 rounded-2xl"
-        />
+        {preInput("Address", "address of this conference room. We'll automatically get the map coordinates.")}
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="address"
+            value={address}
+            onChange={(event) => setAddress(event.target.value)}
+            className={`w-full border my-2 py-2 px-3 rounded-2xl ${
+              geocodingSuccess === false ? 'border-red-500' : 
+              geocodingSuccess === true ? 'border-green-500' : ''
+            }`}
+          />
+          {isGeocodingAddress && (
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full"></div>
+            </div>
+          )}
+          {geocodingSuccess === true && (
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-500">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            </div>
+          )}
+          {geocodingSuccess === false && (
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-500">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+          )}
+        </div>
+        {geocodingSuccess === false && (
+          <p className="text-red-500 text-sm mb-4">
+            Could not get coordinates for this address. Please make sure it's a valid address.
+          </p>
+        )}
+        {geocodingSuccess === true && (
+          <p className="text-green-500 text-sm mb-4">
+            Map coordinates found successfully! Your location will appear on the map.
+          </p>
+        )}
+        
         {preInput("Photos", "more is better. ")}
         <PhotoUploader
           addedPhotos={addedPhotos}
