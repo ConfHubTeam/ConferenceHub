@@ -211,7 +211,7 @@ apiRouter.post("/places", async (req, res) => {
     description, perks, extraInfo, 
     checkIn, checkOut, maxGuests, 
     price, startDate, endDate,
-    lat, lng
+    youtubeLink, lat, lng
   } = req.body;
 
   try {
@@ -257,6 +257,7 @@ apiRouter.post("/places", async (req, res) => {
       price: price ? parseFloat(price) : 0,
       startDate: startDate || null,
       endDate: endDate || null,
+      youtubeLink: youtubeLink || null, // Add the YouTube link field
       lat: lat ? parseFloat(lat) : null,
       lng: lng ? parseFloat(lng) : null
     };
@@ -311,7 +312,7 @@ apiRouter.put("/places", async (req, res) => {
   const {
     id, title, address, photos, description,
     perks, extraInfo, checkIn, checkOut, maxGuests,
-    price, startDate, endDate, lat, lng
+    price, startDate, endDate, youtubeLink, lat, lng
   } = req.body;
   
   try {
@@ -371,6 +372,7 @@ apiRouter.put("/places", async (req, res) => {
     place.price = price;
     place.startDate = startDate;
     place.endDate = endDate;
+    place.youtubeLink = youtubeLink || null; // Add the YouTube link
     place.lat = lat ? parseFloat(lat) : null;
     place.lng = lng ? parseFloat(lng) : null;
     

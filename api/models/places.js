@@ -59,6 +59,13 @@ const Place = sequelize.define('Place', {
     type: DataTypes.DATE,
     allowNull: true
   },
+  youtubeLink: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    validate: {
+      isUrl: true
+    }
+  },
   lat: {
     type: DataTypes.FLOAT,
     allowNull: true,
