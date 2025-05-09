@@ -21,16 +21,12 @@ export default function PlacesFormPage() {
   const [price, setPrice] = useState(0);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [roomType, setRoomType] = useState("Conference Room");
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [isGeocodingAddress, setIsGeocodingAddress] = useState(false);
   const [geocodingSuccess, setGeocodingSuccess] = useState(null);
   const [redirect, setRedirect] = useState(false);
   const [error, setError] = useState("");
-
-  // Available room types (matching the Header.jsx options)
-  const roomTypes = ['Conference Room', 'Meeting Room', 'Workshop Space', 'Training Room', 'Coworking Space'];
 
   // Redirect if user is not a host
   if (user && user.userType !== 'host') {
@@ -54,7 +50,6 @@ export default function PlacesFormPage() {
         setCheckOut(data.checkOut);
         setPrice(data.price);
         setMaxGuests(data.maxGuests);
-        setRoomType(data.roomType || "Conference Room"); // Load room type with default
         // Format dates properly if they exist
         if (data.startDate) setStartDate(data.startDate.split("T")[0]);
         if (data.endDate) setEndDate(data.endDate.split("T")[0]);
@@ -176,7 +171,6 @@ export default function PlacesFormPage() {
       price: numPrice,
       startDate: startDate || null,
       endDate: endDate || null,
-      roomType,
       lat: coordinates.lat,
       lng: coordinates.lng
     };
@@ -227,17 +221,6 @@ export default function PlacesFormPage() {
           onChange={(event) => setTitle(event.target.value)}
           className="w-full border my-2 py-2 px-3 rounded-2xl"
         />
-        
-        {preInput("Room Type", "select the type of conference space you're offering.")}
-        <select
-          value={roomType}
-          onChange={(event) => setRoomType(event.target.value)}
-          className="w-full border my-2 py-2 px-3 rounded-2xl"
-        >
-          {roomTypes.map(type => (
-            <option key={type} value={type}>{type}</option>
-          ))}
-        </select>
         
         {preInput("Address", "address of this conference room. We'll automatically get the map coordinates.")}
         <div className="relative">

@@ -226,7 +226,7 @@ apiRouter.post("/places", async (req, res) => {
     title, address, photos,
     description, perks, extraInfo, 
     checkIn, checkOut, maxGuests, 
-    price, startDate, endDate, roomType,
+    price, startDate, endDate,
     lat, lng
   } = req.body;
 
@@ -273,7 +273,6 @@ apiRouter.post("/places", async (req, res) => {
       price: price ? parseFloat(price) : 0,
       startDate: startDate || null,
       endDate: endDate || null,
-      roomType: roomType || "Conference Room",
       lat: lat ? parseFloat(lat) : null,
       lng: lng ? parseFloat(lng) : null
     };
@@ -328,7 +327,7 @@ apiRouter.put("/places", async (req, res) => {
   const {
     id, title, address, photos, description,
     perks, extraInfo, checkIn, checkOut, maxGuests,
-    price, startDate, endDate, roomType, lat, lng
+    price, startDate, endDate, lat, lng
   } = req.body;
   
   try {
@@ -388,7 +387,6 @@ apiRouter.put("/places", async (req, res) => {
     place.price = price;
     place.startDate = startDate;
     place.endDate = endDate;
-    place.roomType = roomType || "Conference Room";
     place.lat = lat ? parseFloat(lat) : null;
     place.lng = lng ? parseFloat(lng) : null;
     
@@ -408,7 +406,6 @@ apiRouter.get("/home", async (req, res) => {
       checkIn, 
       checkOut, 
       guests, 
-      type, 
       minPrice, 
       maxPrice, 
       tags 
@@ -445,13 +442,6 @@ apiRouter.get("/home", async (req, res) => {
     if (guests) {
       whereConditions.maxGuests = {
         [Op.gte]: parseInt(guests) // Capacity is at least the requested number of guests
-      };
-    }
-    
-    // Filter by room type
-    if (type) {
-      whereConditions.roomType = {
-        [Op.eq]: type // Exact match on room type
       };
     }
     

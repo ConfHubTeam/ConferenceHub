@@ -51,11 +51,6 @@ const Place = sequelize.define('Place', {
     allowNull: true,
     defaultValue: 0
   },
-  roomType: {
-    type: DataTypes.STRING,
-    allowNull: true,
-    defaultValue: 'Conference Room'
-  },
   startDate: {
     type: DataTypes.DATE,
     allowNull: true

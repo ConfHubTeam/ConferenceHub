@@ -20,13 +20,11 @@ export default function Header() {
   const [checkInDate, setCheckInDate] = useState('');
   const [checkOutDate, setCheckOutDate] = useState('');
   const [guestCount, setGuestCount] = useState('');
-  const [roomType, setRoomType] = useState('');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
   
-  // Room types and tags (matching the IndexPage options)
-  const roomTypes = ['Conference Room', 'Meeting Room', 'Workshop Space', 'Training Room', 'Coworking Space'];
+  // Available tags for filtering
   const availableTags = ['wifi', 'parking', 'projector', 'videoConference', 'whiteboard', 'coffee', 'catering', 'accessibility'];
 
   // Effect to read URL params and set states on initial load
@@ -36,7 +34,6 @@ export default function Header() {
     if (params.has('checkIn')) setCheckInDate(params.get('checkIn'));
     if (params.has('checkOut')) setCheckOutDate(params.get('checkOut'));
     if (params.has('guests')) setGuestCount(params.get('guests'));
-    if (params.has('type')) setRoomType(params.get('type'));
     if (params.has('minPrice')) setMinPrice(params.get('minPrice'));
     if (params.has('maxPrice')) setMaxPrice(params.get('maxPrice'));
     if (params.has('tags')) setSelectedTags(params.get('tags').split(','));
@@ -121,7 +118,6 @@ export default function Header() {
     if (checkInDate) params.append('checkIn', checkInDate);
     if (checkOutDate) params.append('checkOut', checkOutDate);
     if (guestCount) params.append('guests', guestCount);
-    if (roomType) params.append('type', roomType);
     if (minPrice) params.append('minPrice', minPrice);
     if (maxPrice) params.append('maxPrice', maxPrice);
     if (selectedTags.length > 0) params.append('tags', selectedTags.join(','));
@@ -178,7 +174,6 @@ export default function Header() {
     setCheckInDate('');
     setCheckOutDate('');
     setGuestCount('');
-    setRoomType('');
     setMinPrice('');
     setMaxPrice('');
     setSelectedTags([]);
@@ -414,22 +409,6 @@ export default function Header() {
                 onClick={(e) => e.stopPropagation()}
               />
             </div>
-
-            {/* Room type filter */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Room type</label>
-              <select
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 h-10 appearance-none bg-white"
-                value={roomType}
-                onChange={(e) => setRoomType(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <option value="">All types</option>
-                {roomTypes.map(type => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
-            </div>
             
             {/* Date filters */}
             <div>
@@ -531,7 +510,7 @@ export default function Header() {
           
           <div className="flex justify-between items-center">
             {/* Check if any filters are active */}
-            {(searchLocation || checkInDate || checkOutDate || guestCount || roomType || 
+            {(searchLocation || checkInDate || checkOutDate || guestCount || 
               minPrice || maxPrice || selectedTags.length > 0) && (
               <button 
                 type="button"
