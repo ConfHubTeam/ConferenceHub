@@ -171,22 +171,6 @@ apiRouter.post("/logout", (req, res) => {
   res.cookie("token", "").json(true);
 });
 
-apiRouter.post("/upload-by-link", async (req, res) => {
-  const { link } = req.body;
-  try {
-    // Upload directly to cloudinary using the external URL
-    const result = await cloudinary.uploader.upload(link, {
-      folder: 'conferencehub',
-    });
-    
-    // Return the secure URL and public ID for storage in the database
-    res.json({ url: result.secure_url, publicId: result.public_id });
-  } catch (error) {
-    console.error('Error uploading image by link:', error);
-    res.status(500).json({ error: 'Failed to upload image' });
-  }
-});
-
 // Modified upload function for Cloudinary
 const photoMiddleware = multer({ storage: multer.memoryStorage() });
 apiRouter.post("/upload", photoMiddleware.array("photos", 100), async (req, res) => {
