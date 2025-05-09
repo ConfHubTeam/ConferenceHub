@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from "@react-google-maps/api";
-import { MarkerClusterer } from "@googlemaps/markerclusterer";
-import { SuperClusterAlgorithm } from "@googlemaps/markerclusterer";
 import { Link } from "react-router-dom";
 import CloudinaryImage from "./CloudinaryImage";
 
@@ -41,7 +39,6 @@ export default function MapView({ places }) {
 
   const [map, setMap] = useState(null);
   const [selectedPlace, setSelectedPlace] = useState(null);
-  const [markerClusterer, setMarkerClusterer] = useState(null);
   const markersRef = useRef([]);
 
   // Format price for display
@@ -52,30 +49,145 @@ export default function MapView({ places }) {
       minimumFractionDigits: 0
     }).format(price);
   };
+  
+  // Create a custom price marker icon
+  const createPriceMarkerIcon = (price, size = 'medium') => {
+    const formattedPrice = formatPrice(price);
+    
+    // Create a canvas element to draw the custom marker with higher DPI
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    
+    // Device pixel ratio for high DPI screens
+    const dpr = window.devicePixelRatio || 1;
+    
+    // Size configurations based on the requested size
+    let baseWidth, baseHeight, fontSize, borderRadius;
+    
+    switch (size) {
+      case 'small':
+        baseWidth = 50; // Reduced from 70
+        baseHeight = 28; // Reduced from 40
+        fontSize = 11; // Reduced from 13
+        borderRadius = 5; // Reduced from 6
+        break;
+      case 'large':
+        baseWidth = 70; // Reduced from 95
+        baseHeight = 40; // Reduced from 52
+        fontSize = 15; // Reduced from 18
+        borderRadius = 8; // Reduced from 10
+        break;
+      case 'medium':
+      default:
+        baseWidth = 60; // Reduced from 80
+        baseHeight = 35; // Reduced from 46
+        fontSize = 13; // Reduced from 15
+        borderRadius = 6; // Reduced from 8
+    }
+    
+    // Set canvas dimensions accounting for device pixel ratio
+    canvas.width = baseWidth * dpr;
+    canvas.height = baseHeight * dpr;
+    
+    // Scale all drawing operations by the device pixel ratio
+    context.scale(dpr, dpr);
+    
+    // Set canvas CSS dimensions to maintain visual size
+    canvas.style.width = `${baseWidth}px`;
+    canvas.style.height = `${baseHeight}px`;
+    
+    // Apply anti-aliasing
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = 'high';
+    
+    // Draw hexagon shape
+    const hexHeight = baseHeight * 0.72;
+    const hexWidth = baseWidth * 0.9;
+    const startX = (baseWidth - hexWidth) / 2;
+    const startY = 0;
+    const pointHeight = baseHeight - hexHeight;
+    
+    // Add shadow
+    context.shadowColor = 'rgba(0, 0, 0, 0.3)';
+    context.shadowBlur = 4;
+    context.shadowOffsetX = 0;
+    context.shadowOffsetY = 2;
+    
+    // Create hexagon path
+    context.beginPath();
+    // Top left corner
+    context.moveTo(startX + borderRadius, startY);
+    // Top side
+    context.lineTo(startX + hexWidth - borderRadius, startY);
+    // Top right corner
+    context.arcTo(startX + hexWidth, startY, startX + hexWidth, startY + borderRadius, borderRadius);
+    // Right side
+    context.lineTo(startX + hexWidth, startY + hexHeight - borderRadius);
+    // Bottom right corner
+    context.arcTo(startX + hexWidth, startY + hexHeight, startX + hexWidth - borderRadius, startY + hexHeight, borderRadius);
+    // Bottom side to pointer start
+    context.lineTo(startX + (hexWidth * 0.55), startY + hexHeight);
+    // Pointer
+    context.lineTo(baseWidth / 2, baseHeight);
+    context.lineTo(startX + (hexWidth * 0.45), startY + hexHeight);
+    // Bottom side from pointer end
+    context.lineTo(startX + borderRadius, startY + hexHeight);
+    // Bottom left corner
+    context.arcTo(startX, startY + hexHeight, startX, startY + hexHeight - borderRadius, borderRadius);
+    // Left side
+    context.lineTo(startX, startY + borderRadius);
+    // Top left corner
+    context.arcTo(startX, startY, startX + borderRadius, startY, borderRadius);
+    
+    // Fill with gradient
+    const gradient = context.createLinearGradient(0, 0, 0, hexHeight);
+    gradient.addColorStop(0, '#ff385c');
+    gradient.addColorStop(1, '#e31c5f');
+    context.fillStyle = gradient;
+    context.fill();
+    
+    // Reset shadow for text
+    context.shadowColor = 'transparent';
+    
+    // Add price text
+    context.fillStyle = 'white';
+    context.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`;
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText(formattedPrice, baseWidth / 2, hexHeight / 2);
+    
+    // Convert canvas to image URL with maximum quality
+    return canvas.toDataURL('image/png', 1.0);
+  };
 
-  // Function to update marker visibility based on clusters
-  const updateMarkerVisibility = () => {
-    if (!map || !markerClusterer || !markersRef.current.length) return;
-
-    // Get current clusters
-    const clusters = markerClusterer.clusters;
+  // Update marker icons based on zoom level
+  const updateMarkerSizes = (zoomLevel) => {
+    if (!markersRef.current.length) return;
     
-    // Create a Set to keep track of markers that should be hidden (part of multi-marker clusters)
-    const markersInClusters = new Set();
+    // Determine size based on zoom level
+    let size;
+    if (zoomLevel <= 10) {
+      size = 'small';
+    } else if (zoomLevel >= 14) {
+      size = 'large';
+    } else {
+      size = 'medium';
+    }
     
-    // Identify markers that are in clusters with multiple markers
-    clusters.forEach(cluster => {
-      if (cluster.markers.length > 1) {
-        // If cluster has multiple markers, add them to the hidden set
-        cluster.markers.forEach(marker => {
-          markersInClusters.add(marker);
-        });
-      }
-    });
-    
-    // Update visibility for all markers - only hide those in multi-marker clusters
+    // Update each marker's icon
     markersRef.current.forEach(marker => {
-      marker.setVisible(!markersInClusters.has(marker));
+      const place = marker.placeData;
+      marker.setIcon({
+        url: createPriceMarkerIcon(place.price, size),
+        anchor: new window.google.maps.Point(
+          size === 'small' ? 25 : size === 'large' ? 35 : 30, 
+          size === 'small' ? 28 : size === 'large' ? 40 : 35
+        ),
+        scaledSize: new window.google.maps.Size(
+          size === 'small' ? 50 : size === 'large' ? 70 : 60,
+          size === 'small' ? 28 : size === 'large' ? 40 : 35
+        )
+      });
     });
   };
 
@@ -83,7 +195,7 @@ export default function MapView({ places }) {
     // Create new bounds object to fit all markers
     const bounds = new window.google.maps.LatLngBounds();
     
-    // Add markers to the map but set them invisible initially
+    // Add markers to the map
     markersRef.current = places.map(place => {
       // Skip places without proper coordinates
       if (!place.lat || !place.lng) return null;
@@ -93,15 +205,35 @@ export default function MapView({ places }) {
       // Extend bounds to include this marker
       bounds.extend(position);
       
-      return new window.google.maps.Marker({
+      // Create custom marker with price label
+      const marker = new window.google.maps.Marker({
         position,
         map,
         title: place.title,
         placeData: place,
-        // Initially set all markers to invisible
-        visible: false,
+        // Create a custom icon with price, sized based on initial zoom
+        icon: {
+          url: createPriceMarkerIcon(place.price, map.getZoom() <= 10 ? 'small' : map.getZoom() >= 14 ? 'large' : 'medium'),
+          // Position the anchor at the bottom tip of the pointer
+          anchor: new window.google.maps.Point(
+            map.getZoom() <= 10 ? 25 : map.getZoom() >= 14 ? 35 : 30, 
+            map.getZoom() <= 10 ? 28 : map.getZoom() >= 14 ? 40 : 35
+          ),
+          // Set size to match the canvas dimensions
+          scaledSize: new window.google.maps.Size(
+            map.getZoom() <= 10 ? 50 : map.getZoom() >= 14 ? 70 : 60,
+            map.getZoom() <= 10 ? 28 : map.getZoom() >= 14 ? 40 : 35
+          )
+        },
         animation: window.google.maps.Animation.DROP
       });
+      
+      // Add click event to marker
+      marker.addListener("click", () => {
+        setSelectedPlace(marker.placeData);
+      });
+      
+      return marker;
     }).filter(Boolean); // Filter out any null values
     
     // Only adjust bounds if we have markers
@@ -118,70 +250,67 @@ export default function MapView({ places }) {
           map.setZoom(13);
         }
         
+        // Update marker sizes based on zoom level
+        updateMarkerSizes(zoom);
+        
         // Only need to run this once after initial bounds fitting
         window.google.maps.event.removeListener(zoomChangedListener);
       });
     }
     
-    // Create a marker clusterer using SuperClusterAlgorithm
-    const clusterer = new MarkerClusterer({ 
-      map,
-      markers: markersRef.current,
-      algorithm: new SuperClusterAlgorithm({
-        radius: 100, // Clustering radius in pixels
-        maxZoom: 13  // Maximum zoom level for clustering - reduced to keep city context
-      }),
-      onClusterChanged: () => {
-        // Update marker visibility when clusters change
-        updateMarkerVisibility();
-      }
-    });
-    
-    setMarkerClusterer(clusterer);
     setMap(map);
-    
-    // Set up marker click events
-    markersRef.current.forEach(marker => {
-      marker.addListener("click", () => {
-        setSelectedPlace(marker.placeData);
-      });
-    });
-    
-    // Listen for zoom changes to update marker visibility
-    map.addListener('zoom_changed', () => {
-      updateMarkerVisibility();
-    });
-    
-    // Initial update of marker visibility
-    updateMarkerVisibility();
   }, [places]);
 
   const onUnmount = useCallback(function callback() {
-    // Cleanup
-    if (markerClusterer) {
-      markerClusterer.clearMarkers();
+    // Cleanup markers
+    if (markersRef.current.length > 0) {
+      markersRef.current.forEach(marker => {
+        marker.setMap(null);
+      });
+      markersRef.current = [];
     }
     setMap(null);
-  }, [markerClusterer]);
+  }, []);
 
   // Update markers when places change
   useEffect(() => {
-    if (map && markerClusterer) {
+    if (map) {
       // Clear existing markers
-      markerClusterer.clearMarkers();
+      markersRef.current.forEach(marker => {
+        marker.setMap(null);
+      });
       
-      // Create new markers with initial visibility set to false
+      // Create new bounds object
+      const bounds = new window.google.maps.LatLngBounds();
+      
+      // Create new markers
       markersRef.current = places.map(place => {
         if (!place.lat || !place.lng) return null;
         
         const position = { lat: parseFloat(place.lat), lng: parseFloat(place.lng) };
+        
+        // Extend bounds to include this marker
+        bounds.extend(position);
         
         const marker = new window.google.maps.Marker({
           position,
           map,
           title: place.title,
           placeData: place,
-          visible: false, // Initialize as invisible
+          // Create a custom icon with price, sized based on initial zoom
+          icon: {
+            url: createPriceMarkerIcon(place.price, map.getZoom() <= 10 ? 'small' : map.getZoom() >= 14 ? 'large' : 'medium'),
+            // Position the anchor at the bottom tip of the pointer
+            anchor: new window.google.maps.Point(
+              map.getZoom() <= 10 ? 25 : map.getZoom() >= 14 ? 35 : 30, 
+              map.getZoom() <= 10 ? 28 : map.getZoom() >= 14 ? 40 : 35
+            ),
+            // Set size to match the canvas dimensions
+            scaledSize: new window.google.maps.Size(
+              map.getZoom() <= 10 ? 50 : map.getZoom() >= 14 ? 70 : 60,
+              map.getZoom() <= 10 ? 28 : map.getZoom() >= 14 ? 40 : 35
+            )
+          },
           animation: window.google.maps.Animation.DROP
         });
         
@@ -192,13 +321,30 @@ export default function MapView({ places }) {
         return marker;
       }).filter(Boolean);
       
-      // Update the clusterer with new markers
-      markerClusterer.addMarkers(markersRef.current);
-      
-      // Update marker visibility
-      updateMarkerVisibility();
+      // Fit map to bounds if we have markers
+      if (markersRef.current.length > 0) {
+        map.fitBounds(bounds);
+      }
     }
-  }, [places, map, markerClusterer]);
+  }, [places, map]);
+
+  // Listen for zoom changes to update marker sizes
+  useEffect(() => {
+    if (!map) return;
+    
+    // Add listener for zoom changes
+    const zoomListener = map.addListener('zoom_changed', () => {
+      const zoom = map.getZoom();
+      updateMarkerSizes(zoom);
+    });
+    
+    // Cleanup listener on unmount
+    return () => {
+      if (zoomListener) {
+        window.google.maps.event.removeListener(zoomListener);
+      }
+    };
+  }, [map]);
 
   // Error state handling
   if (loadError) {
