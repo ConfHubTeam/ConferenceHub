@@ -45,6 +45,7 @@ This document outlines the complete step-by-step booking flow with Octo payment 
 
 3. **Booking Approval**:
    - Client receives notification when host approves/rejects booking
+   - Booking remains in "Pending" status until approved
    - If approved, proceeds to payment
 
 4. **Payment Process**:
@@ -70,95 +71,305 @@ sequenceDiagram
     participant Bank
     participant Host
 
-    Client->>Platform: 1. Submit payment request
-    Platform->>Octo: 2. Initialize payment
-    Octo->>PaymentGateway: 3. Redirect to payment page
-    PaymentGateway->>Bank: 4. Process payment
-    Bank->>Octo: 5. Payment confirmation
-    Octo->>Platform: 6. Payment status
-    Platform->>Host: 7. Update booking status
-    Platform->>Client: 8. Booking confirmation
-    Bank->>Host: 9. Transfer funds
+    Client->>Platform: 1. Submit booking request
+    Platform->>Host: 2. Notify of pending booking
+    Host->>Platform: 3. Approve booking
+    Platform->>Client: 4. Notify booking approval
+    Client->>Platform: 5. Submit payment request
+    Platform->>Octo: 6. Initialize two-stage payment
+    Octo->>PaymentGateway: 7. Redirect to payment page
+    PaymentGateway->>Bank: 8. Process payment (hold funds)
+    Bank->>Octo: 9. Payment hold confirmation
+    Octo->>Platform: 10. Payment hold status
+    Platform->>Octo: 11. Capture payment with split
+    Octo->>Platform: 12. Confirm split payment 
+    Platform->>Host: 13. Update booking status
+    Platform->>Client: 14. Booking confirmation
+    Octo->>Host: 15. Transfer host's portion
+    Octo->>Platform: 16. Transfer platform fee
 ```
 
-## Payment Integration Architecture
+## Octo API Implementation Details
 
-### New Database Models
+### Two-Stage Payment Implementation
 
-1. **PaymentSettings**
-   - Stores host payment preferences and account details
-   - Links to User model
+To implement the booking flow where payments only occur after host approval, we'll use Octo's two-stage payment process as documented:
 
-2. **Payment**
-   - Tracks all payment transactions
-   - Links to Booking model
-   - Stores Octo payment references and status
+1. **Booking Request Stage**:
+   - When a client submits a booking request, it enters a "Pending" status
+   - No payment is processed at this stage
+   - Host receives notification to review and approve/reject
 
-### New API Endpoints
+2. **Host Approval Stage**:
+   - Host reviews and approves/rejects the booking request
+   - If rejected, client is notified and no payment occurs
+   - If approved, client receives notification to proceed with payment
 
-1. `/payment-settings` - GET/PUT
-   - For hosts to manage payment settings
+3. **Payment Initiation Stage**:
+   - Client clicks "Pay Now" on approved booking
+   - Platform calls Octo API's `prepare_payment` method with `auto_capture = false`
+   - This initializes a two-stage payment that holds funds without capturing immediately
+   - Client is redirected to Octo payment page to complete payment
 
-2. `/payments/initialize/:bookingId` - POST
-   - Initializes a payment for an approved booking
+4. **Payment Hold Confirmation Stage**:
+   - After successful payment, Octo holds the funds but doesn't capture them yet
+   - Octo sends a callback to the platform to confirm the amount via the registered callback URL
+   - The platform must respond to this callback to confirm the amount to be captured
+   - According to the documentation, Octo will continue sending callbacks until a proper response is received
 
-3. `/payments/:paymentId/status` - GET
-   - Checks payment status
+5. **Payment Capture Stage**:
+   - Platform calls Octo's `set_accept` method with `accept_status = "capture"` to finalize the transaction
+   - We must include `final_amount` parameter that matches the amount to be captured
+   - This must be done within 30 minutes, or the transaction will be automatically canceled
 
-4. `/payments/webhook` - POST
-   - Receives Octo payment callbacks
+### Payment Distribution Implementation
 
-5. `/payments/:paymentId/refund` - POST
-   - Processes refunds for completed payments
+To distribute payments between the platform (agent fee) and host, we need to implement the payment distribution at the application level since the Octo documentation doesn't explicitly mention a built-in split payment feature:
 
-### New Components
+1. **Processing the Full Payment**:
+   - The platform captures the full payment amount from the client
+   - This is done through the `set_accept` method with the full booking amount
 
-1. **PaymentSettingsPage**
-   - UI for hosts to configure payment settings
+2. **Distributing the Payment**:
+   - After the payment is successfully captured, the platform must handle the distribution:
+     - Record the platform fee portion in the database
+     - Record the host's portion in the database
+     - Implement a scheduled job or immediate transfer to send the host's portion to their account
+   - This may involve using Octo's payout API or a manual process depending on Octo's capabilities
 
-2. **PaymentButton**
-   - Added to BookingCard for approved bookings
+3. **API Implementation Code Example**:
 
-3. **PaymentResultPage**
-   - Handles successful/failed payment redirects
+```javascript
+// Step 1: Initialize two-stage payment when booking is approved
+const initializePayment = async (bookingId) => {
+  try {
+    const booking = await Booking.findById(bookingId).populate('place host');
+    
+    // Calculate amounts
+    const totalAmount = booking.price * booking.numberOfNights;
+    const platformFee = totalAmount * 0.10; // 10% platform fee
+    const hostAmount = totalAmount - platformFee;
+    
+    // Call Octo API to prepare payment with auto_capture = false for two-stage payment
+    const paymentData = {
+      amount: totalAmount,
+      auto_capture: false, // Enables two-stage payment as per Octo docs
+      shop_transaction_id: booking._id.toString(), // Use booking ID as merchant transaction ID
+      description: `Booking #${booking._id} for ${booking.place.title}`,
+      return_url: `${process.env.APP_URL}/payment/success/${booking._id}`,
+      cancel_url: `${process.env.APP_URL}/payment/cancel/${booking._id}`,
+      callback_url: `${process.env.APP_URL}/api/payments/callback`, // URL to receive Octo callbacks
+      metadata: {
+        bookingId: booking._id.toString(),
+        hostId: booking.host._id.toString(),
+        placeId: booking.place._id.toString(),
+        platformFee,
+        hostAmount
+      }
+    };
+    
+    const response = await axios.post(
+      `${process.env.OCTO_API_URL}/prepare_payment`,
+      paymentData,
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.OCTO_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    
+    // Store payment reference in our database
+    await Payment.create({
+      booking: booking._id,
+      transactionId: response.data.data.octo_payment_UUID, // Use Octo's payment UUID
+      shopTransactionId: booking._id.toString(),
+      amount: totalAmount,
+      status: 'pending',
+      platformFee,
+      hostAmount,
+      octoPayUrl: response.data.data.octo_pay_url
+    });
+    
+    // Return payment URL to redirect client
+    return response.data.data.octo_pay_url;
+  } catch (error) {
+    console.error('Payment initialization failed:', error);
+    throw new Error('Failed to initialize payment');
+  }
+};
 
-## Fee Structure
+// Step 2: Handle Octo callback for payment confirmation
+const handleOctoCallback = async (req, res) => {
+  try {
+    const { octo_secret, octo_payment_UUID, accept_status, final_amount } = req.body;
+    
+    // Verify the callback is legitimate using octo_secret
+    if (octo_secret !== process.env.OCTO_SECRET) {
+      console.error('Invalid Octo secret in callback');
+      return res.status(403).json({ error: 'Invalid secret' });
+    }
+    
+    // Find the payment in our database
+    const payment = await Payment.findOne({ transactionId: octo_payment_UUID });
+    
+    if (!payment) {
+      console.error(`Payment not found for transaction ID: ${octo_payment_UUID}`);
+      return res.status(404).json({ error: 'Payment not found' });
+    }
+    
+    // Update payment status based on callback
+    if (accept_status === 'capture') {
+      // Respond to confirm the amount to be captured
+      payment.status = 'waiting_for_capture';
+      await payment.save();
+      
+      // Return the confirmation response
+      return res.json({
+        accept_status: 'capture',
+        final_amount: payment.amount
+      });
+    } else {
+      // Handle cancellation or other statuses
+      payment.status = 'cancelled';
+      await payment.save();
+      
+      // Update booking status
+      const booking = await Booking.findById(payment.booking);
+      booking.status = 'cancelled';
+      await booking.save();
+      
+      return res.json({
+        accept_status: 'cancel'
+      });
+    }
+  } catch (error) {
+    console.error('Error handling Octo callback:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
-The payment model includes:
+// Step 3: Capture payment after successful hold and callback confirmation
+const capturePayment = async (transactionId) => {
+  try {
+    const payment = await Payment.findOne({ transactionId }).populate({
+      path: 'booking',
+      populate: { path: 'host' }
+    });
+    
+    if (!payment) {
+      throw new Error('Payment not found');
+    }
+    
+    if (payment.status !== 'waiting_for_capture') {
+      throw new Error('Payment is not in waiting_for_capture status');
+    }
+    
+    // Call Octo API to capture payment
+    const captureData = {
+      transaction_id: transactionId,
+      accept_status: 'capture',
+      final_amount: payment.amount
+    };
+    
+    const response = await axios.post(
+      `${process.env.OCTO_API_URL}/set_accept`,
+      captureData,
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.OCTO_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    
+    // Update payment status in our database
+    payment.status = 'completed';
+    payment.capturedAt = new Date();
+    await payment.save();
+    
+    // Update booking status
+    const booking = payment.booking;
+    booking.status = 'confirmed';
+    await booking.save();
+    
+    // Handle platform fee and host payment distribution
+    await processPaymentDistribution(payment);
+    
+    return { success: true, booking, payment };
+  } catch (error) {
+    console.error('Payment capture failed:', error);
+    throw new Error('Failed to capture payment');
+  }
+};
 
-1. **Platform Fee**: 10% of booking amount (configurable)
-   - Retained by platform
+// Step 4: Distribute payment between platform and host
+const processPaymentDistribution = async (payment) => {
+  try {
+    // Record the distribution in the database
+    await PaymentDistribution.create({
+      payment: payment._id,
+      platformAmount: payment.platformFee,
+      hostAmount: payment.hostAmount,
+      status: 'pending'
+    });
+    
+    // In a real implementation, this would initiate transfers to host's account
+    // This might be done through:
+    // 1. A separate Octo API call for payout to host
+    // 2. A manual bank transfer process
+    // 3. An internal ledger system that gets settled periodically
+    
+    // For now, we'll just mark the distribution as completed
+    // In a production system, this would be updated when actual transfers complete
+    await PaymentDistribution.findOneAndUpdate(
+      { payment: payment._id },
+      { status: 'completed', processedAt: new Date() }
+    );
+    
+    // Notify the host about the payment
+    // sendPaymentNotification(payment.booking.host._id, payment);
+    
+    return true;
+  } catch (error) {
+    console.error('Payment distribution failed:', error);
+    throw new Error('Failed to distribute payment');
+  }
+};
+```
 
-2. **Payment Processing Fee**: Charged by Octo
-   - Deducted from host payment or paid by platform
-   - Varies based on payment method and agreement
+### Callback Handling
 
-3. **Host Payment**: Booking amount minus platform fee and processing fees
+According to the Octo documentation, a callback will be sent from their system until they receive a confirmation response. Our implementation must:
 
-## Security Considerations
+1. Set up a secure endpoint to receive these callbacks
+2. Verify the `octo_secret` from the callback to ensure it's legitimate
+3. Respond with the confirmation structure specified in the documentation:
+   ```json
+   { "accept_status": "capture", "final_amount": 1000.00 }
+   ```
 
-1. Store Octo API keys as environment variables
-2. Implement HTTPS for all communication
-3. Validate all webhook requests
-4. Store payment details securely
-5. Implement proper access controls
+The documentation states that if a transaction amount is not confirmed within 30 minutes, it will be automatically canceled. Our implementation must ensure that we handle the callbacks promptly and initiate the `set_accept` call within this timeframe.
 
-## Conclusion
+### Transaction Status Tracking
 
-This Octo payment integration provides a comprehensive solution for the ConferenceHub platform, enabling:
+We need to implement proper status tracking for both bookings and payments:
 
-1. Secure payment processing between clients and hosts
-2. Automated fee collection for the platform
-3. Flexible payment options for clients
-4. Streamlined financial management for hosts
+1. Booking Statuses:
+   - `pending`: Initial status when client requests a booking
+   - `approved`: Status after host approves the booking
+   - `rejected`: Status if host rejects the booking
+   - `payment_pending`: Status when client initiates payment
+   - `payment_processing`: Status during payment processing
+   - `confirmed`: Status after successful payment
+   - `cancelled`: Status if payment is cancelled or failed
 
-The implementation follows a two-step booking model where hosts first approve requests, after which clients make payments. This approach ensures hosts have control over their schedule while providing a secure and trustworthy payment experience for clients.
+2. Payment Statuses:
+   - `pending`: Initial status when payment is created
+   - `processing`: Status during payment processing
+   - `waiting_for_capture`: Status after Octo confirms the hold
+   - `completed`: Status after successful capture
+   - `failed`: Status if payment fails
+   - `cancelled`: Status if payment is cancelled
 
-This payment flow enhances the overall platform experience by:
-
-1. Reducing no-shows through pre-payment
-2. Building trust with secure payment processing
-3. Automating financial workflows
-4. Providing clear payment status tracking
-
-For implementation, the platform should register as an Octo merchant to obtain API credentials and establish the commercial relationship. Octo's documentation should be consulted for the most current API endpoints, parameters, and fee structures.
+By implementing these statuses, we can accurately track the state of each booking and payment throughout the process.
