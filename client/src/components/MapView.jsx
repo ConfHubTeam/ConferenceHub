@@ -231,6 +231,12 @@ export default function MapView({ places }) {
       // Add click event to marker
       marker.addListener("click", () => {
         setSelectedPlace(marker.placeData);
+        
+        // Zoom in closer when marker is clicked for better user experience
+        const currentZoom = map.getZoom();
+        const targetZoom = Math.min(16, currentZoom + 2); // Zoom in by 2 levels, up to max of 16
+        map.setZoom(targetZoom);
+        map.panTo(marker.getPosition()); // Center map on the clicked marker
       });
       
       return marker;
@@ -316,6 +322,12 @@ export default function MapView({ places }) {
         
         marker.addListener("click", () => {
           setSelectedPlace(marker.placeData);
+          
+          // Zoom in closer when marker is clicked for better user experience
+          const currentZoom = map.getZoom();
+          const targetZoom = Math.min(16, currentZoom + 2); // Zoom in by 2 levels, up to max of 16
+          map.setZoom(targetZoom);
+          map.panTo(marker.getPosition()); // Center map on the clicked marker
         });
         
         return marker;
