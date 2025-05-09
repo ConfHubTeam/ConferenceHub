@@ -5,6 +5,7 @@ import { Navigate, useParams } from "react-router-dom";
 import { UserContext } from "../components/UserContext";
 import api from "../utils/api";
 import { geocodeAddress } from "../utils/formUtils";
+import MapPicker from "../components/MapPicker";
 
 export default function PlacesFormPage() {
   const { id } = useParams();
@@ -25,6 +26,7 @@ export default function PlacesFormPage() {
   const [lng, setLng] = useState("");
   const [isGeocodingAddress, setIsGeocodingAddress] = useState(false);
   const [geocodingSuccess, setGeocodingSuccess] = useState(null);
+  const [showMap, setShowMap] = useState(false);
   const [redirect, setRedirect] = useState(false);
   const [error, setError] = useState("");
 
@@ -56,6 +58,10 @@ export default function PlacesFormPage() {
         // Load coordinates
         setLat(data.lat || "");
         setLng(data.lng || "");
+        // Show map if coordinates exist
+        if (data.lat && data.lng) {
+          setShowMap(true);
+        }
       });
     }
   }, [id]); // reactive values referenced inside of the above setup code
@@ -88,6 +94,7 @@ export default function PlacesFormPage() {
         setLat(coordinates.lat);
         setLng(coordinates.lng);
         setGeocodingSuccess(true);
+        setShowMap(true);
       } else {
         setGeocodingSuccess(false);
       }
@@ -96,6 +103,22 @@ export default function PlacesFormPage() {
       setGeocodingSuccess(false);
     } finally {
       setIsGeocodingAddress(false);
+    }
+  }
+
+  // Handle map location selection
+  function handleLocationSelect(location) {
+    if (location && (lat !== location.lat || lng !== location.lng)) {
+      setLat(location.lat);
+      setLng(location.lng);
+    }
+  }
+
+  // Handle address update from map
+  function handleAddressUpdate(newAddress) {
+    if (newAddress && newAddress !== address) {
+      setAddress(newAddress);
+      setGeocodingSuccess(true);
     }
   }
 
@@ -222,7 +245,7 @@ export default function PlacesFormPage() {
           className="w-full border my-2 py-2 px-3 rounded-2xl"
         />
         
-        {preInput("Address", "address of this conference room. We'll automatically get the map coordinates.")}
+        {preInput("Address", "address of this conference room. You can enter it manually or pin on the map.")}
         <div className="relative">
           <input
             type="text"
@@ -254,15 +277,35 @@ export default function PlacesFormPage() {
             </div>
           )}
         </div>
-        {geocodingSuccess === false && (
-          <p className="text-red-500 text-sm mb-4">
-            Could not get coordinates for this address. Please make sure it's a valid address.
-          </p>
-        )}
-        {geocodingSuccess === true && (
-          <p className="text-green-500 text-sm mb-4">
-            Map coordinates found successfully! Your location will appear on the map.
-          </p>
+        
+        <div className="flex gap-2 items-center mt-1 mb-4">
+          <button 
+            type="button" 
+            onClick={() => setShowMap(!showMap)}
+            className="bg-primary text-white px-3 py-1 rounded-md text-sm"
+          >
+            {showMap ? 'Hide Map' : 'Show Map'}
+          </button>
+          {geocodingSuccess === false && (
+            <p className="text-red-500 text-sm">
+              Could not get coordinates for this address. Try pinning the location on the map.
+            </p>
+          )}
+          {geocodingSuccess === true && (
+            <p className="text-green-500 text-sm">
+              Map coordinates found! Your location will appear on the map.
+            </p>
+          )}
+        </div>
+        
+        {showMap && (
+          <div className="mb-4">
+            <MapPicker 
+              initialCoordinates={lat && lng ? { lat, lng } : null}
+              onLocationSelect={handleLocationSelect}
+              onAddressUpdate={handleAddressUpdate}
+            />
+          </div>
         )}
         
         {preInput("Photos", "more is better. ")}
