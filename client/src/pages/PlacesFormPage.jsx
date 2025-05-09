@@ -5,6 +5,30 @@ import { Navigate, useParams } from "react-router-dom";
 import { UserContext } from "../components/UserContext";
 import api from "../utils/api";
 import { geocodeAddress } from "../utils/formUtils";
+import MapPicker from "../components/MapPicker";
+
+// Helper function to validate and convert YouTube URL to embed format
+function extractYouTubeVideoId(url) {
+  if (!url || url.trim() === "") return "";
+  
+  // Regular expression patterns for different YouTube URL formats
+  const patterns = [
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/i,     // Regular URL format: youtube.com/watch?v=ID
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^/?]+)/i,       // Embed URL format: youtube.com/embed/ID
+    /(?:https?:\/\/)?(?:www\.)?youtu\.be\/([^/?]+)/i,                 // Shortened URL format: youtu.be/ID
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([^/?]+)/i       // Shorts URL format: youtube.com/shorts/ID
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      // Return the URL in embed format
+      return `https://www.youtube.com/embed/${match[1]}`;
+    }
+  }
+
+  return "";  // Return empty string if invalid YouTube URL
+}
 
 export default function PlacesFormPage() {
   const { id } = useParams();
@@ -21,16 +45,14 @@ export default function PlacesFormPage() {
   const [price, setPrice] = useState(0);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [roomType, setRoomType] = useState("Conference Room");
+  const [youtubeLink, setYoutubeLink] = useState("");
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [isGeocodingAddress, setIsGeocodingAddress] = useState(false);
   const [geocodingSuccess, setGeocodingSuccess] = useState(null);
+  const [showMap, setShowMap] = useState(false);
   const [redirect, setRedirect] = useState(false);
   const [error, setError] = useState("");
-
-  // Available room types (matching the Header.jsx options)
-  const roomTypes = ['Conference Room', 'Meeting Room', 'Workshop Space', 'Training Room', 'Coworking Space'];
 
   // Redirect if user is not a host
   if (user && user.userType !== 'host') {
@@ -54,13 +76,17 @@ export default function PlacesFormPage() {
         setCheckOut(data.checkOut);
         setPrice(data.price);
         setMaxGuests(data.maxGuests);
-        setRoomType(data.roomType || "Conference Room"); // Load room type with default
+        setYoutubeLink(data.youtubeLink || "");
         // Format dates properly if they exist
         if (data.startDate) setStartDate(data.startDate.split("T")[0]);
         if (data.endDate) setEndDate(data.endDate.split("T")[0]);
         // Load coordinates
         setLat(data.lat || "");
         setLng(data.lng || "");
+        // Show map if coordinates exist
+        if (data.lat && data.lng) {
+          setShowMap(true);
+        }
       });
     }
   }, [id]); // reactive values referenced inside of the above setup code
@@ -93,6 +119,7 @@ export default function PlacesFormPage() {
         setLat(coordinates.lat);
         setLng(coordinates.lng);
         setGeocodingSuccess(true);
+        setShowMap(true);
       } else {
         setGeocodingSuccess(false);
       }
@@ -101,6 +128,22 @@ export default function PlacesFormPage() {
       setGeocodingSuccess(false);
     } finally {
       setIsGeocodingAddress(false);
+    }
+  }
+
+  // Handle map location selection
+  function handleLocationSelect(location) {
+    if (location && (lat !== location.lat || lng !== location.lng)) {
+      setLat(location.lat);
+      setLng(location.lng);
+    }
+  }
+
+  // Handle address update from map
+  function handleAddressUpdate(newAddress) {
+    if (newAddress && newAddress !== address) {
+      setAddress(newAddress);
+      setGeocodingSuccess(true);
     }
   }
 
@@ -145,6 +188,13 @@ export default function PlacesFormPage() {
     // Ensure numeric fields are valid
     const numGuests = parseInt(maxGuests) || 1;
     const numPrice = parseFloat(price) || 0;
+
+    // Validate and clean YouTube link
+    const cleanedYouTubeLink = extractYouTubeVideoId(youtubeLink);
+    if (youtubeLink && !cleanedYouTubeLink) {
+      setError("Invalid YouTube URL");
+      return;
+    }
     
     console.log("Photos before saving:", addedPhotos);
     
@@ -176,7 +226,7 @@ export default function PlacesFormPage() {
       price: numPrice,
       startDate: startDate || null,
       endDate: endDate || null,
-      roomType,
+      youtubeLink: cleanedYouTubeLink,
       lat: coordinates.lat,
       lng: coordinates.lng
     };
@@ -228,18 +278,7 @@ export default function PlacesFormPage() {
           className="w-full border my-2 py-2 px-3 rounded-2xl"
         />
         
-        {preInput("Room Type", "select the type of conference space you're offering.")}
-        <select
-          value={roomType}
-          onChange={(event) => setRoomType(event.target.value)}
-          className="w-full border my-2 py-2 px-3 rounded-2xl"
-        >
-          {roomTypes.map(type => (
-            <option key={type} value={type}>{type}</option>
-          ))}
-        </select>
-        
-        {preInput("Address", "address of this conference room. We'll automatically get the map coordinates.")}
+        {preInput("Address", "address of this conference room. You can enter it manually or pin on the map.")}
         <div className="relative">
           <input
             type="text"
@@ -271,15 +310,35 @@ export default function PlacesFormPage() {
             </div>
           )}
         </div>
-        {geocodingSuccess === false && (
-          <p className="text-red-500 text-sm mb-4">
-            Could not get coordinates for this address. Please make sure it's a valid address.
-          </p>
-        )}
-        {geocodingSuccess === true && (
-          <p className="text-green-500 text-sm mb-4">
-            Map coordinates found successfully! Your location will appear on the map.
-          </p>
+        
+        <div className="flex gap-2 items-center mt-1 mb-4">
+          <button 
+            type="button" 
+            onClick={() => setShowMap(!showMap)}
+            className="bg-primary text-white px-3 py-1 rounded-md text-sm"
+          >
+            {showMap ? 'Hide Map' : 'Show Map'}
+          </button>
+          {geocodingSuccess === false && (
+            <p className="text-red-500 text-sm">
+              Could not get coordinates for this address. Try pinning the location on the map.
+            </p>
+          )}
+          {geocodingSuccess === true && (
+            <p className="text-green-500 text-sm">
+              Map coordinates found! Your location will appear on the map.
+            </p>
+          )}
+        </div>
+        
+        {showMap && (
+          <div className="mb-4">
+            <MapPicker 
+              initialCoordinates={lat && lng ? { lat, lng } : null}
+              onLocationSelect={handleLocationSelect}
+              onAddressUpdate={handleAddressUpdate}
+            />
+          </div>
         )}
         
         {preInput("Photos", "more is better. ")}
@@ -287,6 +346,16 @@ export default function PlacesFormPage() {
           addedPhotos={addedPhotos}
           setAddedPhotos={setAddedPhotos}
         />
+        
+        {preInput("YouTube Video", "add a YouTube link showcasing your conference room.")}
+        <input
+          type="text"
+          placeholder="https://www.youtube.com/watch?v=example"
+          value={youtubeLink}
+          onChange={(event) => setYoutubeLink(event.target.value)}
+          className="w-full border my-2 py-2 px-3 rounded-2xl"
+        />
+        
         {preInput("Description", "description of the conference room. ")}
         <textarea
           value={description}

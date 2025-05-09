@@ -3,32 +3,8 @@ import CloudinaryImage from "./CloudinaryImage";
 import api from "../utils/api";
 
 export default function PhotoUploader({ addedPhotos, setAddedPhotos }) {
-  const [photoLink, setPhotoLink] = useState("");
   const [uploadError, setUploadError] = useState("");
   const MAX_PHOTOS = 4; // Set maximum number of photos to 4
-
-  async function addPhotoByLink(event) {
-    event.preventDefault();
-    setUploadError("");
-    
-    // Check if maximum photos reached
-    if (addedPhotos.length >= MAX_PHOTOS) {
-      setUploadError(`Maximum ${MAX_PHOTOS} photos allowed.`);
-      return;
-    }
-
-    try {
-      const { data } = await api.post("/upload-by-link", {
-        link: photoLink,
-      });
-      setAddedPhotos((prev) => {
-        return [...prev, data];
-      });
-    } catch (e) {
-      setUploadError("Upload failed, please try again later.");
-    }
-    setPhotoLink("");
-  }
 
   async function uploadPhoto(event) {
     setUploadError("");
@@ -72,22 +48,6 @@ export default function PhotoUploader({ addedPhotos, setAddedPhotos }) {
 
   return (
     <div>
-      <div className="flex flex-col md:flex-row gap-2 items-center">
-        <input
-          type="text"
-          placeholder="Add using a link ....jpg"
-          value={photoLink}
-          onChange={(event) => setPhotoLink(event.target.value)}
-          className="flex-grow"
-        />
-        <button
-          onClick={addPhotoByLink}
-          className="bg-primary text-white rounded-2xl w-full md:w-40 h-11"
-        >
-          Add photo
-        </button>
-      </div>
-      
       {uploadError && (
         <div className="text-red-500 mt-2">{uploadError}</div>
       )}

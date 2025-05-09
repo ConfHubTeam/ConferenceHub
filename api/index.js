@@ -171,22 +171,6 @@ apiRouter.post("/logout", (req, res) => {
   res.cookie("token", "").json(true);
 });
 
-apiRouter.post("/upload-by-link", async (req, res) => {
-  const { link } = req.body;
-  try {
-    // Upload directly to cloudinary using the external URL
-    const result = await cloudinary.uploader.upload(link, {
-      folder: 'conferencehub',
-    });
-    
-    // Return the secure URL and public ID for storage in the database
-    res.json({ url: result.secure_url, publicId: result.public_id });
-  } catch (error) {
-    console.error('Error uploading image by link:', error);
-    res.status(500).json({ error: 'Failed to upload image' });
-  }
-});
-
 // Modified upload function for Cloudinary
 const photoMiddleware = multer({ storage: multer.memoryStorage() });
 apiRouter.post("/upload", photoMiddleware.array("photos", 100), async (req, res) => {
@@ -226,8 +210,8 @@ apiRouter.post("/places", async (req, res) => {
     title, address, photos,
     description, perks, extraInfo, 
     checkIn, checkOut, maxGuests, 
-    price, startDate, endDate, roomType,
-    lat, lng
+    price, startDate, endDate,
+    youtubeLink, lat, lng
   } = req.body;
 
   try {
@@ -273,7 +257,7 @@ apiRouter.post("/places", async (req, res) => {
       price: price ? parseFloat(price) : 0,
       startDate: startDate || null,
       endDate: endDate || null,
-      roomType: roomType || "Conference Room",
+      youtubeLink: youtubeLink || null, // Add the YouTube link field
       lat: lat ? parseFloat(lat) : null,
       lng: lng ? parseFloat(lng) : null
     };
@@ -328,7 +312,7 @@ apiRouter.put("/places", async (req, res) => {
   const {
     id, title, address, photos, description,
     perks, extraInfo, checkIn, checkOut, maxGuests,
-    price, startDate, endDate, roomType, lat, lng
+    price, startDate, endDate, youtubeLink, lat, lng
   } = req.body;
   
   try {
@@ -388,7 +372,7 @@ apiRouter.put("/places", async (req, res) => {
     place.price = price;
     place.startDate = startDate;
     place.endDate = endDate;
-    place.roomType = roomType || "Conference Room";
+    place.youtubeLink = youtubeLink || null; // Add the YouTube link
     place.lat = lat ? parseFloat(lat) : null;
     place.lng = lng ? parseFloat(lng) : null;
     
@@ -408,7 +392,6 @@ apiRouter.get("/home", async (req, res) => {
       checkIn, 
       checkOut, 
       guests, 
-      type, 
       minPrice, 
       maxPrice, 
       tags 
@@ -445,13 +428,6 @@ apiRouter.get("/home", async (req, res) => {
     if (guests) {
       whereConditions.maxGuests = {
         [Op.gte]: parseInt(guests) // Capacity is at least the requested number of guests
-      };
-    }
-    
-    // Filter by room type
-    if (type) {
-      whereConditions.roomType = {
-        [Op.eq]: type // Exact match on room type
       };
     }
     
