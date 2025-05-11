@@ -91,11 +91,11 @@ export default function IndexPage() {
 
       {/* Main content - Split view or full view depending on mode */}
       {viewMode === "grid" ? (
-        <div className={`flex flex-col md:flex-row h-full overflow-hidden`}>
-          {/* Listings section - takes full width on mobile, 60% or 100% on desktop based on map visibility */}
+        <div className="flex flex-col md:flex-row h-full overflow-hidden">
+          {/* Listings section - takes full width on mobile, 55% or 100% on desktop based on map visibility */}
           <div 
-            className={`px-4 md:px-8 py-4 overflow-y-auto ${
-              isMapVisible ? "md:w-[60%] md:pr-2" : "w-full"
+            className={`px-4 md:px-8 py-4 overflow-y-auto transition-all duration-300 ease-in-out ${
+              isMapVisible ? "md:w-[55%] md:pr-2" : "w-full"
             }`}
           >
             {isLoading ? (
@@ -144,28 +144,21 @@ export default function IndexPage() {
             )}
           </div>
 
-          {/* Map section - hidden on mobile, 40% width on desktop when visible */}
-          {isMapVisible && (
-            <div className="hidden md:block md:w-[40%] h-full border-l border-gray-200">
-              <div className="h-full relative">
-                <MapView places={filteredPlaces} />
-                <button 
-                  onClick={toggleMap}
-                  className="absolute top-4 left-4 z-10 bg-white p-2 rounded-full shadow-md hover:bg-gray-100"
-                  aria-label="Close map"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
+          {/* Map section - hidden on mobile, 45% width on desktop when visible, with rounded corners */}
+          <div className={`hidden md:block md:w-[45%] h-full transition-all duration-300 ease-in-out ${
+            isMapVisible ? "opacity-100 max-w-[45%]" : "opacity-0 max-w-0"
+          }`}>
+            <div className="h-full w-full rounded-l-2xl overflow-hidden shadow-lg">
+              <MapView places={filteredPlaces} />
             </div>
-          )}
+          </div>
         </div>
       ) : (
         // Full map view (when viewMode is "map")
         <div className="h-full px-4 md:px-8 py-4">
-          <MapView places={filteredPlaces} />
+          <div className="h-full relative rounded-2xl overflow-hidden shadow-lg">
+            <MapView places={filteredPlaces} />
+          </div>
         </div>
       )}
     </div>
