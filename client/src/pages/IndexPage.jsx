@@ -108,7 +108,7 @@ export default function IndexPage() {
                 <p className="text-gray-500 mt-2">Try adjusting your filters to find more options</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
                 {filteredPlaces.map((place) => (
                   <Link key={place.id} to={"/place/" + place.id}>
                     <div className="bg-white rounded-2xl overflow-hidden shadow hover:shadow-md transition-shadow">
@@ -121,19 +121,19 @@ export default function IndexPage() {
                           />
                         )}
                       </div>
-                      <div className="p-4">
-                        <h2 className="font-bold truncate">{place.address}</h2>
-                        <h3 className="text-gray-500 truncate">{place.title}</h3>
+                      <div className="p-3">
+                        <h2 className="font-bold text-sm truncate">{place.address}</h2>
+                        <h3 className="text-gray-500 text-sm truncate">{place.title}</h3>
                         {place.startDate && place.endDate && (
-                          <p className="text-gray-500">
+                          <p className="text-gray-500 text-xs">
                             {new Date(place.startDate).getDate()} {months[new Date(place.startDate).getMonth()]}
                             {" - "}{new Date(place.endDate).getDate()} {months[new Date(place.endDate).getMonth()]}
                           </p>
                         )}
-                        <div className="flex justify-between items-center mt-2">
-                          <p className="font-bold text-primary">{formatPrice(place.price)}<span className="text-gray-500 font-normal"> / hour</span></p>
+                        <div className="flex justify-between items-center mt-1">
+                          <p className="font-bold text-primary text-sm">{formatPrice(place.price)}<span className="text-gray-500 font-normal text-xs"> / hour</span></p>
                           {place.type && (
-                            <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full">{place.type}</span>
+                            <span className="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded-full">{place.type}</span>
                           )}
                         </div>
                       </div>
