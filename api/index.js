@@ -856,6 +856,77 @@ apiRouter.get("/users", async (req, res) => {
   }
 });
 
+// New endpoint: Delete a user (for agents only)
+apiRouter.delete("/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { confirmation } = req.query;
+    const userData = await getUserDataFromToken(req);
+    
+    // Verify user is an agent
+    if (userData.userType !== 'agent') {
+      return res.status(403).json({ error: "Only agents can delete users" });
+    }
+    
+    // Prevent agents from deleting themselves
+    if (id === userData.id.toString()) {
+      return res.status(400).json({ error: "You cannot delete your own account" });
+    }
+    
+    // Additional safety check - require confirmation parameter
+    if (confirmation !== 'true') {
+      return res.status(400).json({ error: "Confirmation parameter required to delete user" });
+    }
+    
+    // Find the user to delete
+    const userToDelete = await User.findByPk(id);
+    
+    if (!userToDelete) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    // Log the deletion attempt for audit purposes
+    console.log(`Agent ${userData.id} (${userData.email}) attempting to delete user ${id} (${userToDelete.email})`);
+    
+    // First, delete all bookings associated with this user
+    await Booking.destroy({
+      where: { userId: id }
+    });
+    
+    // For hosts, delete all their places and the bookings for those places
+    if (userToDelete.userType === 'host') {
+      // Find all places owned by this host
+      const places = await Place.findAll({
+        where: { ownerId: id }
+      });
+      
+      // Delete all bookings for each place
+      for (const place of places) {
+        await Booking.destroy({
+          where: { placeId: place.id }
+        });
+      }
+      
+      // Delete all places owned by this host
+      await Place.destroy({
+        where: { ownerId: id }
+      });
+    }
+    
+    // Finally, delete the user
+    await userToDelete.destroy();
+    
+    // Log successful deletion
+    console.log(`User ${id} (${userToDelete.email}) successfully deleted by agent ${userData.id}`);
+    
+    res.json({ success: true, message: "User and all associated data deleted successfully" });
+    
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(422).json({ error: error.message });
+  }
+});
+
 // New endpoint: Get all places (for agents only)
 apiRouter.get("/places", async (req, res) => {
   try {
