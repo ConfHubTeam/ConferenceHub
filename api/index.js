@@ -12,11 +12,27 @@ const bodyParser = require("body-parser");
 const cloudinary = require('./config/cloudinary');
 const streamifier = require('streamifier');
 const path = require('path');
+const session = require('express-session'); // Add session middleware
+
+// Import routes
+const telegramAuthRoutes = require('./routes/telegramAuth');
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser()); // to read cookies
+
+// Session middleware for Telegram verification
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'telegram-verification-secret',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+    maxAge: 1000 * 60 * 60 // 1 hour
+  }
+}));
+
 // We're keeping this line for any static files, but primary image hosting will be on Cloudinary
 app.use("/uploads", express.static(__dirname + "/uploads")); 
 
@@ -24,7 +40,25 @@ app.use("/uploads", express.static(__dirname + "/uploads"));
 app.use(
   cors({
     credentials: true,
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: function(origin, callback) {
+      // Allow requests with no origin (like mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
+      
+      // List of allowed origins
+      const allowedOrigins = [
+        'http://localhost:5173' || process.env.FRONTEND_URL,
+        'https://49ff-90-156-166-124.ngrok-free.app'
+      ].filter(Boolean); // Remove any undefined/empty values
+      
+      // Check if the origin is allowed
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.log(`Origin not allowed by CORS: ${origin}`);
+        callback(null, false);
+      }
+    },
+    optionsSuccessStatus: 200
   })
 );
 
@@ -143,7 +177,23 @@ apiRouter.post("/login", async (req, res) => {
 
 function getUserDataFromToken(req) {
   return new Promise((resolve, reject) => {
-    jwt.verify(req.cookies.token, jwtSecret, {}, async (err, userData) => {
+    // Try to get token from cookies first
+    let token = req.cookies.token;
+    
+    // If not in cookies, check Authorization header
+    if (!token && req.headers.authorization) {
+      // Extract token from Bearer token format
+      const authHeader = req.headers.authorization;
+      if (authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+      }
+    }
+    
+    if (!token) {
+      return reject(new Error('No authentication token found'));
+    }
+    
+    jwt.verify(token, jwtSecret, {}, async (err, userData) => {
       if (err) reject(err);
       resolve(userData);
     });
@@ -151,18 +201,51 @@ function getUserDataFromToken(req) {
 }
 
 apiRouter.get("/profile", (req, res) => {
-  const { token } = req.cookies;
+  // Try to get token from cookies first
+  let token = req.cookies.token;
+  
+  // If not in cookies, check Authorization header
+  if (!token && req.headers.authorization) {
+    // Extract token from Bearer token format
+    const authHeader = req.headers.authorization;
+    if (authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    }
+  }
+  
   if (token) {
     // reloading info of the logged in user after refreshing
     jwt.verify(token, jwtSecret, {}, async (err, userData) => {
-      if (err) throw err;
-      // Update Mongoose findById to Sequelize findByPk
-      const user = await User.findByPk(userData.id, {
-        attributes: ['id', 'name', 'email', 'userType'] // Include userType
-      });
-      res.json(user);
+      if (err) {
+        console.error('JWT verification error:', err);
+        return res.status(401).json({ error: 'Invalid authentication token' });
+      }
+      
+      try {
+        // Update Mongoose findById to Sequelize findByPk
+        const user = await User.findByPk(userData.id, {
+          // Include all relevant user attributes, particularly Telegram fields
+          attributes: [
+            'id', 'name', 'email', 'userType', 
+            'telegramId', 'telegramUsername', 'telegramFirstName',
+            'telegramPhotoUrl', 'telegramPhone', 'telegramLinked'
+          ]
+        });
+        
+        if (!user) {
+          // User might have been deleted but token is still valid
+          return res.status(404).json({ error: 'User not found' });
+        }
+        
+        console.log('User data found:', user.id, user.name, user.email);
+        res.json(user);
+      } catch (error) {
+        console.error('Database error in /profile:', error);
+        res.status(500).json({ error: 'Server error while retrieving user profile' });
+      }
     });
   } else {
+    console.log('No token found in either cookies or Authorization header');
     res.json(null);
   }
 });
@@ -844,6 +927,9 @@ apiRouter.get("/stats", async (req, res) => {
 
 // Mount the API router at /api prefix
 app.use('/api', apiRouter);
+
+// Register Telegram authentication routes
+app.use('/api/telegram-auth', telegramAuthRoutes);
 
 // Update the port to use environment variable
 const PORT = process.env.PORT || 4000;

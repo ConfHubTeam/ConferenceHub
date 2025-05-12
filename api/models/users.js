@@ -8,12 +8,44 @@ const User = sequelize.define('User', {
   },
   email: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,  // Allow null because users might register via Telegram only
     unique: true
   },
   password: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: true  // Allow null for Telegram-only users
+  },
+  phoneNumber: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true
+  },
+  telegramId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true
+  },
+  telegramUsername: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  telegramFirstName: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  telegramPhotoUrl: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  telegramPhone: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true
+  },
+  telegramLinked: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
   },
   userType: {
     type: DataTypes.ENUM('host', 'client', 'agent'),
