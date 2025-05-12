@@ -24,7 +24,25 @@ app.use("/uploads", express.static(__dirname + "/uploads"));
 app.use(
   cors({
     credentials: true,
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: function(origin, callback) {
+      // Allow requests with no origin (like mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
+      
+      // List of allowed origins
+      const allowedOrigins = [
+        process.env.FRONTEND_URL || 'http://localhost:5173',
+        'https://49ff-90-156-166-124.ngrok-free.app'
+      ];
+      
+      // Check if the origin is allowed
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        console.log(`Origin not allowed by CORS: ${origin}`);
+        callback(null, false);
+      }
+    },
+    optionsSuccessStatus: 200
   })
 );
 

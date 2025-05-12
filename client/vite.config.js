@@ -11,7 +11,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
       }
-    }
+    },
+    allowedHosts: [
+      'localhost',
+      '49ff-90-156-166-124.ngrok-free.app'
+    ]
   },
   build: {
     outDir: 'dist',
