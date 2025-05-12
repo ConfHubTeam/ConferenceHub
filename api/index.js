@@ -177,7 +177,23 @@ apiRouter.post("/login", async (req, res) => {
 
 function getUserDataFromToken(req) {
   return new Promise((resolve, reject) => {
-    jwt.verify(req.cookies.token, jwtSecret, {}, async (err, userData) => {
+    // Try to get token from cookies first
+    let token = req.cookies.token;
+    
+    // If not in cookies, check Authorization header
+    if (!token && req.headers.authorization) {
+      // Extract token from Bearer token format
+      const authHeader = req.headers.authorization;
+      if (authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+      }
+    }
+    
+    if (!token) {
+      return reject(new Error('No authentication token found'));
+    }
+    
+    jwt.verify(token, jwtSecret, {}, async (err, userData) => {
       if (err) reject(err);
       resolve(userData);
     });
@@ -185,18 +201,51 @@ function getUserDataFromToken(req) {
 }
 
 apiRouter.get("/profile", (req, res) => {
-  const { token } = req.cookies;
+  // Try to get token from cookies first
+  let token = req.cookies.token;
+  
+  // If not in cookies, check Authorization header
+  if (!token && req.headers.authorization) {
+    // Extract token from Bearer token format
+    const authHeader = req.headers.authorization;
+    if (authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    }
+  }
+  
   if (token) {
     // reloading info of the logged in user after refreshing
     jwt.verify(token, jwtSecret, {}, async (err, userData) => {
-      if (err) throw err;
-      // Update Mongoose findById to Sequelize findByPk
-      const user = await User.findByPk(userData.id, {
-        attributes: ['id', 'name', 'email', 'userType'] // Include userType
-      });
-      res.json(user);
+      if (err) {
+        console.error('JWT verification error:', err);
+        return res.status(401).json({ error: 'Invalid authentication token' });
+      }
+      
+      try {
+        // Update Mongoose findById to Sequelize findByPk
+        const user = await User.findByPk(userData.id, {
+          // Include all relevant user attributes, particularly Telegram fields
+          attributes: [
+            'id', 'name', 'email', 'userType', 
+            'telegramId', 'telegramUsername', 'telegramFirstName',
+            'telegramPhotoUrl', 'telegramPhone', 'telegramLinked'
+          ]
+        });
+        
+        if (!user) {
+          // User might have been deleted but token is still valid
+          return res.status(404).json({ error: 'User not found' });
+        }
+        
+        console.log('User data found:', user.id, user.name, user.email);
+        res.json(user);
+      } catch (error) {
+        console.error('Database error in /profile:', error);
+        res.status(500).json({ error: 'Server error while retrieving user profile' });
+      }
     });
   } else {
+    console.log('No token found in either cookies or Authorization header');
     res.json(null);
   }
 });

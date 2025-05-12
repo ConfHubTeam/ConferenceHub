@@ -1,4 +1,4 @@
-import { useEffect, useContext, useState } from 'react';
+import { useEffect, useContext, useState, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { UserContext } from '../components/UserContext';
 import { useNotification } from '../components/NotificationContext';
@@ -11,8 +11,13 @@ export default function LoginSuccessPage() {
   const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [isNewAccount, setIsNewAccount] = useState(false);
+  const fetchAttempted = useRef(false);
   
   useEffect(() => {
+    // Prevent multiple fetch attempts on rerender
+    if (fetchAttempted.current) return;
+    fetchAttempted.current = true;
+    
     // Check if this is a new account creation
     const params = new URLSearchParams(location.search);
     const newAccount = params.get('new_account') === 'true';
@@ -24,7 +29,6 @@ export default function LoginSuccessPage() {
     // If token exists in URL, store it in localStorage
     if (token) {
       localStorage.setItem('token', token);
-      console.log('Token saved from URL parameters');
     }
     
     // Attempt to get user info with existing token (from cookie or localStorage)
@@ -32,14 +36,8 @@ export default function LoginSuccessPage() {
       try {
         setLoading(true);
         
-        // Include token from localStorage in the request headers if available
-        const headers = {};
-        const storedToken = localStorage.getItem('token');
-        if (storedToken) {
-          headers['Authorization'] = `Bearer ${storedToken}`;
-        }
-        
-        const { data } = await api.get('/profile', { headers });
+        // Make the API request
+        const { data } = await api.get('/profile');
         
         if (data) {
           setUser(data);
@@ -49,22 +47,27 @@ export default function LoginSuccessPage() {
             notify('Login successful!', 'success');
           }
           setLoading(false);
+          
+          // Auto-redirect to account page after successful login
+          // Small timeout to allow the success message to be seen
+          setTimeout(() => {
+            navigate('/account');
+          }, 1500);
         } else {
           notify('Authentication failed. Please try again.', 'error');
           navigate('/login');
         }
       } catch (error) {
-        console.error('Error fetching user data:', error);
         notify('Authentication failed. Please try again.', 'error');
         navigate('/login');
       }
     };
     
     fetchUserData();
-  }, [location, navigate, setUser, notify]);
+  }, []); // Remove location from dependencies to prevent infinite loop
   
   const handleContinue = () => {
-    navigate('/');
+    navigate('/account'); // Changed to redirect to account page instead of home
   };
   
   if (loading) {
@@ -118,14 +121,14 @@ export default function LoginSuccessPage() {
           onClick={handleContinue}
           className="bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary-dark transition"
         >
-          Continue to Conference Hub
+          Go to Account
         </button>
         
         <Link 
-          to="/profile" 
+          to="/" 
           className="text-center text-primary underline hover:text-primary-dark"
         >
-          Update Profile Information
+          Back to Homepage
         </Link>
       </div>
     </div>
