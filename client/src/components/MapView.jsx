@@ -31,7 +31,7 @@ const defaultCenter = {
   lng: 69.2401
 };
 
-export default function MapView({ places }) {
+export default function MapView({ places, disableInfoWindow = false }) {
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: GOOGLE_MAPS_API_KEY
@@ -230,13 +230,16 @@ export default function MapView({ places }) {
       
       // Add click event to marker
       marker.addListener("click", () => {
-        setSelectedPlace(marker.placeData);
-        
-        // Zoom in closer when marker is clicked for better user experience
-        const currentZoom = map.getZoom();
-        const targetZoom = Math.min(16, currentZoom + 2); // Zoom in by 2 levels, up to max of 16
-        map.setZoom(targetZoom);
-        map.panTo(marker.getPosition()); // Center map on the clicked marker
+        // Only set selected place if info windows are not disabled
+        if (!disableInfoWindow) {
+          setSelectedPlace(marker.placeData);
+          
+          // Zoom in closer when marker is clicked for better user experience
+          const currentZoom = map.getZoom();
+          const targetZoom = Math.min(16, currentZoom + 2); // Zoom in by 2 levels, up to max of 16
+          map.setZoom(targetZoom);
+          map.panTo(marker.getPosition()); // Center map on the clicked marker
+        }
       });
       
       return marker;
@@ -265,7 +268,7 @@ export default function MapView({ places }) {
     }
     
     setMap(map);
-  }, [places]);
+  }, [places, disableInfoWindow]);
 
   const onUnmount = useCallback(function callback() {
     // Cleanup markers
@@ -321,13 +324,16 @@ export default function MapView({ places }) {
         });
         
         marker.addListener("click", () => {
-          setSelectedPlace(marker.placeData);
-          
-          // Zoom in closer when marker is clicked for better user experience
-          const currentZoom = map.getZoom();
-          const targetZoom = Math.min(16, currentZoom + 2); // Zoom in by 2 levels, up to max of 16
-          map.setZoom(targetZoom);
-          map.panTo(marker.getPosition()); // Center map on the clicked marker
+          // Only set selected place if info windows are not disabled
+          if (!disableInfoWindow) {
+            setSelectedPlace(marker.placeData);
+            
+            // Zoom in closer when marker is clicked for better user experience
+            const currentZoom = map.getZoom();
+            const targetZoom = Math.min(16, currentZoom + 2); // Zoom in by 2 levels, up to max of 16
+            map.setZoom(targetZoom);
+            map.panTo(marker.getPosition()); // Center map on the clicked marker
+          }
         });
         
         return marker;
@@ -338,7 +344,7 @@ export default function MapView({ places }) {
         map.fitBounds(bounds);
       }
     }
-  }, [places, map]);
+  }, [places, map, disableInfoWindow]);
 
   // Listen for zoom changes to update marker sizes
   useEffect(() => {
@@ -422,8 +428,8 @@ export default function MapView({ places }) {
           }
         }}
       >
-        {/* Info Window for selected place */}
-        {selectedPlace && (
+        {/* Info Window for selected place - only show if not disabled */}
+        {selectedPlace && !disableInfoWindow && (
           <InfoWindow
             position={{ lat: parseFloat(selectedPlace.lat), lng: parseFloat(selectedPlace.lng) }}
             onCloseClick={() => setSelectedPlace(null)}
