@@ -12,11 +12,27 @@ const bodyParser = require("body-parser");
 const cloudinary = require('./config/cloudinary');
 const streamifier = require('streamifier');
 const path = require('path');
+const session = require('express-session'); // Add session middleware
+
+// Import routes
+const telegramAuthRoutes = require('./routes/telegramAuth');
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser()); // to read cookies
+
+// Session middleware for Telegram verification
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'telegram-verification-secret',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+    maxAge: 1000 * 60 * 60 // 1 hour
+  }
+}));
+
 // We're keeping this line for any static files, but primary image hosting will be on Cloudinary
 app.use("/uploads", express.static(__dirname + "/uploads")); 
 
@@ -862,6 +878,9 @@ apiRouter.get("/stats", async (req, res) => {
 
 // Mount the API router at /api prefix
 app.use('/api', apiRouter);
+
+// Register Telegram authentication routes
+app.use('/api/telegram-auth', telegramAuthRoutes);
 
 // Update the port to use environment variable
 const PORT = process.env.PORT || 4000;
