@@ -225,15 +225,13 @@ exports.verifyCode = async (req, res) => {
           });
         }
         
-        // Generate a random password and email for the new user
+        // Generate a random password
         const randomPassword = crypto.randomBytes(12).toString('hex');
         const hashedPassword = bcrypt.hashSync(randomPassword, bcryptSalt);
-        const randomEmail = `telegram_${Date.now()}_${Math.floor(Math.random() * 10000)}@example.com`;
         
         // Create new user
         user = await User.create({
           name: username,
-          email: randomEmail,
           password: hashedPassword,
           telegramPhone: sessionData.phoneNumber,
           telegramLinked: true,
@@ -336,13 +334,9 @@ exports.handleCallback = async (req, res) => {
       // Use Telegram username or first name as the user's name
       const userName = telegramData.username || telegramData.first_name || 'Telegram User';
       
-      // Generate an email or use the one provided by Telegram if available
-      const userEmail = telegramData.email || `telegram_${telegramData.id}@conference-hub.example.com`;
-      
-      // Create new user with Telegram data
+      // Create new user with Telegram data without generating a fake email
       user = await User.create({
         name: userName,
-        email: userEmail,
         password: hashedPassword,
         telegramId: String(telegramData.id),
         telegramUsername: telegramData.username || null,

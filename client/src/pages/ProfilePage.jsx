@@ -88,18 +88,15 @@ export default function ProfilePage({}) {
         {/* User info card */}
         <div className="bg-white shadow p-6 rounded-lg">
           <div className="mb-5">
-            {/* Display Telegram photo if available */}
-            {user.telegramPhotoUrl && (
-              <div className="flex justify-center mb-3">
-                <img 
-                  src={user.telegramPhotoUrl} 
-                  alt={user.name} 
-                  className="w-16 h-16 rounded-full object-cover border-2 border-primary"
-                />
-              </div>
+            {/* For Telegram users, prioritize displaying first name if available, otherwise fallback to regular name */}
+            <div className="text-2xl font-bold mb-1">
+              {user.telegramLinked && user.telegramFirstName ? user.telegramFirstName : user.name}
+            </div>
+            
+            {/* Only show email if it exists and doesn't contain "telegram_" */}
+            {user.email && !user.email.includes("telegram_") && (
+              <div className="text-sm text-gray-500">{user.email}</div>
             )}
-            <div className="text-2xl font-bold mb-1">{user.name}</div>
-            <div className="text-sm text-gray-500">{user.email}</div>
             
             {/* Show Telegram username if available */}
             {user.telegramUsername && (
@@ -140,11 +137,11 @@ export default function ProfilePage({}) {
             </div>
           </div>
 
-          <div className="flex flex-col space-y-2 mt-6">
+          <div className="flex flex-col items-center space-y-2 mt-6">
             {/* Single logout button that handles both regular and Telegram logout */}
             <button 
               onClick={user.telegramLinked ? logoutTelegram : logout} 
-              className="primary max-w-sm"
+              className="primary w-full max-w-xs mx-auto"
               disabled={isLoggingOut}
             >
               {isLoggingOut ? 'Logging out...' : 'Logout'}
