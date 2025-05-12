@@ -1,8 +1,9 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useContext, useState } from "react";
+import { Link, Navigate } from "react-router-dom";
 import api from "../utils/api";
 import { useNotification } from "../components/NotificationContext";
 import { validateForm } from "../utils/formUtils";
+import { UserContext } from "../components/UserContext";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -10,7 +11,9 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [userType, setUserType] = useState("client");
   const [error, setError] = useState("");
+  const [redirect, setRedirect] = useState(false);
   const { notify } = useNotification();
+  const { setUser } = useContext(UserContext);
 
   async function registerUser(event) {
     event.preventDefault(); // avoid reloading from form
@@ -37,20 +40,41 @@ export default function RegisterPage() {
     }
     
     try {
-      await api.post("/register", { // Using the configured api instance instead of axios directly
+      // Register the user
+      const registerResponse = await api.post("/register", {
         name,
         email,
         password,
         userType,
       });
-      notify("Registration successful, you can go to login.", "success");
-      // Clear the form after successful registration
+      
+      // Auto login after registration
+      try {
+        const loginResponse = await api.post("/login", { email, password });
+        setUser(loginResponse.data);
+        
+        // Show success notification
+        notify("Registration successful! Welcome to your account.", "success");
+        
+        // Redirect to profile page
+        setRedirect(true);
+      } catch (loginError) {
+        // If auto-login fails, still consider registration successful
+        notify("Registration successful, but automatic login failed. Please log in manually.", "info");
+        setRedirect(true);
+      }
+      
+      // Clear the form
       setName("");
       setEmail("");
       setPassword("");
     } catch (e) {
       setError(e.response?.data?.error || "Registration failed. Please try again later.");
     }
+  }
+
+  if (redirect) {
+    return <Navigate to="/account" />;
   }
 
   return (
