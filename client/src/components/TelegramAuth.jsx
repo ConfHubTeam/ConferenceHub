@@ -76,11 +76,6 @@ export default function TelegramAuth() {
         </p>
         
         <div id="telegram-login-widget" className="mt-4"></div>
-        
-        <div className="text-sm text-gray-500 text-center mt-4">
-          <p>The Telegram Login Widget provides a secure way to authenticate.</p>
-          <p>Your Telegram data is protected and we only receive information you explicitly allow.</p>
-        </div>
       </div>
     </div>
   );
