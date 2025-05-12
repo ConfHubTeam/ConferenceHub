@@ -46,12 +46,12 @@ app.use(
       
       // List of allowed origins
       const allowedOrigins = [
-        process.env.FRONTEND_URL || 'http://localhost:5173',
+        'http://localhost:5173' || process.env.FRONTEND_URL,
         'https://49ff-90-156-166-124.ngrok-free.app'
-      ];
+      ].filter(Boolean); // Remove any undefined/empty values
       
       // Check if the origin is allowed
-      if (allowedOrigins.indexOf(origin) !== -1) {
+      if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
         console.log(`Origin not allowed by CORS: ${origin}`);
