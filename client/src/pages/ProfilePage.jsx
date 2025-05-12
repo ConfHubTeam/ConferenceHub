@@ -1,7 +1,7 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect, useRef } from "react";
 import { UserContext } from "../components/UserContext";
 import { useNotification } from "../components/NotificationContext";
-import { Navigate, useParams } from "react-router-dom";
+import { Navigate, useParams, useLocation } from "react-router-dom";
 import api from "../utils/api";
 import AccountNav from "../components/AccountNav";
 
@@ -10,6 +10,33 @@ export default function ProfilePage({}) {
   const { isReady, user, setUser, setReady } = useContext(UserContext); // check the user data loading status
   const { notify } = useNotification();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const location = useLocation();
+  const notificationShown = useRef(false);
+
+  useEffect(() => {
+    // Only process notifications once to prevent infinite loops
+    if (notificationShown.current) return;
+    
+    // Check for success/new account flags in URL params
+    const searchParams = new URLSearchParams(location.search);
+    const loginSuccess = searchParams.get('login_success');
+    const newAccount = searchParams.get('new_account');
+    
+    // Show notifications based on URL parameters
+    if (newAccount === 'true') {
+      notify('Your conference hub account has been created successfully!', 'success');
+      notificationShown.current = true;
+    } else if (loginSuccess === 'true') {
+      notify('Login successful!', 'success');
+      notificationShown.current = true;
+    }
+    
+    // Clean up URL params after showing notifications
+    if (loginSuccess || newAccount) {
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+  }, [location.search]); // Only depend on location.search, not the notify function
 
   if (!isReady) {
     return <div className="px-14"><p>Loading...</p></div>;

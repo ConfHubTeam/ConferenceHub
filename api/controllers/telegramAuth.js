@@ -283,14 +283,14 @@ exports.handleCallback = async (req, res) => {
     
     // Validate Telegram data
     if (!validateTelegramLoginData(telegramData)) {
-      return res.redirect('/telegram-auth?error=invalid_auth');
+      return res.redirect('/login?error=invalid_auth');
     }
     
     // Check if the authentication is not too old (1 day max)
     const authDate = parseInt(telegramData.auth_date);
     const now = Math.floor(Date.now() / 1000);
     if (now - authDate > 86400) {
-      return res.redirect('/telegram-auth?error=expired_auth');
+      return res.redirect('/login?error=expired_auth');
     }
     
     // Get the base URL for redirects - prioritize the host header from the request
@@ -319,7 +319,7 @@ exports.handleCallback = async (req, res) => {
         { expiresIn: '7d' }
       );
       
-      // Set cookie and redirect with token in URL for fallback
+      // Set cookie and redirect directly to account page with success flag
       res.cookie('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -327,7 +327,7 @@ exports.handleCallback = async (req, res) => {
         sameSite: 'none' // Important for cross-site redirects
       });
       
-      return res.redirect(`${baseUrl}/login-success?token=${token}`);
+      return res.redirect(`${baseUrl}/account?login_success=true`);
     } else {
       // Create a new conference hub account with Telegram data
       const randomPassword = crypto.randomBytes(12).toString('hex');
@@ -360,7 +360,7 @@ exports.handleCallback = async (req, res) => {
         { expiresIn: '7d' }
       );
       
-      // Set cookie and redirect to login success page with token in URL for fallback
+      // Set cookie and redirect directly to the account page with new account flag
       res.cookie('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -368,11 +368,11 @@ exports.handleCallback = async (req, res) => {
         sameSite: 'none' // Important for cross-site redirects
       });
       
-      return res.redirect(`${baseUrl}/login-success?token=${token}&new_account=true`);
+      return res.redirect(`${baseUrl}/account?new_account=true`);
     }
   } catch (error) {
     console.error('Telegram callback error:', error);
-    return res.redirect('/telegram-auth?error=server_error');
+    return res.redirect('/login?error=server_error');
   }
 };
 
