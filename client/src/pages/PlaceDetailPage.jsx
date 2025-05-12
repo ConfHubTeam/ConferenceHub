@@ -141,7 +141,7 @@ export default function PlaceDetailPage() {
               <div className="mb-5">
                 <h2 className="text-xl md:text-2xl font-semibold mb-2">Location</h2>
                 <div className="h-64 rounded-lg overflow-hidden">
-                  <MapView places={mapPlaces} />
+                  <MapView places={mapPlaces} disableInfoWindow={true} />
                 </div>
               </div>
             )}
