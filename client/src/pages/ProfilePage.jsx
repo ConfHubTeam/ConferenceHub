@@ -50,6 +50,7 @@ export default function ProfilePage({}) {
   async function logout() {
     setIsLoggingOut(true);
     try {
+      // Regular logout
       await api.post("/logout");
       notify("Successfully logged out", "success");
       setRedirect("/");
@@ -63,12 +64,15 @@ export default function ProfilePage({}) {
   async function logoutTelegram() {
     setIsLoggingOut(true);
     try {
+      // First log out from Telegram
       await api.post("/telegram-auth/logout");
-      notify("Successfully logged out from Telegram", "success");
+      // Then perform regular logout
+      await api.post("/logout");
+      notify("Successfully logged out", "success");
       setRedirect("/");
       setUser(null);
     } catch (error) {
-      notify("Error logging out from Telegram. Please try again.", "error");
+      notify("Error logging out. Please try again.", "error");
       setIsLoggingOut(false);
     }
   }
@@ -86,49 +90,50 @@ export default function ProfilePage({}) {
           <div className="mb-5">
             {/* Display Telegram photo if available */}
             {user.telegramPhotoUrl && (
-              <div className="flex justify-center mb-4">
+              <div className="flex justify-center mb-3">
                 <img 
                   src={user.telegramPhotoUrl} 
                   alt={user.name} 
-                  className="w-24 h-24 rounded-full object-cover border-2 border-primary"
+                  className="w-16 h-16 rounded-full object-cover border-2 border-primary"
                 />
               </div>
             )}
-            <div className="text-3xl font-bold mb-1">{user.name}</div>
-            <div className="text-gray-500">{user.email}</div>
+            <div className="text-2xl font-bold mb-1">{user.name}</div>
+            <div className="text-sm text-gray-500">{user.email}</div>
             
             {/* Show Telegram username if available */}
             {user.telegramUsername && (
-              <div className="text-sm text-gray-500 mt-1">
+              <div className="text-xs text-gray-500 mt-1">
                 Telegram: @{user.telegramUsername}
               </div>
             )}
           </div>
 
-          <div className="mt-6 border-t pt-6">
-            <h3 className="font-semibold text-lg mb-3">Account Information</h3>
-            <div className="grid grid-cols-1 gap-3 text-left">
-              <div>
+          <div className="mt-4 border-t pt-4">
+            <h3 className="font-semibold text-base mb-2">Account Information</h3>
+            <div className="grid grid-cols-1 gap-1 text-left text-sm">
+              <div className="flex items-center">
                 <span className="text-gray-600">Account Type:</span> 
-                <span className="font-medium ml-2">
-                  {user.userType === 'host' ? 
-                    'Host (can create and manage conference rooms)' : 
-                    'Client (can browse and book conference rooms)'}
+                <span className="font-medium ml-1">
+                  {user.userType === 'host' ? 'Host' : 'Client'}
+                </span>
+                <span className="text-xs text-gray-400 ml-1">
+                  {user.userType === 'host' ? '(manages rooms)' : '(books rooms)'}
                 </span>
               </div>
-              <div>
+              <div className="flex items-center">
                 <span className="text-gray-600">Member Since:</span>
-                <span className="font-medium ml-2">
+                <span className="font-medium ml-1">
                   {new Date().toLocaleDateString('en-US', {year: 'numeric', month: 'long'})}
                 </span>
               </div>
               
               {/* Show Telegram connection status */}
               {user.telegramLinked !== undefined && (
-                <div>
-                  <span className="text-gray-600">Telegram Connected:</span>
-                  <span className={`font-medium ml-2 ${user.telegramLinked ? 'text-green-600' : 'text-red-600'}`}>
-                    {user.telegramLinked ? 'Yes' : 'No'}
+                <div className="flex items-center">
+                  <span className="text-gray-600">Telegram:</span>
+                  <span className={`font-medium ml-1 ${user.telegramLinked ? 'text-green-600' : 'text-red-600'}`}>
+                    {user.telegramLinked ? 'Connected' : 'Not Connected'}
                   </span>
                 </div>
               )}
@@ -136,19 +141,9 @@ export default function ProfilePage({}) {
           </div>
 
           <div className="flex flex-col space-y-2 mt-6">
-            {/* Show Telegram-specific logout button if the user is connected to Telegram */}
-            {user.telegramLinked && (
-              <button 
-                onClick={logoutTelegram} 
-                className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg transition"
-                disabled={isLoggingOut}
-              >
-                {isLoggingOut ? 'Logging out...' : 'Logout from Telegram'}
-              </button>
-            )}
-            
+            {/* Single logout button that handles both regular and Telegram logout */}
             <button 
-              onClick={logout} 
+              onClick={user.telegramLinked ? logoutTelegram : logout} 
               className="primary max-w-sm"
               disabled={isLoggingOut}
             >
