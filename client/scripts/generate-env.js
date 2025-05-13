@@ -7,7 +7,8 @@
  */
 
 import fs from 'fs';
-const path = require('path');
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 // Map of environment variables to transform
 // Format: 'SOURCE_ENV_VAR': 'VITE_DESTINATION_ENV_VAR'
