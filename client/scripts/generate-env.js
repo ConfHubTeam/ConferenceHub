@@ -6,7 +6,7 @@
  * converted to VITE_GOOGLE_MAPS_API_KEY.
  */
 
-const fs = require('fs');
+import fs from 'fs';
 const path = require('path');
 
 // Map of environment variables to transform
