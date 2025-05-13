@@ -37,10 +37,18 @@ export default function TelegramAuth() {
     const telegramBotUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 
                                import.meta.env.VITE_TELEGRAM_BOT_NAME || 
                                'YourBotName';
-                               
+    
+    // Determine the correct callback URL based on current environment
+    // This ensures it works across different domains (render, localhost)
+    const currentHost = window.location.host;
+    const apiBase = import.meta.env.VITE_API_URL || window.location.origin;
+    const callbackPath = '/api/telegram-auth/callback';
+    const callbackUrl = `${apiBase}${callbackPath}`;
+    
+    // Set up the Telegram Login Widget                   
     script.setAttribute('data-telegram-login', telegramBotUsername);
     script.setAttribute('data-size', 'large');
-    script.setAttribute('data-auth-url', `${import.meta.env.VITE_API_URL || window.location.origin}/api/telegram-auth/callback`);
+    script.setAttribute('data-auth-url', callbackUrl);
     script.setAttribute('data-request-access', 'write');
     
     // Add the script to the widget container
