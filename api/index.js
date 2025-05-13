@@ -36,7 +36,38 @@ app.use(session({
 // We're keeping this line for any static files, but primary image hosting will be on Cloudinary
 app.use("/uploads", express.static(__dirname + "/uploads")); 
 
-// Updated CORS configuration for both development and production
+// Parse allowed origins from environment variable
+const parseAllowedOrigins = () => {
+  let corsOrigins = [];
+  
+  if (process.env.CORS_ALLOWED_ORIGINS) {
+    try {
+      // Parse JSON array from environment variable
+      corsOrigins = JSON.parse(process.env.CORS_ALLOWED_ORIGINS);
+      console.log('Using CORS_ALLOWED_ORIGINS from environment:', corsOrigins);
+    } catch (error) {
+      console.error('Error parsing CORS_ALLOWED_ORIGINS:', error);
+      // Empty array if parsing fails
+      corsOrigins = [];
+    }
+  }
+  
+  // Add FRONTEND_URL if it exists and not already included
+  if (process.env.FRONTEND_URL) {
+    const frontendUrl = process.env.FRONTEND_URL.trim().replace(/\/$/, '');
+    if (frontendUrl && !corsOrigins.includes(frontendUrl)) {
+      corsOrigins.push(frontendUrl);
+    }
+  }
+  
+  return corsOrigins.filter(Boolean); // Remove any undefined/empty values
+};
+
+// Get allowed origins from environment variables
+const allowedOrigins = parseAllowedOrigins();
+console.log('CORS allowed origins:', allowedOrigins);
+
+// CORS configuration with dynamic origins
 app.use(
   cors({
     credentials: true,
@@ -44,11 +75,7 @@ app.use(
       // Allow requests with no origin (like mobile apps, curl, etc.)
       if (!origin) return callback(null, true);
       
-      // List of allowed origins
-      const allowedOrigins = [
-        'http://localhost:5173' || process.env.FRONTEND_URL,
-        'https://49ff-90-156-166-124.ngrok-free.app'
-      ].filter(Boolean); // Remove any undefined/empty values
+      console.log(`CORS request from origin: ${origin}`);
       
       // Check if the origin is allowed
       if (allowedOrigins.includes(origin)) {
@@ -58,6 +85,8 @@ app.use(
         callback(null, false);
       }
     },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     optionsSuccessStatus: 200
   })
 );
@@ -852,6 +881,77 @@ apiRouter.get("/users", async (req, res) => {
     res.json(users);
   } catch (error) {
     console.error("Error fetching users:", error);
+    res.status(422).json({ error: error.message });
+  }
+});
+
+// New endpoint: Delete a user (for agents only)
+apiRouter.delete("/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { confirmation } = req.query;
+    const userData = await getUserDataFromToken(req);
+    
+    // Verify user is an agent
+    if (userData.userType !== 'agent') {
+      return res.status(403).json({ error: "Only agents can delete users" });
+    }
+    
+    // Prevent agents from deleting themselves
+    if (id === userData.id.toString()) {
+      return res.status(400).json({ error: "You cannot delete your own account" });
+    }
+    
+    // Additional safety check - require confirmation parameter
+    if (confirmation !== 'true') {
+      return res.status(400).json({ error: "Confirmation parameter required to delete user" });
+    }
+    
+    // Find the user to delete
+    const userToDelete = await User.findByPk(id);
+    
+    if (!userToDelete) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    // Log the deletion attempt for audit purposes
+    console.log(`Agent ${userData.id} (${userData.email}) attempting to delete user ${id} (${userToDelete.email})`);
+    
+    // First, delete all bookings associated with this user
+    await Booking.destroy({
+      where: { userId: id }
+    });
+    
+    // For hosts, delete all their places and the bookings for those places
+    if (userToDelete.userType === 'host') {
+      // Find all places owned by this host
+      const places = await Place.findAll({
+        where: { ownerId: id }
+      });
+      
+      // Delete all bookings for each place
+      for (const place of places) {
+        await Booking.destroy({
+          where: { placeId: place.id }
+        });
+      }
+      
+      // Delete all places owned by this host
+      await Place.destroy({
+        where: { ownerId: id }
+      });
+    }
+    
+    // Finally, delete the user
+    await userToDelete.destroy();
+    
+    // Log successful deletion
+    console.log(`User ${id} (${userToDelete.email}) successfully deleted by agent ${userData.id}`);
+    
+    res.json({ success: true, message: "User and all associated data deleted successfully" });
+    
+  } catch (error) {
+    console.error("Error deleting user:", error);
     res.status(422).json({ error: error.message });
   }
 });
