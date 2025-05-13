@@ -10,14 +10,17 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+// Get __dirname equivalent in ES module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // Map of environment variables to transform
-// Format: 'SOURCE_ENV_VAR': 'VITE_DESTINATION_ENV_VAR'
 const ENV_MAPPING = {
   'GOOGLE_MAPS_API_KEY': 'VITE_GOOGLE_MAPS_API_KEY',
   // Add other mappings as needed
 };
 
-// Start with any existing variables that already have VITE_ prefix
+// Start with existing VITE_ vars
 const envVars = Object.keys(process.env)
   .filter(key => key.startsWith('VITE_'))
   .reduce((vars, key) => {
@@ -35,7 +38,7 @@ Object.entries(ENV_MAPPING).forEach(([sourceKey, viteKey]) => {
   }
 });
 
-// Generate content for .env file
+// Generate .env file content
 const envContent = Object.entries(envVars)
   .map(([key, value]) => `${key}=${value}`)
   .join('\n');
