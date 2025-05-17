@@ -293,8 +293,7 @@ exports.handleCallback = async (req, res) => {
     
     // Get the base URL for redirects - prioritize the host header from the request
     const baseUrl = process.env.APP_URL || 
-                   req.headers.origin || 
-                   'https://49ff-90-156-166-124.ngrok-free.app';
+                   req.headers.origin
     
     // Check if a user with this Telegram ID exists
     let user = await User.findOne({ 
