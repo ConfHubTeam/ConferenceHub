@@ -1,8 +1,8 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { UserContext } from "../components/UserContext";
 import { useNotification } from "../components/NotificationContext";
-import api from "../utils/api";
+import api, { getPasswordRequirements } from "../utils/api";
 import { validateForm } from "../utils/formUtils";
 
 export default function LoginPage() {
@@ -11,13 +11,52 @@ export default function LoginPage() {
   const [redirect, setRedirect] = useState(false);
   const [error, setError] = useState("");
   const [showAdminHint, setShowAdminHint] = useState(false);
+  const [emailValid, setEmailValid] = useState(true);
+  const [passwordRequirements, setPasswordRequirements] = useState({
+    allowedSpecialChars: "@$!%*?&"
+  });
 
   const {setUser} = useContext(UserContext);
   const { notify } = useNotification();
 
+  // Email validation function
+  const validateEmail = (email) => {
+    const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return emailRegex.test(String(email).toLowerCase());
+  };
+
+  // Update email validity when email changes
+  useEffect(() => {
+    if (email) {
+      setEmailValid(validateEmail(email));
+    } else {
+      setEmailValid(true); // Don't show error for empty email
+    }
+  }, [email]);
+  
+  // Fetch password requirements when component mounts
+  useEffect(() => {
+    const fetchPasswordRequirements = async () => {
+      try {
+        const requirements = await getPasswordRequirements();
+        setPasswordRequirements(requirements);
+      } catch (error) {
+        console.error("Error fetching password requirements:", error);
+      }
+    };
+    
+    fetchPasswordRequirements();
+  }, []);
+
   async function loginUser(event) {
     event.preventDefault();
     setError("");
+    
+    // Validate email format
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
     
     // Validate form
     const { isValid, errorMessage } = validateForm(
@@ -46,7 +85,12 @@ export default function LoginPage() {
       
       setRedirect(true);
     } catch (e) {
-      setError(e.response?.data?.error || "Login failed. Please check your credentials.");
+      if (e.response?.data?.error && e.response.data.error.includes("special characters")) {
+        // Format password error message to highlight allowed special characters
+        setError(`${e.response.data.error}. Allowed special characters: ${passwordRequirements.allowedSpecialChars}`);
+      } else {
+        setError(e.response?.data?.error || "Login failed. Please check your credentials.");
+      }
     }
   }
 
@@ -92,9 +136,12 @@ export default function LoginPage() {
               placeholder="your@email.com"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="w-full px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className={`w-full px-3 py-1.5 sm:py-2 border ${emailValid ? 'border-gray-300' : 'border-red-500'} rounded-md focus:outline-none focus:ring-2 ${emailValid ? 'focus:ring-primary' : 'focus:ring-red-500'}`}
               required
             />
+            {!emailValid && email && (
+              <p className="text-red-500 text-xs mt-1">Please enter a valid email address</p>
+            )}
           </div>
           
           <div className="mb-4">

@@ -34,3 +34,23 @@ api.interceptors.request.use(
 );
 
 export default api;
+
+// Utility function to get password requirements
+export const getPasswordRequirements = async () => {
+  try {
+    const response = await api.get('/password-requirements');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching password requirements:', error);
+    // Fallback to default requirements if the API fails
+    return {
+      minLength: 8,
+      requiresUppercase: true,
+      requiresLowercase: true,
+      requiresNumber: true,
+      requiresSpecialChar: true,
+      allowedSpecialChars: "@$!%*?&",
+      regex: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$"
+    };
+  }
+};
