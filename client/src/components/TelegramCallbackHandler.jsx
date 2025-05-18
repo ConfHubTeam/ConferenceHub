@@ -54,7 +54,30 @@ export default function TelegramCallbackHandler() {
         }
       } catch (err) {
         console.error("Error processing Telegram callback:", err);
-        setError("Failed to complete authentication. Please try again.");
+        
+        // Check if it's a user type mismatch error
+        if (err.response && err.response.data && err.response.data.error) {
+          const errorMessage = err.response.data.error;
+          
+          // Check if the error is a user type mismatch
+          if (errorMessage.includes('Account with this Telegram ID already exists as')) {
+            // Extract the user types from the error message
+            const match = errorMessage.match(/exists as (\w+) type. Cannot change to (\w+)./);
+            if (match && match.length >= 3) {
+              const existingType = match[1];
+              const attemptedType = match[2];
+              
+              // Redirect to login with specific error
+              navigate(`/login?error=user_type_mismatch&existing_type=${existingType}&attempted_type=${attemptedType}`);
+              return;
+            }
+          }
+          
+          setError(errorMessage);
+        } else {
+          setError("Failed to complete authentication. Please try again.");
+        }
+        
         setLoading(false);
       }
     }

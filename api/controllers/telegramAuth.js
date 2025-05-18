@@ -348,16 +348,21 @@ exports.completeLogin = async (req, res) => {
     let isNewUser = false;
     
     if (user) {
+      // User exists with this Telegram ID
+      // Check if the selected user type matches the existing user type
+      if (userType && userType !== user.userType) {
+        // User type doesn't match - return an error
+        return res.status(400).json({
+          ok: false,
+          error: `Account with this Telegram ID already exists as ${user.userType} type. Cannot change to ${userType}.`
+        });
+      }
+      
       // Update Telegram data
       user.telegramUsername = telegramData.username || user.telegramUsername;
       user.telegramFirstName = telegramData.first_name || user.telegramFirstName;
       user.telegramPhotoUrl = telegramData.photo_url || user.telegramPhotoUrl;
       user.telegramLinked = true;
-      
-      // Update user type if explicitly requested
-      if (userType && userType !== user.userType) {
-        user.userType = userType;
-      }
       
       await user.save();
     } else {
