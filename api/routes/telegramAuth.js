@@ -16,6 +16,9 @@ router.post('/verify', telegramAuthController.verifyCode);
 router.get('/callback', telegramAuthController.handleCallback);
 router.post('/callback', telegramAuthController.handleCallback);
 
+// Complete Telegram login with user type
+router.post('/complete-login', telegramAuthController.completeLogin);
+
 // Handle Telegram logout (requires authentication)
 router.post('/logout', authMiddleware, telegramAuthController.logoutTelegram);
 

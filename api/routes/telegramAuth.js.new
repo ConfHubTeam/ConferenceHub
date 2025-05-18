@@ -1,0 +1,2 @@
+// Add this route to handle the second part of Telegram authentication
+router.post('/complete-login', telegramAuthController.completeLogin);

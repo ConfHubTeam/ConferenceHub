@@ -279,23 +279,12 @@ exports.handleCallback = async (req, res) => {
     // For POST requests, data is in the request body
     const telegramData = req.method === 'GET' ? req.query : req.body;
     
-    // Extract the userType from the query parameters or body
-    // Default to 'client' if not provided for backward compatibility
-    let userType;
-    if (req.method === 'GET') {
-      userType = req.query.userType || 'client';
-    } else {
-      userType = req.body.userType || 'client';
-    }
-    
-    // Check that userType is valid (only 'client' or 'host' are allowed)
-    if (userType !== 'client' && userType !== 'host') {
-      return res.redirect('/login?error=invalid_user_type');
-    }
+    // Default to client for compatibility with previous versions
+    const userType = 'client';
     
     // Validate Telegram data
-    const validTelegramLoginData = validateTelegramLoginData(telegramData);
-    if (!validTelegramLoginData) {
+    if (!validateTelegramLoginData(telegramData)) {
+      console.error('Telegram auth validation failed:', JSON.stringify(telegramData));
       return res.redirect('/login?error=invalid_auth');
     }
     
@@ -310,10 +299,53 @@ exports.handleCallback = async (req, res) => {
     const baseUrl = process.env.APP_URL || 
                    req.headers.origin;
     
+    // Redirect to our client-side handler with all the telegram params
+    // This keeps the original parameters intact for validation
+    return res.redirect(`${baseUrl}/telegram-callback${req.url.substring(req.url.indexOf('?'))}`);
+  } catch (error) {
+    console.error('Telegram callback error:', error);
+    return res.redirect('/login?error=server_error');
+  }
+};
+
+// New controller method to complete Telegram login with user type
+exports.completeLogin = async (req, res) => {
+  try {
+    const { userType, ...telegramData } = req.body;
+    
+    // Validate the user type
+    if (userType !== 'client' && userType !== 'host') {
+      return res.status(400).json({
+        ok: false,
+        error: 'Invalid user type. Please choose either "client" or "host".'
+      });
+    }
+    
+    // Validate Telegram data
+    if (!validateTelegramLoginData(telegramData)) {
+      console.error('Telegram auth validation failed in complete-login:', JSON.stringify(telegramData));
+      return res.status(400).json({
+        ok: false,
+        error: 'Invalid authentication data.'
+      });
+    }
+    
+    // Check if the authentication is not too old (1 day max)
+    const authDate = parseInt(telegramData.auth_date);
+    const now = Math.floor(Date.now() / 1000);
+    if (now - authDate > 86400) {
+      return res.status(400).json({
+        ok: false,
+        error: 'Authentication has expired. Please try again.'
+      });
+    }
+    
     // Check if a user with this Telegram ID exists
     let user = await User.findOne({ 
       where: { telegramId: String(telegramData.id) } 
     });
+    
+    let isNewUser = false;
     
     if (user) {
       // Update Telegram data
@@ -328,32 +360,16 @@ exports.handleCallback = async (req, res) => {
       }
       
       await user.save();
-      
-      // Generate JWT token
-      const token = jwt.sign(
-        { email: user.email, id: user.id, userType: user.userType },
-        JWT_SECRET,
-        { expiresIn: '7d' }
-      );
-      
-      // Set cookie and redirect directly to account page with success flag
-      res.cookie('token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        sameSite: 'none' // Important for cross-site redirects
-      });
-      
-      return res.redirect(`${baseUrl}/account?login_success=true`);
     } else {
-      // Create a new conference hub account with Telegram data
+      // Create a new account with Telegram data
+      isNewUser = true;
       const randomPassword = crypto.randomBytes(12).toString('hex');
       const hashedPassword = bcrypt.hashSync(randomPassword, bcryptSalt);
       
       // Use Telegram username or first name as the user's name
       const userName = telegramData.username || telegramData.first_name || 'Telegram User';
       
-      // Create new user with Telegram data without generating a fake email
+      // Create new user with Telegram data
       user = await User.create({
         name: userName,
         password: hashedPassword,
@@ -365,27 +381,32 @@ exports.handleCallback = async (req, res) => {
         telegramLinked: true,
         userType: userType // Use the selected user type
       });
-      
-      // Generate JWT token
-      const token = jwt.sign(
-        { email: user.email, id: user.id, userType: user.userType },
-        JWT_SECRET,
-        { expiresIn: '7d' }
-      );
-      
-      // Set cookie and redirect directly to the account page with new account flag
-      res.cookie('token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        sameSite: 'none' // Important for cross-site redirects
-      });
-      
-      return res.redirect(`${baseUrl}/account?new_account=true`);
     }
+    
+    // Generate JWT token
+    const token = jwt.sign(
+      { email: user.email, id: user.id, userType: user.userType },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    
+    return res.json({
+      ok: true,
+      isNewUser,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email || '',
+        userType: user.userType
+      },
+      token
+    });
   } catch (error) {
-    console.error('Telegram callback error:', error);
-    return res.redirect('/login?error=server_error');
+    console.error('Telegram complete-login error:', error);
+    return res.status(500).json({
+      ok: false,
+      error: 'An error occurred during authentication. Please try again.'
+    });
   }
 };
 

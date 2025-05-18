@@ -58,8 +58,12 @@ export default function TelegramAuth() {
     const currentHost = window.location.host;
     const apiBase = import.meta.env.VITE_API_URL || window.location.origin;
     
-    // Pass the selected user type as a query parameter
-    const callbackPath = `/api/telegram-auth/callback?userType=${encodeURIComponent(userType)}`;
+    // Use a different approach - add the userType during server-side processing
+    // We'll store the userType in localStorage and retrieve it during callback processing
+    localStorage.setItem('telegram_auth_user_type', userType);
+    
+    // Keep the callback URL clean without the userType parameter
+    const callbackPath = `/api/telegram-auth/callback`;
     const callbackUrl = `${apiBase}${callbackPath}`;
     
     // Set up the Telegram Login Widget                   
