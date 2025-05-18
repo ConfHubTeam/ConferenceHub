@@ -59,7 +59,7 @@ export default function TelegramAuth() {
     const apiBase = import.meta.env.VITE_API_URL || window.location.origin;
     
     // Pass the selected user type as a query parameter
-    const callbackPath = `/api/telegram-auth/callback?userType=${userType}`;
+    const callbackPath = `/api/telegram-auth/callback?userType=${encodeURIComponent(userType)}`;
     const callbackUrl = `${apiBase}${callbackPath}`;
     
     // Set up the Telegram Login Widget                   

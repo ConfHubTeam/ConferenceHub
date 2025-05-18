@@ -279,9 +279,14 @@ exports.handleCallback = async (req, res) => {
     // For POST requests, data is in the request body
     const telegramData = req.method === 'GET' ? req.query : req.body;
     
-    // Extract the userType from the query parameters
+    // Extract the userType from the query parameters or body
     // Default to 'client' if not provided for backward compatibility
-    const userType = (req.method === 'GET' ? req.query.userType : req.body.userType) || 'client';
+    let userType;
+    if (req.method === 'GET') {
+      userType = req.query.userType || 'client';
+    } else {
+      userType = req.body.userType || 'client';
+    }
     
     // Check that userType is valid (only 'client' or 'host' are allowed)
     if (userType !== 'client' && userType !== 'host') {
@@ -289,7 +294,8 @@ exports.handleCallback = async (req, res) => {
     }
     
     // Validate Telegram data
-    if (!validateTelegramLoginData(telegramData)) {
+    const validTelegramLoginData = validateTelegramLoginData(telegramData);
+    if (!validTelegramLoginData) {
       return res.redirect('/login?error=invalid_auth');
     }
     
