@@ -31,10 +31,14 @@ const defaultCenter = {
   lng: 69.2401
 };
 
+// Define libraries as a constant outside the component to prevent recreation on each render
+const libraries = ['places'];
+
 export default function MapView({ places, disableInfoWindow = false }) {
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: GOOGLE_MAPS_API_KEY
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    libraries: libraries
   });
 
   const [map, setMap] = useState(null);

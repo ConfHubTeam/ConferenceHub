@@ -314,7 +314,13 @@ export default function PlacesFormPage() {
         <div className="flex gap-2 items-center mt-1 mb-4">
           <button 
             type="button" 
-            onClick={() => setShowMap(!showMap)}
+            onClick={() => {
+              setShowMap(!showMap);
+              // Force a reflow/repaint by waiting a tiny bit before toggling
+              setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+              }, 100);
+            }}
             className="bg-primary text-white px-3 py-1 rounded-md text-sm"
           >
             {showMap ? 'Hide Map' : 'Show Map'}
