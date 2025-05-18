@@ -390,6 +390,14 @@ exports.completeLogin = async (req, res) => {
       { expiresIn: '7d' }
     );
     
+    // Set cookie for browser-based access
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    });
+    
     return res.json({
       ok: true,
       isNewUser,

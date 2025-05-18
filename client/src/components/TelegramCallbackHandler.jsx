@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { UserContext } from "./UserContext";
 
 export default function TelegramCallbackHandler() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
+  const { setUser } = useContext(UserContext);
 
   useEffect(() => {
     async function processCallback() {
@@ -33,6 +35,12 @@ export default function TelegramCallbackHandler() {
         if (response.data.ok) {
           // Successful login/registration
           localStorage.removeItem('telegram_auth_user_type'); // Clean up
+          
+          // Save the token to localStorage
+          localStorage.setItem('token', response.data.token);
+          
+          // Update the user context
+          setUser(response.data.user);
           
           // Redirect to account page with success message
           if (response.data.isNewUser) {
