@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { Link, Navigate } from "react-router-dom";
 import api from "../utils/api";
 import { useNotification } from "../components/NotificationContext";
@@ -12,14 +12,103 @@ export default function RegisterPage() {
   const [userType, setUserType] = useState("client");
   const [error, setError] = useState("");
   const [redirect, setRedirect] = useState(false);
+  const [emailValid, setEmailValid] = useState(true);
+  const [passwordStrength, setPasswordStrength] = useState({
+    score: 0,
+    feedback: ""
+  });
   const { notify } = useNotification();
   const { setUser } = useContext(UserContext);
+
+  // Email validation function
+  const validateEmail = (email) => {
+    const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return emailRegex.test(String(email).toLowerCase());
+  };
+
+  // Password strength checker
+  const checkPasswordStrength = (password) => {
+    let score = 0;
+    let feedback = "";
+
+    if (!password) {
+      return { score: 0, feedback: "" };
+    }
+
+    // Length check
+    if (password.length < 6) {
+      feedback = "Password is too short";
+    } else if (password.length >= 8) {
+      score += 1;
+    }
+
+    // Check for uppercase letters
+    if (/[A-Z]/.test(password)) {
+      score += 1;
+    }
+
+    // Check for lowercase letters
+    if (/[a-z]/.test(password)) {
+      score += 1;
+    }
+
+    // Check for numbers
+    if (/\d/.test(password)) {
+      score += 1;
+    }
+
+    // Check for special characters
+    if (/[^A-Za-z0-9]/.test(password)) {
+      score += 1;
+    }
+
+    // Determine feedback based on score
+    if (score < 2) {
+      feedback = "Very weak password";
+    } else if (score < 3) {
+      feedback = "Weak password - add numbers or special characters";
+    } else if (score < 4) {
+      feedback = "Medium strength - add uppercase or special characters";
+    } else if (score < 5) {
+      feedback = "Strong password";
+    } else {
+      feedback = "Very strong password";
+    }
+
+    return { score, feedback };
+  };
+
+  // Update email validity when email changes
+  useEffect(() => {
+    if (email) {
+      setEmailValid(validateEmail(email));
+    } else {
+      setEmailValid(true); // Don't show error for empty email
+    }
+  }, [email]);
+
+  // Update password strength when password changes
+  useEffect(() => {
+    setPasswordStrength(checkPasswordStrength(password));
+  }, [password]);
 
   async function registerUser(event) {
     event.preventDefault(); // avoid reloading from form
     setError("");
     
-    // Validate form
+    // Validate email format
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+    
+    // Check password strength
+    if (passwordStrength.score < 3) {
+      setError("Please create a stronger password. Use a mix of uppercase letters, lowercase letters, numbers, and special characters.");
+      return;
+    }
+    
+    // Validate form using the existing validation function
     const { isValid, errorMessage } = validateForm(
       { name, email, password },
       {
@@ -28,8 +117,8 @@ export default function RegisterPage() {
         password: { 
           required: true, 
           errorMessage: "Password is required",
-          pattern: /^.{6,}$/, 
-          patternErrorMessage: "Password must be at least 6 characters long"
+          pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, 
+          patternErrorMessage: "Password must be at least 8 characters with uppercase, lowercase, number and special character"
         }
       }
     );
@@ -40,6 +129,20 @@ export default function RegisterPage() {
     }
     
     try {
+      // Check if user already exists
+      try {
+        const checkResponse = await api.post("/check-user", { email });
+        
+        if (checkResponse.data.exists) {
+          setError("An account with this email already exists. Please use a different email or login instead.");
+          return;
+        }
+      } catch (checkError) {
+        // If there's an error checking the user, we'll proceed with registration
+        // as it's likely an API endpoint issue, not a user existence issue
+        console.error("Error checking user existence:", checkError);
+      }
+      
       // Register the user
       const registerResponse = await api.post("/register", {
         name,
@@ -69,7 +172,11 @@ export default function RegisterPage() {
       setEmail("");
       setPassword("");
     } catch (e) {
-      setError(e.response?.data?.error || "Registration failed. Please try again later.");
+      if (e.response?.data?.name === 'SequelizeUniqueConstraintError') {
+        setError("This email is already registered. Please use a different email or login instead.");
+      } else {
+        setError(e.response?.data?.error || "Registration failed. Please try again later.");
+      }
     }
   }
 
@@ -112,9 +219,12 @@ export default function RegisterPage() {
                 placeholder="your@email.com"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                className="w-full px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                className={`w-full px-3 py-1 border ${emailValid ? 'border-gray-300' : 'border-red-500'} rounded-md focus:outline-none focus:ring-2 ${emailValid ? 'focus:ring-primary' : 'focus:ring-red-500'}`}
                 required
               />
+              {!emailValid && email && (
+                <p className="text-red-500 text-xs mt-1">Please enter a valid email address</p>
+              )}
             </div>
           </div>
           
@@ -126,9 +236,33 @@ export default function RegisterPage() {
               placeholder="••••••••"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="w-full px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className={`w-full px-3 py-1 border ${passwordStrength.score >= 3 ? 'border-gray-300' : password ? 'border-yellow-400' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-primary`}
               required
             />
+            {password && (
+              <div className="mt-1">
+                <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full ${
+                      passwordStrength.score === 0 ? 'bg-red-500' : 
+                      passwordStrength.score === 1 ? 'bg-red-400' : 
+                      passwordStrength.score === 2 ? 'bg-yellow-400' : 
+                      passwordStrength.score === 3 ? 'bg-yellow-300' : 
+                      passwordStrength.score === 4 ? 'bg-green-400' : 
+                      'bg-green-500'
+                    }`}
+                    style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
+                  ></div>
+                </div>
+                <p className={`text-xs mt-1 ${
+                  passwordStrength.score <= 1 ? 'text-red-500' : 
+                  passwordStrength.score <= 2 ? 'text-yellow-600' : 
+                  'text-green-600'
+                }`}>
+                  {passwordStrength.feedback}
+                </p>
+              </div>
+            )}
           </div>
           
           <div className="mb-3">
@@ -227,9 +361,6 @@ export default function RegisterPage() {
               </svg>
               Register with Telegram
             </Link>
-            <p className="text-xs text-gray-500 text-center mt-2">
-              Faster registration using your Telegram account
-            </p>
           </div>
         </form>
       </div>

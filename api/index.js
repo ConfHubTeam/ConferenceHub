@@ -151,9 +151,44 @@ apiRouter.get("/test", (req, res) => {
   res.json("test ok");
 });
 
+apiRouter.post("/check-user", async (req, res) => {
+  const { email } = req.body;
+  
+  if (!email) {
+    return res.status(400).json({ error: "Email is required" });
+  }
+  
+  try {
+    const user = await User.findOne({ where: { email } });
+    res.json({ exists: !!user });
+  } catch (e) {
+    console.error("Error checking user existence:", e);
+    res.status(500).json({ error: "Failed to check if user exists" });
+  }
+});
+
 apiRouter.post("/register", async (req, res) => {
   const { name, email, password, userType } = req.body;
+  
+  // Validate email format
+  const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  if (!emailRegex.test(String(email).toLowerCase())) {
+    return res.status(400).json({ error: "Invalid email format" });
+  }
+  
+  // Check if password is strong enough
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  if (!passwordRegex.test(password)) {
+    return res.status(400).json({ error: "Password must be at least 8 characters with uppercase, lowercase, number and special character" });
+  }
+  
   try {
+    // Check if user already exists
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      return res.status(409).json({ error: "This email is already registered" });
+    }
+    
     const userData = await User.create({
       name,
       email,
@@ -173,6 +208,13 @@ apiRouter.post("/register", async (req, res) => {
 
 apiRouter.post("/login", async (req, res) => {
   const { email, password } = req.body;
+  
+  // Validate email format
+  const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  if (!emailRegex.test(String(email).toLowerCase())) {
+    return res.status(400).json({ error: "Invalid email format" });
+  }
+  
   try {
     // Update Mongoose query to Sequelize query
     const userData = await User.findOne({ where: { email } });
