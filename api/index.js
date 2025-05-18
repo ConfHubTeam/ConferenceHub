@@ -151,6 +151,20 @@ apiRouter.get("/test", (req, res) => {
   res.json("test ok");
 });
 
+// Endpoint to get password requirements
+apiRouter.get("/password-requirements", (req, res) => {
+  const allowedSpecialChars = "@$!%*?&";
+  res.json({
+    minLength: 8,
+    requiresUppercase: true,
+    requiresLowercase: true,
+    requiresNumber: true,
+    requiresSpecialChar: true,
+    allowedSpecialChars: allowedSpecialChars,
+    regex: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$"
+  });
+});
+
 apiRouter.post("/check-user", async (req, res) => {
   const { email } = req.body;
   
@@ -177,9 +191,27 @@ apiRouter.post("/register", async (req, res) => {
   }
   
   // Check if password is strong enough
+  const allowedSpecialChars = "@$!%*?&";
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
   if (!passwordRegex.test(password)) {
-    return res.status(400).json({ error: "Password must be at least 8 characters with uppercase, lowercase, number and special character" });
+    // Check what specific requirement is failing
+    const hasLowercase = /[a-z]/.test(password);
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecialChar = new RegExp(`[${allowedSpecialChars}]`).test(password);
+    const hasMinLength = password.length >= 8;
+    
+    let specificError = "Password must be at least 8 characters with uppercase, lowercase, number and special character";
+    
+    // If it has invalid special characters but meets all other requirements
+    if (hasLowercase && hasUppercase && hasNumber && !hasSpecialChar && hasMinLength) {
+      specificError = `Password must include at least one of these special characters: ${allowedSpecialChars}`;
+    }
+    
+    return res.status(400).json({ 
+      error: specificError,
+      allowedSpecialChars: allowedSpecialChars
+    });
   }
   
   try {
@@ -236,10 +268,20 @@ apiRouter.post("/login", async (req, res) => {
           }
         );
       } else {
-        res.status(422).json("password is wrong");
+        const allowedSpecialChars = "@$!%*?&";
+        // Check if password might be failing due to special characters
+        const hasSpecialChar = new RegExp(`[${allowedSpecialChars}]`).test(password);
+        if (!hasSpecialChar && password.length >= 8) {
+          res.status(422).json({ 
+            error: "Password must include at least one special character",
+            allowedSpecialChars: allowedSpecialChars
+          });
+        } else {
+          res.status(422).json({ error: "Password is incorrect" });
+        }
       }
     } else {
-      res.status(422).json("user not found");
+      res.status(422).json({ error: "User not found" });
     }
   } catch (e) {
     res.status(422).json(e);

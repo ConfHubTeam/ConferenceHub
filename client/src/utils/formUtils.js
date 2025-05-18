@@ -100,6 +100,32 @@ export const addFormFieldIds = (event) => {
  * @param {string} address - The address to geocode
  * @returns {Object|null} - { lat: number, lng: number } or null if geocoding fails
  */
+
+/**
+ * Check password special characters
+ * 
+ * @param {string} password - The password to check
+ * @param {string} allowedSpecialChars - String containing allowed special characters
+ * @returns {object} - { isValid: boolean, invalidChars: string, hasRequiredSpecialChar: boolean }
+ */
+export const checkPasswordSpecialChars = (password, allowedSpecialChars = "@$!%*?&") => {
+  // Check if password has at least one valid special character
+  const specialCharRegex = new RegExp(`[${allowedSpecialChars.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}]`);
+  const hasRequiredSpecialChar = specialCharRegex.test(password);
+  
+  // Check if password has any invalid special characters
+  // First remove all allowed characters and alphanumeric
+  const strippedPassword = password.replace(new RegExp(`[A-Za-z0-9${allowedSpecialChars.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}]`, 'g'), '');
+  
+  // If there are any characters left, they are invalid special characters
+  const isValid = strippedPassword.length === 0 && hasRequiredSpecialChar;
+  
+  return {
+    isValid,
+    invalidChars: strippedPassword,
+    hasRequiredSpecialChar
+  };
+};
 export async function geocodeAddress(address) {
   try {
     // Use the Google Maps Geocoding API with the provided address

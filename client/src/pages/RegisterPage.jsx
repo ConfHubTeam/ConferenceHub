@@ -1,8 +1,8 @@
 import { useContext, useState, useEffect } from "react";
 import { Link, Navigate } from "react-router-dom";
-import api from "../utils/api";
+import api, { getPasswordRequirements } from "../utils/api";
 import { useNotification } from "../components/NotificationContext";
-import { validateForm } from "../utils/formUtils";
+import { validateForm, checkPasswordSpecialChars } from "../utils/formUtils";
 import { UserContext } from "../components/UserContext";
 
 export default function RegisterPage() {
@@ -13,9 +13,25 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [redirect, setRedirect] = useState(false);
   const [emailValid, setEmailValid] = useState(true);
+  const [passwordRequirements, setPasswordRequirements] = useState({
+    minLength: 8,
+    requiresUppercase: true,
+    requiresLowercase: true,
+    requiresNumber: true,
+    requiresSpecialChar: true,
+    allowedSpecialChars: "@$!%*?&"
+  });
   const [passwordStrength, setPasswordStrength] = useState({
     score: 0,
     feedback: ""
+  });
+  const [passwordChecklist, setPasswordChecklist] = useState({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    specialChar: false,
+    validSpecialChars: true
   });
   const { notify } = useNotification();
   const { setUser } = useContext(UserContext);
@@ -91,6 +107,44 @@ export default function RegisterPage() {
   useEffect(() => {
     setPasswordStrength(checkPasswordStrength(password));
   }, [password]);
+  
+  // Fetch password requirements from API when component mounts
+  useEffect(() => {
+    const fetchPasswordRequirements = async () => {
+      try {
+        const requirements = await getPasswordRequirements();
+        setPasswordRequirements(requirements);
+      } catch (error) {
+        console.error("Error fetching password requirements:", error);
+      }
+    };
+    
+    fetchPasswordRequirements();
+  }, []);
+  
+  // Update password checklist when password changes
+  useEffect(() => {
+    if (password) {
+      const specialCharCheck = checkPasswordSpecialChars(password, passwordRequirements.allowedSpecialChars);
+      setPasswordChecklist({
+        length: password.length >= passwordRequirements.minLength,
+        uppercase: /[A-Z]/.test(password),
+        lowercase: /[a-z]/.test(password),
+        number: /\d/.test(password),
+        specialChar: specialCharCheck.hasRequiredSpecialChar,
+        validSpecialChars: specialCharCheck.isValid
+      });
+    } else {
+      setPasswordChecklist({
+        length: false,
+        uppercase: false,
+        lowercase: false,
+        number: false,
+        specialChar: false,
+        validSpecialChars: true
+      });
+    }
+  }, [password, passwordRequirements]);
 
   async function registerUser(event) {
     event.preventDefault(); // avoid reloading from form
@@ -102,9 +156,26 @@ export default function RegisterPage() {
       return;
     }
     
-    // Check password strength
-    if (passwordStrength.score < 3) {
-      setError("Please create a stronger password. Use a mix of uppercase letters, lowercase letters, numbers, and special characters.");
+    // Check if password meets all requirements
+    const { length, uppercase, lowercase, number, specialChar, validSpecialChars } = passwordChecklist;
+    if (!length || !uppercase || !lowercase || !number || !specialChar || !validSpecialChars) {
+      let specificError = "";
+      
+      // Check for invalid special characters
+      if (!validSpecialChars) {
+        const specialCharCheck = checkPasswordSpecialChars(password, passwordRequirements.allowedSpecialChars);
+        specificError = `Password contains invalid special characters: ${specialCharCheck.invalidChars}. Only these special characters are allowed: ${passwordRequirements.allowedSpecialChars}`;
+      }
+      // Check for missing special characters
+      else if (!specialChar) {
+        specificError = `Password must include at least one of these special characters: ${passwordRequirements.allowedSpecialChars}`;
+      } 
+      // General error message
+      else {
+        specificError = "Password must meet all requirements listed below";
+      }
+      
+      setError(specificError);
       return;
     }
     
@@ -236,7 +307,11 @@ export default function RegisterPage() {
               placeholder="••••••••"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className={`w-full px-3 py-1 border ${passwordStrength.score >= 3 ? 'border-gray-300' : password ? 'border-yellow-400' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-primary`}
+              className={`w-full px-3 py-1 border ${
+                password ? (
+                  Object.values(passwordChecklist).every(v => v) ? 'border-green-500' : 'border-yellow-400'
+                ) : 'border-gray-300'
+              } rounded-md focus:outline-none focus:ring-2 focus:ring-primary`}
               required
             />
             {password && (
@@ -254,13 +329,37 @@ export default function RegisterPage() {
                     style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
                   ></div>
                 </div>
-                <p className={`text-xs mt-1 ${
-                  passwordStrength.score <= 1 ? 'text-red-500' : 
-                  passwordStrength.score <= 2 ? 'text-yellow-600' : 
-                  'text-green-600'
-                }`}>
-                  {passwordStrength.feedback}
-                </p>
+                
+                {/* Password Requirements Checklist */}
+                <div className="mt-2 text-xs space-y-1">
+                  <p className="font-medium mb-1">Password requirements:</p>
+                  <div className={`flex items-start gap-1 ${passwordChecklist.length ? 'text-green-600' : 'text-red-500'}`}>
+                    <span>{passwordChecklist.length ? '✓' : '✗'}</span>
+                    <span>At least {passwordRequirements.minLength} characters</span>
+                  </div>
+                  <div className={`flex items-start gap-1 ${passwordChecklist.lowercase ? 'text-green-600' : 'text-red-500'}`}>
+                    <span>{passwordChecklist.lowercase ? '✓' : '✗'}</span>
+                    <span>At least one lowercase letter</span>
+                  </div>
+                  <div className={`flex items-start gap-1 ${passwordChecklist.uppercase ? 'text-green-600' : 'text-red-500'}`}>
+                    <span>{passwordChecklist.uppercase ? '✓' : '✗'}</span>
+                    <span>At least one uppercase letter</span>
+                  </div>
+                  <div className={`flex items-start gap-1 ${passwordChecklist.number ? 'text-green-600' : 'text-red-500'}`}>
+                    <span>{passwordChecklist.number ? '✓' : '✗'}</span>
+                    <span>At least one number</span>
+                  </div>
+                  <div className={`flex items-start gap-1 ${passwordChecklist.specialChar ? 'text-green-600' : 'text-red-500'}`}>
+                    <span>{passwordChecklist.specialChar ? '✓' : '✗'}</span>
+                    <span>At least one special character from: <span className="font-mono bg-gray-100 px-1 rounded">{passwordRequirements.allowedSpecialChars}</span></span>
+                  </div>
+                  {!passwordChecklist.validSpecialChars && (
+                    <div className="text-red-500 flex items-start gap-1">
+                      <span>✗</span>
+                      <span>Contains invalid special characters. Only these are allowed: <span className="font-mono bg-gray-100 px-1 rounded">{passwordRequirements.allowedSpecialChars}</span></span>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
