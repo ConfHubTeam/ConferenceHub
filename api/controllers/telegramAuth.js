@@ -279,6 +279,15 @@ exports.handleCallback = async (req, res) => {
     // For POST requests, data is in the request body
     const telegramData = req.method === 'GET' ? req.query : req.body;
     
+    // Extract the userType from the query parameters
+    // Default to 'client' if not provided for backward compatibility
+    const userType = (req.method === 'GET' ? req.query.userType : req.body.userType) || 'client';
+    
+    // Check that userType is valid (only 'client' or 'host' are allowed)
+    if (userType !== 'client' && userType !== 'host') {
+      return res.redirect('/login?error=invalid_user_type');
+    }
+    
     // Validate Telegram data
     if (!validateTelegramLoginData(telegramData)) {
       return res.redirect('/login?error=invalid_auth');
@@ -293,7 +302,7 @@ exports.handleCallback = async (req, res) => {
     
     // Get the base URL for redirects - prioritize the host header from the request
     const baseUrl = process.env.APP_URL || 
-                   req.headers.origin
+                   req.headers.origin;
     
     // Check if a user with this Telegram ID exists
     let user = await User.findOne({ 
@@ -306,6 +315,11 @@ exports.handleCallback = async (req, res) => {
       user.telegramFirstName = telegramData.first_name || user.telegramFirstName;
       user.telegramPhotoUrl = telegramData.photo_url || user.telegramPhotoUrl;
       user.telegramLinked = true;
+      
+      // Update user type if explicitly requested
+      if (userType && userType !== user.userType) {
+        user.userType = userType;
+      }
       
       await user.save();
       
@@ -343,7 +357,7 @@ exports.handleCallback = async (req, res) => {
         telegramPhotoUrl: telegramData.photo_url || null,
         telegramPhone: telegramData.phone || null,
         telegramLinked: true,
-        userType: 'client' // Default user type
+        userType: userType // Use the selected user type
       });
       
       // Generate JWT token
