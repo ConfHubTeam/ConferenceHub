@@ -196,7 +196,7 @@ export default function Header() {
       <div className="hidden md:block flex-grow"></div>
       
       <div className="flex items-center gap-2 relative z-30">
-        {/* Desktop filter button - now next to account icon */}
+        {/* Desktop filter button - now next to account icon - COMMENTED OUT TO HIDE FILTERS
         <button 
           ref={filterRef} 
           className="hidden md:flex border border-gray-300 rounded-full p-1.5 bg-white hover:shadow-md transition-shadow"
@@ -219,7 +219,7 @@ export default function Header() {
           </svg>
         </button>
 
-        {/* Mobile search button - only shown on mobile */}
+        {/* Mobile search button - only shown on mobile *//*}
         <button 
           ref={mobileFilterRef}
           onClick={toggleFilterExpanded} 
@@ -241,6 +241,7 @@ export default function Header() {
             />
           </svg>
         </button>
+        */}
         
         {/* Hamburger menu button - only shown on mobile */}
         <button 
@@ -295,7 +296,7 @@ export default function Header() {
       </div>
       
       {/* Semi-transparent overlay when menu is open */}
-      {(mobileMenuOpen || filterExpanded) && (
+      {(mobileMenuOpen /* || filterExpanded */) && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-20" />
       )}
       
@@ -380,7 +381,7 @@ export default function Header() {
         </div>
       )}
       
-      {/* Expanded filter dropdown - shared between mobile and desktop */}
+      {/* Expanded filter dropdown - shared between mobile and desktop - COMMENTED OUT TO HIDE FILTERS
       {filterExpanded && (
         <div 
           ref={filterDropdownRef}
@@ -397,7 +398,7 @@ export default function Header() {
           }}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            {/* Location filter */}
+            {/* Location filter *//*}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
               <input
@@ -410,7 +411,7 @@ export default function Header() {
               />
             </div>
             
-            {/* Date filters */}
+            {/* Date filters *//*}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Check in</label>
               <input
@@ -432,7 +433,7 @@ export default function Header() {
               />
             </div>
           
-            {/* Guests count */}
+            {/* Guests count *//*}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Guests</label>
               <input 
@@ -446,7 +447,7 @@ export default function Header() {
               />
             </div>
             
-            {/* Price range */}
+            {/* Price range *//*}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Price range ($/hour)</label>
               <div className="flex items-center space-x-2">
@@ -471,7 +472,7 @@ export default function Header() {
             </div>
           </div>
           
-          {/* Tags */}
+          {/* Tags *//*}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Features & Services</label>
             <div className="flex flex-wrap gap-2">
@@ -509,7 +510,7 @@ export default function Header() {
           </div>
           
           <div className="flex justify-between items-center">
-            {/* Check if any filters are active */}
+            {/* Check if any filters are active *//*}
             {(searchLocation || checkInDate || checkOutDate || guestCount || 
               minPrice || maxPrice || selectedTags.length > 0) && (
               <button 
@@ -549,10 +550,11 @@ export default function Header() {
         </div>
       )}
 
-      {/* Add space at the bottom when filter is expanded on mobile */}
+      {/* Add space at the bottom when filter is expanded on mobile *//*}
       {filterExpanded && (
         <div className="md:hidden h-32"></div>
       )}
+      */}
       
       {/* Add keyframes for filter dropdown animation */}
       <style jsx="true">{`
