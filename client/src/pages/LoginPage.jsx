@@ -46,7 +46,15 @@ export default function LoginPage() {
     };
     
     fetchPasswordRequirements();
-  }, []);
+    
+    // Check for Telegram auth errors
+    const telegramAuthError = localStorage.getItem('telegram_auth_error');
+    if (telegramAuthError) {
+      setError(telegramAuthError);
+      notify(telegramAuthError, "error");
+      localStorage.removeItem('telegram_auth_error');
+    }
+  }, [notify]);
 
   async function loginUser(event) {
     event.preventDefault();
@@ -169,6 +177,7 @@ export default function LoginPage() {
           </div>
           
           <div className="mt-4 pt-4 border-t border-gray-200">
+            <p className="text-center text-gray-600 text-sm mb-3">or continue with</p>
             <Link 
               to="/telegram-auth" 
               className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-[#0088cc] text-white rounded-md hover:bg-[#0077b5] transition-colors"

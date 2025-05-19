@@ -52,6 +52,17 @@ export default function ProfilePage({}) {
     try {
       // Regular logout
       await api.post("/logout");
+      
+      // Clear any token or auth data from local storage
+      localStorage.removeItem('token');
+      localStorage.removeItem('telegram_auth_user_type');
+      localStorage.removeItem('telegram_auth_error');
+      
+      // Clear all cookies by setting their expiration to past date
+      document.cookie.split(";").forEach(function(c) {
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
+      
       notify("Successfully logged out", "success");
       setRedirect("/");
       setUser(null);
@@ -68,6 +79,17 @@ export default function ProfilePage({}) {
       await api.post("/telegram-auth/logout");
       // Then perform regular logout
       await api.post("/logout");
+      
+      // Remove any Telegram-related data from local storage
+      localStorage.removeItem('telegram_auth_user_type');
+      localStorage.removeItem('telegram_auth_error');
+      localStorage.removeItem('token');
+      
+      // Clear all cookies by setting their expiration to past date
+      document.cookie.split(";").forEach(function(c) {
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
+      
       notify("Successfully logged out", "success");
       setRedirect("/");
       setUser(null);
