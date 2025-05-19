@@ -71,6 +71,15 @@ export default function TelegramCallbackHandler() {
               const errorMsg = `Your Telegram account is already registered as a ${existingType}. You cannot login as a ${attemptedType}.`;
               localStorage.setItem('telegram_auth_error', errorMsg);
               
+              // Clear all cookies and session data
+              localStorage.removeItem('token');
+              localStorage.removeItem('telegram_auth_user_type');
+              
+              // Clear cookies by setting their expiration to past date
+              document.cookie.split(";").forEach(function(c) {
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+              });
+              
               // Redirect to login
               navigate(`/login`);
               return;

@@ -372,13 +372,34 @@ apiRouter.get("/profile", (req, res) => {
 });
 
 apiRouter.post("/logout", (req, res) => {
-  // Properly clear the token cookie with the same options used when setting it
+  // Get all cookies and clear them
+  Object.keys(req.cookies).forEach(cookieName => {
+    res.clearCookie(cookieName, {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    });
+  });
+  
+  // Clear the main token cookie
   res.clearCookie("token", {
     path: '/',
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
-  }).json({ success: true, message: "Logged out successfully" });
+  });
+  
+  // Clear the session
+  if (req.session) {
+    req.session.destroy(err => {
+      if (err) {
+        console.error('Error destroying session during logout:', err);
+      }
+    });
+  }
+  
+  res.json({ success: true, message: "Logged out successfully" });
 });
 
 // Modified upload function for Cloudinary

@@ -351,6 +351,37 @@ exports.completeLogin = async (req, res) => {
       // User exists with this Telegram ID
       // Check if the selected user type matches the existing user type
       if (userType && userType !== user.userType) {
+        // Try to reset the Telegram web authorization
+        try {
+          if (user.telegramId) {
+            await axios.post('https://api.telegram.org/bot' + TELEGRAM_BOT_TOKEN + '/account.resetWebAuthorization', {
+              hash: user.telegramId
+            });
+            console.log('Reset Telegram web authorization due to user type mismatch');
+          }
+        } catch (telegramError) {
+          console.error('Error resetting Telegram web authorization:', telegramError.message);
+        }
+        
+        // Clear any existing cookies
+        Object.keys(req.cookies || {}).forEach(cookieName => {
+          res.clearCookie(cookieName, {
+            path: '/',
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+          });
+        });
+        
+        // Clear the session
+        if (req.session) {
+          req.session.destroy(err => {
+            if (err) {
+              console.error('Error destroying session during user type mismatch:', err);
+            }
+          });
+        }
+        
         // User type doesn't match - return an error with a clear message
         return res.status(400).json({
           ok: false,
@@ -455,6 +486,20 @@ exports.logoutTelegram = async (req, res) => {
         ok: false,
         error: 'User is not linked to Telegram'
       });
+    }
+    
+    // Try to call Telegram's resetWebAuthorization API if we have telegramId
+    if (user.telegramId) {
+      try {
+        // Use Telegram API to reset web authorization
+        await axios.post('https://api.telegram.org/bot' + TELEGRAM_BOT_TOKEN + '/account.resetWebAuthorization', {
+          hash: user.telegramId // Use telegramId as the hash to identify the session
+        });
+        console.log('Successfully reset Telegram web authorization for user:', user.id);
+      } catch (telegramError) {
+        // Just log the error but continue with local logout
+        console.error('Error resetting Telegram web authorization:', telegramError.message);
+      }
     }
     
     // Update user's Telegram connection status
