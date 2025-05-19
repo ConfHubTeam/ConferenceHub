@@ -27,10 +27,14 @@ export default function TelegramAuth() {
       setError('Invalid authentication data. Please try again.');
     } else if (error === 'invalid_user_type') {
       setError('Invalid user type selected. Please choose either "client" or "host".');
-    } else if (error === 'user_type_mismatch') {
-      const existingType = params.get('existing_type');
-      const attemptedType = params.get('attempted_type');
-      setError(`This Telegram account is already registered as a ${existingType}. You cannot change it to ${attemptedType}.`);
+    }
+    
+    // Check for stored Telegram auth error
+    const telegramAuthError = localStorage.getItem('telegram_auth_error');
+    if (telegramAuthError) {
+      setError(telegramAuthError);
+      notify(telegramAuthError, "error");
+      localStorage.removeItem('telegram_auth_error');
     }
     
     // If there was a success, show notification and redirect

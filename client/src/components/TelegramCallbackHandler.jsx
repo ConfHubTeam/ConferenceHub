@@ -67,8 +67,12 @@ export default function TelegramCallbackHandler() {
               const existingType = match[1];
               const attemptedType = match[2];
               
-              // Redirect to login with specific error
-              navigate(`/login?error=user_type_mismatch&existing_type=${existingType}&attempted_type=${attemptedType}`);
+              // Use notification context to show error on the login page
+              const errorMsg = `Your Telegram account is already registered as a ${existingType}. You cannot login as a ${attemptedType}.`;
+              localStorage.setItem('telegram_auth_error', errorMsg);
+              
+              // Redirect to login
+              navigate(`/login`);
               return;
             }
           }

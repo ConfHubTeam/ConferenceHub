@@ -351,10 +351,13 @@ exports.completeLogin = async (req, res) => {
       // User exists with this Telegram ID
       // Check if the selected user type matches the existing user type
       if (userType && userType !== user.userType) {
-        // User type doesn't match - return an error
+        // User type doesn't match - return an error with a clear message
         return res.status(400).json({
           ok: false,
-          error: `Account with this Telegram ID already exists as ${user.userType} type. Cannot change to ${userType}.`
+          error: `Account with this Telegram ID already exists as ${user.userType} type. Cannot change to ${userType}.`,
+          errorType: 'user_type_mismatch',
+          existingType: user.userType,
+          attemptedType: userType
         });
       }
       

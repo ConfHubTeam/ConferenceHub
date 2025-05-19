@@ -46,7 +46,15 @@ export default function LoginPage() {
     };
     
     fetchPasswordRequirements();
-  }, []);
+    
+    // Check for Telegram auth errors
+    const telegramAuthError = localStorage.getItem('telegram_auth_error');
+    if (telegramAuthError) {
+      setError(telegramAuthError);
+      notify(telegramAuthError, "error");
+      localStorage.removeItem('telegram_auth_error');
+    }
+  }, [notify]);
 
   async function loginUser(event) {
     event.preventDefault();
