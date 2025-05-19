@@ -52,6 +52,10 @@ export default function ProfilePage({}) {
     try {
       // Regular logout
       await api.post("/logout");
+      
+      // Clear any token or auth data from local storage
+      localStorage.removeItem('token');
+      
       notify("Successfully logged out", "success");
       setRedirect("/");
       setUser(null);
@@ -68,6 +72,11 @@ export default function ProfilePage({}) {
       await api.post("/telegram-auth/logout");
       // Then perform regular logout
       await api.post("/logout");
+      
+      // Remove any Telegram-related data from local storage
+      localStorage.removeItem('telegram_auth_user_type');
+      localStorage.removeItem('token');
+      
       notify("Successfully logged out", "success");
       setRedirect("/");
       setUser(null);

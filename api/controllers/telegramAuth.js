@@ -456,13 +456,26 @@ exports.logoutTelegram = async (req, res) => {
     
     // Update user's Telegram connection status
     user.telegramLinked = false;
-    // Don't remove the Telegram data, just disconnect it
-    // This allows easy reconnection later if needed
+    
+    // Clear all Telegram session data to ensure complete logout
+    if (req.session) {
+      // Destroy the express session completely
+      req.session.destroy(err => {
+        if (err) {
+          console.error('Error destroying session:', err);
+        }
+      });
+    }
     
     await user.save();
     
-    // Clear the token cookie
-    res.clearCookie('token');
+    // Clear the token cookie with appropriate options
+    res.clearCookie('token', {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    });
     
     return res.json({
       ok: true,

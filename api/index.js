@@ -29,8 +29,11 @@ app.use(session({
   saveUninitialized: true,
   cookie: { 
     secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-    maxAge: 1000 * 60 * 60 // 1 hour
-  }
+    maxAge: 1000 * 60 * 60, // 1 hour
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+  },
+  unset: 'destroy' // Ensure session data is completely removed when destroyed
 }));
 
 // We're keeping this line for any static files, but primary image hosting will be on Cloudinary
@@ -259,12 +262,17 @@ apiRouter.post("/login", async (req, res) => {
           {},
           (err, token) => {
             if (err) throw err;
-            res.cookie("token", token).json({
+            res.cookie("token", token, {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === 'production',
+              maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+              sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+            }).json({
               id: userData.id,
               name: userData.name,
               email: userData.email,
               userType: userData.userType
-            }); // set a cookie
+            });
           }
         );
       } else {
@@ -364,7 +372,13 @@ apiRouter.get("/profile", (req, res) => {
 });
 
 apiRouter.post("/logout", (req, res) => {
-  res.cookie("token", "").json(true);
+  // Properly clear the token cookie with the same options used when setting it
+  res.clearCookie("token", {
+    path: '/',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+  }).json({ success: true, message: "Logged out successfully" });
 });
 
 // Modified upload function for Cloudinary
