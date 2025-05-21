@@ -1144,6 +1144,99 @@ apiRouter.get("/stats", async (req, res) => {
   }
 });
 
+// New endpoint: Delete own account
+apiRouter.delete("/account/delete", async (req, res) => {
+  try {
+    const { confirmation } = req.query;
+    const userData = await getUserDataFromToken(req);
+    
+    // Verify user is authenticated
+    if (!userData || !userData.id) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    
+    // Additional safety check - require confirmation parameter
+    if (confirmation !== 'true') {
+      return res.status(400).json({ error: "Confirmation parameter required to delete account" });
+    }
+    
+    // Find the user to delete
+    const userToDelete = await User.findByPk(userData.id);
+    
+    if (!userToDelete) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    // Log the deletion attempt for audit purposes
+    console.log(`User ${userData.id} (${userData.email}) attempting to delete their own account`);
+    
+    // First, delete all bookings associated with this user
+    await Booking.destroy({
+      where: { userId: userData.id }
+    });
+    
+    // For hosts, delete all their places and the bookings for those places
+    if (userToDelete.userType === 'host') {
+      // Find all places owned by this host
+      const places = await Place.findAll({
+        where: { ownerId: userData.id }
+      });
+      
+      // Delete all bookings for each place
+      for (const place of places) {
+        await Booking.destroy({
+          where: { placeId: place.id }
+        });
+      }
+      
+      // Delete all places owned by this host
+      await Place.destroy({
+        where: { ownerId: userData.id }
+      });
+    }
+    
+    // Clear authentication cookies before deleting the user
+    // Clear all cookies
+    Object.keys(req.cookies).forEach(cookieName => {
+      res.clearCookie(cookieName, {
+        path: '/',
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+      });
+    });
+    
+    // Clear the main token cookie
+    res.clearCookie("token", {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    });
+    
+    // Clear the session
+    if (req.session) {
+      req.session.destroy(err => {
+        if (err) {
+          console.error('Error destroying session during account deletion:', err);
+        }
+      });
+    }
+    
+    // Finally, delete the user
+    await userToDelete.destroy();
+    
+    // Log successful deletion
+    console.log(`User ${userData.id} (${userData.email}) successfully deleted their account`);
+    
+    res.json({ success: true, message: "Your account and all associated data have been deleted successfully" });
+    
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    res.status(422).json({ error: error.message });
+  }
+});
+
 // Mount the API router at /api prefix
 app.use('/api', apiRouter);
 
