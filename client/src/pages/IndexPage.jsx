@@ -43,9 +43,9 @@ export default function IndexPage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-166px)]">
-      {/* View toggle buttons - COMMENTED OUT TO HIDE LISTINGS AND MAP
+      {/* View toggle buttons */}
       <div className="flex justify-center items-center my-4 gap-2">
-        {/* Mobile-only view toggle buttons *//*}
+        {/* Mobile-only view toggle buttons */}
         <button 
           onClick={() => setViewMode("grid")}
           className={`md:hidden px-4 py-2 rounded-full flex items-center transition ${
@@ -73,7 +73,7 @@ export default function IndexPage() {
           Map View
         </button>
         
-        {/* Desktop-only map toggle button *//*}
+        {/* Desktop-only map toggle button */}
         <button 
           onClick={toggleMap}
           className={`hidden md:flex px-4 py-2 rounded-full items-center transition ${
@@ -88,30 +88,11 @@ export default function IndexPage() {
           {isMapVisible ? "Hide Map" : "Show Map"}
         </button>
       </div>
-      */}
 
-      {/* Authentication-only message */}
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center p-6 max-w-md">
-          <h2 className="text-2xl font-bold text-primary mb-4">Welcome to ConferenceHub</h2>
-          <p className="text-gray-600 mb-6">
-            Login or register to access the platform.
-          </p>
-          <div className="flex justify-center gap-4">
-            <Link to="/login" className="bg-primary text-white py-2 px-6 rounded-full hover:bg-opacity-90 transition-colors">
-              Login
-            </Link>
-            <Link to="/register" className="bg-gray-100 text-gray-700 py-2 px-6 rounded-full hover:bg-gray-200 transition-colors">
-              Register
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Main content - COMMENTED OUT TO HIDE LISTINGS AND MAP 
+      {/* Main content */}
       {viewMode === "grid" ? (
         <div className="flex flex-col md:flex-row h-full overflow-hidden">
-          {/* Listings section - takes full width on mobile, 55% or 100% on desktop based on map visibility *//*}
+          {/* Listings section - takes full width on mobile, 55% or 100% on desktop based on map visibility */}
           <div 
             className={`px-4 md:px-8 py-4 overflow-y-auto transition-all duration-300 ease-in-out ${
               isMapVisible ? "md:w-[55%] md:pr-2" : "w-full"
@@ -163,7 +144,7 @@ export default function IndexPage() {
             )}
           </div>
 
-          {/* Map section - hidden on mobile, 45% width on desktop when visible, with rounded corners *//*}
+          {/* Map section - hidden on mobile, 45% width on desktop when visible, with rounded corners */}
           <div className={`hidden md:block md:w-[45%] h-full transition-all duration-300 ease-in-out ${
             isMapVisible ? "opacity-100 max-w-[45%]" : "opacity-0 max-w-0"
           }`}>
@@ -179,7 +160,7 @@ export default function IndexPage() {
             <MapView places={filteredPlaces} />
           </div>
         </div>
-      )*/}
+      )}
     </div>
   );
 }
