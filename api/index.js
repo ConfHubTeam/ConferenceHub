@@ -50,17 +50,34 @@ const parseAllowedOrigins = () => {
       console.log('Using CORS_ALLOWED_ORIGINS from environment:', corsOrigins);
     } catch (error) {
       console.error('Error parsing CORS_ALLOWED_ORIGINS:', error);
-      // Empty array if parsing fails
-      corsOrigins = [];
+      // If parsing fails, try to split by comma (common format)
+      corsOrigins = process.env.CORS_ALLOWED_ORIGINS.split(',').map(origin => origin.trim());
     }
   }
   
   // Add FRONTEND_URL if it exists and not already included
   if (process.env.FRONTEND_URL) {
-    const frontendUrl = process.env.FRONTEND_URL.trim().replace(/\/$/, '');
+    // Add both with and without trailing slash to be safe
+    const frontendUrl = process.env.FRONTEND_URL.trim();
+    const frontendUrlNoSlash = frontendUrl.replace(/\/$/, '');
+    
     if (frontendUrl && !corsOrigins.includes(frontendUrl)) {
       corsOrigins.push(frontendUrl);
     }
+    
+    if (frontendUrlNoSlash && !corsOrigins.includes(frontendUrlNoSlash)) {
+      corsOrigins.push(frontendUrlNoSlash);
+    }
+  }
+  
+  // Add localhost URLs for development
+  if (process.env.NODE_ENV !== 'production') {
+    const localUrls = ['http://localhost:5173', 'http://localhost:4000', 'http://localhost:3000'];
+    localUrls.forEach(url => {
+      if (!corsOrigins.includes(url)) {
+        corsOrigins.push(url);
+      }
+    });
   }
   
   return corsOrigins.filter(Boolean); // Remove any undefined/empty values
@@ -80,12 +97,32 @@ app.use(
       
       console.log(`CORS request from origin: ${origin}`);
       
-      // Check if the origin is allowed
-      if (allowedOrigins.includes(origin)) {
+      // Check if the origin matches any allowed origins
+      const isAllowed = allowedOrigins.some(allowedOrigin => {
+        // Check for exact matches
+        if (allowedOrigin === origin) {
+          return true;
+        }
+        
+        // Check for wildcard matches (e.g., *.ngrok-free.app)
+        if (allowedOrigin.startsWith('*') && origin.endsWith(allowedOrigin.substring(1))) {
+          return true;
+        }
+        
+        // For local development, check if it's a localhost URL regardless of port
+        if (process.env.NODE_ENV !== 'production' && 
+            origin.match(/^https?:\/\/localhost(:\d+)?$/)) {
+          return true;
+        }
+        
+        return false;
+      });
+      
+      if (isAllowed) {
         callback(null, true);
       } else {
         console.log(`Origin not allowed by CORS: ${origin}`);
-        callback(null, false);
+        callback(new Error('Not allowed by CORS'));
       }
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
