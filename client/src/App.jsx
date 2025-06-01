@@ -14,6 +14,9 @@ import PlaceDetailPage from "./pages/PlaceDetailPage";
 import DashboardPage from "./pages/DashboardPage";
 import UsersPage from "./pages/UsersPage";
 import AllPlacesPage from "./pages/AllPlacesPage";
+import TelegramAuth from "./components/TelegramAuth";
+import TelegramCallbackHandler from "./components/TelegramCallbackHandler";
+import LoginSuccessPage from "./pages/LoginSuccessPage";
 
 function App() {
 
@@ -26,6 +29,9 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/admin" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/telegram-auth" element={<TelegramAuth />} />
+            <Route path="/telegram-callback" element={<TelegramCallbackHandler />} />
+            <Route path="/login-success" element={<LoginSuccessPage />} />
             <Route path="/account" element={<ProfilePage />}/>
             <Route path="/account/user-places" element={<PlacesPage />}/>
             <Route path="/account/places/new" element={<PlacesFormPage />}/>

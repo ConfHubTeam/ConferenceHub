@@ -47,6 +47,11 @@ export default function MapPicker({
     
     map.setCenter(center);
     setMap(map);
+    
+    // Force map to refresh by triggering a resize event after a slight delay
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 100);
   }, [position]);
 
   const onUnmount = useCallback(function callback() {

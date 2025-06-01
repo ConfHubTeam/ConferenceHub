@@ -1,8 +1,8 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { UserContext } from "../components/UserContext";
 import { useNotification } from "../components/NotificationContext";
-import api from "../utils/api";
+import api, { getPasswordRequirements } from "../utils/api";
 import { validateForm } from "../utils/formUtils";
 
 export default function LoginPage() {
@@ -11,13 +11,60 @@ export default function LoginPage() {
   const [redirect, setRedirect] = useState(false);
   const [error, setError] = useState("");
   const [showAdminHint, setShowAdminHint] = useState(false);
+  const [emailValid, setEmailValid] = useState(true);
+  const [passwordRequirements, setPasswordRequirements] = useState({
+    allowedSpecialChars: "@$!%*?&"
+  });
 
   const {setUser} = useContext(UserContext);
   const { notify } = useNotification();
 
+  // Email validation function
+  const validateEmail = (email) => {
+    const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return emailRegex.test(String(email).toLowerCase());
+  };
+
+  // Update email validity when email changes
+  useEffect(() => {
+    if (email) {
+      setEmailValid(validateEmail(email));
+    } else {
+      setEmailValid(true); // Don't show error for empty email
+    }
+  }, [email]);
+  
+  // Fetch password requirements when component mounts
+  useEffect(() => {
+    const fetchPasswordRequirements = async () => {
+      try {
+        const requirements = await getPasswordRequirements();
+        setPasswordRequirements(requirements);
+      } catch (error) {
+        console.error("Error fetching password requirements:", error);
+      }
+    };
+    
+    fetchPasswordRequirements();
+    
+    // Check for Telegram auth errors
+    const telegramAuthError = localStorage.getItem('telegram_auth_error');
+    if (telegramAuthError) {
+      setError(telegramAuthError);
+      notify(telegramAuthError, "error");
+      localStorage.removeItem('telegram_auth_error');
+    }
+  }, [notify]);
+
   async function loginUser(event) {
     event.preventDefault();
     setError("");
+    
+    // Validate email format
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
     
     // Validate form
     const { isValid, errorMessage } = validateForm(
@@ -46,7 +93,12 @@ export default function LoginPage() {
       
       setRedirect(true);
     } catch (e) {
-      setError(e.response?.data?.error || "Login failed. Please check your credentials.");
+      if (e.response?.data?.error && e.response.data.error.includes("special characters")) {
+        // Format password error message to highlight allowed special characters
+        setError(`${e.response.data.error}. Allowed special characters: ${passwordRequirements.allowedSpecialChars}`);
+      } else {
+        setError(e.response?.data?.error || "Login failed. Please check your credentials.");
+      }
     }
   }
 
@@ -92,9 +144,12 @@ export default function LoginPage() {
               placeholder="your@email.com"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="w-full px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className={`w-full px-3 py-1.5 sm:py-2 border ${emailValid ? 'border-gray-300' : 'border-red-500'} rounded-md focus:outline-none focus:ring-2 ${emailValid ? 'focus:ring-primary' : 'focus:ring-red-500'}`}
               required
             />
+            {!emailValid && email && (
+              <p className="text-red-500 text-xs mt-1">Please enter a valid email address</p>
+            )}
           </div>
           
           <div className="mb-4">
@@ -118,6 +173,20 @@ export default function LoginPage() {
             Don't have an account?{" "}
             <Link className="text-primary font-medium hover:underline" to={"/register"}>
               Register now
+            </Link>
+          </div>
+          
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <p className="text-center text-gray-600 text-sm mb-3">or continue with</p>
+            <Link 
+              to="/telegram-auth" 
+              className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-[#0088cc] text-white rounded-md hover:bg-[#0077b5] transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 240 240">
+                <path fill="white" d="M66.964 134.874s-32.08-10.062-51.344-16.002c-17.542-6.693-1.57-14.928 6.015-17.59 7.585-2.66 186.38-71.948 194.94-75.233 8.94-4.147 19.884-.35 14.767 18.656-4.416 20.407-30.166 142.874-33.827 158.812-3.66 15.937-18.447 6.844-18.447 6.844l-83.21-61.442z" />
+                <path fill="none" stroke="white" strokeWidth="8" d="M86.232 157.428c-12.023 12.024-22.92 6.417-22.92 6.417l-20.158-27.902 89.261-71.267c7.585-6.067 2.799-7.586 2.799-7.586s-4.447 1.519-9.383 6.455c-4.936 4.935-82.733 74.293-82.733 74.293" />
+              </svg>
+              Login with Telegram
             </Link>
           </div>
         </form>

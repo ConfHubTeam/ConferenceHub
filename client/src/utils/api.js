@@ -19,4 +19,38 @@ const api = axios.create({
   withCredentials: true, // To handle cookies for authentication
 });
 
+// Add request interceptor to inject the token from localStorage into all requests
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 export default api;
+
+// Utility function to get password requirements
+export const getPasswordRequirements = async () => {
+  try {
+    const response = await api.get('/password-requirements');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching password requirements:', error);
+    // Fallback to default requirements if the API fails
+    return {
+      minLength: 8,
+      requiresUppercase: true,
+      requiresLowercase: true,
+      requiresNumber: true,
+      requiresSpecialChar: true,
+      allowedSpecialChars: "@$!%*?&",
+      regex: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$"
+    };
+  }
+};

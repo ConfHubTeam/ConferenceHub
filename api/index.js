@@ -12,19 +12,122 @@ const bodyParser = require("body-parser");
 const cloudinary = require('./config/cloudinary');
 const streamifier = require('streamifier');
 const path = require('path');
+const session = require('express-session'); // Add session middleware
+
+// Import routes
+const telegramAuthRoutes = require('./routes/telegramAuth');
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser()); // to read cookies
+
+// Session middleware for Telegram verification
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'telegram-verification-secret',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+    maxAge: 1000 * 60 * 60, // 1 hour
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+  },
+  unset: 'destroy' // Ensure session data is completely removed when destroyed
+}));
+
 // We're keeping this line for any static files, but primary image hosting will be on Cloudinary
 app.use("/uploads", express.static(__dirname + "/uploads")); 
 
-// Updated CORS configuration for both development and production
+// Parse allowed origins from environment variable
+const parseAllowedOrigins = () => {
+  let corsOrigins = [];
+  
+  if (process.env.CORS_ALLOWED_ORIGINS) {
+    try {
+      // Parse JSON array from environment variable
+      corsOrigins = JSON.parse(process.env.CORS_ALLOWED_ORIGINS);
+      console.log('Using CORS_ALLOWED_ORIGINS from environment:', corsOrigins);
+    } catch (error) {
+      console.error('Error parsing CORS_ALLOWED_ORIGINS:', error);
+      // If parsing fails, try to split by comma (common format)
+      corsOrigins = process.env.CORS_ALLOWED_ORIGINS.split(',').map(origin => origin.trim());
+    }
+  }
+  
+  // Add FRONTEND_URL if it exists and not already included
+  if (process.env.FRONTEND_URL) {
+    // Add both with and without trailing slash to be safe
+    const frontendUrl = process.env.FRONTEND_URL.trim();
+    const frontendUrlNoSlash = frontendUrl.replace(/\/$/, '');
+    
+    if (frontendUrl && !corsOrigins.includes(frontendUrl)) {
+      corsOrigins.push(frontendUrl);
+    }
+    
+    if (frontendUrlNoSlash && !corsOrigins.includes(frontendUrlNoSlash)) {
+      corsOrigins.push(frontendUrlNoSlash);
+    }
+  }
+  
+  // Add localhost URLs for development
+  if (process.env.NODE_ENV !== 'production') {
+    const localUrls = ['http://localhost:5173', 'http://localhost:4000', 'http://localhost:3000'];
+    localUrls.forEach(url => {
+      if (!corsOrigins.includes(url)) {
+        corsOrigins.push(url);
+      }
+    });
+  }
+  
+  return corsOrigins.filter(Boolean); // Remove any undefined/empty values
+};
+
+// Get allowed origins from environment variables
+const allowedOrigins = parseAllowedOrigins();
+console.log('CORS allowed origins:', allowedOrigins);
+
+// CORS configuration with dynamic origins
 app.use(
   cors({
     credentials: true,
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: function(origin, callback) {
+      // Allow requests with no origin (like mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
+      
+      console.log(`CORS request from origin: ${origin}`);
+      
+      // Check if the origin matches any allowed origins
+      const isAllowed = allowedOrigins.some(allowedOrigin => {
+        // Check for exact matches
+        if (allowedOrigin === origin) {
+          return true;
+        }
+        
+        // Check for wildcard matches (e.g., *.ngrok-free.app)
+        if (allowedOrigin.startsWith('*') && origin.endsWith(allowedOrigin.substring(1))) {
+          return true;
+        }
+        
+        // For local development, check if it's a localhost URL regardless of port
+        if (process.env.NODE_ENV !== 'production' && 
+            origin.match(/^https?:\/\/localhost(:\d+)?$/)) {
+          return true;
+        }
+        
+        return false;
+      });
+      
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        console.log(`Origin not allowed by CORS: ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    optionsSuccessStatus: 200
   })
 );
 
@@ -88,9 +191,76 @@ apiRouter.get("/test", (req, res) => {
   res.json("test ok");
 });
 
+// Endpoint to get password requirements
+apiRouter.get("/password-requirements", (req, res) => {
+  const allowedSpecialChars = "@$!%*?&";
+  res.json({
+    minLength: 8,
+    requiresUppercase: true,
+    requiresLowercase: true,
+    requiresNumber: true,
+    requiresSpecialChar: true,
+    allowedSpecialChars: allowedSpecialChars,
+    regex: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$"
+  });
+});
+
+apiRouter.post("/check-user", async (req, res) => {
+  const { email } = req.body;
+  
+  if (!email) {
+    return res.status(400).json({ error: "Email is required" });
+  }
+  
+  try {
+    const user = await User.findOne({ where: { email } });
+    res.json({ exists: !!user });
+  } catch (e) {
+    console.error("Error checking user existence:", e);
+    res.status(500).json({ error: "Failed to check if user exists" });
+  }
+});
+
 apiRouter.post("/register", async (req, res) => {
   const { name, email, password, userType } = req.body;
+  
+  // Validate email format
+  const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  if (!emailRegex.test(String(email).toLowerCase())) {
+    return res.status(400).json({ error: "Invalid email format" });
+  }
+  
+  // Check if password is strong enough
+  const allowedSpecialChars = "@$!%*?&";
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  if (!passwordRegex.test(password)) {
+    // Check what specific requirement is failing
+    const hasLowercase = /[a-z]/.test(password);
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecialChar = new RegExp(`[${allowedSpecialChars}]`).test(password);
+    const hasMinLength = password.length >= 8;
+    
+    let specificError = "Password must be at least 8 characters with uppercase, lowercase, number and special character";
+    
+    // If it has invalid special characters but meets all other requirements
+    if (hasLowercase && hasUppercase && hasNumber && !hasSpecialChar && hasMinLength) {
+      specificError = `Password must include at least one of these special characters: ${allowedSpecialChars}`;
+    }
+    
+    return res.status(400).json({ 
+      error: specificError,
+      allowedSpecialChars: allowedSpecialChars
+    });
+  }
+  
   try {
+    // Check if user already exists
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      return res.status(409).json({ error: "This email is already registered" });
+    }
+    
     const userData = await User.create({
       name,
       email,
@@ -110,6 +280,13 @@ apiRouter.post("/register", async (req, res) => {
 
 apiRouter.post("/login", async (req, res) => {
   const { email, password } = req.body;
+  
+  // Validate email format
+  const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  if (!emailRegex.test(String(email).toLowerCase())) {
+    return res.status(400).json({ error: "Invalid email format" });
+  }
+  
   try {
     // Update Mongoose query to Sequelize query
     const userData = await User.findOne({ where: { email } });
@@ -122,19 +299,34 @@ apiRouter.post("/login", async (req, res) => {
           {},
           (err, token) => {
             if (err) throw err;
-            res.cookie("token", token).json({
+            res.cookie("token", token, {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === 'production',
+              maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+              sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+            }).json({
               id: userData.id,
               name: userData.name,
               email: userData.email,
               userType: userData.userType
-            }); // set a cookie
+            });
           }
         );
       } else {
-        res.status(422).json("password is wrong");
+        const allowedSpecialChars = "@$!%*?&";
+        // Check if password might be failing due to special characters
+        const hasSpecialChar = new RegExp(`[${allowedSpecialChars}]`).test(password);
+        if (!hasSpecialChar && password.length >= 8) {
+          res.status(422).json({ 
+            error: "Password must include at least one special character",
+            allowedSpecialChars: allowedSpecialChars
+          });
+        } else {
+          res.status(422).json({ error: "Password is incorrect" });
+        }
       }
     } else {
-      res.status(422).json("user not found");
+      res.status(422).json({ error: "User not found" });
     }
   } catch (e) {
     res.status(422).json(e);
@@ -143,7 +335,23 @@ apiRouter.post("/login", async (req, res) => {
 
 function getUserDataFromToken(req) {
   return new Promise((resolve, reject) => {
-    jwt.verify(req.cookies.token, jwtSecret, {}, async (err, userData) => {
+    // Try to get token from cookies first
+    let token = req.cookies.token;
+    
+    // If not in cookies, check Authorization header
+    if (!token && req.headers.authorization) {
+      // Extract token from Bearer token format
+      const authHeader = req.headers.authorization;
+      if (authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+      }
+    }
+    
+    if (!token) {
+      return reject(new Error('No authentication token found'));
+    }
+    
+    jwt.verify(token, jwtSecret, {}, async (err, userData) => {
       if (err) reject(err);
       resolve(userData);
     });
@@ -151,24 +359,84 @@ function getUserDataFromToken(req) {
 }
 
 apiRouter.get("/profile", (req, res) => {
-  const { token } = req.cookies;
+  // Try to get token from cookies first
+  let token = req.cookies.token;
+  
+  // If not in cookies, check Authorization header
+  if (!token && req.headers.authorization) {
+    // Extract token from Bearer token format
+    const authHeader = req.headers.authorization;
+    if (authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    }
+  }
+  
   if (token) {
     // reloading info of the logged in user after refreshing
     jwt.verify(token, jwtSecret, {}, async (err, userData) => {
-      if (err) throw err;
-      // Update Mongoose findById to Sequelize findByPk
-      const user = await User.findByPk(userData.id, {
-        attributes: ['id', 'name', 'email', 'userType'] // Include userType
-      });
-      res.json(user);
+      if (err) {
+        console.error('JWT verification error:', err);
+        return res.status(401).json({ error: 'Invalid authentication token' });
+      }
+      
+      try {
+        // Update Mongoose findById to Sequelize findByPk
+        const user = await User.findByPk(userData.id, {
+          // Include all relevant user attributes, particularly Telegram fields
+          attributes: [
+            'id', 'name', 'email', 'userType', 
+            'telegramId', 'telegramUsername', 'telegramFirstName',
+            'telegramPhotoUrl', 'telegramPhone', 'telegramLinked'
+          ]
+        });
+        
+        if (!user) {
+          // User might have been deleted but token is still valid
+          return res.status(404).json({ error: 'User not found' });
+        }
+        
+        console.log('User data found:', user.id, user.name, user.email);
+        res.json(user);
+      } catch (error) {
+        console.error('Database error in /profile:', error);
+        res.status(500).json({ error: 'Server error while retrieving user profile' });
+      }
     });
   } else {
+    console.log('No token found in either cookies or Authorization header');
     res.json(null);
   }
 });
 
 apiRouter.post("/logout", (req, res) => {
-  res.cookie("token", "").json(true);
+  // Get all cookies and clear them
+  Object.keys(req.cookies).forEach(cookieName => {
+    res.clearCookie(cookieName, {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    });
+  });
+  
+  // Clear the main token cookie
+  res.clearCookie("token", {
+    path: '/',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+  });
+  
+  // Clear the session
+  if (req.session) {
+    req.session.destroy(err => {
+      if (err) {
+        console.error('Error destroying session during logout:', err);
+      }
+    });
+  }
+  
+  res.json({ success: true, message: "Logged out successfully" });
 });
 
 // Modified upload function for Cloudinary
@@ -773,6 +1041,77 @@ apiRouter.get("/users", async (req, res) => {
   }
 });
 
+// New endpoint: Delete a user (for agents only)
+apiRouter.delete("/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { confirmation } = req.query;
+    const userData = await getUserDataFromToken(req);
+    
+    // Verify user is an agent
+    if (userData.userType !== 'agent') {
+      return res.status(403).json({ error: "Only agents can delete users" });
+    }
+    
+    // Prevent agents from deleting themselves
+    if (id === userData.id.toString()) {
+      return res.status(400).json({ error: "You cannot delete your own account" });
+    }
+    
+    // Additional safety check - require confirmation parameter
+    if (confirmation !== 'true') {
+      return res.status(400).json({ error: "Confirmation parameter required to delete user" });
+    }
+    
+    // Find the user to delete
+    const userToDelete = await User.findByPk(id);
+    
+    if (!userToDelete) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    // Log the deletion attempt for audit purposes
+    console.log(`Agent ${userData.id} (${userData.email}) attempting to delete user ${id} (${userToDelete.email})`);
+    
+    // First, delete all bookings associated with this user
+    await Booking.destroy({
+      where: { userId: id }
+    });
+    
+    // For hosts, delete all their places and the bookings for those places
+    if (userToDelete.userType === 'host') {
+      // Find all places owned by this host
+      const places = await Place.findAll({
+        where: { ownerId: id }
+      });
+      
+      // Delete all bookings for each place
+      for (const place of places) {
+        await Booking.destroy({
+          where: { placeId: place.id }
+        });
+      }
+      
+      // Delete all places owned by this host
+      await Place.destroy({
+        where: { ownerId: id }
+      });
+    }
+    
+    // Finally, delete the user
+    await userToDelete.destroy();
+    
+    // Log successful deletion
+    console.log(`User ${id} (${userToDelete.email}) successfully deleted by agent ${userData.id}`);
+    
+    res.json({ success: true, message: "User and all associated data deleted successfully" });
+    
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(422).json({ error: error.message });
+  }
+});
+
 // New endpoint: Get all places (for agents only)
 apiRouter.get("/places", async (req, res) => {
   try {
@@ -842,8 +1181,104 @@ apiRouter.get("/stats", async (req, res) => {
   }
 });
 
+// New endpoint: Delete own account
+apiRouter.delete("/account/delete", async (req, res) => {
+  try {
+    const { confirmation } = req.query;
+    const userData = await getUserDataFromToken(req);
+    
+    // Verify user is authenticated
+    if (!userData || !userData.id) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    
+    // Additional safety check - require confirmation parameter
+    if (confirmation !== 'true') {
+      return res.status(400).json({ error: "Confirmation parameter required to delete account" });
+    }
+    
+    // Find the user to delete
+    const userToDelete = await User.findByPk(userData.id);
+    
+    if (!userToDelete) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    // Log the deletion attempt for audit purposes
+    console.log(`User ${userData.id} (${userData.email}) attempting to delete their own account`);
+    
+    // First, delete all bookings associated with this user
+    await Booking.destroy({
+      where: { userId: userData.id }
+    });
+    
+    // For hosts, delete all their places and the bookings for those places
+    if (userToDelete.userType === 'host') {
+      // Find all places owned by this host
+      const places = await Place.findAll({
+        where: { ownerId: userData.id }
+      });
+      
+      // Delete all bookings for each place
+      for (const place of places) {
+        await Booking.destroy({
+          where: { placeId: place.id }
+        });
+      }
+      
+      // Delete all places owned by this host
+      await Place.destroy({
+        where: { ownerId: userData.id }
+      });
+    }
+    
+    // Clear authentication cookies before deleting the user
+    // Clear all cookies
+    Object.keys(req.cookies).forEach(cookieName => {
+      res.clearCookie(cookieName, {
+        path: '/',
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+      });
+    });
+    
+    // Clear the main token cookie
+    res.clearCookie("token", {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    });
+    
+    // Clear the session
+    if (req.session) {
+      req.session.destroy(err => {
+        if (err) {
+          console.error('Error destroying session during account deletion:', err);
+        }
+      });
+    }
+    
+    // Finally, delete the user
+    await userToDelete.destroy();
+    
+    // Log successful deletion
+    console.log(`User ${userData.id} (${userData.email}) successfully deleted their account`);
+    
+    res.json({ success: true, message: "Your account and all associated data have been deleted successfully" });
+    
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    res.status(422).json({ error: error.message });
+  }
+});
+
 // Mount the API router at /api prefix
 app.use('/api', apiRouter);
+
+// Register Telegram authentication routes
+app.use('/api/telegram-auth', telegramAuthRoutes);
 
 // Update the port to use environment variable
 const PORT = process.env.PORT || 4000;
