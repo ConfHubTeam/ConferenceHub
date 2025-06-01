@@ -89,7 +89,7 @@ export default function IndexPage() {
         </button>
       </div>
 
-      {/* Main content - Split view or full view depending on mode */}
+      {/* Main content */}
       {viewMode === "grid" ? (
         <div className="flex flex-col md:flex-row h-full overflow-hidden">
           {/* Listings section - takes full width on mobile, 55% or 100% on desktop based on map visibility */}

@@ -50,17 +50,34 @@ const parseAllowedOrigins = () => {
       console.log('Using CORS_ALLOWED_ORIGINS from environment:', corsOrigins);
     } catch (error) {
       console.error('Error parsing CORS_ALLOWED_ORIGINS:', error);
-      // Empty array if parsing fails
-      corsOrigins = [];
+      // If parsing fails, try to split by comma (common format)
+      corsOrigins = process.env.CORS_ALLOWED_ORIGINS.split(',').map(origin => origin.trim());
     }
   }
   
   // Add FRONTEND_URL if it exists and not already included
   if (process.env.FRONTEND_URL) {
-    const frontendUrl = process.env.FRONTEND_URL.trim().replace(/\/$/, '');
+    // Add both with and without trailing slash to be safe
+    const frontendUrl = process.env.FRONTEND_URL.trim();
+    const frontendUrlNoSlash = frontendUrl.replace(/\/$/, '');
+    
     if (frontendUrl && !corsOrigins.includes(frontendUrl)) {
       corsOrigins.push(frontendUrl);
     }
+    
+    if (frontendUrlNoSlash && !corsOrigins.includes(frontendUrlNoSlash)) {
+      corsOrigins.push(frontendUrlNoSlash);
+    }
+  }
+  
+  // Add localhost URLs for development
+  if (process.env.NODE_ENV !== 'production') {
+    const localUrls = ['http://localhost:5173', 'http://localhost:4000', 'http://localhost:3000'];
+    localUrls.forEach(url => {
+      if (!corsOrigins.includes(url)) {
+        corsOrigins.push(url);
+      }
+    });
   }
   
   return corsOrigins.filter(Boolean); // Remove any undefined/empty values
@@ -80,12 +97,32 @@ app.use(
       
       console.log(`CORS request from origin: ${origin}`);
       
-      // Check if the origin is allowed
-      if (allowedOrigins.includes(origin)) {
+      // Check if the origin matches any allowed origins
+      const isAllowed = allowedOrigins.some(allowedOrigin => {
+        // Check for exact matches
+        if (allowedOrigin === origin) {
+          return true;
+        }
+        
+        // Check for wildcard matches (e.g., *.ngrok-free.app)
+        if (allowedOrigin.startsWith('*') && origin.endsWith(allowedOrigin.substring(1))) {
+          return true;
+        }
+        
+        // For local development, check if it's a localhost URL regardless of port
+        if (process.env.NODE_ENV !== 'production' && 
+            origin.match(/^https?:\/\/localhost(:\d+)?$/)) {
+          return true;
+        }
+        
+        return false;
+      });
+      
+      if (isAllowed) {
         callback(null, true);
       } else {
         console.log(`Origin not allowed by CORS: ${origin}`);
-        callback(null, false);
+        callback(new Error('Not allowed by CORS'));
       }
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -1140,6 +1177,99 @@ apiRouter.get("/stats", async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching statistics:", error);
+    res.status(422).json({ error: error.message });
+  }
+});
+
+// New endpoint: Delete own account
+apiRouter.delete("/account/delete", async (req, res) => {
+  try {
+    const { confirmation } = req.query;
+    const userData = await getUserDataFromToken(req);
+    
+    // Verify user is authenticated
+    if (!userData || !userData.id) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    
+    // Additional safety check - require confirmation parameter
+    if (confirmation !== 'true') {
+      return res.status(400).json({ error: "Confirmation parameter required to delete account" });
+    }
+    
+    // Find the user to delete
+    const userToDelete = await User.findByPk(userData.id);
+    
+    if (!userToDelete) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    // Log the deletion attempt for audit purposes
+    console.log(`User ${userData.id} (${userData.email}) attempting to delete their own account`);
+    
+    // First, delete all bookings associated with this user
+    await Booking.destroy({
+      where: { userId: userData.id }
+    });
+    
+    // For hosts, delete all their places and the bookings for those places
+    if (userToDelete.userType === 'host') {
+      // Find all places owned by this host
+      const places = await Place.findAll({
+        where: { ownerId: userData.id }
+      });
+      
+      // Delete all bookings for each place
+      for (const place of places) {
+        await Booking.destroy({
+          where: { placeId: place.id }
+        });
+      }
+      
+      // Delete all places owned by this host
+      await Place.destroy({
+        where: { ownerId: userData.id }
+      });
+    }
+    
+    // Clear authentication cookies before deleting the user
+    // Clear all cookies
+    Object.keys(req.cookies).forEach(cookieName => {
+      res.clearCookie(cookieName, {
+        path: '/',
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+      });
+    });
+    
+    // Clear the main token cookie
+    res.clearCookie("token", {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    });
+    
+    // Clear the session
+    if (req.session) {
+      req.session.destroy(err => {
+        if (err) {
+          console.error('Error destroying session during account deletion:', err);
+        }
+      });
+    }
+    
+    // Finally, delete the user
+    await userToDelete.destroy();
+    
+    // Log successful deletion
+    console.log(`User ${userData.id} (${userData.email}) successfully deleted their account`);
+    
+    res.json({ success: true, message: "Your account and all associated data have been deleted successfully" });
+    
+  } catch (error) {
+    console.error("Error deleting account:", error);
     res.status(422).json({ error: error.message });
   }
 });

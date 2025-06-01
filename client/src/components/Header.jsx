@@ -196,7 +196,6 @@ export default function Header() {
       <div className="hidden md:block flex-grow"></div>
       
       <div className="flex items-center gap-2 relative z-30">
-        {/* Desktop filter button - now next to account icon */}
         <button 
           ref={filterRef} 
           className="hidden md:flex border border-gray-300 rounded-full p-1.5 bg-white hover:shadow-md transition-shadow"
@@ -295,7 +294,7 @@ export default function Header() {
       </div>
       
       {/* Semi-transparent overlay when menu is open */}
-      {(mobileMenuOpen || filterExpanded) && (
+      {(mobileMenuOpen /* || filterExpanded */) && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-20" />
       )}
       
@@ -379,8 +378,7 @@ export default function Header() {
           </div>
         </div>
       )}
-      
-      {/* Expanded filter dropdown - shared between mobile and desktop */}
+
       {filterExpanded && (
         <div 
           ref={filterDropdownRef}
