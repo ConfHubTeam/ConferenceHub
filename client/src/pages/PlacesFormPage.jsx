@@ -6,6 +6,8 @@ import { UserContext } from "../components/UserContext";
 import api from "../utils/api";
 import { geocodeAddress } from "../utils/formUtils";
 import MapPicker from "../components/MapPicker";
+import Calendar from "../components/Calendar";
+import { format, parseISO } from "date-fns";
 
 // Helper function to validate and convert YouTube URL to embed format
 function extractYouTubeVideoId(url) {
@@ -39,8 +41,6 @@ export default function PlacesFormPage() {
   const [description, setDescription] = useState("");
   const [perks, setPerks] = useState([]);
   const [extraInfo, setExtraInfo] = useState("");
-  const [checkIn, setCheckIn] = useState("");
-  const [checkOut, setCheckOut] = useState("");
   const [maxGuests, setMaxGuests] = useState(1);
   const [price, setPrice] = useState(0);
   const [startDate, setStartDate] = useState("");
@@ -53,6 +53,20 @@ export default function PlacesFormPage() {
   const [showMap, setShowMap] = useState(false);
   const [redirect, setRedirect] = useState(false);
   const [error, setError] = useState("");
+  
+  // New state variables for time slot management
+  const [blockedWeekdays, setBlockedWeekdays] = useState([]);
+  const [blockedDates, setBlockedDates] = useState([]);
+  const [showBlockSpecificDates, setShowBlockSpecificDates] = useState(false);
+  const [weekdayTimeSlots, setWeekdayTimeSlots] = useState({
+    0: { start: "", end: "" }, // Sunday
+    1: { start: "", end: "" }, // Monday
+    2: { start: "", end: "" }, // Tuesday
+    3: { start: "", end: "" }, // Wednesday
+    4: { start: "", end: "" }, // Thursday
+    5: { start: "", end: "" }, // Friday
+    6: { start: "", end: "" }  // Saturday
+  });
 
   // Redirect if user is not a host
   if (user && user.userType !== 'host') {
@@ -72,8 +86,6 @@ export default function PlacesFormPage() {
         setAddedPhotos(data.photos);
         setPerks(data.perks);
         setExtraInfo(data.extraInfo);
-        setCheckIn(data.checkIn);
-        setCheckOut(data.checkOut);
         setPrice(data.price);
         setMaxGuests(data.maxGuests);
         setYoutubeLink(data.youtubeLink || "");
@@ -86,6 +98,18 @@ export default function PlacesFormPage() {
         // Show map if coordinates exist
         if (data.lat && data.lng) {
           setShowMap(true);
+        }
+        
+        // Load time slot data if available
+        if (data.blockedWeekdays) {
+          setBlockedWeekdays(data.blockedWeekdays);
+        }
+        if (data.blockedDates) {
+          setBlockedDates(data.blockedDates);
+          setShowBlockSpecificDates(data.blockedDates.length > 0);
+        }
+        if (data.weekdayTimeSlots) {
+          setWeekdayTimeSlots(data.weekdayTimeSlots);
         }
       });
     }
@@ -220,15 +244,18 @@ export default function PlacesFormPage() {
       description,
       perks,
       extraInfo,
-      checkIn,
-      checkOut,
+      // checkIn and checkOut removed as the UI elements were removed
       maxGuests: numGuests,
       price: numPrice,
       startDate: startDate || null,
       endDate: endDate || null,
       youtubeLink: cleanedYouTubeLink,
       lat: coordinates.lat,
-      lng: coordinates.lng
+      lng: coordinates.lng,
+      // Include time slot management data
+      blockedWeekdays,
+      blockedDates: blockedDates.filter(date => date !== ""), // Remove empty strings
+      weekdayTimeSlots
     };
 
     try {
@@ -255,6 +282,45 @@ export default function PlacesFormPage() {
 
   if (redirect) {
     return <Navigate to="/account/user-places" />;
+  }
+
+  // Handler for toggling a specific date's blocked status
+  function toggleBlockedDate(date) {
+    console.log("Toggling date:", date, "Current blocked dates:", blockedDates);
+    
+    // Check if date is already in the blockedDates array
+    // Using exact string comparison for reliability
+    const isBlocked = blockedDates.includes(date);
+    
+    if (isBlocked) {
+      // Date is already blocked, so unblock it
+      console.log("Unblocking date:", date);
+      setBlockedDates(prev => prev.filter(d => d !== date));
+    } else {
+      // Date is not blocked, block it
+      console.log("Blocking date:", date);
+      setBlockedDates(prev => [...prev, date]);
+    }
+  }
+
+  // Handler for toggling a weekday's blocked status
+  function toggleBlockedWeekday(dayIndex) {
+    if (blockedWeekdays.includes(dayIndex)) {
+      setBlockedWeekdays(prev => prev.filter(d => d !== dayIndex));
+    } else {
+      setBlockedWeekdays(prev => [...prev, dayIndex]);
+    }
+  }
+
+  // Helper for updating time slots for a specific weekday
+  function updateWeekdayTimeSlot(dayIndex, field, value) {
+    setWeekdayTimeSlots(prev => ({
+      ...prev,
+      [dayIndex]: {
+        ...prev[dayIndex],
+        [field]: value
+      }
+    }));
   }
 
   return (
@@ -386,48 +452,188 @@ export default function PlacesFormPage() {
         )}
         
         <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-2">
-          <div className="bg-white p-3 rounded-2xl shadow-sm border">
-            <h3 className="text-base font-medium mb-1">Available from date</h3>
-            <input
-              className="w-full border py-2 px-3 rounded-xl"
-              type="date"
-              value={startDate}
-              onChange={(event) => setStartDate(event.target.value)}
+          {/* Calendar component for date selection */}
+          <div className="bg-white p-3 rounded-2xl shadow-sm border lg:col-span-2">
+            <h3 className="text-base font-medium mb-3">Available dates</h3>
+            <Calendar 
+              startDate={startDate}
+              endDate={endDate}
+              onDateChange={(start, end) => {
+                setStartDate(start);
+                setEndDate(end);
+              }}
+              blockedDates={blockedDates}
+              blockedWeekdays={blockedWeekdays}
+              // No onBlockedDateClick prop here - this is the main calendar for selecting available dates
             />
+            {/* Display formatted date range */}
+            {startDate && (
+              <div className="mt-3 p-2 bg-blue-50 rounded-lg text-blue-800 text-sm">
+                <p className="font-medium">Selected range:</p>
+                <p>
+                  {format(parseISO(startDate), "MMMM d, yyyy")}
+                  {endDate && ` - ${format(parseISO(endDate), "MMMM d, yyyy")}`}
+                </p>
+              </div>
+            )}
           </div>
           
-          <div className="bg-white p-3 rounded-2xl shadow-sm border">
-            <h3 className="text-base font-medium mb-1">Available until date</h3>
-            <input
-              className="w-full border py-2 px-3 rounded-xl"
-              type="date"
-              value={endDate}
-              onChange={(event) => setEndDate(event.target.value)}
-            />
+          {/* Time slot management section */}
+          <div className="bg-white p-3 rounded-2xl shadow-sm border lg:col-span-2">
+            <h3 className="text-base font-medium mb-3">Block weekdays & set time slots</h3>
+            
+            {/* Weekday blocking checkboxes */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
+                <label key={day} className="flex items-center gap-1 p-2 border rounded-lg">
+                  <input
+                    type="checkbox"
+                    checked={blockedWeekdays.includes(index)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setBlockedWeekdays(prev => [...prev, index]);
+                      } else {
+                        setBlockedWeekdays(prev => prev.filter(d => d !== index));
+                      }
+                    }}
+                    className="w-4 h-4 accent-blue-600"
+                  />
+                  <span>{day}</span>
+                </label>
+              ))}
+            </div>
+            
+            {/* Blocked dates counter */}
+            {blockedDates.length > 0 && (
+              <div className="mb-3 flex justify-between items-center">
+                <div className="bg-blue-50 text-blue-800 px-3 py-2 rounded-lg flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 mr-1">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span className="font-medium">{blockedDates.length}</span>
+                  <span className="ml-1">{blockedDates.length === 1 ? 'date' : 'dates'} blocked</span>
+                  <button 
+                    type="button"
+                    onClick={() => setBlockedDates([])}
+                    className="ml-3 text-xs text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Clear all
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {/* Block specific dates toggle */}
+            <div className="flex items-center mb-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <div className={`relative inline-block w-10 h-6 rounded-full transition ${showBlockSpecificDates ? 'bg-blue-600' : 'bg-gray-300'}`}>
+                  <input
+                    type="checkbox"
+                    className="absolute opacity-0 w-0 h-0"
+                    checked={showBlockSpecificDates}
+                    onChange={() => {
+                      // Toggle visibility without clearing blocked dates
+                      setShowBlockSpecificDates(!showBlockSpecificDates);
+                    }}
+                  />
+                  <span className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${showBlockSpecificDates ? 'transform translate-x-4' : ''}`}></span>
+                </div>
+                <span>Block Specific Dates</span>
+              </label>
+            </div>
+            
+            {/* Specific date picker calendar (only shown when toggle is enabled) */}
+            {showBlockSpecificDates && (
+              <div className="mb-4 border p-3 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-medium">Select dates to block:</h4>
+                  {blockedDates.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setBlockedDates([])}
+                      className="text-sm text-red-600 hover:text-red-800 font-medium"
+                    >
+                      Clear all blocked dates
+                    </button>
+                  )}
+                </div>
+                <Calendar 
+                  blockedDates={blockedDates}
+                  minDate={new Date(new Date().setHours(0, 0, 0, 0))} // Allow blocking from today
+                  onBlockedDateClick={toggleBlockedDate} // Use the specific handler for date blocking
+                />
+                {blockedDates.length > 0 && (
+                  <div className="mt-2 text-sm">
+                    <span className="font-medium">{blockedDates.length}</span> {blockedDates.length === 1 ? 'date' : 'dates'} currently blocked
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Time slot management per weekday */}
+            <div className="mb-2">
+              <h4 className="text-base font-medium mb-3">Time slots by weekday</h4>
+              {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day, index) => (
+                <div key={day} className={`p-2 mb-2 rounded-lg ${blockedWeekdays.includes(index) ? 'bg-gray-100 opacity-60' : ''}`}>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="w-24">{day}:</span>
+                    
+                    {!blockedWeekdays.includes(index) ? (
+                      <>
+                        <select
+                          value={weekdayTimeSlots[index].start}
+                          onChange={(e) => {
+                            setWeekdayTimeSlots(prev => ({
+                              ...prev, 
+                              [index]: {...prev[index], start: e.target.value}
+                            }));
+                          }}
+                          className="border rounded p-1 text-sm"
+                          disabled={blockedWeekdays.includes(index)}
+                        >
+                          <option value="">Start time</option>
+                          {Array.from({ length: 24 }, (_, i) => {
+                            const hour = i.toString().padStart(2, '0');
+                            return (
+                              <option key={hour} value={hour}>
+                                {hour}:00
+                              </option>
+                            );
+                          })}
+                        </select>
+                        
+                        <span>to</span>
+                        
+                        <select
+                          value={weekdayTimeSlots[index].end}
+                          onChange={(e) => {
+                            setWeekdayTimeSlots(prev => ({
+                              ...prev, 
+                              [index]: {...prev[index], end: e.target.value}
+                            }));
+                          }}
+                          className="border rounded p-1 text-sm"
+                          disabled={blockedWeekdays.includes(index)}
+                        >
+                          <option value="">End time</option>
+                          {Array.from({ length: 24 }, (_, i) => {
+                            const hour = i.toString().padStart(2, '0');
+                            return (
+                              <option key={hour} value={hour}>
+                                {hour}:00
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </>
+                    ) : (
+                      <span className="text-gray-500">Blocked</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-
-          <div className="bg-white p-3 rounded-2xl shadow-sm border">
-            <h3 className="text-base font-medium mb-1">Available from (hour)</h3>
-            <input
-              type="text"
-              placeholder="9"
-              value={checkIn}
-              onChange={(event) => setCheckIn(event.target.value)}
-              className="w-full border py-2 px-3 rounded-xl"
-            />
-          </div>
-          
-          <div className="bg-white p-3 rounded-2xl shadow-sm border">
-            <h3 className="text-base font-medium mb-1">Available until (hour)</h3>
-            <input
-              type="text"
-              placeholder="18"
-              value={checkOut}
-              onChange={(event) => setCheckOut(event.target.value)}
-              className="w-full border py-2 px-3 rounded-xl"
-            />
-          </div>
-          
           <div className="bg-white p-3 rounded-2xl shadow-sm border">
             <h3 className="text-base font-medium mb-1">Price per hour ($)</h3>
             <input
