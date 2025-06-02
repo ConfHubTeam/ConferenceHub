@@ -1287,8 +1287,40 @@ const PORT = process.env.PORT || 4000;
 if (process.env.NODE_ENV === 'production') {
   const clientBuildPath = path.join(__dirname, '../client/dist');
   
-  // Serve static assets from the build folder
-  app.use(express.static(clientBuildPath));
+  // Configure proper MIME types for different file extensions
+  const mimeTypes = {
+    '.html': 'text/html',
+    '.js': 'application/javascript',
+    '.css': 'text/css',
+    '.json': 'application/json',
+    '.png': 'image/png',
+    '.jpg': 'image/jpg',
+    '.gif': 'image/gif',
+    '.svg': 'image/svg+xml',
+    '.wav': 'audio/wav',
+    '.mp4': 'video/mp4',
+    '.woff': 'application/font-woff',
+    '.ttf': 'application/font-ttf',
+    '.eot': 'application/vnd.ms-fontobject',
+    '.otf': 'application/font-otf',
+    '.wasm': 'application/wasm'
+  };
+
+  // Serve static assets from the build folder with proper MIME types
+  app.use(express.static(clientBuildPath, {
+    setHeaders: (res, filePath) => {
+      const ext = path.extname(filePath).toLowerCase();
+      if (mimeTypes[ext]) {
+        res.setHeader('Content-Type', mimeTypes[ext]);
+      }
+      // Add cache control for static assets
+      if (ext !== '.html') {
+        res.setHeader('Cache-Control', 'public, max-age=31536000'); // 1 year
+      } else {
+        res.setHeader('Cache-Control', 'no-cache');
+      }
+    }
+  }));
   
   // All routes that aren't API routes should serve the index.html
   app.get('*', (req, res) => {
