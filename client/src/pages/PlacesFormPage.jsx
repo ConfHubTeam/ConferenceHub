@@ -6,6 +6,8 @@ import { UserContext } from "../components/UserContext";
 import api from "../utils/api";
 import { geocodeAddress } from "../utils/formUtils";
 import MapPicker from "../components/MapPicker";
+import Calendar from "../components/Calendar";
+import { format, parseISO } from "date-fns";
 
 // Helper function to validate and convert YouTube URL to embed format
 function extractYouTubeVideoId(url) {
@@ -386,46 +388,65 @@ export default function PlacesFormPage() {
         )}
         
         <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-2">
-          <div className="bg-white p-3 rounded-2xl shadow-sm border">
-            <h3 className="text-base font-medium mb-1">Available from date</h3>
-            <input
-              className="w-full border py-2 px-3 rounded-xl"
-              type="date"
-              value={startDate}
-              onChange={(event) => setStartDate(event.target.value)}
+          {/* Calendar component for date selection */}
+          <div className="bg-white p-3 rounded-2xl shadow-sm border lg:col-span-2">
+            <h3 className="text-base font-medium mb-3">Available dates</h3>
+            <Calendar 
+              startDate={startDate}
+              endDate={endDate}
+              onDateChange={(start, end) => {
+                setStartDate(start);
+                setEndDate(end);
+              }}
             />
-          </div>
-          
-          <div className="bg-white p-3 rounded-2xl shadow-sm border">
-            <h3 className="text-base font-medium mb-1">Available until date</h3>
-            <input
-              className="w-full border py-2 px-3 rounded-xl"
-              type="date"
-              value={endDate}
-              onChange={(event) => setEndDate(event.target.value)}
-            />
+            {/* Display formatted date range */}
+            {startDate && (
+              <div className="mt-3 p-2 bg-blue-50 rounded-lg text-blue-800 text-sm">
+                <p className="font-medium">Selected range:</p>
+                <p>
+                  {format(parseISO(startDate), "MMMM d, yyyy")}
+                  {endDate && ` - ${format(parseISO(endDate), "MMMM d, yyyy")}`}
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="bg-white p-3 rounded-2xl shadow-sm border">
             <h3 className="text-base font-medium mb-1">Available from (hour)</h3>
-            <input
-              type="text"
-              placeholder="9"
+            <select
               value={checkIn}
               onChange={(event) => setCheckIn(event.target.value)}
               className="w-full border py-2 px-3 rounded-xl"
-            />
+            >
+              <option value="">Select time</option>
+              {Array.from({ length: 24 }, (_, i) => {
+                const hour = i.toString().padStart(2, '0');
+                return (
+                  <option key={hour} value={hour}>
+                    {hour}:00
+                  </option>
+                );
+              })}
+            </select>
           </div>
           
           <div className="bg-white p-3 rounded-2xl shadow-sm border">
             <h3 className="text-base font-medium mb-1">Available until (hour)</h3>
-            <input
-              type="text"
-              placeholder="18"
+            <select
               value={checkOut}
               onChange={(event) => setCheckOut(event.target.value)}
               className="w-full border py-2 px-3 rounded-xl"
-            />
+            >
+              <option value="">Select time</option>
+              {Array.from({ length: 24 }, (_, i) => {
+                const hour = i.toString().padStart(2, '0');
+                return (
+                  <option key={hour} value={hour}>
+                    {hour}:00
+                  </option>
+                );
+              })}
+            </select>
           </div>
           
           <div className="bg-white p-3 rounded-2xl shadow-sm border">
