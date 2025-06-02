@@ -1312,6 +1312,22 @@ if (process.env.NODE_ENV === 'production') {
       const ext = path.extname(filePath).toLowerCase();
       if (mimeTypes[ext]) {
         res.setHeader('Content-Type', mimeTypes[ext]);
+      } else {
+        // Default to appropriate type based on extension for files without explicit mapping
+        switch (ext) {
+          case '.css':
+            res.setHeader('Content-Type', 'text/css');
+            break;
+          case '.js':
+            res.setHeader('Content-Type', 'application/javascript');
+            break;
+          case '.json':
+            res.setHeader('Content-Type', 'application/json');
+            break;
+          default:
+            // For unrecognized types, let Express decide
+            break;
+        }
       }
       // Add cache control for static assets
       if (ext !== '.html') {
@@ -1322,6 +1338,15 @@ if (process.env.NODE_ENV === 'production') {
     }
   }));
   
+  // Add a debugging middleware to log requests in production
+  app.use((req, res, next) => {
+    // Don't log asset requests to avoid cluttering logs
+    if (!req.path.includes('.') || req.path.includes('index.html')) {
+      console.log(`Request: ${req.method} ${req.path}`);
+    }
+    next();
+  });
+
   // All routes that aren't API routes should serve the index.html
   app.get('*', (req, res) => {
     // Only handle non-API routes for the React app
@@ -1332,6 +1357,20 @@ if (process.env.NODE_ENV === 'production') {
     
     // Let Express continue to handle API routes
     return res.status(404).json({ error: "API endpoint not found" });
+  });
+  
+  // Add a general error handler middleware to catch and log any errors
+  app.use((err, req, res, next) => {
+    console.error('Server error:', err);
+    // Don't expose the error stack in production
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(500).send('Internal Server Error');
+    } else {
+      return res.status(500).json({
+        error: err.message,
+        stack: err.stack
+      });
+    }
   });
 }
 

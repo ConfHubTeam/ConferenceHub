@@ -19,16 +19,32 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
-    // Ensure proper MIME types for assets
+    // Ensure CSS is processed correctly
+    cssCodeSplit: true,
+    // Set the correct MIME types during build
     rollupOptions: {
       output: {
+        // Organize output files by type for better organization and correct content-type handling
+        entryFileNames: 'assets/js/[name]-[hash].js',
+        chunkFileNames: 'assets/js/[name]-[hash].js',
         assetFileNames: (assetInfo) => {
-          const info = assetInfo.name.split('.');
-          const extType = info[info.length - 1];
-          if (/\.(css)$/i.test(assetInfo.name)) {
-            return `assets/css/[name]-[hash][extname]`;
+          // Group assets by file type
+          if (assetInfo.name.endsWith('.css')) {
+            return 'assets/css/[name]-[hash][extname]';
           }
-          return `assets/[name]-[hash][extname]`;
+          
+          // Images
+          if (assetInfo.name.match(/\.(png|jpe?g|gif|svg|webp)$/)) {
+            return 'assets/img/[name]-[hash][extname]';
+          }
+          
+          // Fonts
+          if (assetInfo.name.match(/\.(woff2?|eot|ttf|otf)$/)) {
+            return 'assets/fonts/[name]-[hash][extname]';
+          }
+          
+          // Other assets
+          return 'assets/[name]-[hash][extname]';
         }
       }
     }
