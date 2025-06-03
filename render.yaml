@@ -3,7 +3,7 @@ services:
   - type: web
     name: conferencehub-app
     env: node
-    buildCommand: npm install && cd client && npm install && npx vite build && cd ..
+    buildCommand: npm install && cd client && npm install && npm run build:production && cd ..
     startCommand: cd api && node index.js
     plan: free
     envVars:
