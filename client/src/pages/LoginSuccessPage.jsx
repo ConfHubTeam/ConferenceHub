@@ -37,7 +37,7 @@ export default function LoginSuccessPage() {
         setLoading(true);
         
         // Make the API request
-        const { data } = await api.get('/profile');
+        const { data } = await api.get('/users/profile');
         
         if (data) {
           setUser(data);

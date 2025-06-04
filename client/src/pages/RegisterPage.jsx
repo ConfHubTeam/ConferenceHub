@@ -202,7 +202,7 @@ export default function RegisterPage() {
     try {
       // Check if user already exists
       try {
-        const checkResponse = await api.post("/check-user", { email });
+        const checkResponse = await api.post("/auth/check-user", { email });
         
         if (checkResponse.data.exists) {
           setError("An account with this email already exists. Please use a different email or login instead.");
@@ -215,7 +215,7 @@ export default function RegisterPage() {
       }
       
       // Register the user
-      const registerResponse = await api.post("/register", {
+      const registerResponse = await api.post("/auth/register", {
         name,
         email,
         password,
@@ -224,7 +224,7 @@ export default function RegisterPage() {
       
       // Auto login after registration
       try {
-        const loginResponse = await api.post("/login", { email, password });
+        const loginResponse = await api.post("/auth/login", { email, password });
         setUser(loginResponse.data);
         
         // Show success notification
