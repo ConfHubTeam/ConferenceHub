@@ -12,6 +12,7 @@ const session = require('express-session');
 // Import configuration
 const authConfig = require('./config/auth');
 const { corsOptions } = require('./config/cors');
+const { configureStaticFiles, PORT } = require('./config/server');
 
 // Import middleware
 const { getUserDataFromToken } = require('./middleware/auth');
@@ -97,15 +98,6 @@ apiRouter.post("/upload", photoUpload.array("photos", 100), uploadToCloudinary, 
   res.json(req.uploadedFiles || []);
 });
 
-
-// Filtered places endpoint moved to routes/places.js
-
-// Booking routes moved to controllers/bookingController.js and routes/bookings.js
-
-// Booking update endpoint moved to controllers/bookingController.js and routes/bookings.js
-
-// Booking counts endpoint moved to controllers/bookingController.js and routes/bookings.js
-
 // Mount the API router at /api prefix
 app.use('/api', apiRouter);
 
@@ -116,84 +108,12 @@ app.use('/api/telegram-auth', telegramAuthRoutes);
 app.use('/api/places', placeRoutes);
 app.use('/api/bookings', bookingRoutes);
 
-// Update the port to use environment variable
-const PORT = process.env.PORT || 4000;
-
 // For production: Serve static files from the client build folder
 if (process.env.NODE_ENV === 'production') {
   const clientBuildPath = path.join(__dirname, '../client/dist');
   
-  // Configure proper MIME types for different file extensions
-  const mimeTypes = {
-    '.html': 'text/html',
-    '.js': 'application/javascript',
-    '.css': 'text/css',
-    '.json': 'application/json',
-    '.png': 'image/png',
-    '.jpg': 'image/jpg',
-    '.gif': 'image/gif',
-    '.svg': 'image/svg+xml',
-    '.wav': 'audio/wav',
-    '.mp4': 'video/mp4',
-    '.woff': 'application/font-woff',
-    '.ttf': 'application/font-ttf',
-    '.eot': 'application/vnd.ms-fontobject',
-    '.otf': 'application/font-otf',
-    '.wasm': 'application/wasm'
-  };
-
-  // Serve static assets from the build folder with proper MIME types
-  app.use(express.static(clientBuildPath, {
-    setHeaders: (res, filePath) => {
-      const ext = path.extname(filePath).toLowerCase();
-      if (mimeTypes[ext]) {
-        res.setHeader('Content-Type', mimeTypes[ext]);
-      } else {
-        // Default to appropriate type based on extension for files without explicit mapping
-        switch (ext) {
-          case '.css':
-            res.setHeader('Content-Type', 'text/css');
-            break;
-          case '.js':
-            res.setHeader('Content-Type', 'application/javascript');
-            break;
-          case '.json':
-            res.setHeader('Content-Type', 'application/json');
-            break;
-          default:
-            // For unrecognized types, let Express decide
-            break;
-        }
-      }
-      // Add cache control for static assets
-      if (ext !== '.html') {
-        res.setHeader('Cache-Control', 'public, max-age=31536000'); // 1 year
-      } else {
-        res.setHeader('Cache-Control', 'no-cache');
-      }
-    }
-  }));
-  
-  // Add a debugging middleware to log requests in production
-  app.use((req, res, next) => {
-    // Don't log asset requests to avoid cluttering logs
-    if (!req.path.includes('.') || req.path.includes('index.html')) {
-      console.log(`Request: ${req.method} ${req.path}`);
-    }
-    next();
-  });
-
-  // All routes that aren't API routes should serve the index.html
-  app.get('*', (req, res) => {
-    // Only handle non-API routes for the React app
-    if (!req.path.startsWith('/api/')) {
-      console.log(`Serving index.html for path: ${req.path}`);
-      return res.sendFile(path.join(clientBuildPath, 'index.html'));
-    }
-    
-    // Let Express continue to handle API routes
-    return res.status(404).json({ error: "API endpoint not found" });
-  });
+  // Configure static files and routing using the extracted configuration
+  configureStaticFiles(app, clientBuildPath);
   
   // Add error handling middleware from middleware/errorHandler.js
   app.use(errorHandler);
