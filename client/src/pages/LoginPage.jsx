@@ -81,7 +81,7 @@ export default function LoginPage() {
     }
     
     try {
-      const {data} = await api.post("/login", {email, password});
+      const {data} = await api.post("/auth/login", {email, password});
       setUser(data); // get the user data
       
       // Show appropriate notification based on user type

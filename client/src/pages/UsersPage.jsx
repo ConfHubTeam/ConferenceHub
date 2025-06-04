@@ -24,7 +24,7 @@ export default function UsersPage() {
   useEffect(() => {
     if (user?.userType === 'agent') {
       setLoading(true);
-      api.get('/users')
+      api.get('/users/all')
         .then(({data}) => {
           setUsers(data);
           setFilteredUsers(data);

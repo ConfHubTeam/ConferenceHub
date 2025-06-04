@@ -56,7 +56,7 @@ export default function ProfilePage({}) {
     setIsLoggingOut(true);
     try {
       // Regular logout
-      await api.post("/logout");
+      await api.post("/auth/logout");
       
       // Clear any token or auth data from local storage
       localStorage.removeItem('token');
@@ -83,7 +83,7 @@ export default function ProfilePage({}) {
       // First log out from Telegram
       await api.post("/telegram-auth/logout");
       // Then perform regular logout
-      await api.post("/logout");
+      await api.post("/auth/logout");
       
       // Remove any Telegram-related data from local storage
       localStorage.removeItem('telegram_auth_user_type');
@@ -112,7 +112,7 @@ export default function ProfilePage({}) {
     
     setIsDeleting(true);
     try {
-      await api.delete('/account/delete?confirmation=true');
+      await api.delete('/users/account/delete?confirmation=true');
       
       // Clear local storage and cookies
       localStorage.clear();

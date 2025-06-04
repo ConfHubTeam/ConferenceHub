@@ -20,7 +20,7 @@ export default function IndexPage() {
     const params = new URLSearchParams(location.search);
     
     // Using our API utility instead of direct axios import
-    api.get("/home" + (location.search ? location.search : "")).then((response) => {
+    api.get("/places/home" + (location.search ? location.search : "")).then((response) => {
       setPlaces(response.data);
       setFilteredPlaces(response.data);
       setIsLoading(false);

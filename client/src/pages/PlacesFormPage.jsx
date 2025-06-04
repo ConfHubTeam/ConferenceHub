@@ -77,7 +77,7 @@ export default function PlacesFormPage() {
     if (!id) {
       return;
     } else {
-      api.get("/place/" + id).then((response) => {
+      api.get("/places/" + id).then((response) => {
         const { data } = response;
         console.log("Loaded photos from database:", data.photos);
         setTitle(data.title);

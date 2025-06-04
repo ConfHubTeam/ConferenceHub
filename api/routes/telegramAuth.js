@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const telegramAuthController = require('../controllers/telegramAuth');
-const authMiddleware = require('../middleware/auth');
+const { isAuthenticated } = require('../middleware/auth');
 
 // Check ability to send verification code
 router.post('/check-ability', telegramAuthController.checkSendAbility);
@@ -20,6 +20,6 @@ router.post('/callback', telegramAuthController.handleCallback);
 router.post('/complete-login', telegramAuthController.completeLogin);
 
 // Handle Telegram logout (requires authentication)
-router.post('/logout', authMiddleware, telegramAuthController.logoutTelegram);
+router.post('/logout', isAuthenticated, telegramAuthController.logoutTelegram);
 
 module.exports = router;
