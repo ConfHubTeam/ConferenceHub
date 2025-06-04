@@ -5,16 +5,17 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { sequelize, User, Place, Booking } = require('./models');
 const cookieParser = require("cookie-parser");
-const multer = require("multer");
 const bodyParser = require("body-parser");
-const cloudinary = require('./config/cloudinary');
-const streamifier = require('streamifier');
 const path = require('path');
 const session = require('express-session');
 
 // Import configuration
 const authConfig = require('./config/auth');
 const { corsOptions } = require('./config/cors');
+
+// Import middleware
+const { getUserDataFromToken } = require('./middleware/auth');
+const { errorHandler, notFound } = require('./middleware/errorHandler');
 
 // Import routes
 const telegramAuthRoutes = require('./routes/telegramAuth');
@@ -221,30 +222,7 @@ apiRouter.post("/login", async (req, res) => {
   }
 });
 
-function getUserDataFromToken(req) {
-  return new Promise((resolve, reject) => {
-    // Try to get token from cookies first
-    let token = req.cookies.token;
-    
-    // If not in cookies, check Authorization header
-    if (!token && req.headers.authorization) {
-      // Extract token from Bearer token format
-      const authHeader = req.headers.authorization;
-      if (authHeader.startsWith('Bearer ')) {
-        token = authHeader.substring(7);
-      }
-    }
-    
-    if (!token) {
-      return reject(new Error('No authentication token found'));
-    }
-    
-    jwt.verify(token, jwtSecret, {}, async (err, userData) => {
-      if (err) reject(err);
-      resolve(userData);
-    });
-  });
-}
+// Authentication middleware is now imported from middleware/auth.js
 
 apiRouter.get("/profile", (req, res) => {
   // Try to get token from cookies first
@@ -327,37 +305,12 @@ apiRouter.post("/logout", (req, res) => {
   res.json({ success: true, message: "Logged out successfully" });
 });
 
-// Modified upload function for Cloudinary
-const photoMiddleware = multer({ storage: multer.memoryStorage() });
-apiRouter.post("/upload", photoMiddleware.array("photos", 100), async (req, res) => {
-  const uploadedFiles = [];
-  try {
-    // Process each file with Cloudinary
-    for (let i = 0; i < req.files.length; i++) {
-      const file = req.files[i];
-      
-      // Create upload stream to Cloudinary
-      const uploadPromise = new Promise((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream({
-          folder: 'conferencehub',
-        }, (error, result) => {
-          if (error) return reject(error);
-          resolve({ url: result.secure_url, publicId: result.public_id });
-        });
-        
-        // Pipe the file buffer to the upload stream
-        streamifier.createReadStream(file.buffer).pipe(uploadStream);
-      });
-      
-      const uploadResult = await uploadPromise;
-      uploadedFiles.push(uploadResult);
-    }
-    
-    res.json(uploadedFiles);
-  } catch (error) {
-    console.error('Error uploading images:', error);
-    res.status(500).json({ error: 'Failed to upload images' });
-  }
+// Upload middleware imported from middleware/uploads.js
+const { photoMiddleware, photoUpload, uploadToCloudinary } = require('./middleware/uploads');
+
+// Upload endpoint using the middleware
+apiRouter.post("/upload", photoUpload.array("photos", 100), uploadToCloudinary, (req, res) => {
+  res.json(req.uploadedFiles || []);
 });
 
 // submit new place form
@@ -1247,19 +1200,8 @@ if (process.env.NODE_ENV === 'production') {
     return res.status(404).json({ error: "API endpoint not found" });
   });
   
-  // Add a general error handler middleware to catch and log any errors
-  app.use((err, req, res, next) => {
-    console.error('Server error:', err);
-    // Don't expose the error stack in production
-    if (process.env.NODE_ENV === 'production') {
-      return res.status(500).send('Internal Server Error');
-    } else {
-      return res.status(500).json({
-        error: err.message,
-        stack: err.stack
-      });
-    }
-  });
+  // Add error handling middleware from middleware/errorHandler.js
+  app.use(errorHandler);
 }
 
 app.listen(PORT, () => {
