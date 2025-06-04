@@ -1,10 +1,8 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-// Replace mongoose with Sequelize imports
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-// Import models from the index.js file
 const { sequelize, User, Place, Booking } = require('./models');
 const cookieParser = require("cookie-parser");
 const multer = require("multer");
@@ -12,7 +10,11 @@ const bodyParser = require("body-parser");
 const cloudinary = require('./config/cloudinary');
 const streamifier = require('streamifier');
 const path = require('path');
-const session = require('express-session'); // Add session middleware
+const session = require('express-session');
+
+// Import configuration
+const authConfig = require('./config/auth');
+const { corsOptions } = require('./config/cors');
 
 // Import routes
 const telegramAuthRoutes = require('./routes/telegramAuth');
@@ -23,116 +25,16 @@ app.use(express.json());
 app.use(cookieParser()); // to read cookies
 
 // Session middleware for Telegram verification
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'telegram-verification-secret',
-  resave: false,
-  saveUninitialized: true,
-  cookie: { 
-    secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-    maxAge: 1000 * 60 * 60, // 1 hour
-    httpOnly: true,
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
-  },
-  unset: 'destroy' // Ensure session data is completely removed when destroyed
-}));
+app.use(session(authConfig.session));
 
 // We're keeping this line for any static files, but primary image hosting will be on Cloudinary
 app.use("/uploads", express.static(__dirname + "/uploads")); 
 
-// Parse allowed origins from environment variable
-const parseAllowedOrigins = () => {
-  let corsOrigins = [];
-  
-  if (process.env.CORS_ALLOWED_ORIGINS) {
-    try {
-      // Parse JSON array from environment variable
-      corsOrigins = JSON.parse(process.env.CORS_ALLOWED_ORIGINS);
-      console.log('Using CORS_ALLOWED_ORIGINS from environment:', corsOrigins);
-    } catch (error) {
-      console.error('Error parsing CORS_ALLOWED_ORIGINS:', error);
-      // If parsing fails, try to split by comma (common format)
-      corsOrigins = process.env.CORS_ALLOWED_ORIGINS.split(',').map(origin => origin.trim());
-    }
-  }
-  
-  // Add FRONTEND_URL if it exists and not already included
-  if (process.env.FRONTEND_URL) {
-    // Add both with and without trailing slash to be safe
-    const frontendUrl = process.env.FRONTEND_URL.trim();
-    const frontendUrlNoSlash = frontendUrl.replace(/\/$/, '');
-    
-    if (frontendUrl && !corsOrigins.includes(frontendUrl)) {
-      corsOrigins.push(frontendUrl);
-    }
-    
-    if (frontendUrlNoSlash && !corsOrigins.includes(frontendUrlNoSlash)) {
-      corsOrigins.push(frontendUrlNoSlash);
-    }
-  }
-  
-  // Add localhost URLs for development
-  if (process.env.NODE_ENV !== 'production') {
-    const localUrls = ['http://localhost:5173', 'http://localhost:4000', 'http://localhost:3000'];
-    localUrls.forEach(url => {
-      if (!corsOrigins.includes(url)) {
-        corsOrigins.push(url);
-      }
-    });
-  }
-  
-  return corsOrigins.filter(Boolean); // Remove any undefined/empty values
-};
+// Use CORS configuration from config/cors.js
+app.use(cors(corsOptions));
 
-// Get allowed origins from environment variables
-const allowedOrigins = parseAllowedOrigins();
-console.log('CORS allowed origins:', allowedOrigins);
-
-// CORS configuration with dynamic origins
-app.use(
-  cors({
-    credentials: true,
-    origin: function(origin, callback) {
-      // Allow requests with no origin (like mobile apps, curl, etc.)
-      if (!origin) return callback(null, true);
-      
-      console.log(`CORS request from origin: ${origin}`);
-      
-      // Check if the origin matches any allowed origins
-      const isAllowed = allowedOrigins.some(allowedOrigin => {
-        // Check for exact matches
-        if (allowedOrigin === origin) {
-          return true;
-        }
-        
-        // Check for wildcard matches (e.g., *.ngrok-free.app)
-        if (allowedOrigin.startsWith('*') && origin.endsWith(allowedOrigin.substring(1))) {
-          return true;
-        }
-        
-        // For local development, check if it's a localhost URL regardless of port
-        if (process.env.NODE_ENV !== 'production' && 
-            origin.match(/^https?:\/\/localhost(:\d+)?$/)) {
-          return true;
-        }
-        
-        return false;
-      });
-      
-      if (isAllowed) {
-        callback(null, true);
-      } else {
-        console.log(`Origin not allowed by CORS: ${origin}`);
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    optionsSuccessStatus: 200
-  })
-);
-
-const bcryptSalt = bcrypt.genSaltSync(8);
-const jwtSecret = process.env.JWT_SECRET;
+const bcryptSalt = authConfig.bcrypt.generateSalt();
+const jwtSecret = authConfig.jwt.secret;
 
 // Replace MongoDB connection with PostgreSQL connection
 sequelize.authenticate()
@@ -193,16 +95,7 @@ apiRouter.get("/test", (req, res) => {
 
 // Endpoint to get password requirements
 apiRouter.get("/password-requirements", (req, res) => {
-  const allowedSpecialChars = "@$!%*?&";
-  res.json({
-    minLength: 8,
-    requiresUppercase: true,
-    requiresLowercase: true,
-    requiresNumber: true,
-    requiresSpecialChar: true,
-    allowedSpecialChars: allowedSpecialChars,
-    regex: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$"
-  });
+  res.json(authConfig.passwordPolicy);
 });
 
 apiRouter.post("/check-user", async (req, res) => {
@@ -299,12 +192,7 @@ apiRouter.post("/login", async (req, res) => {
           {},
           (err, token) => {
             if (err) throw err;
-            res.cookie("token", token, {
-              httpOnly: true,
-              secure: process.env.NODE_ENV === 'production',
-              maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-              sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
-            }).json({
+            res.cookie("token", token, authConfig.jwt.cookieOptions).json({
               id: userData.id,
               name: userData.name,
               email: userData.email,
