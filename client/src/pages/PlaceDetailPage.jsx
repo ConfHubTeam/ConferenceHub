@@ -28,12 +28,12 @@ export default function PlaceDetailPage() {
     if (!placeId) {
       return;
     }
-    api.get("/place/" + placeId).then((response) => {
+    api.get("/places/" + placeId).then((response) => {
       setPlaceDetail(response.data);
     });
 
     if (placeId && bookingId) {
-      api.get("/place/" + placeId + "/" + bookingId).then((response) => {
+      api.get("/places/" + placeId + "/" + bookingId).then((response) => {
         setBookingDetail(response.data);
       });
       setButtonDisabled(true);
