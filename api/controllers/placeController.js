@@ -1,5 +1,6 @@
 const { Place, Booking, User } = require('../models');
 const { getUserDataFromToken } = require('../middleware/auth');
+const Currency = require('../models/currency');
 
 /**
  * Create a new place
@@ -10,7 +11,7 @@ const createPlace = async (req, res) => {
     description, perks, extraInfo, 
     checkIn, checkOut, maxGuests, 
     price, startDate, endDate,
-    youtubeLink, lat, lng
+    youtubeLink, lat, lng, currencyId, cooldown
   } = req.body;
 
   try {
@@ -58,7 +59,9 @@ const createPlace = async (req, res) => {
       endDate: endDate || null,
       youtubeLink: youtubeLink || null, // Add the YouTube link field
       lat: lat ? parseFloat(lat) : null,
-      lng: lng ? parseFloat(lng) : null
+      lng: lng ? parseFloat(lng) : null,
+      currencyId: currencyId && parseInt(currencyId) > 0 ? parseInt(currencyId) : null,
+      cooldown: cooldown ? parseInt(cooldown, 10) : 30
     };
 
     const placeDoc = await Place.create(processedData);
@@ -123,7 +126,8 @@ const updatePlace = async (req, res) => {
   const {
     id, title, address, photos, description,
     perks, extraInfo, checkIn, checkOut, maxGuests,
-    price, startDate, endDate, youtubeLink, lat, lng
+    price, startDate, endDate, youtubeLink, lat, lng,
+    currencyId, cooldown
   } = req.body;
   
   try {
@@ -186,6 +190,8 @@ const updatePlace = async (req, res) => {
     place.youtubeLink = youtubeLink || null; // Add the YouTube link
     place.lat = lat ? parseFloat(lat) : null;
     place.lng = lng ? parseFloat(lng) : null;
+    place.currencyId = currencyId && parseInt(currencyId) > 0 ? parseInt(currencyId) : null;
+    place.cooldown = cooldown ? parseInt(cooldown, 10) : 30;
     
     await place.save();
     res.json("ok");
@@ -348,11 +354,18 @@ const getAllPlaces = async (req, res) => {
     
     // Get all places with their owners
     const places = await Place.findAll({
-      include: [{
-        model: User,
-        as: 'owner',
-        attributes: ['id', 'name', 'email']
-      }],
+      include:[
+        {
+          model: User,
+          as: 'owner',
+          attributes: ['id', 'name', 'email']
+       },
+       {
+          model: Currency,
+          as: 'currency',
+          attributes: ['id', 'name', 'code', 'charCode']
+      }
+    ],
       order: [['createdAt', 'DESC']]
     });
     
