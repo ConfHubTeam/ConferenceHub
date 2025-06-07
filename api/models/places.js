@@ -1,6 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const User = require('./users');
+const Currency = require('./currency');
 
 const Place = sequelize.define('Place', {
   title: {
@@ -89,15 +90,25 @@ const Place = sequelize.define('Place', {
       model: 'Users',
       key: 'id'
     }
-  }
+  },
+  currencyId: {
+    type: DataTypes.INTEGER,
+    allowNull: true, // oldin tushgan zapislarga xato bermasligi uchun nullable qilindi.
+    references: {
+      model: 'Currencies',
+      key: 'id'
+    }
+  },
+  cooldown: {
+    type: DataTypes.INTEGER, // minutda ketadi menimcha yani 60, 30, 15 minut shuning uchun Int32
+    allowNull: false,
+    defaultValue: 30 // taxminan default qiymat 30 minut
+  },
 }, {
   timestamps: true
 });
 
-// Define relationship with User
-Place.belongsTo(User, { 
-  foreignKey: 'ownerId', // This replaces the owner field in MongoDB
-  as: 'owner' // Alias to maintain compatibility with existing code
-});
+Place.belongsTo(User, { foreignKey: 'ownerId', as: 'owner' });
+Place.belongsTo(Currency, { foreignKey: 'currencyId', as: 'currency' });
 
 module.exports = Place;
