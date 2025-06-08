@@ -6,9 +6,18 @@ import { useCurrency } from "../contexts/CurrencyContext";
 import { formatPriceWithSymbol, convertCurrency } from "../utils/currencyUtils";
 import PriceDisplay from "./PriceDisplay";
 
-// Custom styles to hide the InfoWindow close button
+// Custom styles to hide the InfoWindow close button and arrow
 const infoWindowStyles = `
   .gm-ui-hover-effect {
+    display: none !important;
+  }
+  .gm-style .gm-style-iw-tc::after {
+    display: none !important;
+  }
+  .gm-style .gm-style-iw-tc {
+    display: none !important;
+  }
+  .gm-style .gm-style-iw-t::after {
     display: none !important;
   }
 `;
@@ -304,9 +313,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
         }
       }
     }
-  };
-
-  // Create markers function that can be reused
+  };  // Create markers function that can be reused
   const createMarkersAsync = useCallback(async (map) => {
     // Create new bounds object to fit all markers
     const bounds = new window.google.maps.LatLngBounds();
@@ -348,7 +355,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
           }
         });
       }
-      
+
       // Create markers with potentially adjusted positions
       for (const { place, position } of placesAtPosition) {
         try {
@@ -379,7 +386,10 @@ export default function MapView({ places, disableInfoWindow = false }) {
           });
           
           // Add click event to marker
-          marker.addListener("click", () => {
+          marker.addListener("click", (event) => {
+            // Stop event propagation to prevent map click
+            event.stop();
+            
             // Only set selected place if info windows are not disabled
             if (!disableInfoWindow) {
               setSelectedPlace(marker.placeData);
@@ -400,7 +410,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
     }
     
     return { markers: markers.filter(Boolean), bounds };
-  }, [places, disableInfoWindow, selectedCurrency, createPriceMarkerIcon, setSelectedPlace]);
+  }, [places, disableInfoWindow]);
 
   const onLoad = useCallback(function callback(map) {
     setMap(map);
@@ -417,7 +427,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
     setMap(null);
   }, []);
 
-  // Update markers when places or currency change
+  // Update markers when places change (but not currency)
   useEffect(() => {
     if (!map || !places.length) return;
 
@@ -449,7 +459,40 @@ export default function MapView({ places, disableInfoWindow = false }) {
         });
       }
     });
-  }, [map, places, selectedCurrency, createMarkersAsync]);
+  }, [map, places, createMarkersAsync]);
+
+  // Update marker icons when currency changes (without recreating markers)
+  useEffect(() => {
+    if (!markersRef.current.length || !selectedCurrency) return;
+
+    const updateMarkerIcons = async () => {
+      const currentZoom = map?.getZoom() || 12;
+      const size = currentZoom <= 10 ? 'small' : currentZoom >= 14 ? 'large' : 'medium';
+
+      for (const marker of markersRef.current) {
+        try {
+          const place = marker.placeData;
+          const iconUrl = await createPriceMarkerIcon(place.price, place.currency, size);
+          
+          marker.setIcon({
+            url: iconUrl,
+            anchor: new window.google.maps.Point(
+              size === 'small' ? 30 : size === 'large' ? 45 : 38, 
+              size === 'small' ? 32 : size === 'large' ? 45 : 40
+            ),
+            scaledSize: new window.google.maps.Size(
+              size === 'small' ? 60 : size === 'large' ? 90 : 75,
+              size === 'small' ? 32 : size === 'large' ? 45 : 40
+            )
+          });
+        } catch (error) {
+          console.error("Error updating marker icon:", error);
+        }
+      }
+    };
+
+    updateMarkerIcons();
+  }, [selectedCurrency]);
 
   // Listen for zoom changes to update marker sizes
   useEffect(() => {
@@ -467,7 +510,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
         window.google.maps.event.removeListener(zoomListener);
       }
     };
-  }, [map, selectedCurrency]);
+  }, [map]);
 
   // Error state handling
   if (loadError) {
@@ -523,7 +566,10 @@ export default function MapView({ places, disableInfoWindow = false }) {
         zoom={10}
         onLoad={onLoad}
         onUnmount={onUnmount}
-        onClick={() => setSelectedPlace(null)}
+        onClick={(event) => {
+          // Close InfoWindow when clicking on empty map area
+          setSelectedPlace(null);
+        }}
         options={{
           fullscreenControl: false,
           mapTypeControl: false,
@@ -540,8 +586,9 @@ export default function MapView({ places, disableInfoWindow = false }) {
             onCloseClick={() => setSelectedPlace(null)}
             options={{
               maxWidth: 250,
-              pixelOffset: new window.google.maps.Size(0, -30),
-              disableAutoPan: false
+              pixelOffset: new window.google.maps.Size(0, -45),
+              disableAutoPan: false,
+              ariaLabel: selectedPlace.title
             }}
           >
             <div className="w-full" style={{ maxWidth: "230px" }}>
