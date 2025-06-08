@@ -10,6 +10,7 @@ import {
   getMarkerSizeConfig, 
   getMarkerGoogleMapsProperties 
 } from "../utils/markerSizeUtils";
+import { drawMarkerShape, drawPriceText } from "../utils/canvasUtils";
 
 // Custom styles to hide the InfoWindow close button and arrow
 const infoWindowStyles = `
@@ -65,7 +66,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
   const { selectedCurrency } = useCurrency();
   
   // Create a custom price marker icon with current currency
-  const createPriceMarkerIcon = async (price, currency, size = 'medium') => {
+  const createPriceMarkerIcon = async (price, currency, size = "medium") => {
     // Format the price with the current currency
     let formattedPrice;
     
@@ -78,8 +79,8 @@ export default function MapView({ places, disableInfoWindow = false }) {
     }
     
     // Create a canvas element to draw the custom marker with higher DPI
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
     
     // Device pixel ratio for high DPI screens
     const dpr = window.devicePixelRatio || 1;
@@ -118,87 +119,16 @@ export default function MapView({ places, disableInfoWindow = false }) {
     
     // Apply anti-aliasing
     context.imageSmoothingEnabled = true;
-    context.imageSmoothingQuality = 'high';
+    context.imageSmoothingQuality = "high";
     
-    // Draw marker shape (more rectangular than hexagon for larger price values)
-    const hexHeight = baseHeight * 0.75; // Increased from 0.72
-    const hexWidth = baseWidth * 0.95; // Increased from 0.9
-    const startX = (baseWidth - hexWidth) / 2;
-    const startY = 0;
-    const pointHeight = baseHeight - hexHeight;
+    // Draw the marker shape using extracted utility
+    drawMarkerShape(context, baseWidth, baseHeight, borderRadius);
     
-    // Add shadow
-    context.shadowColor = 'rgba(0, 0, 0, 0.3)';
-    context.shadowBlur = 4;
-    context.shadowOffsetX = 0;
-    context.shadowOffsetY = 2;
-    
-    // Create hexagon path
-    context.beginPath();
-    // Top left corner
-    context.moveTo(startX + borderRadius, startY);
-    // Top side
-    context.lineTo(startX + hexWidth - borderRadius, startY);
-    // Top right corner
-    context.arcTo(startX + hexWidth, startY, startX + hexWidth, startY + borderRadius, borderRadius);
-    // Right side
-    context.lineTo(startX + hexWidth, startY + hexHeight - borderRadius);
-    // Bottom right corner
-    context.arcTo(startX + hexWidth, startY + hexHeight, startX + hexWidth - borderRadius, startY + hexHeight, borderRadius);
-    // Bottom side to pointer start
-    context.lineTo(startX + (hexWidth * 0.55), startY + hexHeight);
-    // Pointer
-    context.lineTo(baseWidth / 2, baseHeight);
-    context.lineTo(startX + (hexWidth * 0.45), startY + hexHeight);
-    // Bottom side from pointer end
-    context.lineTo(startX + borderRadius, startY + hexHeight);
-    // Bottom left corner
-    context.arcTo(startX, startY + hexHeight, startX, startY + hexHeight - borderRadius, borderRadius);
-    // Left side
-    context.lineTo(startX, startY + borderRadius);
-    // Top left corner
-    context.arcTo(startX, startY, startX + borderRadius, startY, borderRadius);
-    
-    // Fill with gradient
-    const gradient = context.createLinearGradient(0, 0, 0, hexHeight);
-    gradient.addColorStop(0, '#ff385c');
-    gradient.addColorStop(1, '#e31c5f');
-    context.fillStyle = gradient;
-    context.fill();
-    
-    // Reset shadow for text
-    context.shadowColor = 'transparent';
-    
-    // Text preparations
-    context.fillStyle = 'white';
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    
-    // Handle long texts (like large UZS amounts)
-    // Start with default font size and reduce if needed
-    let dynamicFontSize = fontSize;
-    context.font = `bold ${dynamicFontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`;
-    
-    let textWidth = context.measureText(formattedPrice).width;
-    let maxWidth = hexWidth * 0.9; // Max width = 90% of shape width
-    
-    // Reduce font size if text is too wide
-    if (textWidth > maxWidth) {
-      // More aggressive font size reduction for very long text
-      let reductionStep = textWidth > maxWidth * 1.5 ? 1.0 : 0.5;
-      
-      while (textWidth > maxWidth && dynamicFontSize > 7) {
-        dynamicFontSize -= reductionStep;
-        context.font = `bold ${dynamicFontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`;
-        textWidth = context.measureText(formattedPrice).width;
-      }
-    }
-    
-    // Draw the text with possibly reduced font size
-    context.fillText(formattedPrice, baseWidth / 2, hexHeight / 2);
+    // Draw the price text using extracted utility
+    drawPriceText(context, formattedPrice, baseWidth, baseHeight, fontSize);
     
     // Convert canvas to image URL with maximum quality
-    return canvas.toDataURL('image/png', 1.0);
+    return canvas.toDataURL("image/png", 1.0);
   };
 
   // Update marker icons based on zoom level (without repositioning)
