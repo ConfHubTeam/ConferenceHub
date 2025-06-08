@@ -21,7 +21,6 @@ export default function CurrencySelector({ selectedCurrency, onChange, available
       
       // Use parent's availableCurrencies if provided
       if (availableCurrencies && availableCurrencies.length > 0) {
-        console.log("Using currencies from parent:", availableCurrencies);
         setCurrencies(availableCurrencies);
         setIsLoading(false);
         return;
