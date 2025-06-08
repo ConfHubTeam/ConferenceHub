@@ -306,132 +306,105 @@ export default function MapView({ places, disableInfoWindow = false }) {
     }
   };
 
-  const onLoad = useCallback(function callback(map) {
+  // Create markers function that can be reused
+  const createMarkersAsync = useCallback(async (map) => {
     // Create new bounds object to fit all markers
     const bounds = new window.google.maps.LatLngBounds();
     
-    // Add markers to the map - We'll create them asynchronously
-    const createMarkersAsync = async () => {
-      // Group places by position to detect overlapping markers
-      const positionGroups = new Map(); // Group markers by position
-      
-      // First pass: group places by position
-      for (const place of places) {
-        if (!place.lat || !place.lng) continue;
-        
-        const position = { lat: parseFloat(place.lat), lng: parseFloat(place.lng) };
-        const posKey = `${position.lat.toFixed(5)},${position.lng.toFixed(5)}`;
-        
-        if (!positionGroups.has(posKey)) {
-          positionGroups.set(posKey, []);
-        }
-        positionGroups.get(posKey).push({ place, position: {...position} });
-        
-        // Extend bounds for all positions
-        bounds.extend(position);
-      }
-      
-      const markers = [];
-      
-      // Second pass: create markers with adjusted positions for overlaps
-      for (const [posKey, placesAtPosition] of positionGroups.entries()) {
-        // Offset markers that are at the same position
-        if (placesAtPosition.length > 1) {
-          const offsetStep = 0.00015; // Small lat/lng offset
-          
-          placesAtPosition.forEach((item, index) => {
-            if (index > 0) { // First marker stays at original position
-              const offsetAngle = (Math.PI * 2 / placesAtPosition.length) * index;
-              
-              // Create a small offset in a circular pattern
-              item.position.lat += Math.sin(offsetAngle) * offsetStep;
-              item.position.lng += Math.cos(offsetAngle) * offsetStep;
-            }
-          });
-        }
-        
-        // Create markers with potentially adjusted positions
-        for (const { place, position } of placesAtPosition) {
-          try {
-            // Generate marker icon with price in current currency
-            const size = map.getZoom() <= 10 ? 'small' : map.getZoom() >= 14 ? 'large' : 'medium';
-            const iconUrl = await createPriceMarkerIcon(place.price, place.currency, size);
-            
-            // Create custom marker with price label
-            const marker = new window.google.maps.Marker({
-              position,
-              map,
-              title: place.title,
-              placeData: place,
-              icon: {
-                url: iconUrl,
-                // Position the anchor at the bottom tip of the pointer
-                anchor: new window.google.maps.Point(
-                  size === 'small' ? 30 : size === 'large' ? 45 : 38, 
-                  size === 'small' ? 32 : size === 'large' ? 45 : 40
-                ),
-                // Set size to match the canvas dimensions
-                scaledSize: new window.google.maps.Size(
-                  size === 'small' ? 60 : size === 'large' ? 90 : 75,
-                  size === 'small' ? 32 : size === 'large' ? 45 : 40
-                )
-              },
-              animation: window.google.maps.Animation.DROP
-            });
-            
-            // Add click event to marker
-            marker.addListener("click", () => {
-              // Only set selected place if info windows are not disabled
-              if (!disableInfoWindow) {
-                setSelectedPlace(marker.placeData);
-                
-                // Zoom in closer when marker is clicked for better user experience
-                const currentZoom = map.getZoom();
-                const targetZoom = Math.min(16, currentZoom + 2); // Zoom in by 2 levels, up to max of 16
-                map.setZoom(targetZoom);
-                map.panTo(marker.getPosition()); // Center map on the clicked marker
-              }
-            });
-            
-            markers.push(marker);
-          } catch (error) {
-            console.error("Error creating marker:", error);
-          }
-        }
-      }
-      
-      return markers;
-    };
+    // Group places by position to detect overlapping markers
+    const positionGroups = new Map(); // Group markers by position
     
-    // Create markers and store in ref
-    createMarkersAsync().then(markers => {
-      markersRef.current = markers.filter(Boolean); // Filter out any null values
+    // First pass: group places by position
+    for (const place of places) {
+      if (!place.lat || !place.lng) continue;
       
-      // Only adjust bounds if we have markers
-      if (markersRef.current.length > 0) {
-        map.fitBounds(bounds);
+      const position = { lat: parseFloat(place.lat), lng: parseFloat(place.lng) };
+      const posKey = `${position.lat.toFixed(5)},${position.lng.toFixed(5)}`;
+      
+      if (!positionGroups.has(posKey)) {
+        positionGroups.set(posKey, []);
+      }
+      positionGroups.get(posKey).push({ place, position: {...position} });
+      
+      // Extend bounds for all positions
+      bounds.extend(position);
+    }
+    
+    const markers = [];
+    
+    // Second pass: create markers with adjusted positions for overlaps
+    for (const [posKey, placesAtPosition] of positionGroups.entries()) {
+      // Offset markers that are at the same position
+      if (placesAtPosition.length > 1) {
+        const offsetStep = 0.00015; // Small lat/lng offset
         
-        // Add a zoom changed listener to ensure we don't zoom in too close
-        const zoomChangedListener = map.addListener('bounds_changed', () => {
-          // Get current zoom level
-          const zoom = map.getZoom();
-          
-          // If zoom is too close (higher than 13), set it back to city level
-          if (zoom > 13) {
-            map.setZoom(13);
+        placesAtPosition.forEach((item, index) => {
+          if (index > 0) { // First marker stays at original position
+            const offsetAngle = (Math.PI * 2 / placesAtPosition.length) * index;
+            
+            // Create a small offset in a circular pattern
+            item.position.lat += Math.sin(offsetAngle) * offsetStep;
+            item.position.lng += Math.cos(offsetAngle) * offsetStep;
           }
-          
-          // Update marker sizes based on zoom level
-          updateMarkerSizes(zoom);
-          
-          // Only need to run this once after initial bounds fitting
-          window.google.maps.event.removeListener(zoomChangedListener);
         });
       }
-    });
+      
+      // Create markers with potentially adjusted positions
+      for (const { place, position } of placesAtPosition) {
+        try {
+          // Generate marker icon with price in current currency
+          const size = map.getZoom() <= 10 ? 'small' : map.getZoom() >= 14 ? 'large' : 'medium';
+          const iconUrl = await createPriceMarkerIcon(place.price, place.currency, size);
+          
+          // Create custom marker with price label
+          const marker = new window.google.maps.Marker({
+            position,
+            map,
+            title: place.title,
+            placeData: place,
+            icon: {
+              url: iconUrl,
+              // Position the anchor at the bottom tip of the pointer
+              anchor: new window.google.maps.Point(
+                size === 'small' ? 30 : size === 'large' ? 45 : 38, 
+                size === 'small' ? 32 : size === 'large' ? 45 : 40
+              ),
+              // Set size to match the canvas dimensions
+              scaledSize: new window.google.maps.Size(
+                size === 'small' ? 60 : size === 'large' ? 90 : 75,
+                size === 'small' ? 32 : size === 'large' ? 45 : 40
+              )
+            },
+            animation: window.google.maps.Animation.DROP
+          });
+          
+          // Add click event to marker
+          marker.addListener("click", () => {
+            // Only set selected place if info windows are not disabled
+            if (!disableInfoWindow) {
+              setSelectedPlace(marker.placeData);
+              
+              // Zoom in closer when marker is clicked for better user experience
+              const currentZoom = map.getZoom();
+              const targetZoom = Math.min(16, currentZoom + 2); // Zoom in by 2 levels, up to max of 16
+              map.setZoom(targetZoom);
+              map.panTo(marker.getPosition()); // Center map on the clicked marker
+            }
+          });
+          
+          markers.push(marker);
+        } catch (error) {
+          console.error("Error creating marker:", error);
+        }
+      }
+    }
     
+    return { markers: markers.filter(Boolean), bounds };
+  }, [places, disableInfoWindow, selectedCurrency, createPriceMarkerIcon, setSelectedPlace]);
+
+  const onLoad = useCallback(function callback(map) {
     setMap(map);
-  }, [places, disableInfoWindow, selectedCurrency, setSelectedPlace]);
+  }, []);
 
   const onUnmount = useCallback(function callback() {
     // Cleanup markers
@@ -444,121 +417,39 @@ export default function MapView({ places, disableInfoWindow = false }) {
     setMap(null);
   }, []);
 
-  // Update markers when places change
+  // Update markers when places or currency change
   useEffect(() => {
-    if (map) {
-      // Clear existing markers
-      markersRef.current.forEach(marker => {
-        marker.setMap(null);
-      });
+    if (!map || !places.length) return;
+
+    // Clear existing markers first
+    markersRef.current.forEach(marker => {
+      marker.setMap(null);
+    });
+    markersRef.current = [];
+
+    // Create new markers
+    createMarkersAsync(map).then(({ markers, bounds }) => {
+      markersRef.current = markers;
       
-      // Create new bounds object
-      const bounds = new window.google.maps.LatLngBounds();
-      
-      // Create new markers asynchronously
-      const updateMarkersAsync = async () => {
-        // Group places by position to detect overlapping markers
-        const positionGroups = new Map(); // Group markers by position
+      // Fit map to bounds if we have markers
+      if (markers.length > 0) {
+        map.fitBounds(bounds);
         
-        // First pass: group places by position
-        for (const place of places) {
-          if (!place.lat || !place.lng) continue;
+        // Add a one-time listener to adjust zoom after bounds are set
+        const boundsChangedListener = map.addListener('bounds_changed', () => {
+          const zoom = map.getZoom();
           
-          const position = { lat: parseFloat(place.lat), lng: parseFloat(place.lng) };
-          const posKey = `${position.lat.toFixed(5)},${position.lng.toFixed(5)}`;
-          
-          if (!positionGroups.has(posKey)) {
-            positionGroups.set(posKey, []);
-          }
-          positionGroups.get(posKey).push({ place, position });
-          
-          // Extend bounds for all positions
-          bounds.extend(position);
-        }
-        
-        const newMarkers = [];
-        
-        // Second pass: create markers with adjusted positions for overlaps
-        for (const [posKey, placesAtPosition] of positionGroups.entries()) {
-          // Offset markers that are at the same position
-          if (placesAtPosition.length > 1) {
-            const offsetStep = 0.00015; // Small lat/lng offset
-            
-            placesAtPosition.forEach((item, index) => {
-              if (index > 0) { // First marker stays at original position
-                const offsetAngle = (Math.PI * 2 / placesAtPosition.length) * index;
-                
-                // Create a small offset in a circular pattern
-                item.position.lat += Math.sin(offsetAngle) * offsetStep;
-                item.position.lng += Math.cos(offsetAngle) * offsetStep;
-              }
-            });
+          // If zoom is too close (higher than 13), set it back to city level
+          if (zoom > 13) {
+            map.setZoom(13);
           }
           
-          // Create markers with potentially adjusted positions
-          for (const { place, position } of placesAtPosition) {
-            try {
-              // Generate marker icon with price in current currency
-              const size = map.getZoom() <= 10 ? 'small' : map.getZoom() >= 14 ? 'large' : 'medium';
-              const iconUrl = await createPriceMarkerIcon(place.price, place.currency, size);
-              
-              // Create custom marker with price label
-              const marker = new window.google.maps.Marker({
-                position,
-                map,
-                title: place.title,
-                placeData: place,
-                // Create a custom icon with price, sized based on initial zoom
-                icon: {
-                  url: iconUrl,
-                  // Position the anchor at the bottom tip of the pointer
-                  anchor: new window.google.maps.Point(
-                    size === 'small' ? 30 : size === 'large' ? 45 : 38, 
-                    size === 'small' ? 32 : size === 'large' ? 45 : 40
-                  ),
-                  // Set size to match the canvas dimensions
-                  scaledSize: new window.google.maps.Size(
-                    size === 'small' ? 60 : size === 'large' ? 90 : 75,
-                    size === 'small' ? 32 : size === 'large' ? 45 : 40
-                  )
-                },
-                animation: window.google.maps.Animation.DROP
-              });
-              
-              marker.addListener("click", () => {
-                // Only set selected place if info windows are not disabled
-                if (!disableInfoWindow) {
-                  setSelectedPlace(marker.placeData);
-                  
-                  // Zoom in closer when marker is clicked for better user experience
-                  const currentZoom = map.getZoom();
-                  const targetZoom = Math.min(16, currentZoom + 2); // Zoom in by 2 levels, up to max of 16
-                  map.setZoom(targetZoom);
-                  map.panTo(marker.getPosition()); // Center map on the clicked marker
-                }
-              });
-              
-              newMarkers.push(marker);
-            } catch (error) {
-              console.error("Error creating marker in useEffect:", error);
-            }
-          }
-        }
-        
-        return newMarkers;
-      };
-      
-      // Execute async function and update markers ref
-      updateMarkersAsync().then(newMarkers => {
-        markersRef.current = newMarkers;
-        
-        // Fit map to bounds if we have markers
-        if (markersRef.current.length > 0) {
-          map.fitBounds(bounds);
-        }
-      });
-    }
-  }, [places, map, disableInfoWindow, selectedCurrency]);
+          // Remove this listener after first use
+          window.google.maps.event.removeListener(boundsChangedListener);
+        });
+      }
+    });
+  }, [map, places, selectedCurrency, createMarkersAsync]);
 
   // Listen for zoom changes to update marker sizes
   useEffect(() => {
