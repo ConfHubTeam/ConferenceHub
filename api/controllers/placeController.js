@@ -326,9 +326,16 @@ const getHomePlaces = async (req, res) => {
       };
     }
     
-    // Get all places matching the filters
+    // Get all places matching the filters with currency information
     const places = await Place.findAll({
       where: whereConditions,
+      include: [
+        {
+          model: Currency,
+          as: 'currency',
+          attributes: ['id', 'name', 'code', 'charCode']
+        }
+      ],
       order: [['createdAt', 'DESC']] // Show newest places first
     });
     

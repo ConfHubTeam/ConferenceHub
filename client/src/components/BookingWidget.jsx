@@ -5,6 +5,7 @@ import api from "../utils/api";
 import { UserContext } from "./UserContext";
 import { useNotification } from "./NotificationContext";
 import { validateForm } from "../utils/formUtils";
+import PriceDisplay from "./PriceDisplay";
 
 export default function BookingWidget({ placeDetail, buttonDisabled }) {
   const [numOfGuests, setNumOfGuests] = useState(1);
@@ -154,8 +155,12 @@ export default function BookingWidget({ placeDetail, buttonDisabled }) {
     <form onSubmit={(event) => handleReserve(event)}>
       <div className="bg-white p-5 rounded-xl border shadow-md">
         <div className="text-left pb-1">
-          <span className="font-bold text-2xl">${placeDetail.price}</span> per
-          hour
+          <PriceDisplay 
+            price={placeDetail.price} 
+            currency={placeDetail.currency} 
+            bold={true}
+            className="text-2xl mr-1 inline-block"
+          /> per hour
         </div>
 
         {error && (
@@ -248,20 +253,41 @@ export default function BookingWidget({ placeDetail, buttonDisabled }) {
               <div className="border-b border-t">
                 <div className="flex px-3 py-4 justify-between items-center text-gray-600">
                   <p className="underline">
-                    ${placeDetail.price} x {hours} hours{" "}
+                    <PriceDisplay 
+                      price={placeDetail.price} 
+                      currency={placeDetail.currency} 
+                      bold={false}
+                      className="inline-block"
+                    /> x {hours} hours
                   </p>
-                  <p className="">${placeDetail.price * hours}</p>
+                  <p className="">
+                    <PriceDisplay 
+                      price={placeDetail.price * hours} 
+                      currency={placeDetail.currency} 
+                      bold={false}
+                    />
+                  </p>
                 </div>
                 <div className="flex px-3 pb-4 justify-between items-center text-gray-600">
                   <p className="underline">Service fee</p>
-                  <p className="">${hours && "20"}</p>
+                  <p className="">
+                    <PriceDisplay 
+                      price={20} 
+                      currency={placeDetail.currency} 
+                      bold={false}
+                    />
+                  </p>
                 </div>
               </div>
               <div>
                 <div className="flex px-3 py-4 justify-between items-center">
                   <p className="underline">Total</p>
                   <p className="">
-                    ${hours && placeDetail.price * hours + 20}
+                    <PriceDisplay 
+                      price={hours && placeDetail.price * hours + 20} 
+                      currency={placeDetail.currency} 
+                      bold={true}
+                    />
                   </p>
                 </div>
               </div>
