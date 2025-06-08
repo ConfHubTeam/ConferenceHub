@@ -107,6 +107,42 @@ apiRouter.post("/upload", photoUpload.array("photos", 100), uploadToCloudinary, 
 // Mount the API router at /api prefix
 app.use('/api', apiRouter);
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  const fs = require('fs');
+  const clientBuildPath = path.join(__dirname, '../client/dist');
+  
+  const healthStatus = {
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    buildPath: clientBuildPath,
+    buildExists: fs.existsSync(clientBuildPath)
+  };
+  
+  if (healthStatus.buildExists) {
+    try {
+      const files = fs.readdirSync(clientBuildPath);
+      healthStatus.buildContents = files;
+      
+      // Check for index.html
+      healthStatus.indexExists = fs.existsSync(path.join(clientBuildPath, 'index.html'));
+      
+      // Check for assets directory
+      const assetsPath = path.join(clientBuildPath, 'assets');
+      healthStatus.assetsExists = fs.existsSync(assetsPath);
+      if (healthStatus.assetsExists) {
+        const assetFiles = fs.readdirSync(assetsPath, { recursive: true });
+        healthStatus.assetFiles = assetFiles;
+      }
+    } catch (error) {
+      healthStatus.error = error.message;
+    }
+  }
+  
+  res.json(healthStatus);
+});
+
 // Register specialized routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -118,13 +154,16 @@ app.use('/api/currency', currencyRoutes);
 // For production: Serve static files from the client build folder
 if (process.env.NODE_ENV === 'production') {
   const clientBuildPath = path.join(__dirname, '../client/dist');
+  console.log(`Production mode: serving static files from ${clientBuildPath}`);
   
   // Configure static files and routing using the extracted configuration
   configureStaticFiles(app, clientBuildPath);
-  
-  // Add error handling middleware from middleware/errorHandler.js
-  app.use(errorHandler);
+} else {
+  console.log('Development mode: not serving static files');
 }
+
+// Add error handling middleware from middleware/errorHandler.js
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

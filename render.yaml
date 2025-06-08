@@ -3,8 +3,21 @@ services:
   - type: web
     name: conferencehub-app
     env: node
-    buildCommand: npm install && cd client && npm install && npm run build:production && cd ..
-    startCommand: cd api && node index.js
+    buildCommand: |
+      echo "Starting build process..."
+      npm install
+      echo "Root dependencies installed"
+      cd client
+      npm install
+      echo "Client dependencies installed"
+      npm run build
+      echo "Client build completed"
+      cd ..
+      echo "Build directory contents:"
+      ls -la client/dist || echo "Dist directory not found"
+      echo "Assets directory contents:"
+      ls -la client/dist/assets || echo "Assets directory not found"
+    startCommand: NODE_ENV=production node start.js
     plan: free
     envVars:
       - key: NODE_ENV
