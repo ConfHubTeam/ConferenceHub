@@ -242,3 +242,37 @@ export function getDecimalPlaces(currency) {
     default: return 2;     // Default to 2 decimals
   }
 }
+
+/**
+ * Format price for display with current currency conversion
+ * @param {number} price - The numeric price value
+ * @param {Object} currency - Currency object with charCode property
+ * @param {Object} selectedCurrency - Selected currency for conversion (optional)
+ * @returns {Promise<string>} - Formatted price string with currency conversion
+ */
+export async function formatPrice(price, currency, selectedCurrency = null) {
+  try {
+    if (selectedCurrency && currency && price) {
+      // Get currency code from object or string
+      const fromCode = currency?.charCode || currency;
+      const toCode = selectedCurrency?.charCode;
+      
+      if (fromCode && toCode && fromCode !== toCode) {
+        // Convert the price to selected currency
+        const convertedPrice = await convertCurrency(price, fromCode, toCode);
+        return formatPriceWithSymbol(convertedPrice, selectedCurrency);
+      }
+    }
+    
+    // Fallback to original currency or USD
+    return formatPriceWithSymbol(price, currency || { charCode: "USD" });
+  } catch (error) {
+    console.error("Error formatting price:", error);
+    // Fallback to simple format if conversion fails
+    return new Intl.NumberFormat('en-US', { 
+      style: 'currency', 
+      currency: 'USD',
+      minimumFractionDigits: 0
+    }).format(price);
+  }
+}

@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from "@react-google-maps/api";
+import { GoogleMap, useJsApiLoader, InfoWindow } from "@react-google-maps/api";
 import { Link } from "react-router-dom";
 import CloudinaryImage from "./CloudinaryImage";
 import { useCurrency } from "../contexts/CurrencyContext";
-import { formatPriceWithSymbol, convertCurrency } from "../utils/currencyUtils";
+import { formatPrice } from "../utils/currencyUtils";
 import PriceDisplay from "./PriceDisplay";
+import { 
+  getMarkerSizeByZoom, 
+  getMarkerSizeConfig, 
+  getMarkerGoogleMapsProperties 
+} from "../utils/markerSizeUtils";
 
 // Custom styles to hide the InfoWindow close button and arrow
 const infoWindowStyles = `
@@ -56,35 +61,8 @@ export default function MapView({ places, disableInfoWindow = false }) {
   const [map, setMap] = useState(null);
   const [selectedPlace, setSelectedPlace] = useState(null);
   const markersRef = useRef([]);
+  const isUpdatingMarkersRef = useRef(false);
   const { selectedCurrency } = useCurrency();
-  
-  // Format price for display with current currency
-  const formatPrice = async (price, currency) => {
-    try {
-      if (selectedCurrency && currency && price) {
-        // Get currency code from object or string
-        const fromCode = currency?.charCode || currency;
-        const toCode = selectedCurrency?.charCode;
-        
-        if (fromCode && toCode && fromCode !== toCode) {
-          // Convert the price to selected currency
-          const convertedPrice = await convertCurrency(price, fromCode, toCode);
-          return formatPriceWithSymbol(convertedPrice, selectedCurrency);
-        }
-      }
-      
-      // Fallback to original currency or USD
-      return formatPriceWithSymbol(price, currency || { charCode: "USD" });
-    } catch (error) {
-      console.error("Error formatting price:", error);
-      // Fallback to simple format if conversion fails
-      return new Intl.NumberFormat('en-US', { 
-        style: 'currency', 
-        currency: 'USD',
-        minimumFractionDigits: 0
-      }).format(price);
-    }
-  };
   
   // Create a custom price marker icon with current currency
   const createPriceMarkerIcon = async (price, currency, size = 'medium') => {
@@ -92,7 +70,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
     let formattedPrice;
     
     try {
-      formattedPrice = await formatPrice(price, currency);
+      formattedPrice = await formatPrice(price, currency, selectedCurrency);
     } catch (error) {
       console.error("Error formatting price for marker:", error);
       // Fallback to simple format
@@ -106,29 +84,9 @@ export default function MapView({ places, disableInfoWindow = false }) {
     // Device pixel ratio for high DPI screens
     const dpr = window.devicePixelRatio || 1;
     
-    // Size configurations based on the requested size
-    let baseWidth, baseHeight, fontSize, borderRadius;
-    
-    switch (size) {
-      case 'small':
-        baseWidth = 60; // Increased from 50
-        baseHeight = 32; // Increased from 28
-        fontSize = 11;
-        borderRadius = 5;
-        break;
-      case 'large':
-        baseWidth = 90; // Increased from 70
-        baseHeight = 45; // Increased from 40
-        fontSize = 15;
-        borderRadius = 8;
-        break;
-      case 'medium':
-      default:
-        baseWidth = 75; // Increased from 60
-        baseHeight = 40; // Increased from 35
-        fontSize = 13;
-        borderRadius = 6;
-    }
+    // Get size configuration from utility
+    const sizeConfig = getMarkerSizeConfig(size);
+    let { width: baseWidth, height: baseHeight, fontSize, borderRadius } = sizeConfig;
     
     // Calculate text width to dynamically adjust marker width if needed
     context.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`;
@@ -243,75 +201,34 @@ export default function MapView({ places, disableInfoWindow = false }) {
     return canvas.toDataURL('image/png', 1.0);
   };
 
-  // Update marker icons based on zoom level
+  // Update marker icons based on zoom level (without repositioning)
   const updateMarkerSizes = async (zoomLevel) => {
-    if (!markersRef.current.length) return;
+    if (!markersRef.current.length || isUpdatingMarkersRef.current) return;
     
-    // Determine size based on zoom level
-    let size;
-    if (zoomLevel <= 10) {
-      size = 'small';
-    } else if (zoomLevel >= 14) {
-      size = 'large';
-    } else {
-      size = 'medium';
-    }
+    isUpdatingMarkersRef.current = true;
     
-    // Group markers by position to detect overlapping markers
-    const markerPositions = new Map(); // Map to store markers by position keys
-    markersRef.current.forEach(marker => {
-      const position = marker.getPosition();
-      const posKey = `${position.lat().toFixed(5)},${position.lng().toFixed(5)}`;
+    try {
+      // Determine size based on zoom level using utility function
+      const size = getMarkerSizeByZoom(zoomLevel);
       
-      if (!markerPositions.has(posKey)) {
-        markerPositions.set(posKey, []);
-      }
-      markerPositions.get(posKey).push(marker);
-    });
-    
-    // Update each marker's icon and adjust positions for overlapping markers
-    for (const [posKey, markersAtPosition] of markerPositions.entries()) {
-      // If multiple markers at the same position, adjust their positions slightly
-      if (markersAtPosition.length > 1) {
-        const offsetStep = 0.00015; // Small lat/lng offset
-        let offsetIndex = 0;
-        
-        markersAtPosition.forEach(marker => {
-          if (offsetIndex > 0) {
-            const originalPosition = marker.getPosition();
-            const offsetAngle = (Math.PI * 2 / markersAtPosition.length) * offsetIndex;
-            
-            // Create a small offset in a circular pattern
-            const offsetLat = originalPosition.lat() + Math.sin(offsetAngle) * offsetStep;
-            const offsetLng = originalPosition.lng() + Math.cos(offsetAngle) * offsetStep;
-            
-            marker.setPosition(new window.google.maps.LatLng(offsetLat, offsetLng));
-          }
-          offsetIndex++;
-        });
-      }
-      
-      // Now update the icon for each marker
-      for (const marker of markersAtPosition) {
+      // Update each marker's icon without changing positions
+      for (const marker of markersRef.current) {
         try {
           const place = marker.placeData;
           const iconUrl = await createPriceMarkerIcon(place.price, place.currency, size);
+          const markerProps = getMarkerGoogleMapsProperties(size);
           
           marker.setIcon({
             url: iconUrl,
-            anchor: new window.google.maps.Point(
-              size === 'small' ? 30 : size === 'large' ? 45 : 38, 
-              size === 'small' ? 32 : size === 'large' ? 45 : 40
-            ),
-            scaledSize: new window.google.maps.Size(
-              size === 'small' ? 60 : size === 'large' ? 90 : 75,
-              size === 'small' ? 32 : size === 'large' ? 45 : 40
-            )
+            anchor: markerProps.anchor,
+            scaledSize: markerProps.scaledSize
           });
         } catch (error) {
           console.error("Error updating marker icon:", error);
         }
       }
+    } finally {
+      isUpdatingMarkersRef.current = false;
     }
   };  // Create markers function that can be reused
   const createMarkersAsync = useCallback(async (map) => {
@@ -360,8 +277,9 @@ export default function MapView({ places, disableInfoWindow = false }) {
       for (const { place, position } of placesAtPosition) {
         try {
           // Generate marker icon with price in current currency
-          const size = map.getZoom() <= 10 ? 'small' : map.getZoom() >= 14 ? 'large' : 'medium';
+          const size = getMarkerSizeByZoom(map.getZoom());
           const iconUrl = await createPriceMarkerIcon(place.price, place.currency, size);
+          const markerProps = getMarkerGoogleMapsProperties(size);
           
           // Create custom marker with price label
           const marker = new window.google.maps.Marker({
@@ -372,15 +290,9 @@ export default function MapView({ places, disableInfoWindow = false }) {
             icon: {
               url: iconUrl,
               // Position the anchor at the bottom tip of the pointer
-              anchor: new window.google.maps.Point(
-                size === 'small' ? 30 : size === 'large' ? 45 : 38, 
-                size === 'small' ? 32 : size === 'large' ? 45 : 40
-              ),
+              anchor: markerProps.anchor,
               // Set size to match the canvas dimensions
-              scaledSize: new window.google.maps.Size(
-                size === 'small' ? 60 : size === 'large' ? 90 : 75,
-                size === 'small' ? 32 : size === 'large' ? 45 : 40
-              )
+              scaledSize: markerProps.scaledSize
             },
             animation: window.google.maps.Animation.DROP
           });
@@ -424,6 +336,8 @@ export default function MapView({ places, disableInfoWindow = false }) {
       });
       markersRef.current = [];
     }
+    // Reset updating flag
+    isUpdatingMarkersRef.current = false;
     setMap(null);
   }, []);
 
@@ -436,6 +350,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
       marker.setMap(null);
     });
     markersRef.current = [];
+    isUpdatingMarkersRef.current = false; // Reset flag when clearing markers
 
     // Create new markers
     createMarkersAsync(map).then(({ markers, bounds }) => {
@@ -463,31 +378,32 @@ export default function MapView({ places, disableInfoWindow = false }) {
 
   // Update marker icons when currency changes (without recreating markers)
   useEffect(() => {
-    if (!markersRef.current.length || !selectedCurrency) return;
+    if (!markersRef.current.length || !selectedCurrency || isUpdatingMarkersRef.current) return;
 
     const updateMarkerIcons = async () => {
-      const currentZoom = map?.getZoom() || 12;
-      const size = currentZoom <= 10 ? 'small' : currentZoom >= 14 ? 'large' : 'medium';
+      isUpdatingMarkersRef.current = true;
+      
+      try {
+        const currentZoom = map?.getZoom() || 12;
+        const size = getMarkerSizeByZoom(currentZoom);
 
-      for (const marker of markersRef.current) {
-        try {
-          const place = marker.placeData;
-          const iconUrl = await createPriceMarkerIcon(place.price, place.currency, size);
-          
-          marker.setIcon({
-            url: iconUrl,
-            anchor: new window.google.maps.Point(
-              size === 'small' ? 30 : size === 'large' ? 45 : 38, 
-              size === 'small' ? 32 : size === 'large' ? 45 : 40
-            ),
-            scaledSize: new window.google.maps.Size(
-              size === 'small' ? 60 : size === 'large' ? 90 : 75,
-              size === 'small' ? 32 : size === 'large' ? 45 : 40
-            )
-          });
-        } catch (error) {
-          console.error("Error updating marker icon:", error);
+        for (const marker of markersRef.current) {
+          try {
+            const place = marker.placeData;
+            const iconUrl = await createPriceMarkerIcon(place.price, place.currency, size);
+            const markerProps = getMarkerGoogleMapsProperties(size);
+            
+            marker.setIcon({
+              url: iconUrl,
+              anchor: markerProps.anchor,
+              scaledSize: markerProps.scaledSize
+            });
+          } catch (error) {
+            console.error("Error updating marker icon:", error);
+          }
         }
+      } finally {
+        isUpdatingMarkersRef.current = false;
       }
     };
 
