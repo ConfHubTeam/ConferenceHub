@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import api from "../utils/api";
 
-export default function CurrencySelector({ selectedCurrency, onChange, availableCurrencies }) {
+export default function CurrencySelector({ selectedCurrency, onChange, availableCurrencies, compact = false }) {
   const [currencies, setCurrencies] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -131,9 +131,10 @@ export default function CurrencySelector({ selectedCurrency, onChange, available
   return (
     <div className="relative w-full" ref={dropdownRef}>
       <div 
-        className={`flex items-center justify-between w-full p-2 border rounded-xl cursor-pointer ${
+        className={`flex items-center justify-between w-full ${compact ? 'p-1 sm:p-1.5' : 'p-2'} border rounded-xl cursor-pointer ${
           isOpen ? 'border-primary ring-2 ring-primary/20' : 'hover:border-gray-400'
         }`}
+        style={{ minWidth: compact ? '60px' : 'auto' }}
         onClick={() => setIsOpen(!isOpen)}
         tabIndex={0}
         role="combobox"
@@ -142,25 +143,29 @@ export default function CurrencySelector({ selectedCurrency, onChange, available
         aria-controls="currency-listbox"
         aria-label="Select currency"
       >
-        <div className="flex items-center">
+        <div className="flex items-center overflow-hidden">
           {selectedCurrency && (
-            <span className="mr-2 text-lg">{getCurrencyFlag(selectedCurrency.charCode)}</span>
+            <span className={`flex-shrink-0 ${compact ? 'mr-1 text-base' : 'mr-2 text-lg'}`}>
+              {getCurrencyFlag(selectedCurrency.charCode)}
+            </span>
           )}
-          <span className="font-medium">
-            {selectedCurrency ? selectedCurrency.charCode : "Select Currency"}
+          <span className="font-medium truncate">
+            {selectedCurrency ? selectedCurrency.charCode : "Select"}
           </span>
         </div>
         {/* Subtle indicator without arrow */}
-        <div className="flex items-center text-gray-500">
-          <span className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
-            <svg xmlns="http://www.w3.org/2000/svg" 
-                 className="h-5 w-5" fill="none" 
-                 viewBox="0 0 24 24" stroke="currentColor"
-                 style={{ opacity: 0.7 }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
-            </svg>
-          </span>
-        </div>
+        {!compact && (
+          <div className="flex items-center text-gray-500 flex-shrink-0 ml-1">
+            <span className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
+              <svg xmlns="http://www.w3.org/2000/svg" 
+                   className="h-5 w-5" fill="none" 
+                   viewBox="0 0 24 24" stroke="currentColor"
+                   style={{ opacity: 0.7 }}>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+              </svg>
+            </span>
+          </div>
+        )}
       </div>
       
       {/* Dropdown options */}
@@ -168,8 +173,11 @@ export default function CurrencySelector({ selectedCurrency, onChange, available
         <div 
           id="currency-listbox"
           role="listbox"
-          className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg max-h-60 overflow-auto"
-          style={{ borderRadius: "0.75rem" }}
+          className={`absolute z-50 mt-1 ${compact ? 'min-w-[100px] w-auto' : 'w-full'} bg-white border rounded-md shadow-lg max-h-60 overflow-auto`}
+          style={{ 
+            borderRadius: "0.75rem",
+            right: compact ? '0' : 'auto'
+          }}
         >
           {isLoading ? (
             <div className="p-4 text-center text-gray-500">Loading currencies...</div>
@@ -179,13 +187,13 @@ export default function CurrencySelector({ selectedCurrency, onChange, available
                 key={currency.id}
                 role="option"
                 aria-selected={selectedCurrency?.id === currency.id}
-                className={`p-3 hover:bg-gray-100 cursor-pointer flex items-center ${
+                className={`p-2.5 hover:bg-gray-100 cursor-pointer flex items-center whitespace-nowrap ${
                   selectedCurrency && selectedCurrency.id === currency.id ? 'bg-blue-50 font-medium' : ''
                 }`}
                 onClick={() => handleSelect(currency)}
               >
-                <span className="mr-3 text-lg">{getCurrencyFlag(currency.charCode)}</span>
-                <div className="flex-1">
+                <span className="mr-2 text-lg flex-shrink-0">{getCurrencyFlag(currency.charCode)}</span>
+                <div className="flex-1 min-w-0">
                   <div className="font-medium">{currency.charCode}</div>
                 </div>
               </div>
