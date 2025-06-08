@@ -43,6 +43,26 @@ const createPlace = async (req, res) => {
     }
     
     // Process numeric fields
+    // Validate currencyId exists in the database
+    let validatedCurrencyId = null;
+    if (currencyId) {
+      // Try to parse as an integer
+      const parsedId = parseInt(currencyId, 10);
+      if (!isNaN(parsedId) && parsedId > 0) {
+        try {
+          // Check if the currency exists in the database
+          const currencyExists = await Currency.findByPk(parsedId);
+          if (currencyExists) {
+            validatedCurrencyId = parsedId;
+          } else {
+            console.warn(`Currency with ID ${parsedId} not found, defaulting to null`);
+          }
+        } catch (err) {
+          console.error("Error validating currency:", err);
+        }
+      }
+    }
+    
     const processedData = {
       ownerId: userData.id,
       title, 
@@ -60,7 +80,7 @@ const createPlace = async (req, res) => {
       youtubeLink: youtubeLink || null, // Add the YouTube link field
       lat: lat ? parseFloat(lat) : null,
       lng: lng ? parseFloat(lng) : null,
-      currencyId: currencyId && parseInt(currencyId) > 0 ? parseInt(currencyId) : null,
+      currencyId: validatedCurrencyId,
       cooldown: cooldown ? parseInt(cooldown, 10) : 30
     };
 
@@ -81,9 +101,16 @@ const createPlace = async (req, res) => {
 const getUserPlaces = async (req, res) => {
   try {
     const userData = await getUserDataFromToken(req);
-    // Update Mongoose find to Sequelize findAll
+    // Update Mongoose find to Sequelize findAll with currency join
     const places = await Place.findAll({
-      where: { ownerId: userData.id }
+      where: { ownerId: userData.id },
+      include: [
+        {
+          model: Currency,
+          as: 'currency',
+          attributes: ['id', 'name', 'code', 'charCode']
+        }
+      ]
     });
     res.json(places);
   } catch (error) {
@@ -97,8 +124,12 @@ const getUserPlaces = async (req, res) => {
 const getPlaceById = async (req, res) => {
   const {id} = req.params;
   try {
-    // Update Mongoose findById to Sequelize findByPk
-    const place = await Place.findByPk(id);
+    // Include currency relation to get currency details
+    const place = await Place.findByPk(id, {
+      include: [
+        { model: Currency, as: 'currency' }
+      ]
+    });
     res.json(place);
   } catch (error) {
     res.status(422).json({ error: error.message });
@@ -190,7 +221,28 @@ const updatePlace = async (req, res) => {
     place.youtubeLink = youtubeLink || null; // Add the YouTube link
     place.lat = lat ? parseFloat(lat) : null;
     place.lng = lng ? parseFloat(lng) : null;
-    place.currencyId = currencyId && parseInt(currencyId) > 0 ? parseInt(currencyId) : null;
+    
+    // Validate currencyId exists in the database before updating
+    if (currencyId) {
+      // Try to parse as an integer
+      const parsedId = parseInt(currencyId, 10);
+      if (!isNaN(parsedId) && parsedId > 0) {
+        try {
+          // Check if the currency exists in the database
+          const currencyExists = await Currency.findByPk(parsedId);
+          if (currencyExists) {
+            place.currencyId = parsedId;
+          } else {
+            console.warn(`Currency with ID ${parsedId} not found, not updating currencyId`);
+          }
+        } catch (err) {
+          console.error("Error validating currency:", err);
+        }
+      }
+    } else {
+      place.currencyId = null;
+    }
+    
     place.cooldown = cooldown ? parseInt(cooldown, 10) : 30;
     
     await place.save();

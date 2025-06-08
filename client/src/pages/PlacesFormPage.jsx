@@ -8,6 +8,8 @@ import { geocodeAddress } from "../utils/formUtils";
 import MapPicker from "../components/MapPicker";
 import Calendar from "../components/Calendar";
 import { format, parseISO } from "date-fns";
+import PriceInput from "../components/PriceInput";
+import CurrencySelector from "../components/CurrencySelector";
 
 // Helper function to validate and convert YouTube URL to embed format
 function extractYouTubeVideoId(url) {
@@ -43,6 +45,7 @@ export default function PlacesFormPage() {
   const [extraInfo, setExtraInfo] = useState("");
   const [maxGuests, setMaxGuests] = useState(1);
   const [price, setPrice] = useState(0);
+  const [currency, setCurrency] = useState(null);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [youtubeLink, setYoutubeLink] = useState("");
@@ -53,6 +56,7 @@ export default function PlacesFormPage() {
   const [showMap, setShowMap] = useState(false);
   const [redirect, setRedirect] = useState(false);
   const [error, setError] = useState("");
+  const [availableCurrencies, setAvailableCurrencies] = useState([]);
   
   // New state variables for time slot management
   const [blockedWeekdays, setBlockedWeekdays] = useState([]);
@@ -72,12 +76,60 @@ export default function PlacesFormPage() {
   if (user && user.userType !== 'host') {
     return <Navigate to="/" />;
   }
+  
+  // Fetch currencies at component mount
+  useEffect(() => {
+    async function fetchCurrencies() {
+      try {
+        const response = await api.get("/currency");
+        if (response.data && response.data.length > 0) {
+          console.log("Available currencies:", response.data);
+          setAvailableCurrencies(response.data);
+          
+          // If there's no currency selected yet, set default to UZS
+          if (!currency) {
+            const uzsDefault = response.data.find(c => c.charCode === "UZS");
+            if (uzsDefault) {
+              setCurrency(uzsDefault);
+              console.log("Set default currency to UZS:", uzsDefault);
+            }
+          }
+        } else {
+          // If no currencies exist, create them
+          console.log("No currencies found, creating them...");
+          try {
+            await api.post("/currency", { name: "Uzbekistan Som", code: "860", charCode: "UZS" });
+            await api.post("/currency", { name: "United States Dollar", code: "840", charCode: "USD" });
+            await api.post("/currency", { name: "Russian Ruble", code: "643", charCode: "RUB" });
+            
+            // Fetch again
+            const newResponse = await api.get("/currency");
+            if (newResponse.data && newResponse.data.length > 0) {
+              setAvailableCurrencies(newResponse.data);
+              
+              // Set default to UZS
+              const uzsDefault = newResponse.data.find(c => c.charCode === "UZS");
+              if (uzsDefault && !currency) {
+                setCurrency(uzsDefault);
+              }
+            }
+          } catch (err) {
+            console.error("Error creating currencies:", err);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching currencies:", err);
+      }
+    }
+    
+    fetchCurrencies();
+  }, []);
 
   useEffect(() => { // display data entered before by user 
     if (!id) {
       return;
     } else {
-      api.get("/places/" + id).then((response) => {
+      api.get("/places/" + id).then(async (response) => {
         const { data } = response;
         console.log("Loaded photos from database:", data.photos);
         setTitle(data.title);
@@ -89,6 +141,54 @@ export default function PlacesFormPage() {
         setPrice(data.price);
         setMaxGuests(data.maxGuests);
         setYoutubeLink(data.youtubeLink || "");
+        
+        // Load currency if it exists
+        if (data.currencyId) {
+          // First try to find it in our already-fetched currencies
+          if (availableCurrencies.length > 0) {
+            const selectedCurrency = availableCurrencies.find(c => c.id === data.currencyId);
+            if (selectedCurrency) {
+              setCurrency(selectedCurrency);
+              console.log("Found currency in available currencies:", selectedCurrency);
+            } else {
+              // If not found, fetch again to be safe
+              try {
+                const currencyResponse = await api.get("/currency");
+                const currencyData = currencyResponse.data;
+                const selectedCurrency = currencyData.find(c => c.id === data.currencyId);
+                if (selectedCurrency) {
+                  setCurrency(selectedCurrency);
+                  console.log("Set currency from fresh fetch:", selectedCurrency);
+                } else {
+                  console.warn("Currency with ID", data.currencyId, "not found in database");
+                  // Default to UZS if we have it
+                  const uzsDefault = currencyData.find(c => c.charCode === "UZS");
+                  if (uzsDefault) {
+                    setCurrency(uzsDefault);
+                    console.log("Defaulted to UZS currency:", uzsDefault);
+                  }
+                }
+              } catch (err) {
+                console.error("Error loading currency data:", err);
+              }
+            }
+          } else {
+            // Fetch currencies if we don't have them yet
+            try {
+              const currencyResponse = await api.get("/currency");
+              const currencyData = currencyResponse.data;
+              setAvailableCurrencies(currencyData);
+              const selectedCurrency = currencyData.find(c => c.id === data.currencyId);
+              if (selectedCurrency) {
+                setCurrency(selectedCurrency);
+                console.log("Set currency after fetching:", selectedCurrency);
+              }
+            } catch (err) {
+              console.error("Error loading currency data:", err);
+            }
+          }
+        }
+        
         // Format dates properly if they exist
         if (data.startDate) setStartDate(data.startDate.split("T")[0]);
         if (data.endDate) setEndDate(data.endDate.split("T")[0]);
@@ -213,6 +313,12 @@ export default function PlacesFormPage() {
     const numGuests = parseInt(maxGuests) || 1;
     const numPrice = parseFloat(price) || 0;
 
+    // Check if currency is selected
+    if (!currency) {
+      setError("Please select a currency");
+      return;
+    }
+
     // Validate and clean YouTube link
     const cleanedYouTubeLink = extractYouTubeVideoId(youtubeLink);
     if (youtubeLink && !cleanedYouTubeLink) {
@@ -237,6 +343,13 @@ export default function PlacesFormPage() {
     
     // No need to format photos extensively - just ensure we send the complete object
     // The backend will handle the proper extraction of URLs
+    // Ensure we have a valid currency ID from the database
+    // Not just from a local defaultCurrencies object
+    if (currency && (!currency.id || isNaN(parseInt(currency.id)))) {
+      setError("Invalid currency selected. Please select a currency again.");
+      return;
+    }
+    
     const placeData = {
       title,
       address,
@@ -247,6 +360,7 @@ export default function PlacesFormPage() {
       // checkIn and checkOut removed as the UI elements were removed
       maxGuests: numGuests,
       price: numPrice,
+      currencyId: currency && currency.id ? parseInt(currency.id) : null,
       startDate: startDate || null,
       endDate: endDate || null,
       youtubeLink: cleanedYouTubeLink,
@@ -635,15 +749,23 @@ export default function PlacesFormPage() {
             </div>
           </div>
           <div className="bg-white p-3 rounded-2xl shadow-sm border">
-            <h3 className="text-base font-medium mb-1">Price per hour ($)</h3>
-            <input
-              type="number"
-              min="0"
-              placeholder="50"
-              value={price}
-              onChange={(event) => setPrice(event.target.value)}
-              className="w-full border py-2 px-3 rounded-xl"
-            />
+            <div className="w-full">
+                <CurrencySelector 
+                  selectedCurrency={currency} 
+                  onChange={setCurrency}
+                  availableCurrencies={availableCurrencies}
+                />
+              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="w-full">
+                <PriceInput 
+                  value={price} 
+                  onChange={setPrice} 
+                  currency={currency}
+                  label="Price per hour"
+                />
+              </div>
+            </div>
           </div>
           
           <div className="bg-white p-3 rounded-2xl shadow-sm border">

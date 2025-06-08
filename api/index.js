@@ -39,6 +39,9 @@ app.use(cors(corsOptions));
 
 const bcryptSalt = authConfig.bcrypt.generateSalt();
 
+// Import currency seeder
+const { seedDefaultCurrencies } = require('./routes/currencySeeder');
+
 // Replace MongoDB connection with PostgreSQL connection
 sequelize.authenticate()
   .then(() => {
@@ -50,6 +53,8 @@ sequelize.authenticate()
     console.log('All models were synchronized successfully.');
     // Create admin account if it doesn't exist
     await createAdminAccountIfNotExists();
+    // Seed default currencies if they don't exist
+    await seedDefaultCurrencies();
   })
   .catch(err => {
     console.error('Unable to connect to the database:', err);
