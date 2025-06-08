@@ -5,11 +5,8 @@ import { Navigate, useParams } from "react-router-dom";
 import { UserContext } from "../components/UserContext";
 import api from "../utils/api";
 import { geocodeAddress } from "../utils/formUtils";
-import MapPicker from "../components/MapPicker";
-import Calendar from "../components/Calendar";
-import { format, parseISO } from "date-fns";
-import PriceInput from "../components/PriceInput";
-import CurrencySelector from "../components/CurrencySelector";
+import AddressSection from "../components/AddressSection";
+import AvailabilitySection from "../components/AvailabilitySection";
 
 // Helper function to validate and convert YouTube URL to embed format
 function extractYouTubeVideoId(url) {
@@ -458,74 +455,21 @@ export default function PlacesFormPage() {
           className="w-full border my-2 py-2 px-3 rounded-2xl"
         />
         
-        {preInput("Address", "address of this conference room. You can enter it manually or pin on the map.")}
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="address"
-            value={address}
-            onChange={(event) => setAddress(event.target.value)}
-            className={`w-full border my-2 py-2 px-3 rounded-2xl ${
-              geocodingSuccess === false ? 'border-red-500' : 
-              geocodingSuccess === true ? 'border-green-500' : ''
-            }`}
-          />
-          {isGeocodingAddress && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full"></div>
-            </div>
-          )}
-          {geocodingSuccess === true && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-500">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-            </div>
-          )}
-          {geocodingSuccess === false && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-500">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-            </div>
-          )}
-        </div>
-        
-        <div className="flex gap-2 items-center mt-1 mb-4">
-          <button 
-            type="button" 
-            onClick={() => {
-              setShowMap(!showMap);
-              // Force a reflow/repaint by waiting a tiny bit before toggling
-              setTimeout(() => {
-                window.dispatchEvent(new Event('resize'));
-              }, 100);
-            }}
-            className="bg-primary text-white px-3 py-1 rounded-md text-sm"
-          >
-            {showMap ? 'Hide Map' : 'Show Map'}
-          </button>
-          {geocodingSuccess === false && (
-            <p className="text-red-500 text-sm">
-              Could not get coordinates for this address. Try pinning the location on the map.
-            </p>
-          )}
-          {geocodingSuccess === true && (
-            <p className="text-green-500 text-sm">
-              Map coordinates found! Your location will appear on the map.
-            </p>
-          )}
-        </div>
-        
-        {showMap && (
-          <div className="mb-4">
-            <MapPicker 
-              initialCoordinates={lat && lng ? { lat, lng } : null}
-              onLocationSelect={handleLocationSelect}
-              onAddressUpdate={handleAddressUpdate}
-            />
-          </div>
-        )}
+        <AddressSection
+          address={address}
+          setAddress={setAddress}
+          lat={lat}
+          setLat={setLat}
+          lng={lng}
+          setLng={setLng}
+          isGeocodingAddress={isGeocodingAddress}
+          geocodingSuccess={geocodingSuccess}
+          showMap={showMap}
+          setShowMap={setShowMap}
+          handleLocationSelect={handleLocationSelect}
+          handleAddressUpdate={handleAddressUpdate}
+          preInput={preInput}
+        />
         
         {preInput("Photos", "more is better. ")}
         <PhotoUploader
@@ -560,226 +504,29 @@ export default function PlacesFormPage() {
           rows={4}
           placeholder="Any additional information such as booking rules, cancellation policy, or special instructions."
         />
-        {preInput(
-          "Availability times",
-          "add available times, remember to have some time for cleaning the room between bookings."
-        )}
-        
-        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-2">
-          {/* Calendar component for date selection */}
-          <div className="bg-white p-3 rounded-2xl shadow-sm border lg:col-span-2">
-            <h3 className="text-base font-medium mb-3">Available dates</h3>
-            <Calendar 
-              startDate={startDate}
-              endDate={endDate}
-              onDateChange={(start, end) => {
-                setStartDate(start);
-                setEndDate(end);
-              }}
-              blockedDates={blockedDates}
-              blockedWeekdays={blockedWeekdays}
-              // No onBlockedDateClick prop here - this is the main calendar for selecting available dates
-            />
-            {/* Display formatted date range */}
-            {startDate && (
-              <div className="mt-3 p-2 bg-blue-50 rounded-lg text-blue-800 text-sm">
-                <p className="font-medium">Selected range:</p>
-                <p>
-                  {format(parseISO(startDate), "MMMM d, yyyy")}
-                  {endDate && ` - ${format(parseISO(endDate), "MMMM d, yyyy")}`}
-                </p>
-              </div>
-            )}
-          </div>
-          
-          {/* Time slot management section */}
-          <div className="bg-white p-3 rounded-2xl shadow-sm border lg:col-span-2">
-            <h3 className="text-base font-medium mb-3">Block weekdays & set time slots</h3>
-            
-            {/* Weekday blocking checkboxes */}
-            <div className="flex flex-wrap gap-2 mb-4">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
-                <label key={day} className="flex items-center gap-1 p-2 border rounded-lg">
-                  <input
-                    type="checkbox"
-                    checked={blockedWeekdays.includes(index)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setBlockedWeekdays(prev => [...prev, index]);
-                      } else {
-                        setBlockedWeekdays(prev => prev.filter(d => d !== index));
-                      }
-                    }}
-                    className="w-4 h-4 accent-blue-600"
-                  />
-                  <span>{day}</span>
-                </label>
-              ))}
-            </div>
-            
-            {/* Blocked dates counter */}
-            {blockedDates.length > 0 && (
-              <div className="mb-3 flex justify-between items-center">
-                <div className="bg-blue-50 text-blue-800 px-3 py-2 rounded-lg flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 mr-1">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  <span className="font-medium">{blockedDates.length}</span>
-                  <span className="ml-1">{blockedDates.length === 1 ? 'date' : 'dates'} blocked</span>
-                  <button 
-                    type="button"
-                    onClick={() => setBlockedDates([])}
-                    className="ml-3 text-xs text-blue-600 hover:text-blue-800 underline"
-                  >
-                    Clear all
-                  </button>
-                </div>
-              </div>
-            )}
-            
-            {/* Block specific dates toggle */}
-            <div className="flex items-center mb-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <div className={`relative inline-block w-10 h-6 rounded-full transition ${showBlockSpecificDates ? 'bg-blue-600' : 'bg-gray-300'}`}>
-                  <input
-                    type="checkbox"
-                    className="absolute opacity-0 w-0 h-0"
-                    checked={showBlockSpecificDates}
-                    onChange={() => {
-                      // Toggle visibility without clearing blocked dates
-                      setShowBlockSpecificDates(!showBlockSpecificDates);
-                    }}
-                  />
-                  <span className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${showBlockSpecificDates ? 'transform translate-x-4' : ''}`}></span>
-                </div>
-                <span>Block Specific Dates</span>
-              </label>
-            </div>
-            
-            {/* Specific date picker calendar (only shown when toggle is enabled) */}
-            {showBlockSpecificDates && (
-              <div className="mb-4 border p-3 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-sm font-medium">Select dates to block:</h4>
-                  {blockedDates.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setBlockedDates([])}
-                      className="text-sm text-red-600 hover:text-red-800 font-medium"
-                    >
-                      Clear all blocked dates
-                    </button>
-                  )}
-                </div>
-                <Calendar 
-                  blockedDates={blockedDates}
-                  minDate={new Date(new Date().setHours(0, 0, 0, 0))} // Allow blocking from today
-                  onBlockedDateClick={toggleBlockedDate} // Use the specific handler for date blocking
-                />
-                {blockedDates.length > 0 && (
-                  <div className="mt-2 text-sm">
-                    <span className="font-medium">{blockedDates.length}</span> {blockedDates.length === 1 ? 'date' : 'dates'} currently blocked
-                  </div>
-                )}
-              </div>
-            )}
-            
-            {/* Time slot management per weekday */}
-            <div className="mb-2">
-              <h4 className="text-base font-medium mb-3">Time slots by weekday</h4>
-              {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day, index) => (
-                <div key={day} className={`p-2 mb-2 rounded-lg ${blockedWeekdays.includes(index) ? 'bg-gray-100 opacity-60' : ''}`}>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="w-24">{day}:</span>
-                    
-                    {!blockedWeekdays.includes(index) ? (
-                      <>
-                        <select
-                          value={weekdayTimeSlots[index].start}
-                          onChange={(e) => {
-                            setWeekdayTimeSlots(prev => ({
-                              ...prev, 
-                              [index]: {...prev[index], start: e.target.value}
-                            }));
-                          }}
-                          className="border rounded p-1 text-sm"
-                          disabled={blockedWeekdays.includes(index)}
-                        >
-                          <option value="">Start time</option>
-                          {Array.from({ length: 24 }, (_, i) => {
-                            const hour = i.toString().padStart(2, '0');
-                            return (
-                              <option key={hour} value={hour}>
-                                {hour}:00
-                              </option>
-                            );
-                          })}
-                        </select>
-                        
-                        <span>to</span>
-                        
-                        <select
-                          value={weekdayTimeSlots[index].end}
-                          onChange={(e) => {
-                            setWeekdayTimeSlots(prev => ({
-                              ...prev, 
-                              [index]: {...prev[index], end: e.target.value}
-                            }));
-                          }}
-                          className="border rounded p-1 text-sm"
-                          disabled={blockedWeekdays.includes(index)}
-                        >
-                          <option value="">End time</option>
-                          {Array.from({ length: 24 }, (_, i) => {
-                            const hour = i.toString().padStart(2, '0');
-                            return (
-                              <option key={hour} value={hour}>
-                                {hour}:00
-                              </option>
-                            );
-                          })}
-                        </select>
-                      </>
-                    ) : (
-                      <span className="text-gray-500">Blocked</span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="bg-white p-3 rounded-2xl shadow-sm border">
-            <div className="w-full">
-                <CurrencySelector 
-                  selectedCurrency={currency} 
-                  onChange={setCurrency}
-                  availableCurrencies={availableCurrencies}
-                />
-              </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="w-full">
-                <PriceInput 
-                  value={price} 
-                  onChange={setPrice} 
-                  currency={currency}
-                  label="Price per hour"
-                />
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white p-3 rounded-2xl shadow-sm border">
-            <h3 className="text-base font-medium mb-1">Max number of attendees</h3>
-            <input
-              type="number"
-              min="1"
-              placeholder="10"
-              value={maxGuests}
-              onChange={(event) => setMaxGuests(event.target.value)}
-              className="w-full border py-2 px-3 rounded-xl"
-            />
-          </div>
-        </div>
+        <AvailabilitySection
+          startDate={startDate}
+          setStartDate={setStartDate}
+          endDate={endDate}
+          setEndDate={setEndDate}
+          blockedWeekdays={blockedWeekdays}
+          setBlockedWeekdays={setBlockedWeekdays}
+          blockedDates={blockedDates}
+          setBlockedDates={setBlockedDates}
+          showBlockSpecificDates={showBlockSpecificDates}
+          setShowBlockSpecificDates={setShowBlockSpecificDates}
+          weekdayTimeSlots={weekdayTimeSlots}
+          setWeekdayTimeSlots={setWeekdayTimeSlots}
+          currency={currency}
+          setCurrency={setCurrency}
+          availableCurrencies={availableCurrencies}
+          price={price}
+          setPrice={setPrice}
+          maxGuests={maxGuests}
+          setMaxGuests={setMaxGuests}
+          toggleBlockedDate={toggleBlockedDate}
+          preInput={preInput}
+        />
         
         <div className="flex justify-center md:justify-start">
           <button className="primary my-5 max-w-xs">Save Conference Room</button>
