@@ -167,7 +167,7 @@ export function getCurrencySymbol(currency) {
   switch (currencyCode) {
     case "USD": return "$";
     case "RUB": return "₽";
-    case "UZS": return "UZS";
+    case "UZS": return "so'm";
     default: return currencyCode;
   }
 }

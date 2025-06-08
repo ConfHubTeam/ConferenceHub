@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { getCurrencySymbol } from "../utils/currencyUtils";
 
 export default function PriceInput({ value, onChange, currency, label = null }) {
   const [inputValue, setInputValue] = useState("");
@@ -43,18 +44,6 @@ export default function PriceInput({ value, onChange, currency, label = null }) 
   };
 
   // Get currency symbol based on currency type
-  const getCurrencySymbol = (currencyType) => {
-    if (!currencyType) return "";
-    
-    const currencyCode = currencyType.charCode;
-    switch (currencyCode) {
-      case "USD": return "$";
-      case "RUB": return "₽";
-      case "UZS": return "So'm";
-      default: return currencyCode;
-    }
-  };
-
   // Update formatted display value when external value or currency changes
   useEffect(() => {
     if (!isEditing && (value || value === 0)) {
@@ -105,8 +94,7 @@ export default function PriceInput({ value, onChange, currency, label = null }) 
 
   // Get currency symbol for label
   const getCurrencyDisplay = () => {
-    if (!currency) return "";
-    return currency.charCode === "USD" ? "$" : currency.charCode === "RUB" ? "₽" : currency.charCode;
+    return getCurrencySymbol(currency);
   };
 
   return (
@@ -115,7 +103,7 @@ export default function PriceInput({ value, onChange, currency, label = null }) 
       <div className="relative w-full">
         {label && (
             <label htmlFor="price-input" className="block mb-2 text-sm font-medium text-gray-700">
-              {label} {getCurrencyDisplay() && <span className="inline-block">({getCurrencyDisplay()})</span>}
+              {label} {getCurrencyDisplay()}
             </label>
         )}
         <input
