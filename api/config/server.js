@@ -29,82 +29,127 @@ const mimeTypes = {
  * @param {string} clientBuildPath - Path to client build directory
  */
 const configureStaticFiles = (app, clientBuildPath) => {
-  // Add debugging to check if the build directory exists
   const fs = require('fs');
-  if (!fs.existsSync(clientBuildPath)) {
-    console.error(`Build directory not found: ${clientBuildPath}`);
-    return;
+  
+  // Log the build directory structure for debugging
+  if (fs.existsSync(clientBuildPath)) {
+    console.log(`Build directory exists at: ${clientBuildPath}`);
+    try {
+      const files = fs.readdirSync(clientBuildPath);
+      console.log('Build directory contents:', files);
+      
+      // Check for assets directory
+      const assetsPath = path.join(clientBuildPath, 'assets');
+      if (fs.existsSync(assetsPath)) {
+        const assetsFiles = fs.readdirSync(assetsPath);
+        console.log('Assets directory contents:', assetsFiles.slice(0, 10)); // Show first 10 files
+      }
+    } catch (error) {
+      console.error('Error reading build directory:', error);
+    }
   } else {
-    console.log(`Build directory found: ${clientBuildPath}`);
-    // List contents of build directory for debugging
-    const files = fs.readdirSync(clientBuildPath);
-    console.log('Build directory contents:', files);
+    console.error(`Build directory does not exist at: ${clientBuildPath}`);
+    return;
   }
 
-  // Serve static files with proper headers
-  app.use(express.static(clientBuildPath, {
-    maxAge: '1y', // Cache static assets for 1 year
-    etag: false, // Disable etag generation
-    setHeaders: (res, filePath) => {
-      const ext = path.extname(filePath).toLowerCase();
-      
-      // Set proper MIME type
-      if (mimeTypes[ext]) {
-        res.setHeader("Content-Type", mimeTypes[ext]);
-      }
-      
-      // Add cache control for static assets
-      if (ext !== ".html") {
-        res.setHeader("Cache-Control", "public, max-age=31536000, immutable"); // 1 year
-      } else {
-        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-        res.setHeader("Pragma", "no-cache");
-        res.setHeader("Expires", "0");
-      }
-      
-      // Add security headers
-      res.setHeader("X-Content-Type-Options", "nosniff");
-    }
-  }));
-
-  // Add a debugging middleware to log requests in production
+  // Add request logging middleware
   app.use((req, res, next) => {
-    // Log all requests for debugging
     console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+    
+    // Add error handling for static files
+    res.on('error', (err) => {
+      console.error('Static file serving error:', err);
+    });
+    
     next();
   });
 
-  // Handle specific static file requests with proper error handling
-  app.use('/assets', express.static(path.join(clientBuildPath, 'assets'), {
+  // Create a custom static file handler with better error handling
+  const staticHandler = express.static(clientBuildPath, {
     maxAge: '1y',
-    setHeaders: (res, filePath) => {
+    etag: true,
+    lastModified: true,
+    index: false, // Don't automatically serve index.html
+    setHeaders: (res, filePath, stat) => {
       const ext = path.extname(filePath).toLowerCase();
-      if (mimeTypes[ext]) {
-        res.setHeader("Content-Type", mimeTypes[ext]);
+      
+      try {
+        // Set proper MIME type
+        if (mimeTypes[ext]) {
+          res.setHeader("Content-Type", mimeTypes[ext]);
+          console.log(`Setting MIME type for ${filePath}: ${mimeTypes[ext]}`);
+        }
+        
+        // Add cache control based on file type
+        if (ext === ".html") {
+          res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+          res.setHeader("Pragma", "no-cache");
+          res.setHeader("Expires", "0");
+        } else {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        }
+        
+        // Add security headers
+        res.setHeader("X-Content-Type-Options", "nosniff");
+        
+      } catch (error) {
+        console.error('Error setting headers for static file:', error);
       }
-      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
     }
-  }));
+  });
 
-  // All routes that aren't API routes should serve the index.html
-  app.get("*", (req, res) => {
-    // Only handle non-API routes for the React app
-    if (!req.path.startsWith("/api/")) {
-      const indexPath = path.join(clientBuildPath, "index.html");
-      console.log(`Serving index.html for path: ${req.path} from ${indexPath}`);
+  // Add error handling middleware for static files
+  app.use((req, res, next) => {
+    // Check if this is a static file request
+    const ext = path.extname(req.path);
+    if (ext && mimeTypes[ext]) {
+      const filePath = path.join(clientBuildPath, req.path);
       
-      // Check if index.html exists
-      const fs = require('fs');
-      if (!fs.existsSync(indexPath)) {
-        console.error(`index.html not found at: ${indexPath}`);
-        return res.status(500).send('Build files not found');
+      // Check if file exists before trying to serve it
+      if (fs.existsSync(filePath)) {
+        console.log(`Static file found: ${filePath}`);
+      } else {
+        console.log(`Static file not found: ${filePath}`);
       }
-      
-      return res.sendFile(indexPath);
+    }
+    next();
+  });
+
+  // Apply the static file handler
+  app.use(staticHandler);
+
+  // Handle all non-API routes by serving index.html (SPA fallback)
+  app.get("*", (req, res, next) => {
+    // Skip API routes
+    if (req.path.startsWith("/api/")) {
+      return next();
+    }
+
+    const indexPath = path.join(clientBuildPath, "index.html");
+    console.log(`Serving index.html for path: ${req.path} from ${indexPath}`);
+    
+    // Check if index.html exists
+    if (!fs.existsSync(indexPath)) {
+      console.error(`index.html not found at: ${indexPath}`);
+      return res.status(500).json({ 
+        error: 'Build files not found', 
+        path: indexPath,
+        buildPath: clientBuildPath 
+      });
     }
     
-    // Let Express continue to handle API routes
-    return res.status(404).json({ error: "API endpoint not found" });
+    // Set headers for index.html
+    res.setHeader("Content-Type", "text/html");
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+    
+    return res.sendFile(indexPath, (err) => {
+      if (err) {
+        console.error('Error serving index.html:', err);
+        res.status(500).json({ error: 'Error serving application' });
+      }
+    });
   });
 };
 

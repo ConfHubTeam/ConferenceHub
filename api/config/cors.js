@@ -4,30 +4,56 @@ require('dotenv').config();
 const parseAllowedOrigins = () => {
   let corsOrigins = [];
   
+  // For Render deployment, construct the URL using RENDER_EXTERNAL_HOSTNAME
+  if (process.env.RENDER_EXTERNAL_HOSTNAME) {
+    const renderUrl = `https://${process.env.RENDER_EXTERNAL_HOSTNAME}`;
+    corsOrigins.push(renderUrl);
+    console.log('Added Render URL to CORS origins:', renderUrl);
+  }
+  
   if (process.env.CORS_ALLOWED_ORIGINS) {
     try {
-      // Parse JSON array from environment variable
-      corsOrigins = JSON.parse(process.env.CORS_ALLOWED_ORIGINS);
-      console.log('Using CORS_ALLOWED_ORIGINS from environment:', corsOrigins);
+      // Check if it's already a JSON array string
+      if (process.env.CORS_ALLOWED_ORIGINS.startsWith('[')) {
+        const parsedOrigins = JSON.parse(process.env.CORS_ALLOWED_ORIGINS);
+        corsOrigins = corsOrigins.concat(parsedOrigins);
+        console.log('Using CORS_ALLOWED_ORIGINS from environment (JSON):', parsedOrigins);
+      } else {
+        // Handle comma-separated string format
+        const splitOrigins = process.env.CORS_ALLOWED_ORIGINS.split(',').map(origin => origin.trim());
+        corsOrigins = corsOrigins.concat(splitOrigins);
+        console.log('Using CORS_ALLOWED_ORIGINS from environment (CSV):', splitOrigins);
+      }
     } catch (error) {
       console.error('Error parsing CORS_ALLOWED_ORIGINS:', error);
-      // If parsing fails, try to split by comma (common format)
-      corsOrigins = process.env.CORS_ALLOWED_ORIGINS.split(',').map(origin => origin.trim());
+      // Fallback: try to split by comma (common format)
+      const splitOrigins = process.env.CORS_ALLOWED_ORIGINS.split(',').map(origin => origin.trim());
+      corsOrigins = corsOrigins.concat(splitOrigins);
+      console.log('Using fallback CORS parsing:', splitOrigins);
     }
   }
   
   // Add FRONTEND_URL if it exists and not already included
-  if (process.env.FRONTEND_URL) {
-    // Add both with and without trailing slash to be safe
+  if (process.env.FRONTEND_URL && process.env.FRONTEND_URL !== 'undefined') {
     const frontendUrl = process.env.FRONTEND_URL.trim();
     const frontendUrlNoSlash = frontendUrl.replace(/\/$/, '');
     
     if (frontendUrl && !corsOrigins.includes(frontendUrl)) {
       corsOrigins.push(frontendUrl);
+      console.log('Added FRONTEND_URL to CORS origins:', frontendUrl);
     }
     
     if (frontendUrlNoSlash && !corsOrigins.includes(frontendUrlNoSlash)) {
       corsOrigins.push(frontendUrlNoSlash);
+    }
+  }
+  
+  // Add APP_URL if it exists and not already included
+  if (process.env.APP_URL && process.env.APP_URL !== 'undefined') {
+    const appUrl = process.env.APP_URL.trim();
+    if (appUrl && !corsOrigins.includes(appUrl)) {
+      corsOrigins.push(appUrl);
+      console.log('Added APP_URL to CORS origins:', appUrl);
     }
   }
   
@@ -41,7 +67,7 @@ const parseAllowedOrigins = () => {
     });
   }
   
-  return corsOrigins.filter(Boolean); // Remove any undefined/empty values
+  return [...new Set(corsOrigins.filter(Boolean))]; // Remove duplicates and empty values
 };
 
 // Get allowed origins from environment variables
