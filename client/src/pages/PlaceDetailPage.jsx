@@ -81,7 +81,6 @@ export default function PlaceDetailPage() {
 
   return (
     <div className="mx-3 md:mx-8 lg:mx-14 -mt-4">
-      /* Header section */
       <div className="mb-4">
         <h1 className="text-xl md:text-2xl mb-2 font-bold">{placeDetail.title}</h1>
         <a
