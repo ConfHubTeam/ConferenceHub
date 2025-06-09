@@ -141,6 +141,18 @@ const Place = sequelize.define('Place', {
       6: { start: "", end: "" }  // Saturday
     }
   },
+  squareMeters: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    validate: {
+      min: 0
+    }
+  },
+  isHotel: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  },
 }, {
   timestamps: true
 });

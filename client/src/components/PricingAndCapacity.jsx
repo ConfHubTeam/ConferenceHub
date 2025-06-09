@@ -3,6 +3,8 @@ import CurrencySelector from "./CurrencySelector";
 import MaxAttendeesInput from "./MaxAttendeesInput";
 import CooldownInput from "./CooldownInput";
 import FullDayHoursInput from "./FullDayHoursInput";
+import SquareMetersInput from "./SquareMetersInput";
+import HotelCheckbox from "./HotelCheckbox";
 
 /**
  * PricingAndCapacity Component
@@ -27,6 +29,12 @@ const PricingAndCapacity = ({
   // Capacity state
   maxGuests,
   setMaxGuests,
+  
+  // Room properties
+  squareMeters,
+  setSquareMeters,
+  isHotel,
+  setIsHotel,
 }) => {
   return (
     <div className="bg-white p-3 rounded-2xl shadow-sm border">
@@ -71,6 +79,16 @@ const PricingAndCapacity = ({
         <FullDayHoursInput
           fullDayHours={fullDayHours}
           setFullDayHours={setFullDayHours}
+        />
+
+        <SquareMetersInput
+          squareMeters={squareMeters}
+          setSquareMeters={setSquareMeters}
+        />
+        
+        <HotelCheckbox
+          isHotel={isHotel}
+          setIsHotel={setIsHotel}
         />
       </div>
     </div>

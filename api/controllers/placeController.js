@@ -13,7 +13,8 @@ const createPlace = async (req, res) => {
     price, startDate, endDate,
     youtubeLink, lat, lng, currencyId, cooldown,
     fullDayHours, fullDayDiscountPrice,
-    blockedWeekdays, blockedDates, weekdayTimeSlots
+    blockedWeekdays, blockedDates, weekdayTimeSlots,
+    squareMeters, isHotel
   } = req.body;
 
   try {
@@ -101,6 +102,11 @@ const createPlace = async (req, res) => {
       fullDayDiscountPrice: fullDayDiscountPrice ? parseFloat(fullDayDiscountPrice) : 0,
       blockedWeekdays: processedBlockedWeekdays,
       blockedDates: processedBlockedDates,
+      weekdayTimeSlots: processedWeekdayTimeSlots,
+      squareMeters: squareMeters ? parseFloat(squareMeters) : null,
+      isHotel: Boolean(isHotel),
+      blockedWeekdays: processedBlockedWeekdays,
+      blockedDates: processedBlockedDates,
       weekdayTimeSlots: processedWeekdayTimeSlots
     };
 
@@ -179,7 +185,8 @@ const updatePlace = async (req, res) => {
     perks, extraInfo, checkIn, checkOut, maxGuests,
     price, startDate, endDate, youtubeLink, lat, lng,
     currencyId, cooldown, fullDayHours, fullDayDiscountPrice,
-    blockedWeekdays, blockedDates, weekdayTimeSlots
+    blockedWeekdays, blockedDates, weekdayTimeSlots,
+    squareMeters, isHotel
   } = req.body;
   
   try {
@@ -260,6 +267,8 @@ const updatePlace = async (req, res) => {
     place.weekdayTimeSlots = processedWeekdayTimeSlots;
     place.fullDayHours = fullDayHours ? parseInt(fullDayHours, 10) : 8;
     place.fullDayDiscountPrice = fullDayDiscountPrice ? parseFloat(fullDayDiscountPrice) : 0;
+    place.squareMeters = squareMeters ? parseFloat(squareMeters) : null;
+    place.isHotel = Boolean(isHotel);
     
     // Validate currencyId exists in the database before updating
     if (currencyId) {
