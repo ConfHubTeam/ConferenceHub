@@ -174,12 +174,23 @@ export default function AvailabilitySection({
           <div className="mb-2">
             <h4 className="text-base font-medium mb-3">Time slots by weekday</h4>
             {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day, index) => (
-              <div key={day} className={`p-2 mb-2 rounded-lg ${blockedWeekdays.includes(index) ? 'bg-gray-100 opacity-60' : ''}`}>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="w-24">{day}:</span>
-                  
-                  {!blockedWeekdays.includes(index) ? (
-                    <>
+              <div key={day} className={`p-3 mb-2 rounded-lg border ${blockedWeekdays.includes(index) ? 'bg-gray-100 opacity-60' : 'bg-white'}`}>
+                {/* Day label */}
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-medium text-sm sm:text-base">
+                    <span className="sm:hidden">{day.substring(0, 3)}</span>
+                    <span className="hidden sm:inline">{day}</span>
+                  </span>
+                  {blockedWeekdays.includes(index) && (
+                    <span className="text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded">Blocked</span>
+                  )}
+                </div>
+                
+                {/* Time selection - stack on mobile, side by side on larger screens */}
+                {!blockedWeekdays.includes(index) && (
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <div className="flex items-center gap-2 flex-1">
+                      <span className="text-sm text-gray-600 w-12 sm:w-auto">From:</span>
                       <select
                         value={weekdayTimeSlots[index].start}
                         onChange={(e) => {
@@ -188,10 +199,10 @@ export default function AvailabilitySection({
                             [index]: {...prev[index], start: e.target.value}
                           }));
                         }}
-                        className="border rounded p-1 text-sm"
+                        className="flex-1 sm:flex-none border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         disabled={blockedWeekdays.includes(index)}
                       >
-                        <option value="">Start time</option>
+                        <option value="">Select start time</option>
                         {Array.from({ length: 24 }, (_, i) => {
                           const hour = i.toString().padStart(2, '0');
                           return (
@@ -201,9 +212,10 @@ export default function AvailabilitySection({
                           );
                         })}
                       </select>
-                      
-                      <span>to</span>
-                      
+                    </div>
+                    
+                    <div className="flex items-center gap-2 flex-1">
+                      <span className="text-sm text-gray-600 w-12 sm:w-auto">To:</span>
                       <select
                         value={weekdayTimeSlots[index].end}
                         onChange={(e) => {
@@ -212,10 +224,10 @@ export default function AvailabilitySection({
                             [index]: {...prev[index], end: e.target.value}
                           }));
                         }}
-                        className="border rounded p-1 text-sm"
+                        className="flex-1 sm:flex-none border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         disabled={blockedWeekdays.includes(index)}
                       >
-                        <option value="">End time</option>
+                        <option value="">Select end time</option>
                         {Array.from({ length: 24 }, (_, i) => {
                           const hour = i.toString().padStart(2, '0');
                           return (
@@ -225,11 +237,9 @@ export default function AvailabilitySection({
                           );
                         })}
                       </select>
-                    </>
-                  ) : (
-                    <span className="text-gray-500">Blocked</span>
-                  )}
-                </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
