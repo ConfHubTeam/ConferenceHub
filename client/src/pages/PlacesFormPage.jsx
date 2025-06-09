@@ -177,12 +177,14 @@ export default function PlacesFormPage() {
         // Format dates properly if they exist
         if (data.startDate) setStartDate(data.startDate.split("T")[0]);
         if (data.endDate) setEndDate(data.endDate.split("T")[0]);
-        // Load coordinates
-        setLat(data.lat || "");
-        setLng(data.lng || "");
+        // Load coordinates - ensure they're stored as strings for consistency
+        setLat(data.lat ? data.lat.toString() : "");
+        setLng(data.lng ? data.lng.toString() : "");
         // Show map if coordinates exist
         if (data.lat && data.lng) {
           setShowMap(true);
+          // Set geocoding success since we have valid coordinates
+          setGeocodingSuccess(true);
         }
         
         // Load time slot data if available
@@ -246,9 +248,13 @@ export default function PlacesFormPage() {
 
   // Handle map location selection
   function handleLocationSelect(location) {
-    if (location && (lat !== location.lat || lng !== location.lng)) {
-      setLat(location.lat);
-      setLng(location.lng);
+    if (location && (parseFloat(lat) !== parseFloat(location.lat) || parseFloat(lng) !== parseFloat(location.lng))) {
+      // Ensure we store values as strings consistently, but compare as numbers
+      setLat(location.lat.toString());
+      setLng(location.lng.toString());
+      
+      // If coordinates are successfully updated from map, set geocoding success state
+      setGeocodingSuccess(true);
     }
   }
 

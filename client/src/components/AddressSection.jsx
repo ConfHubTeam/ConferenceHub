@@ -42,19 +42,28 @@ export default function AddressSection({
     setAddressManuallyEdited(true);
   };
   
-  // Reset the manually edited flag when a new address is set from the map
-  const handleMapAddressUpdate = (newAddress) => {
-    // Only update the address if it hasn't been manually edited
-    // or if the address field is empty
+  // Handle address suggestions from the map
+  const handleMapAddressUpdate = (suggestedAddress) => {
+    // We received an address suggestion from the map
+    // But we won't automatically update the address field anymore
+    // This keeps the address completely independent from the coordinates
+    
+    // You could display this suggested address somewhere if desired
+    console.log("Map suggested address:", suggestedAddress);
+    
+    // If the user wants to update the address field programmatically,
+    // they can uncomment this:
+    /*
     if (!addressManuallyEdited || !address.trim()) {
-      handleAddressUpdate(newAddress);
+      handleAddressUpdate(suggestedAddress);
       setAddressManuallyEdited(false);
     }
+    */
   };
 
   return (
     <>
-      {preInput("Address", "address of this conference room. You can enter it manually or pin on the map.")}
+      {preInput("Address", "name or description of this location. You can enter any name you want, independently of the map coordinates.")}
       <div className="relative">
         <input
           type="text"
@@ -87,8 +96,6 @@ export default function AddressSection({
         )}
       </div>
       
-      {addressManuallyEdited}
-      
       <div className="flex gap-2 items-center mt-1 mb-4">
         <button 
           type="button" 
@@ -104,13 +111,13 @@ export default function AddressSection({
           {showMap ? 'Hide Map' : 'Show Map'}
         </button>
         {geocodingSuccess === false && (
-          <p className="text-red-500 text-sm">
-            Could not get coordinates for this address. Try pinning the location on the map.
+          <p className="text-amber-500 text-sm ml-2">
+            Address lookup failed. You can still set coordinates by pinning on map.
           </p>
         )}
         {geocodingSuccess === true && (
-          <p className="text-green-500 text-sm">
-            Map coordinates found! Your location will appear on the map.
+          <p className="text-green-500 text-sm ml-2">
+            Coordinates set successfully! You can still edit the name/address.
           </p>
         )}
       </div>
@@ -118,7 +125,7 @@ export default function AddressSection({
       {showMap && (
         <div className="mb-4">
           <MapPicker 
-            initialCoordinates={lat && lng ? { lat, lng } : null}
+            initialCoordinates={lat && lng ? { lat: parseFloat(lat), lng: parseFloat(lng) } : null}
             onLocationSelect={handleLocationSelect}
             onAddressUpdate={handleMapAddressUpdate}
           />
@@ -127,12 +134,13 @@ export default function AddressSection({
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              Address Editing Tips:
+              Map and Address Usage:
             </div>
             <ul className="list-disc list-inside space-y-1 ml-1">
-              <li>Pin the location on the map for accurate coordinates</li>
-              <li>Manually edit the address field if the automatic address is incorrect</li>
-              <li>Your pin position (coordinates) will be preserved when you edit the address</li>
+              <li>The address you type and the map pin location are now completely independent</li>
+              <li>Pin the location on the map for setting precise coordinates</li>
+              <li>You can freely name the location regardless of its map position</li>
+              <li>Map will suggest an address based on the pin, which you can choose to use or ignore</li>
             </ul>
           </div>
         </div>
