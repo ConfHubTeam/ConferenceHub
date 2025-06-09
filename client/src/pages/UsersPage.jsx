@@ -5,6 +5,7 @@ import { UserContext } from "../components/UserContext";
 import { Navigate } from "react-router-dom";
 import { format } from "date-fns";
 import { useNotification } from "../components/NotificationContext";
+import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 
 export default function UsersPage() {
   const { user } = useContext(UserContext);
@@ -16,7 +17,6 @@ export default function UsersPage() {
   const [filterType, setFilterType] = useState("all");
   const [deleteUserId, setDeleteUserId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [confirmationText, setConfirmationText] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
   const [cooldown, setCooldown] = useState(false);
 
@@ -79,7 +79,6 @@ export default function UsersPage() {
     if (userToDelete) {
       setSelectedUser(userToDelete);
       setDeleteUserId(userId);
-      setConfirmationText(""); // Reset confirmation text
       
       // Set a cooldown to prevent rapid delete clicks
       setCooldown(true);
@@ -88,18 +87,14 @@ export default function UsersPage() {
   };
 
   // Handle delete cancellation
-  const cancelDelete = () => {
+  const closeDeleteModal = () => {
     setDeleteUserId(null);
     setSelectedUser(null);
-    setConfirmationText("");
   };
-
-  // Check if delete should be enabled
-  const isDeleteEnabled = confirmationText.toUpperCase() === "DELETE" && !isDeleting && !cooldown;
 
   // Handle actual user deletion
   const deleteUser = async () => {
-    if (!deleteUserId || !isDeleteEnabled) return;
+    if (!deleteUserId) return;
     
     setIsDeleting(true);
     try {
@@ -113,7 +108,6 @@ export default function UsersPage() {
       // Reset delete state
       setDeleteUserId(null);
       setSelectedUser(null);
-      setConfirmationText("");
     } catch (error) {
       console.error("Error deleting user:", error);
       notify(error.response?.data?.error || "Error deleting user", "error");
@@ -185,93 +179,34 @@ export default function UsersPage() {
           </div>
         </div>
         
-        {/* Enhanced delete confirmation modal */}
+        {/* Delete confirmation modal using reusable component */}
         {deleteUserId && selectedUser && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full">
-              <h3 className="text-xl font-bold mb-4 text-red-600">Delete User - Confirmation Required</h3>
-              
-              {/* User information section */}
-              <div className="mb-4 p-3 bg-gray-50 rounded border border-gray-200">
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center">
-                    <span className="text-gray-600 font-semibold w-20">Name:</span>
-                    <span>{selectedUser.name}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="text-gray-600 font-semibold w-20">Email:</span>
-                    <span>{selectedUser.email}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="text-gray-600 font-semibold w-20">Role:</span>
-                    <span className={`px-2 py-0.5 text-xs rounded-full ${getUserTypeClass(selectedUser.userType)}`}>
-                      {selectedUser.userType.charAt(0).toUpperCase() + selectedUser.userType.slice(1)}
-                    </span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="text-gray-600 font-semibold w-20">Joined:</span>
-                    <span>{format(new Date(selectedUser.createdAt), 'MMM d, yyyy')}</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mb-6">
-                <p className="font-semibold text-red-600 mb-2">Warning: This action cannot be undone!</p>
-                <p className="mb-4">
-                  The following data will be permanently deleted:
-                </p>
-                <ul className="list-disc ml-6 mb-4 text-sm text-gray-600">
-                  <li>User's account and profile information</li>
-                  <li>All of their bookings</li>
-                  {selectedUser.userType === 'host' && (
-                    <>
-                      <li><span className="font-semibold">All conference rooms owned by this host</span></li>
-                      <li>All bookings associated with their rooms</li>
-                    </>
-                  )}
-                </ul>
-                
-                {/* Type DELETE to confirm section */}
-                <div className="mt-4 border-t pt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Type "DELETE" to confirm:
-                  </label>
-                  <input
-                    type="text"
-                    value={confirmationText}
-                    onChange={(e) => setConfirmationText(e.target.value)}
-                    className="w-full p-2 border rounded focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    placeholder="Type DELETE in all caps"
-                    autoComplete="off"
-                  />
-                  <div className="text-sm mt-1 text-gray-500">
-                    This helps prevent accidental deletions
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex gap-4 justify-end">
-                <button 
-                  onClick={cancelDelete}
-                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                  disabled={isDeleting}
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={deleteUser}
-                  className={`px-4 py-2 rounded text-white focus:outline-none focus:ring-2 focus:ring-red-500 ${
-                    isDeleteEnabled 
-                      ? 'bg-red-600 hover:bg-red-700 cursor-pointer' 
-                      : 'bg-red-300 cursor-not-allowed'
-                  }`}
-                  disabled={!isDeleteEnabled}
-                >
-                  {isDeleting ? 'Deleting...' : 'Delete User'}
-                </button>
-              </div>
-            </div>
-          </div>
+          <DeleteConfirmationModal
+            isOpen={true}
+            onClose={closeDeleteModal}
+            onDelete={deleteUser}
+            title="Delete User"
+            itemToDelete={selectedUser}
+            itemDetails={[
+              { label: "Name", value: selectedUser.name },
+              { label: "Email", value: selectedUser.email },
+              { label: "Role", value: (
+                <span className={`px-2 py-0.5 text-xs rounded-full ${getUserTypeClass(selectedUser.userType)}`}>
+                  {selectedUser.userType.charAt(0).toUpperCase() + selectedUser.userType.slice(1)}
+                </span>
+              )},
+              { label: "Joined", value: format(new Date(selectedUser.createdAt), 'MMM d, yyyy') }
+            ]}
+            consequences={[
+              "User's account and profile information",
+              "All of their bookings",
+              ...(selectedUser.userType === 'host' ? [
+                "All conference rooms owned by this host",
+                "All bookings associated with their rooms"
+              ] : [])
+            ]}
+            deleteInProgress={isDeleting}
+          />
         )}
         
         {/* Users table */}

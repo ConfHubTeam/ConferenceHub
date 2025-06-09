@@ -7,6 +7,7 @@ import BookingCard from "../components/BookingCard";
 import { UserContext } from "../components/UserContext";
 import { useNotification } from "../components/NotificationContext";
 import MapView from "../components/MapView";
+import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 
 export default function PlaceDetailPage() {
   const { placeId, bookingId } = useParams();
@@ -15,6 +16,8 @@ export default function PlaceDetailPage() {
   const [buttonDisabled, setButtonDisabled] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteInProgress, setDeleteInProgress] = useState(false);
   const { user } = useContext(UserContext);
   const { notify } = useNotification();
   const navigate = useNavigate();
@@ -40,20 +43,29 @@ export default function PlaceDetailPage() {
     }
   }, [placeId, bookingId]); // refresh the page if the id changes
 
+  // Show delete confirmation modal
+  function handleDeleteClick() {
+    setShowDeleteModal(true);
+    setError("");
+  }
+
   // Delete conference room function
   async function handleDelete() {
-    if (window.confirm('Are you sure you want to delete this conference room? This will also cancel all associated bookings and cannot be undone.')) {
-      setIsDeleting(true);
-      setError("");
-      try {
-        await api.delete(`/places/${placeId}`);
-        notify('Conference room deleted successfully', 'success');
-        navigate('/account/user-places'); // Redirect to my conference rooms page
-      } catch (error) {
-        setError(error.response?.data?.error || error.message);
-        notify(`Error: ${error.response?.data?.error || error.message}`, 'error');
-        setIsDeleting(false);
-      }
+    setIsDeleting(true);
+    setDeleteInProgress(true);
+    setError("");
+    
+    try {
+      await api.delete(`/places/${placeId}`);
+      notify('Conference room deleted successfully', 'success');
+      setShowDeleteModal(false);
+      navigate('/account/user-places'); // Redirect to my conference rooms page
+    } catch (error) {
+      setError(error.response?.data?.error || error.message);
+      notify(`Error: ${error.response?.data?.error || error.message}`, 'error');
+    } finally {
+      setIsDeleting(false);
+      setDeleteInProgress(false);
     }
   }
 
@@ -185,7 +197,7 @@ export default function PlaceDetailPage() {
                   </a>
                   <button 
                     className="bg-red-500 py-2 px-5 rounded-2xl text-white"
-                    onClick={handleDelete}
+                    onClick={handleDeleteClick}
                     disabled={isDeleting}
                   >
                     {isDeleting ? 'Deleting...' : 'Delete Conference Room'}
@@ -196,6 +208,27 @@ export default function PlaceDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onDelete={handleDelete}
+        title="Delete Conference Room"
+        itemToDelete={placeDetail}
+        itemDetails={[
+          { label: "Title", value: placeDetail?.title },
+          { label: "Location", value: placeDetail?.address },
+          { label: "Price", value: `$${placeDetail?.price} / hour` }
+        ]}
+        consequences={[
+          "The conference room and all its details",
+          "All photos associated with this conference room",
+          "All bookings made for this conference room",
+          "All ratings and reviews for this conference room"
+        ]}
+        deleteInProgress={deleteInProgress}
+      />
     </div>
   );
 }
