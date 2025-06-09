@@ -206,11 +206,18 @@ export default function PlacesFormPage() {
     }
   }, [id]); // reactive values referenced inside of the above setup code
 
-  // Geocode address when it changes (with debounce)
+  // Geocode address when it changes (with debounce) - but only for new places
   useEffect(() => {
     // Skip geocoding if address is empty or too short
     if (!address || address.length < 5) {
       setGeocodingSuccess(null);
+      return;
+    }
+
+    // We're editing an existing place with coordinates
+    if (id && lat && lng) {
+      // Don't geocode address when editing places with coordinates - keep the original coordinates
+      console.log("Skipping geocoding for existing place with coordinates:", { lat, lng });
       return;
     }
 
@@ -220,7 +227,7 @@ export default function PlacesFormPage() {
     }, 1000); // Wait 1 second after typing stops
 
     return () => clearTimeout(timer); // Clean up the timer
-  }, [address]);
+  }, [address, id, lat, lng]);
 
   // Function to geocode the address
   async function handleGeocodeAddress() {
@@ -261,8 +268,16 @@ export default function PlacesFormPage() {
   // Handle address update from map
   function handleAddressUpdate(newAddress) {
     if (newAddress && newAddress !== address) {
-      setAddress(newAddress);
-      setGeocodingSuccess(true);
+      // When editing an existing place, we want to keep the entered address
+      // and not override it with the one suggested by the map
+      if (id) {
+        // We don't update the address but still show success indicator
+        setGeocodingSuccess(true);
+      } else {
+        // For new places, we can use the address suggestion if desired
+        setAddress(newAddress);
+        setGeocodingSuccess(true);
+      }
     }
   }
 

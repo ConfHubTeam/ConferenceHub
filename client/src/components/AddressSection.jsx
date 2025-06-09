@@ -36,6 +36,9 @@ export default function AddressSection({
   // Track whether the address was manually edited after pin placement
   const [addressManuallyEdited, setAddressManuallyEdited] = useState(false);
   
+  // If lat and lng exist, this is an existing place - maintain independence between address and coordinates
+  const isExistingPlace = Boolean(lat && lng);
+  
   // Custom address update handler to maintain manual edits
   const handleAddressInputChange = (event) => {
     setAddress(event.target.value);

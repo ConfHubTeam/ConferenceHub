@@ -36,9 +36,14 @@ export default function MapPicker({
   // Initialize position state with initialCoordinates if available
   const [position, setPosition] = useState(() => {
     if (initialCoordinates && initialCoordinates.lat && initialCoordinates.lng) {
+      // Make sure we parse the values as floats (GPS coordinates)
+      const parsedLat = parseFloat(initialCoordinates.lat);
+      const parsedLng = parseFloat(initialCoordinates.lng);
+      
+      console.log("MapPicker initializing with coordinates:", { lat: parsedLat, lng: parsedLng });
       return {
-        lat: parseFloat(initialCoordinates.lat),
-        lng: parseFloat(initialCoordinates.lng)
+        lat: parsedLat,
+        lng: parsedLng
       };
     }
     return null;
@@ -61,11 +66,15 @@ export default function MapPicker({
     
     // Create initial marker if we have a position when map loads
     if (position && position.lat && position.lng) {
+      const parsedPosition = { 
+        lat: parseFloat(position.lat), 
+        lng: parseFloat(position.lng) 
+      };
+      
+      console.log("Creating initial marker on map load at:", parsedPosition);
+      
       const newMarker = new window.google.maps.Marker({
-        position: { 
-          lat: parseFloat(position.lat), 
-          lng: parseFloat(position.lng) 
-        },
+        position: parsedPosition,
         map,
         draggable: true,
         animation: window.google.maps.Animation.DROP
@@ -80,13 +89,44 @@ export default function MapPicker({
       });
       
       setMarker(newMarker);
+      
+      // Make sure the map is centered on the marker position
+      map.setCenter(parsedPosition);
+      
+      // Zoom in a bit for better visibility
+      map.setZoom(14);
     }
     
     // Force map to refresh by triggering a resize event after a slight delay
     setTimeout(() => {
       window.dispatchEvent(new Event('resize'));
-    }, 100);
-  }, [position]);
+      
+      // One more check to ensure marker exists
+      if (position && !marker) {
+        console.log("Ensuring marker exists after resize");
+        const parsedPosition = { 
+          lat: parseFloat(position.lat), 
+          lng: parseFloat(position.lng) 
+        };
+        
+        const newMarker = new window.google.maps.Marker({
+          position: parsedPosition,
+          map,
+          draggable: true,
+          animation: window.google.maps.Animation.DROP
+        });
+        
+        newMarker.addListener('dragend', async () => {
+          const newPos = newMarker.getPosition();
+          const lat = newPos.lat();
+          const lng = newPos.lng();
+          handlePositionChange({ lat, lng });
+        });
+        
+        setMarker(newMarker);
+      }
+    }, 200);
+  }, [position, marker]);
 
   const onUnmount = useCallback(function callback() {
     // Clean up marker if it exists
@@ -160,6 +200,7 @@ export default function MapPicker({
     if (marker) {
       // Update existing marker
       marker.setPosition(newPosition);
+      console.log("Updated existing marker at:", newPosition);
     } else {
       // Create new marker
       const newMarker = new window.google.maps.Marker({
@@ -181,8 +222,13 @@ export default function MapPicker({
       
       // Log for debugging
       console.log("Created new marker at:", newPosition);
+      
+      // Ensure the map is centered on the marker
+      map.setCenter(newPosition);
     }
   }, [map, position]);
+
+
 
   // Separate effect for notifying parent component to prevent circular updates
   useEffect(() => {
@@ -200,6 +246,8 @@ export default function MapPicker({
     const lng = e.latLng.lng();
     handlePositionChange({ lat, lng });
   };
+
+
 
   // Handle position change and reverse geocode
   const handlePositionChange = async (newPosition) => {
@@ -286,39 +334,52 @@ export default function MapPicker({
         onClick={handleMapClick}
         options={{
           fullscreenControl: false,
-          mapTypeControl: false,
+          mapTypeControl: true,
+          mapTypeControlOptions: {
+            style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+            position: window.google.maps.ControlPosition.TOP_RIGHT,
+            mapTypeIds: [
+              window.google.maps.MapTypeId.ROADMAP,
+              window.google.maps.MapTypeId.SATELLITE,
+            ]
+          },
           streetViewControl: true,
           zoomControlOptions: {
             position: window.google.maps.ControlPosition.RIGHT_TOP
           }
         }}
       />
-      <div className="bg-white p-2 text-xs flex items-center justify-between">
+      <div className="bg-white p-2 text-xs flex flex-wrap items-center justify-between">
         <span className="text-gray-500">
           Click on the map to set coordinates, or drag the marker to adjust position. You can name the location as desired.
+          Use the map type control in the top right corner to switch between map and satellite views.
         </span>
-        {addressFetchStatus === 'loading' && (
-          <span className="text-blue-500 flex items-center">
-            <div className="animate-spin h-3 w-3 border border-blue-500 border-t-transparent rounded-full mr-1"></div>
-            Fetching suggested address...
-          </span>
-        )}
-        {addressFetchStatus === 'failed' && (
-          <span className="text-amber-500 flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            No address suggestion found
-          </span>
-        )}
-        {addressFetchStatus === 'success' && (
-          <span className="text-green-500 flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            Address suggestion available
-          </span>
-        )}
+        
+        {/* Status Messages */}
+        <div className="w-full sm:w-auto mt-1 sm:mt-0">
+          {addressFetchStatus === 'loading' && (
+            <span className="text-blue-500 flex items-center">
+              <div className="animate-spin h-3 w-3 border border-blue-500 border-t-transparent rounded-full mr-1"></div>
+              Fetching suggested address...
+            </span>
+          )}
+          {addressFetchStatus === 'failed' && (
+            <span className="text-amber-500 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              No address suggestion found
+            </span>
+          )}
+          {addressFetchStatus === 'success' && (
+            <span className="text-green-500 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              Address suggestion available
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
