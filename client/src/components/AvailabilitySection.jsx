@@ -1,10 +1,8 @@
-import PriceInput from "./PriceInput";
-import CurrencySelector from "./CurrencySelector";
-import MaxAttendeesInput from "./MaxAttendeesInput";
 import WeekdayBlocker from "./WeekdayBlocker";
 import DateAvailability from "./DateAvailability";
 import SpecificDateBlocker from "./SpecificDateBlocker";
 import TimeSlotByWeekday from "./TimeSlotByWeekday";
+import PricingAndCapacity from "./PricingAndCapacity";
 
 /**
  * AvailabilitySection Component - Step 2 Refactoring
@@ -100,80 +98,22 @@ export default function AvailabilitySection({
           />
         </div>
         
-        {/* Pricing section */}
-        <div className="bg-white p-3 rounded-2xl shadow-sm border">
-          <div className="w-full mb-2">
-            <CurrencySelector 
-              selectedCurrency={currency} 
-              onChange={setCurrency}
-              availableCurrencies={availableCurrencies}
-            />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <div className="w-full">
-              <PriceInput 
-                value={price} 
-                onChange={setPrice} 
-                currency={currency}
-                label="Price per hour"
-              />
-            </div>
-            <div className="w-full">
-              <PriceInput 
-                value={fullDayDiscountPrice} 
-                onChange={setFullDayDiscountPrice} 
-                currency={currency}
-                label="Full day discount price"
-              />
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
-            <div className="w-full">
-              <label htmlFor="fullDayHours" className="block mb-2 text-sm font-medium text-gray-700">
-                Full day considered (hours)
-              </label>
-              <select
-                id="fullDayHours"
-                value={fullDayHours}
-                onChange={(e) => setFullDayHours(parseInt(e.target.value))}
-                className="w-full border py-2 px-3 rounded-xl text-base"
-              >
-                {Array.from({ length: 24 }, (_, i) => i + 1).map((hour) => (
-                  <option key={hour} value={hour}>
-                    {hour} hour{hour !== 1 ? "s" : ""}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            <div className="w-full">
-              <label htmlFor="cooldownMinutes" className="block mb-2 text-sm font-medium text-gray-700">
-                Cooldown period
-              </label>
-              <select
-                id="cooldownMinutes"
-                value={cooldownMinutes}
-                onChange={(e) => setCooldownMinutes(parseInt(e.target.value))}
-                className="w-full border py-2 px-3 rounded-xl text-base"
-              >
-                {Array.from({ length: 6 }, (_, i) => (i + 1) * 30).map((minutes) => (
-                  <option key={minutes} value={minutes}>
-                    {minutes >= 60 
-                      ? `${Math.floor(minutes / 60)}h ${minutes % 60 > 0 ? `${minutes % 60}min` : ""}`.trim()
-                      : `${minutes} min`
-                    }
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            <MaxAttendeesInput 
-              maxGuests={maxGuests}
-              setMaxGuests={setMaxGuests}
-            />
-          </div>
-        </div>
+        {/* Pricing and Capacity section */}
+        <PricingAndCapacity 
+          currency={currency}
+          setCurrency={setCurrency}
+          availableCurrencies={availableCurrencies}
+          price={price}
+          setPrice={setPrice}
+          fullDayHours={fullDayHours}
+          setFullDayHours={setFullDayHours}
+          fullDayDiscountPrice={fullDayDiscountPrice}
+          setFullDayDiscountPrice={setFullDayDiscountPrice}
+          cooldownMinutes={cooldownMinutes}
+          setCooldownMinutes={setCooldownMinutes}
+          maxGuests={maxGuests}
+          setMaxGuests={setMaxGuests}
+        />
       </div>
     </>
   );
