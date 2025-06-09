@@ -137,8 +137,12 @@ export default function BookingWidget({ placeDetail, buttonDisabled }) {
     return (
       <div className="bg-white p-5 rounded-xl border shadow-md">
         <div className="text-left pb-1">
-          <span className="font-bold text-2xl">${placeDetail.price}</span> per
-          hour
+          <PriceDisplay 
+            price={placeDetail.price} 
+            currency={placeDetail.currency} 
+            bold={true}
+            className="text-2xl mr-1 inline-block"
+          /> per hour
         </div>
         <p className="my-4 text-center">
           Please{" "}
