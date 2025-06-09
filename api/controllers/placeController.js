@@ -11,7 +11,8 @@ const createPlace = async (req, res) => {
     description, perks, extraInfo, 
     checkIn, checkOut, maxGuests, 
     price, startDate, endDate,
-    youtubeLink, lat, lng, currencyId, cooldown
+    youtubeLink, lat, lng, currencyId, cooldown,
+    fullDayHours, fullDayDiscountPrice
   } = req.body;
 
   try {
@@ -81,7 +82,9 @@ const createPlace = async (req, res) => {
       lat: lat ? parseFloat(lat) : null,
       lng: lng ? parseFloat(lng) : null,
       currencyId: validatedCurrencyId,
-      cooldown: cooldown ? parseInt(cooldown, 10) : 30
+      cooldown: cooldown ? parseInt(cooldown, 10) : 30,
+      fullDayHours: fullDayHours ? parseInt(fullDayHours, 10) : 8,
+      fullDayDiscountPrice: fullDayDiscountPrice ? parseFloat(fullDayDiscountPrice) : 0
     };
 
     const placeDoc = await Place.create(processedData);
@@ -158,7 +161,7 @@ const updatePlace = async (req, res) => {
     id, title, address, photos, description,
     perks, extraInfo, checkIn, checkOut, maxGuests,
     price, startDate, endDate, youtubeLink, lat, lng,
-    currencyId, cooldown
+    currencyId, cooldown, fullDayHours, fullDayDiscountPrice
   } = req.body;
   
   try {

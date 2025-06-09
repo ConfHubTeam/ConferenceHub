@@ -99,6 +99,20 @@ const Place = sequelize.define('Place', {
       key: 'id'
     }
   },
+  fullDayHours: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: 8, // 8 hours is considered a full day by default
+    validate: {
+      min: 1,
+      max: 24
+    }
+  },
+  fullDayDiscountPrice: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    defaultValue: 0
+  },
   cooldown: {
     type: DataTypes.INTEGER, // minutda ketadi menimcha yani 60, 30, 15 minut shuning uchun Int32
     allowNull: false,

@@ -21,6 +21,9 @@ export default function PlacesFormPage() {
   const [maxGuests, setMaxGuests] = useState(1);
   const [price, setPrice] = useState(0);
   const [currency, setCurrency] = useState(null);
+  const [fullDayHours, setFullDayHours] = useState(8);
+  const [fullDayDiscountPrice, setFullDayDiscountPrice] = useState(0);
+  const [cooldownMinutes, setCooldownMinutes] = useState(30);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [youtubeLink, setYoutubeLink] = useState("");
@@ -115,6 +118,9 @@ export default function PlacesFormPage() {
         setExtraInfo(data.extraInfo);
         setPrice(data.price);
         setMaxGuests(data.maxGuests);
+        setFullDayHours(data.fullDayHours || 8);
+        setFullDayDiscountPrice(data.fullDayDiscountPrice || 0);
+        setCooldownMinutes(data.cooldown || 30);
         setYoutubeLink(data.youtubeLink || "");
         
         // Load currency if it exists
@@ -334,6 +340,9 @@ export default function PlacesFormPage() {
       extraInfo,
       maxGuests: numGuests,
       price: numPrice,
+      fullDayHours,
+      fullDayDiscountPrice,
+      cooldown: cooldownMinutes,
       currencyId: currency && currency.id ? parseInt(currency.id) : null,
       startDate: startDate || null,
       endDate: endDate || null,
@@ -496,6 +505,12 @@ export default function PlacesFormPage() {
           availableCurrencies={availableCurrencies}
           price={price}
           setPrice={setPrice}
+          fullDayHours={fullDayHours}
+          setFullDayHours={setFullDayHours}
+          fullDayDiscountPrice={fullDayDiscountPrice}
+          setFullDayDiscountPrice={setFullDayDiscountPrice}
+          cooldownMinutes={cooldownMinutes}
+          setCooldownMinutes={setCooldownMinutes}
           maxGuests={maxGuests}
           setMaxGuests={setMaxGuests}
           toggleBlockedDate={toggleBlockedDate}
