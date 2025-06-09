@@ -33,6 +33,7 @@ export default function MapPicker({
   const [map, setMap] = useState(null);
   const [marker, setMarker] = useState(null);
   const [position, setPosition] = useState(null);
+  const [addressFetchStatus, setAddressFetchStatus] = useState(null); // null, 'loading', 'success', 'failed'
   
   // Use ref to track position update source
   const positionUpdateSource = useRef('internal');
@@ -147,6 +148,8 @@ export default function MapPicker({
     
     // Reverse geocode to get address
     try {
+      setAddressFetchStatus('loading');
+      
       const response = await fetch(
         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${newPosition.lat},${newPosition.lng}&key=${GOOGLE_MAPS_API_KEY}`
       );
@@ -155,12 +158,21 @@ export default function MapPicker({
       
       if (data.status === 'OK' && data.results.length > 0) {
         const address = data.results[0].formatted_address;
+        setAddressFetchStatus('success');
+        
         if (onAddressUpdate) {
           onAddressUpdate(address);
+        }
+      } else {
+        setAddressFetchStatus('failed');
+        // Notify parent that no address was found, but to keep the coordinates
+        if (onAddressUpdate) {
+          onAddressUpdate('');
         }
       }
     } catch (error) {
       console.error('Error reverse geocoding:', error);
+      setAddressFetchStatus('failed');
     }
   };
 
@@ -203,8 +215,24 @@ export default function MapPicker({
           }
         }}
       />
-      <div className="bg-white p-2 text-xs text-gray-500">
-        Click on the map to set location, or drag the marker to adjust position.
+      <div className="bg-white p-2 text-xs flex items-center justify-between">
+        <span className="text-gray-500">
+          Click on the map to set location, or drag the marker to adjust position.
+        </span>
+        {addressFetchStatus === 'loading' && (
+          <span className="text-blue-500 flex items-center">
+            <div className="animate-spin h-3 w-3 border border-blue-500 border-t-transparent rounded-full mr-1"></div>
+            Finding address...
+          </span>
+        )}
+        {addressFetchStatus === 'failed' && (
+          <span className="text-amber-500 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            No address found - edit manually
+          </span>
+        )}
       </div>
     </div>
   );
