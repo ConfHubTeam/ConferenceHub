@@ -12,7 +12,9 @@ const createPlace = async (req, res) => {
     checkIn, checkOut, maxGuests, 
     price, startDate, endDate,
     youtubeLink, lat, lng, currencyId, cooldown,
-    fullDayHours, fullDayDiscountPrice
+    fullDayHours, fullDayDiscountPrice,
+    blockedWeekdays, blockedDates, weekdayTimeSlots,
+    squareMeters, isHotel
   } = req.body;
 
   try {
@@ -64,6 +66,19 @@ const createPlace = async (req, res) => {
       }
     }
     
+    // Process availability data
+    const processedBlockedWeekdays = Array.isArray(blockedWeekdays) ? blockedWeekdays : [];
+    const processedBlockedDates = Array.isArray(blockedDates) ? blockedDates.filter(date => date !== "") : [];
+    const processedWeekdayTimeSlots = weekdayTimeSlots || {
+      0: { start: "", end: "" }, // Sunday
+      1: { start: "", end: "" }, // Monday
+      2: { start: "", end: "" }, // Tuesday
+      3: { start: "", end: "" }, // Wednesday
+      4: { start: "", end: "" }, // Thursday
+      5: { start: "", end: "" }, // Friday
+      6: { start: "", end: "" }  // Saturday
+    };
+    
     const processedData = {
       ownerId: userData.id,
       title, 
@@ -84,7 +99,15 @@ const createPlace = async (req, res) => {
       currencyId: validatedCurrencyId,
       cooldown: cooldown ? parseInt(cooldown, 10) : 30,
       fullDayHours: fullDayHours ? parseInt(fullDayHours, 10) : 8,
-      fullDayDiscountPrice: fullDayDiscountPrice ? parseFloat(fullDayDiscountPrice) : 0
+      fullDayDiscountPrice: fullDayDiscountPrice ? parseFloat(fullDayDiscountPrice) : 0,
+      blockedWeekdays: processedBlockedWeekdays,
+      blockedDates: processedBlockedDates,
+      weekdayTimeSlots: processedWeekdayTimeSlots,
+      squareMeters: squareMeters ? parseFloat(squareMeters) : null,
+      isHotel: Boolean(isHotel),
+      blockedWeekdays: processedBlockedWeekdays,
+      blockedDates: processedBlockedDates,
+      weekdayTimeSlots: processedWeekdayTimeSlots
     };
 
     const placeDoc = await Place.create(processedData);
@@ -161,7 +184,9 @@ const updatePlace = async (req, res) => {
     id, title, address, photos, description,
     perks, extraInfo, checkIn, checkOut, maxGuests,
     price, startDate, endDate, youtubeLink, lat, lng,
-    currencyId, cooldown, fullDayHours, fullDayDiscountPrice
+    currencyId, cooldown, fullDayHours, fullDayDiscountPrice,
+    blockedWeekdays, blockedDates, weekdayTimeSlots,
+    squareMeters, isHotel
   } = req.body;
   
   try {
@@ -208,6 +233,19 @@ const updatePlace = async (req, res) => {
       });
     }
 
+    // Process availability data
+    const processedBlockedWeekdays = Array.isArray(blockedWeekdays) ? blockedWeekdays : [];
+    const processedBlockedDates = Array.isArray(blockedDates) ? blockedDates.filter(date => date !== "") : [];
+    const processedWeekdayTimeSlots = weekdayTimeSlots || {
+      0: { start: "", end: "" }, // Sunday
+      1: { start: "", end: "" }, // Monday
+      2: { start: "", end: "" }, // Tuesday
+      3: { start: "", end: "" }, // Wednesday
+      4: { start: "", end: "" }, // Thursday
+      5: { start: "", end: "" }, // Friday
+      6: { start: "", end: "" }  // Saturday
+    };
+
     // Update place properties
     place.title = title;
     place.address = address;
@@ -224,6 +262,13 @@ const updatePlace = async (req, res) => {
     place.youtubeLink = youtubeLink || null; // Add the YouTube link
     place.lat = lat ? parseFloat(lat) : null;
     place.lng = lng ? parseFloat(lng) : null;
+    place.blockedWeekdays = processedBlockedWeekdays;
+    place.blockedDates = processedBlockedDates;
+    place.weekdayTimeSlots = processedWeekdayTimeSlots;
+    place.fullDayHours = fullDayHours ? parseInt(fullDayHours, 10) : 8;
+    place.fullDayDiscountPrice = fullDayDiscountPrice ? parseFloat(fullDayDiscountPrice) : 0;
+    place.squareMeters = squareMeters ? parseFloat(squareMeters) : null;
+    place.isHotel = Boolean(isHotel);
     
     // Validate currencyId exists in the database before updating
     if (currencyId) {

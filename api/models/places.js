@@ -118,6 +118,41 @@ const Place = sequelize.define('Place', {
     allowNull: false,
     defaultValue: 30 // taxminan default qiymat 30 minut
   },
+  blockedWeekdays: {
+    type: DataTypes.ARRAY(DataTypes.INTEGER),
+    allowNull: true,
+    defaultValue: []
+  },
+  blockedDates: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    allowNull: true,
+    defaultValue: []
+  },
+  weekdayTimeSlots: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: {
+      0: { start: "", end: "" }, // Sunday
+      1: { start: "", end: "" }, // Monday
+      2: { start: "", end: "" }, // Tuesday
+      3: { start: "", end: "" }, // Wednesday
+      4: { start: "", end: "" }, // Thursday
+      5: { start: "", end: "" }, // Friday
+      6: { start: "", end: "" }  // Saturday
+    }
+  },
+  squareMeters: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    validate: {
+      min: 0
+    }
+  },
+  isHotel: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  },
 }, {
   timestamps: true
 });

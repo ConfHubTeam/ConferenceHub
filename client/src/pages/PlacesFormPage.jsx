@@ -49,6 +49,10 @@ export default function PlacesFormPage() {
     5: { start: "", end: "" }, // Friday
     6: { start: "", end: "" }  // Saturday
   });
+  
+  // Room properties
+  const [squareMeters, setSquareMeters] = useState(null);
+  const [isHotel, setIsHotel] = useState(false);
 
   // Redirect if user is not a host
   if (user && user.userType !== 'host' && user.userType !== 'agent') {
@@ -192,6 +196,10 @@ export default function PlacesFormPage() {
         if (data.weekdayTimeSlots) {
           setWeekdayTimeSlots(data.weekdayTimeSlots);
         }
+        
+        // Load room property data
+        setSquareMeters(data.squareMeters || null);
+        setIsHotel(data.isHotel || false);
       });
     }
   }, [id]); // reactive values referenced inside of the above setup code
@@ -352,7 +360,9 @@ export default function PlacesFormPage() {
       // Include time slot management data
       blockedWeekdays,
       blockedDates: blockedDates.filter(date => date !== ""), // Remove empty strings
-      weekdayTimeSlots
+      weekdayTimeSlots,
+      squareMeters, // Include square meters
+      isHotel // Include is hotel flag
     };
 
     try {
@@ -513,6 +523,10 @@ export default function PlacesFormPage() {
           setCooldownMinutes={setCooldownMinutes}
           maxGuests={maxGuests}
           setMaxGuests={setMaxGuests}
+          squareMeters={squareMeters}
+          setSquareMeters={setSquareMeters}
+          isHotel={isHotel}
+          setIsHotel={setIsHotel}
           toggleBlockedDate={toggleBlockedDate}
           preInput={preInput}
         />

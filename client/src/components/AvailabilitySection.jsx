@@ -44,6 +44,12 @@ export default function AvailabilitySection({
   maxGuests,
   setMaxGuests,
   
+  // Room properties
+  squareMeters,
+  setSquareMeters,
+  isHotel,
+  setIsHotel,
+  
   // Handler functions
   toggleBlockedDate,
   
@@ -85,6 +91,10 @@ export default function AvailabilitySection({
             setCooldownMinutes={setCooldownMinutes}
             maxGuests={maxGuests}
             setMaxGuests={setMaxGuests}
+            squareMeters={squareMeters}
+            setSquareMeters={setSquareMeters}
+            isHotel={isHotel}
+            setIsHotel={setIsHotel}
           />
         </div>
         
