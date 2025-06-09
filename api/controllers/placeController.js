@@ -164,9 +164,9 @@ const updatePlace = async (req, res) => {
   try {
     const userData = await getUserDataFromToken(req);
     
-    // Check if user is a host
-    if (userData.userType !== 'host') {
-      return res.status(403).json({ error: "Only hosts can update conference rooms" });
+    // Check if user is a host or agent
+    if (userData.userType !== 'host' && userData.userType !== 'agent') {
+      return res.status(403).json({ error: "Only hosts and agents can update conference rooms" });
     }
     
     // Update Mongoose findById to Sequelize findByPk
@@ -176,8 +176,8 @@ const updatePlace = async (req, res) => {
       return res.status(404).json({ error: "Conference room not found" });
     }
     
-    // Check if the current user is the owner
-    if (userData.id !== place.ownerId) {
+    // Check if the current user is the owner or an agent (agents can update any place)
+    if (userData.userType === 'host' && userData.id !== place.ownerId) {
       return res.status(403).json({ error: "You can only manage your own conference rooms" });
     }
     
@@ -359,9 +359,9 @@ const deletePlace = async (req, res) => {
       return res.status(401).json({ error: "Authentication required" });
     }
     
-    // Check if user is a host
-    if (userData.userType !== 'host') {
-      return res.status(403).json({ error: "Only hosts can delete conference rooms" });
+    // Check if user is a host or agent
+    if (userData.userType !== 'host' && userData.userType !== 'agent') {
+      return res.status(403).json({ error: "Only hosts and agents can delete conference rooms" });
     }
     
     // Find the place
@@ -371,8 +371,8 @@ const deletePlace = async (req, res) => {
       return res.status(404).json({ error: "Conference room not found" });
     }
     
-    // Verify this host is the owner
-    if (place.ownerId !== userData.id) {
+    // Verify this host is the owner or user is an agent (agents can delete any place)
+    if (userData.userType === 'host' && place.ownerId !== userData.id) {
       return res.status(403).json({ error: "You can only delete your own conference rooms" });
     }
     

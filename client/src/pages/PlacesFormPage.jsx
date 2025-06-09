@@ -48,7 +48,7 @@ export default function PlacesFormPage() {
   });
 
   // Redirect if user is not a host
-  if (user && user.userType !== 'host') {
+  if (user && user.userType !== 'host' && user.userType !== 'agent') {
     return <Navigate to="/" />;
   }
   
@@ -332,7 +332,6 @@ export default function PlacesFormPage() {
       description,
       perks,
       extraInfo,
-      // checkIn and checkOut removed as the UI elements were removed
       maxGuests: numGuests,
       price: numPrice,
       currencyId: currency && currency.id ? parseInt(currency.id) : null,

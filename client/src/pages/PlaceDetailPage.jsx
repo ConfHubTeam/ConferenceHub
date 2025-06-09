@@ -59,8 +59,9 @@ export default function PlaceDetailPage() {
 
   if (!placeDetail) return "";
 
-  // Check if current user is the owner of this conference room
+  // Check if current user is the owner of this conference room or an agent
   const isOwner = user && placeDetail.ownerId === user.id;
+  const canManage = user && (placeDetail.ownerId === user.id || user.userType === 'agent');
 
   // Prepare place for map view (as an array with just this one place)
   const mapPlaces = placeDetail.lat && placeDetail.lng ? [placeDetail] : [];
@@ -96,6 +97,13 @@ export default function PlaceDetailPage() {
       {isOwner && (
         <div className="bg-green-100 p-4 mb-4 rounded-lg">
           <p className="text-green-800 font-semibold text-sm md:text-base">You are the owner of this conference room</p>
+        </div>
+      )}
+
+      {/* Agent notification */}
+      {user && user.userType === 'agent' && !isOwner && (
+        <div className="bg-blue-100 p-4 mb-4 rounded-lg">
+          <p className="text-blue-800 font-semibold text-sm md:text-base">Agent Management Access</p>
         </div>
       )}
 
@@ -160,12 +168,12 @@ export default function PlaceDetailPage() {
             {(!user || user.userType === 'client' || bookingId) && (
               <BookingWidget
                 placeDetail={placeDetail}
-                buttonDisabled={buttonDisabled || isOwner}
+                buttonDisabled={buttonDisabled || canManage}
               />
             )}
             
-            {/* Show management options for hosts who own this conference room */}
-            {user && user.userType === 'host' && isOwner && !bookingId && (
+            {/* Show management options for hosts who own this conference room or agents */}
+            {user && canManage && !bookingId && (
               <div className="bg-white shadow p-4 rounded-2xl">
                 <h2 className="text-xl font-semibold mb-4">Management Options</h2>
                 <div className="flex flex-col gap-2">
