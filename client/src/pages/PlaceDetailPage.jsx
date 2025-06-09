@@ -81,13 +81,16 @@ export default function PlaceDetailPage() {
 
   return (
     <div className="mx-3 md:mx-8 lg:mx-14 -mt-4">
-      {/* Header section */}
+      /* Header section */
       <div className="mb-4">
         <h1 className="text-xl md:text-2xl mb-2 font-bold">{placeDetail.title}</h1>
         <a
           className="flex gap-1 font-semibold underline items-center text-sm md:text-base"
           target="_blank"
-          href={"http://maps.google.com/?q=" + placeDetail.address}
+          href={placeDetail.lat && placeDetail.lng 
+            ? `http://maps.google.com/?q=${placeDetail.lat},${placeDetail.lng}`
+            : `http://maps.google.com/?q=${encodeURIComponent(placeDetail.address)}`}
+          rel="noopener noreferrer"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
