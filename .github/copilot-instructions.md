@@ -2,9 +2,9 @@ We use the PERN stack: PostgreSQL for data storage, Express.js for the REST API,
 All database migrations use snake_case naming and node-pg-migrate for schema changes.  
 Our API follows REST conventions under /api with endpoints such as /api/rooms, /api/bookings, and /api/users, returning standard HTTP status codes.  
 Authentication is JWT-based with role-based access control; include JWT handling and token validation in code samples.  
-React code uses TypeScript with hooks, Context API, and React Query for fetching server state.  
+React code uses CommonJS JSX with hooks, Context API, and React Query for fetching server state.  
 We style components using Tailwind CSS and follow a mobile-first responsive design approach.  
-JavaScript and TypeScript code must adhere to the Airbnb style guide with ESLint + Prettier integration.  
+JavaScript code must adhere to the Airbnb style guide with ESLint + Prettier integration.  
 Use double quotes for strings, 2-space indentation, and always include semicolons in JS code.  
 Include unit tests using Jest for backend logic and React Testing Library for UI components.  
 When suggesting new files, include proper folder structure: src/controllers, src/routes, src/models, src/hooks, src/components, and src/styles.  
@@ -13,7 +13,7 @@ When suggesting new files, include proper folder structure: src/controllers, src
 - Organize React code with a feature-based folder structure to maximize scalability and reuse :contentReference[oaicite:0]{index=0}.  
 - Prefer function components with Hooks (useState, useEffect, custom hooks) for cleaner code and easier side-effect management :contentReference[oaicite:1]{index=1}.  
 - Implement a predictable state-management strategy (e.g., React Query or Redux Toolkit) for server and client state consistency :contentReference[oaicite:2]{index=2}.  
-- Use TypeScript with strict typing enabled (strictNullChecks, noImplicitAny) to catch errors at compile time :contentReference[oaicite:3]{index=3}.  
+- Use proper JSX practices and PropTypes for component props validation to catch errors during development :contentReference[oaicite:3]{index=3}.  
 - Integrate comprehensive testing: unit tests with Jest and integration/UI tests with React Testing Library :contentReference[oaicite:4]{index=4}.  
 - Leverage modern build tools (Vite, Bun) for faster development builds and hot module replacement :contentReference[oaicite:5]{index=5}.  
 

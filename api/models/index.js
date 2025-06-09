@@ -15,5 +15,6 @@ module.exports = {
   sequelize,
   User,
   Place,
-  Booking
+  Booking,
+  Currency
 };

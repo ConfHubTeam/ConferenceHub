@@ -1,9 +1,12 @@
 import { useContext, useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { UserContext } from "./UserContext";
+import { useCurrency } from "../contexts/CurrencyContext";
+import CurrencySelector from "./CurrencySelector";
 
 export default function Header() {
   const {user} = useContext(UserContext);
+  const { selectedCurrency, changeCurrency, availableCurrencies } = useCurrency();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [filterExpanded, setFilterExpanded] = useState(false);
   const [adminLinkVisible, setAdminLinkVisible] = useState(false);
@@ -196,6 +199,16 @@ export default function Header() {
       <div className="hidden md:block flex-grow"></div>
       
       <div className="flex items-center gap-2 relative z-30">
+        {/* Currency Selector */}
+        <div className="hidden md:block" style={{ width: '90px' }}>
+          <CurrencySelector
+            selectedCurrency={selectedCurrency}
+            onChange={changeCurrency}
+            availableCurrencies={availableCurrencies}
+            compact={true}
+          />
+        </div>
+        
         <button 
           ref={filterRef} 
           className="hidden md:flex border border-gray-300 rounded-full p-1.5 bg-white hover:shadow-md transition-shadow"
@@ -305,6 +318,18 @@ export default function Header() {
           className="absolute top-16 left-0 right-0 bg-white p-4 shadow-md z-20 md:hidden rounded-b-lg"
         >
           <div className="flex flex-col gap-4">
+            {/* Currency selector */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+              <div className="max-w-full">
+                <CurrencySelector
+                  selectedCurrency={selectedCurrency}
+                  onChange={changeCurrency}
+                  availableCurrencies={availableCurrencies}
+                />
+              </div>
+            </div>
+            
             {/* User menu section */}
             <div className="border-t pt-3">
               {user ? (

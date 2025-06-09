@@ -11,7 +11,8 @@ const createPlace = async (req, res) => {
     description, perks, extraInfo, 
     checkIn, checkOut, maxGuests, 
     price, startDate, endDate,
-    youtubeLink, lat, lng, currencyId, cooldown
+    youtubeLink, lat, lng, currencyId, cooldown,
+    fullDayHours, fullDayDiscountPrice
   } = req.body;
 
   try {
@@ -43,6 +44,26 @@ const createPlace = async (req, res) => {
     }
     
     // Process numeric fields
+    // Validate currencyId exists in the database
+    let validatedCurrencyId = null;
+    if (currencyId) {
+      // Try to parse as an integer
+      const parsedId = parseInt(currencyId, 10);
+      if (!isNaN(parsedId) && parsedId > 0) {
+        try {
+          // Check if the currency exists in the database
+          const currencyExists = await Currency.findByPk(parsedId);
+          if (currencyExists) {
+            validatedCurrencyId = parsedId;
+          } else {
+            console.warn(`Currency with ID ${parsedId} not found, defaulting to null`);
+          }
+        } catch (err) {
+          console.error("Error validating currency:", err);
+        }
+      }
+    }
+    
     const processedData = {
       ownerId: userData.id,
       title, 
@@ -60,8 +81,10 @@ const createPlace = async (req, res) => {
       youtubeLink: youtubeLink || null, // Add the YouTube link field
       lat: lat ? parseFloat(lat) : null,
       lng: lng ? parseFloat(lng) : null,
-      currencyId: currencyId && parseInt(currencyId) > 0 ? parseInt(currencyId) : null,
-      cooldown: cooldown ? parseInt(cooldown, 10) : 30
+      currencyId: validatedCurrencyId,
+      cooldown: cooldown ? parseInt(cooldown, 10) : 30,
+      fullDayHours: fullDayHours ? parseInt(fullDayHours, 10) : 8,
+      fullDayDiscountPrice: fullDayDiscountPrice ? parseFloat(fullDayDiscountPrice) : 0
     };
 
     const placeDoc = await Place.create(processedData);
@@ -81,9 +104,16 @@ const createPlace = async (req, res) => {
 const getUserPlaces = async (req, res) => {
   try {
     const userData = await getUserDataFromToken(req);
-    // Update Mongoose find to Sequelize findAll
+    // Update Mongoose find to Sequelize findAll with currency join
     const places = await Place.findAll({
-      where: { ownerId: userData.id }
+      where: { ownerId: userData.id },
+      include: [
+        {
+          model: Currency,
+          as: 'currency',
+          attributes: ['id', 'name', 'code', 'charCode']
+        }
+      ]
     });
     res.json(places);
   } catch (error) {
@@ -97,8 +127,12 @@ const getUserPlaces = async (req, res) => {
 const getPlaceById = async (req, res) => {
   const {id} = req.params;
   try {
-    // Update Mongoose findById to Sequelize findByPk
-    const place = await Place.findByPk(id);
+    // Include currency relation to get currency details
+    const place = await Place.findByPk(id, {
+      include: [
+        { model: Currency, as: 'currency' }
+      ]
+    });
     res.json(place);
   } catch (error) {
     res.status(422).json({ error: error.message });
@@ -127,15 +161,15 @@ const updatePlace = async (req, res) => {
     id, title, address, photos, description,
     perks, extraInfo, checkIn, checkOut, maxGuests,
     price, startDate, endDate, youtubeLink, lat, lng,
-    currencyId, cooldown
+    currencyId, cooldown, fullDayHours, fullDayDiscountPrice
   } = req.body;
   
   try {
     const userData = await getUserDataFromToken(req);
     
-    // Check if user is a host
-    if (userData.userType !== 'host') {
-      return res.status(403).json({ error: "Only hosts can update conference rooms" });
+    // Check if user is a host or agent
+    if (userData.userType !== 'host' && userData.userType !== 'agent') {
+      return res.status(403).json({ error: "Only hosts and agents can update conference rooms" });
     }
     
     // Update Mongoose findById to Sequelize findByPk
@@ -145,8 +179,8 @@ const updatePlace = async (req, res) => {
       return res.status(404).json({ error: "Conference room not found" });
     }
     
-    // Check if the current user is the owner
-    if (userData.id !== place.ownerId) {
+    // Check if the current user is the owner or an agent (agents can update any place)
+    if (userData.userType === 'host' && userData.id !== place.ownerId) {
       return res.status(403).json({ error: "You can only manage your own conference rooms" });
     }
     
@@ -190,7 +224,28 @@ const updatePlace = async (req, res) => {
     place.youtubeLink = youtubeLink || null; // Add the YouTube link
     place.lat = lat ? parseFloat(lat) : null;
     place.lng = lng ? parseFloat(lng) : null;
-    place.currencyId = currencyId && parseInt(currencyId) > 0 ? parseInt(currencyId) : null;
+    
+    // Validate currencyId exists in the database before updating
+    if (currencyId) {
+      // Try to parse as an integer
+      const parsedId = parseInt(currencyId, 10);
+      if (!isNaN(parsedId) && parsedId > 0) {
+        try {
+          // Check if the currency exists in the database
+          const currencyExists = await Currency.findByPk(parsedId);
+          if (currencyExists) {
+            place.currencyId = parsedId;
+          } else {
+            console.warn(`Currency with ID ${parsedId} not found, not updating currencyId`);
+          }
+        } catch (err) {
+          console.error("Error validating currency:", err);
+        }
+      }
+    } else {
+      place.currencyId = null;
+    }
+    
     place.cooldown = cooldown ? parseInt(cooldown, 10) : 30;
     
     await place.save();
@@ -274,9 +329,16 @@ const getHomePlaces = async (req, res) => {
       };
     }
     
-    // Get all places matching the filters
+    // Get all places matching the filters with currency information
     const places = await Place.findAll({
       where: whereConditions,
+      include: [
+        {
+          model: Currency,
+          as: 'currency',
+          attributes: ['id', 'name', 'code', 'charCode']
+        }
+      ],
       order: [['createdAt', 'DESC']] // Show newest places first
     });
     
@@ -300,9 +362,9 @@ const deletePlace = async (req, res) => {
       return res.status(401).json({ error: "Authentication required" });
     }
     
-    // Check if user is a host
-    if (userData.userType !== 'host') {
-      return res.status(403).json({ error: "Only hosts can delete conference rooms" });
+    // Check if user is a host or agent
+    if (userData.userType !== 'host' && userData.userType !== 'agent') {
+      return res.status(403).json({ error: "Only hosts and agents can delete conference rooms" });
     }
     
     // Find the place
@@ -312,8 +374,8 @@ const deletePlace = async (req, res) => {
       return res.status(404).json({ error: "Conference room not found" });
     }
     
-    // Verify this host is the owner
-    if (place.ownerId !== userData.id) {
+    // Verify this host is the owner or user is an agent (agents can delete any place)
+    if (userData.userType === 'host' && place.ownerId !== userData.id) {
       return res.status(403).json({ error: "You can only delete your own conference rooms" });
     }
     

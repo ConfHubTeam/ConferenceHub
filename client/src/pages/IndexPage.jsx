@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import CloudinaryImage from "../components/CloudinaryImage";
 import MapView from "../components/MapView";
+import PriceDisplay from "../components/PriceDisplay";
 import api from "../utils/api";
 
 export default function IndexPage() {
@@ -26,15 +27,6 @@ export default function IndexPage() {
       setIsLoading(false);
     });
   }, [location.search]);
-
-  // Format price display for better readability
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD',
-      minimumFractionDigits: 0
-    }).format(price);
-  };
 
   // Toggle map visibility function
   const toggleMap = () => {
@@ -131,7 +123,12 @@ export default function IndexPage() {
                           </p>
                         )}
                         <div className="flex justify-between items-center mt-1">
-                          <p className="font-bold text-primary text-sm">{formatPrice(place.price)}<span className="text-gray-500 font-normal text-xs"> / hour</span></p>
+                          <PriceDisplay 
+                            price={place.price} 
+                            currency={place.currency} 
+                            suffix=" / hour"
+                            className="text-primary text-sm"
+                          />
                           {place.type && (
                             <span className="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded-full">{place.type}</span>
                           )}

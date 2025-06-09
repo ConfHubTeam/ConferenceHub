@@ -6,6 +6,7 @@ import RegisterPage from "./pages/RegisterPage";
 import Layout from "./components/Layout";
 import { UserContextProvider } from "./components/UserContext";
 import { NotificationProvider } from "./components/NotificationContext";
+import { CurrencyProvider } from "./contexts/CurrencyContext";
 import PlacesPage from "./pages/PlacesPage";
 import ProfilePage from "./pages/ProfilePage";
 import PlacesFormPage from "./pages/PlacesFormPage";
@@ -22,8 +23,9 @@ function App() {
 
   return (
     <UserContextProvider>
-      <NotificationProvider>
-        <Routes>
+      <CurrencyProvider>
+        <NotificationProvider>
+          <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<IndexPage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -47,6 +49,7 @@ function App() {
           </Route>
         </Routes>
       </NotificationProvider>
+      </CurrencyProvider>
     </UserContextProvider>
   );
 }
