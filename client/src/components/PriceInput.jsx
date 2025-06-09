@@ -97,17 +97,21 @@ export default function PriceInput({ value, onChange, currency, label = null }) 
     return getCurrencySymbol(currency);
   };
 
+  // Create a unique ID for each input to ensure proper label association
+  const inputId = `price-input-${label ? label.toLowerCase().replace(/\s+/g, '-') : 'default'}`;
+
   return (
     <div className="w-full">
         
       <div className="relative w-full">
         {label && (
-            <label htmlFor="price-input" className="block mb-2 text-sm font-medium text-gray-700">
-              {label} {getCurrencyDisplay()}
+            <label htmlFor={inputId} className="block mb-2 text-sm font-medium text-gray-700 break-words">
+              <span className="inline-block mr-1">{label}</span>
+              <span className="inline-block">{getCurrencyDisplay()}</span>
             </label>
         )}
         <input
-          id="price-input"
+          id={inputId}
           type="text"
           inputMode="decimal"
           placeholder="0"
@@ -116,7 +120,6 @@ export default function PriceInput({ value, onChange, currency, label = null }) 
           onFocus={handleFocus}
           onBlur={handleBlur}
           className="w-full border py-2 px-3 rounded-xl text-base"
-          style={{ minWidth: "200px" }}
           maxLength={20}
           aria-label={`Price in ${currency?.charCode || "UZS"}`}
         />

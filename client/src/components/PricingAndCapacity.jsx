@@ -1,4 +1,3 @@
-import React from "react";
 import PriceInput from "./PriceInput";
 import CurrencySelector from "./CurrencySelector";
 import MaxAttendeesInput from "./MaxAttendeesInput";
@@ -36,7 +35,7 @@ const PricingAndCapacity = ({
           availableCurrencies={availableCurrencies}
         />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="w-full">
           <PriceInput 
             value={price} 
@@ -55,24 +54,7 @@ const PricingAndCapacity = ({
         </div>
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
-        <div className="w-full">
-          <label htmlFor="fullDayHours" className="block mb-5 text-sm font-medium text-gray-700">
-            Full Day Considered
-          </label>
-          <select
-            id="fullDayHours"
-            value={fullDayHours}
-            onChange={(e) => setFullDayHours(parseInt(e.target.value))}
-            className="w-full border py-2 px-3 rounded-xl text-base"
-          >
-            {Array.from({ length: 24 }, (_, i) => i + 1).map((hour) => (
-              <option key={hour} value={hour}>
-                {hour} hour{hour !== 1 ? "s" : ""}
-              </option>
-            ))}
-          </select>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
         
         <div className="w-full">
           <label htmlFor="cooldownMinutes" className="block mb-5 text-sm font-medium text-gray-700">
@@ -99,6 +81,24 @@ const PricingAndCapacity = ({
           maxGuests={maxGuests}
           setMaxGuests={setMaxGuests}
         />
+
+        <div className="w-full">
+          <label htmlFor="fullDayHours" className="block mb-4 text-sm font-medium text-gray-700">
+            Full Day Considered
+          </label>
+          <select
+            id="fullDayHours"
+            value={fullDayHours}
+            onChange={(e) => setFullDayHours(parseInt(e.target.value))}
+            className="w-full border py-2 px-3 rounded-xl text-base"
+          >
+            {Array.from({ length: 24 }, (_, i) => i + 1).map((hour) => (
+              <option key={hour} value={hour}>
+                {hour} hour{hour !== 1 ? "s" : ""}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
     </div>
   );

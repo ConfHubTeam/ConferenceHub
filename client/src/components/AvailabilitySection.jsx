@@ -58,7 +58,7 @@ export default function AvailabilitySection({
       )}
       
       <div className="grid gap-3 grid-cols-1 md:grid-cols-2 mt-2">
-        {/* Left column: Calendar + Block weekdays */}
+        {/* Left column: Calendar + Pricing and Capacity */}
         <div className="flex flex-col gap-3">
           {/* Calendar component for date selection */}
           <DateAvailability
@@ -69,9 +69,26 @@ export default function AvailabilitySection({
             blockedDates={blockedDates}
             blockedWeekdays={blockedWeekdays}
           />
+          
+          {/* Pricing and Capacity section */}
+          <PricingAndCapacity 
+            currency={currency}
+            setCurrency={setCurrency}
+            availableCurrencies={availableCurrencies}
+            price={price}
+            setPrice={setPrice}
+            fullDayHours={fullDayHours}
+            setFullDayHours={setFullDayHours}
+            fullDayDiscountPrice={fullDayDiscountPrice}
+            setFullDayDiscountPrice={setFullDayDiscountPrice}
+            cooldownMinutes={cooldownMinutes}
+            setCooldownMinutes={setCooldownMinutes}
+            maxGuests={maxGuests}
+            setMaxGuests={setMaxGuests}
+          />
         </div>
         
-        {/* Time slot management section */}
+        {/* Right column: Time slot management section */}
         <div className="bg-white p-4 rounded-xl shadow-sm border">
           <h3 className="text-lg font-semibold mb-2 text-gray-800">⏰ Schedule & Availability</h3>
           
@@ -97,23 +114,6 @@ export default function AvailabilitySection({
             setWeekdayTimeSlots={setWeekdayTimeSlots}
           />
         </div>
-        
-        {/* Pricing and Capacity section */}
-        <PricingAndCapacity 
-          currency={currency}
-          setCurrency={setCurrency}
-          availableCurrencies={availableCurrencies}
-          price={price}
-          setPrice={setPrice}
-          fullDayHours={fullDayHours}
-          setFullDayHours={setFullDayHours}
-          fullDayDiscountPrice={fullDayDiscountPrice}
-          setFullDayDiscountPrice={setFullDayDiscountPrice}
-          cooldownMinutes={cooldownMinutes}
-          setCooldownMinutes={setCooldownMinutes}
-          maxGuests={maxGuests}
-          setMaxGuests={setMaxGuests}
-        />
       </div>
     </>
   );
