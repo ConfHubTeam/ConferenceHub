@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 /**
  * MinimumHoursInput Component
@@ -10,6 +10,14 @@ const MinimumHoursInput = ({ minimumHours, setMinimumHours }) => {
   const [localValue, setLocalValue] = useState(minimumHours || 1);
   const [isOpen, setIsOpen] = useState(false);
   const options = [1, 2, 3, 4, 5];
+
+  // Sync local state with prop changes (important for editing existing places)
+  useEffect(() => {
+    if (minimumHours !== undefined && minimumHours !== null) {
+      console.log("MinimumHoursInput: Updating local value from", localValue, "to", minimumHours);
+      setLocalValue(minimumHours);
+    }
+  }, [minimumHours]);
 
   // Format the display value
   const formatDisplayValue = (hours) => {

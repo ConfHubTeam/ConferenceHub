@@ -114,6 +114,7 @@ export default function PlacesFormPage() {
     } else {
       api.get("/places/" + id).then(async (response) => {
         const { data } = response;
+        console.log("Full place data loaded from database:", data);
         console.log("Loaded photos from database:", data.photos);
         setTitle(data.title);
         setAddress(data.address);
@@ -127,6 +128,7 @@ export default function PlacesFormPage() {
         setFullDayDiscountPrice(data.fullDayDiscountPrice || 0);
         setCooldownMinutes(data.cooldown || 30);
         setMinimumHours(data.minimumHours || 1);
+        console.log("Loaded minimumHours from database:", data.minimumHours, "Setting to:", data.minimumHours || 1);
         setYoutubeLink(data.youtubeLink || "");
         
         // Load currency if it exists
