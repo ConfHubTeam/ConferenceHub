@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import MapPicker from "./MapPicker";
 
 /**
@@ -35,6 +35,28 @@ export default function AddressSection({
 }) {
   // Track whether the address was manually edited after pin placement
   const [addressManuallyEdited, setAddressManuallyEdited] = useState(false);
+  // Track full screen state for the map
+  const [isFullScreen, setIsFullScreen] = useState(true);
+  
+  // Track window width for responsive behavior
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  
+  // Check if we're on a mobile device based on window width
+  const isMobile = windowWidth <= 768; // 768px is a common mobile breakpoint
+  
+  // Update window width when resized
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    
+    window.addEventListener("resize", handleResize);
+    
+    // Clean up event listener on unmount
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
   
   // If lat and lng exist, this is an existing place - maintain independence between address and coordinates
   const isExistingPlace = Boolean(lat && lng);
@@ -63,6 +85,34 @@ export default function AddressSection({
     }
     */
   };
+  
+  // Handle toggling full screen mode
+  const toggleFullScreen = () => {
+    // Only allow full screen on mobile devices
+    if (!isMobile) {
+      setIsFullScreen(false);
+      return;
+    }
+    
+    setIsFullScreen(!isFullScreen);
+    
+    // Force a reflow/repaint by waiting a tiny bit before toggling
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 100);
+  };
+  
+  // Reset full screen mode when screen size changes from mobile to desktop
+  useEffect(() => {
+    if (!isMobile && isFullScreen) {
+      setIsFullScreen(false);
+      
+      // Force a reflow/repaint
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 100);
+    }
+  }, [isMobile, isFullScreen]);
 
   return (
     <>
@@ -109,10 +159,36 @@ export default function AddressSection({
               window.dispatchEvent(new Event('resize'));
             }, 100);
           }}
-          className="bg-primary text-white px-3 py-1 rounded-md text-sm"
+          className="flex items-center justify-center bg-white border border-gray-300 hover:border-gray-400 p-2 rounded-full transition-all hover:shadow-md"
+          aria-label={showMap ? "Hide Map" : "Show Map"}
+          title={showMap ? "Hide Map" : "Show Map"}
         >
-          {showMap ? 'Hide Map' : 'Show Map'}
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            strokeWidth={1.5} 
+            stroke={showMap ? "currentColor" : "#9CA3AF"} 
+            className={`w-5 h-5 ${showMap ? "text-primary" : "text-gray-400"}`}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
+          </svg>
         </button>
+        
+        {showMap && isMobile && (
+          <button 
+            type="button"
+            onClick={toggleFullScreen}
+            className="flex items-center justify-center bg-white border border-gray-300 hover:border-gray-400 p-2 rounded-full transition-all hover:shadow-md"
+            aria-label={isFullScreen ? "Exit Full Screen" : "View Full Screen"}
+            title={isFullScreen ? "Exit Full Screen" : "View Full Screen"}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className={`w-5 h-5 ${isFullScreen ? "text-primary" : "text-gray-400"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+            </svg>
+            <span className="sr-only">{isFullScreen ? "Exit Full Screen" : "View Full Screen"}</span>
+          </button>
+        )}
         {geocodingSuccess === false && (
           <p className="text-amber-500 text-sm ml-2">
             Address lookup failed. You can still set coordinates by pinning on map.
@@ -131,6 +207,8 @@ export default function AddressSection({
             initialCoordinates={lat && lng ? { lat: parseFloat(lat), lng: parseFloat(lng) } : null}
             onLocationSelect={handleLocationSelect}
             onAddressUpdate={handleMapAddressUpdate}
+            isFullScreen={isFullScreen}
+            onToggleFullScreen={toggleFullScreen}
           />
           <div className="bg-blue-50 p-3 mt-2 rounded-md text-sm text-gray-700 border border-blue-200">
             <div className="font-semibold mb-1 flex items-center text-blue-700">
@@ -140,7 +218,6 @@ export default function AddressSection({
               Map and Address Usage:
             </div>
             <ul className="list-disc list-inside space-y-1 ml-1">
-              <li>The address you type and the map pin location are now completely independent</li>
               <li>Pin the location on the map for setting precise coordinates</li>
               <li>You can freely name the location regardless of its map position</li>
               <li>Map will suggest an address based on the pin, which you can choose to use or ignore</li>

@@ -1,14 +1,11 @@
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
 
 // Get Google Maps API key from environment variables with fallback
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 
-// Map container style - height is twice the relative width
-const containerStyle = {
-  width: '100%',
-  height: 'calc(100vw * 0.3)' // Height is 80% of viewport width (approximate twice of container width)
-};
+// Define libraries as a constant outside the component to prevent recreation on each render
+const libraries = ['places'];
 
 // Default center position (same as in MapView)
 const defaultCenter = {
@@ -16,13 +13,12 @@ const defaultCenter = {
   lng: 69.2401
 };
 
-// Define libraries as a constant outside the component to prevent recreation on each render
-const libraries = ['places'];
-
 export default function MapPicker({ 
   initialCoordinates, 
   onLocationSelect,
-  onAddressUpdate
+  onAddressUpdate,
+  isFullScreen = false,
+  onToggleFullScreen
 }) {
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
@@ -32,7 +28,6 @@ export default function MapPicker({
 
   const [map, setMap] = useState(null);
   const [marker, setMarker] = useState(null);
-  
   // Initialize position state with initialCoordinates if available
   const [position, setPosition] = useState(() => {
     if (initialCoordinates && initialCoordinates.lat && initialCoordinates.lng) {
@@ -54,6 +49,60 @@ export default function MapPicker({
   const positionUpdateSource = useRef('internal');
   // Use ref to track last updated position to avoid unnecessary updates
   const lastPosition = useRef(null);
+
+  // Handle mobile full-screen toggling
+  const toggleFullScreen = () => {
+    if (onToggleFullScreen) {
+      onToggleFullScreen();
+      
+      // Trigger map resize after state update to ensure proper rendering
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 100);
+    }
+  };
+
+  // Detect if device is mobile
+  const isMobile = () => {
+    return window.innerWidth <= 768;
+  };
+
+  // Effect to handle resize events, but not auto-enter full screen on mobile
+  useEffect(() => {
+    // Listen for resize events to adjust full screen state
+    const handleResize = () => {
+      // Only auto-exit full-screen when resizing to desktop from mobile
+      if (!isMobile() && isFullScreen && onToggleFullScreen) {
+        onToggleFullScreen();
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isFullScreen, onToggleFullScreen]);
+
+  // Update map container style based on screen size
+  const getMapContainerStyle = () => {
+    if (isFullScreen) {
+      return {
+        width: '100%',
+        height: '100vh', // Full viewport height
+      };
+    }
+    
+    // For mobile devices, make the height a bit taller to encourage using full-screen mode
+    if (isMobile()) {
+      return {
+        width: '100%',
+        height: 'calc(100vw * 0.5)', // Taller on mobile but not full screen
+      };
+    }
+    
+    return {
+      width: '100%',
+      height: 'calc(100vw * 0.3)', // Regular height for desktop
+    };
+  };
 
   // Load map and set initial marker
   const onLoad = useCallback(function callback(map) {
@@ -127,6 +176,45 @@ export default function MapPicker({
       }
     }, 200);
   }, [position, marker]);
+
+  // Effect to handle body overflow when in full-screen mode
+  useEffect(() => {
+    if (isFullScreen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    
+    // Cleanup
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isFullScreen]);
+  
+  // Add click listener to map when loaded to ensure marker updates
+  useEffect(() => {
+    if (map) {
+      // Make sure we have proper click handling on the map itself
+      const clickListener = map.addListener('click', (e) => {
+        const lat = e.latLng.lat();
+        const lng = e.latLng.lng();
+        
+        console.log("Direct map click detected at:", { lat, lng });
+        
+        // Update marker position directly for immediate feedback
+        if (marker) {
+          marker.setPosition({ lat, lng });
+        }
+      });
+      
+      // Clean up listener
+      return () => {
+        if (clickListener) {
+          window.google.maps.event.removeListener(clickListener);
+        }
+      };
+    }
+  }, [map, marker]);
 
   const onUnmount = useCallback(function callback() {
     // Clean up marker if it exists
@@ -222,13 +310,16 @@ export default function MapPicker({
       
       // Log for debugging
       console.log("Created new marker at:", newPosition);
-      
-      // Ensure the map is centered on the marker
-      map.setCenter(newPosition);
+    }
+    
+    // Ensure the map is centered on the marker
+    map.setCenter(newPosition);
+    
+    // Zoom in a bit for better visibility if we're setting a marker
+    if (map.getZoom() < 13) {
+      map.setZoom(13);
     }
   }, [map, position]);
-
-
 
   // Separate effect for notifying parent component to prevent circular updates
   useEffect(() => {
@@ -241,27 +332,79 @@ export default function MapPicker({
   }, [position, onLocationSelect]);
 
   // Handle map click to set marker
-  const handleMapClick = async (e) => {
-    const lat = e.latLng.lat();
-    const lng = e.latLng.lng();
-    handlePositionChange({ lat, lng });
+  const handleMapClick = (e) => {
+    try {
+      const lat = e.latLng.lat();
+      const lng = e.latLng.lng();
+      const newPosition = { lat, lng };
+      
+      console.log("Map clicked at:", newPosition);
+      
+      // Force immediate marker update for responsive UI
+      if (marker) {
+        console.log("Updating existing marker position");
+        marker.setPosition(newPosition);
+      } else if (map) {
+        console.log("Creating new marker");
+        // Create new marker if it doesn't exist
+        const newMarker = new window.google.maps.Marker({
+          position: newPosition,
+          map,
+          draggable: true,
+          animation: window.google.maps.Animation.DROP
+        });
+        
+        // Add drag end listener to update coordinates
+        newMarker.addListener('dragend', () => {
+          const newPos = newMarker.getPosition();
+          const dragLat = newPos.lat();
+          const dragLng = newPos.lng();
+          handlePositionChange({ lat: dragLat, lng: dragLng });
+        });
+        
+        setMarker(newMarker);
+      }
+      
+      // Center map on the new position for better UX
+      if (map) {
+        map.panTo(newPosition);
+      }
+      
+      // Call position change handler AFTER updating the marker
+      // This ensures the UI and state are in sync
+      handlePositionChange(newPosition);
+      
+    } catch (error) {
+      console.error("Error handling map click:", error);
+    }
   };
-
-
 
   // Handle position change and reverse geocode
   const handlePositionChange = async (newPosition) => {
+    // Ensure we have valid coordinates
+    if (!newPosition || typeof newPosition.lat !== 'number' || typeof newPosition.lng !== 'number') {
+      console.error("Invalid position data:", newPosition);
+      return;
+    }
+    
     // Check if position actually changed to avoid unnecessary updates
     if (lastPosition.current?.lat === newPosition.lat && 
         lastPosition.current?.lng === newPosition.lng) {
+      console.log("Position unchanged, skipping update");
       return;
     }
+    
+    console.log("Updating position to:", newPosition);
     
     // Mark this position update as internal (from map interaction)
     positionUpdateSource.current = 'internal';
     lastPosition.current = { ...newPosition };
     
-    setPosition(newPosition);
+    // Update component state
+    setPosition({
+      lat: newPosition.lat,
+      lng: newPosition.lng
+    });
     
     // Only notify parent component about the position change
     // without altering the address field
@@ -302,6 +445,25 @@ export default function MapPicker({
     }
   };
 
+  // Confirm and close map
+  const handleConfirmLocation = () => {
+    // Ensure we have the latest position when closing
+    if (marker && position) {
+      const currentPosition = marker.getPosition();
+      const lat = currentPosition.lat();
+      const lng = currentPosition.lng();
+      
+      // Update position if it has changed
+      if (lat !== position.lat || lng !== position.lng) {
+        handlePositionChange({ lat, lng });
+      }
+    }
+    
+    if (isFullScreen && onToggleFullScreen) {
+      onToggleFullScreen();
+    }
+  };
+
   // Error state handling
   if (loadError) {
     return (
@@ -324,63 +486,59 @@ export default function MapPicker({
   }
 
   return (
-    <div className="rounded-lg overflow-hidden border border-gray-300">
+    <div 
+      className={`${
+        isFullScreen 
+          ? "fixed inset-0 z-50 bg-white" 
+          : "rounded-lg overflow-hidden border border-gray-300"
+      }`}
+    >
+      {isFullScreen && (
+        <div className="absolute top-0 left-0 right-0 z-50 bg-white flex justify-between items-center p-4 shadow-md">
+          <h3 className="text-lg font-semibold text-gray-800">Select Location</h3>
+          <button 
+            onClick={handleConfirmLocation}
+            className="bg-primary text-white px-5 py-2 rounded-full text-sm font-medium shadow-md hover:bg-opacity-90 transition-colors flex items-center"
+          >
+            <span>Done</span>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </button>
+        </div>
+      )}
+      
       <GoogleMap
-        mapContainerStyle={containerStyle}
+        mapContainerStyle={getMapContainerStyle()}
         center={position ? { lat: parseFloat(position.lat), lng: parseFloat(position.lng) } : defaultCenter}
-        zoom={13}
+        zoom={14}
         onLoad={onLoad}
         onUnmount={onUnmount}
         onClick={handleMapClick}
         options={{
           fullscreenControl: false,
-          mapTypeControl: true,
-          mapTypeControlOptions: {
-            style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-            position: window.google.maps.ControlPosition.TOP_RIGHT,
-            mapTypeIds: [
-              window.google.maps.MapTypeId.ROADMAP,
-              window.google.maps.MapTypeId.SATELLITE,
-            ]
-          },
-          streetViewControl: true,
-          zoomControlOptions: {
-            position: window.google.maps.ControlPosition.RIGHT_TOP
-          }
+          mapTypeControl: false, // Removed map type control (satellite/roadmap toggle)
+          streetViewControl: false, // Removed street view control (human icon)
+          zoomControl: false // Removed zoom control
         }}
       />
-      <div className="bg-white p-2 text-xs flex flex-wrap items-center justify-between">
-        <span className="text-gray-500">
-          Click on the map to set coordinates, or drag the marker to adjust position. You can name the location as desired.
-          Use the map type control in the top right corner to switch between map and satellite views.
-        </span>
-        
-        {/* Status Messages */}
-        <div className="w-full sm:w-auto mt-1 sm:mt-0">
-          {addressFetchStatus === 'loading' && (
-            <span className="text-blue-500 flex items-center">
-              <div className="animate-spin h-3 w-3 border border-blue-500 border-t-transparent rounded-full mr-1"></div>
-              Fetching suggested address...
-            </span>
-          )}
-          {addressFetchStatus === 'failed' && (
-            <span className="text-amber-500 flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              No address suggestion found
-            </span>
-          )}
-          {addressFetchStatus === 'success' && (
-            <span className="text-green-500 flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              Address suggestion available
-            </span>
-          )}
+
+      {/* Full screen button moved to AddressSection */}
+      
+      {isFullScreen && (
+        <div className="absolute bottom-5 left-0 right-0 flex justify-center">
+          <div className="bg-white px-4 py-2 rounded-full shadow-lg text-sm text-center">
+            {position ? (
+              <span>
+                {position.lat.toFixed(6)}, {position.lng.toFixed(6)}
+                {addressFetchStatus === 'success' && " • Location found"}
+              </span>
+            ) : (
+              "Tap on the map to select a location"
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -420,9 +420,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
           fullscreenControl: false,
           mapTypeControl: false,
           streetViewControl: false,
-          zoomControlOptions: {
-            position: window.google.maps.ControlPosition.RIGHT_TOP
-          }
+          zoomControl: false // Removed zoom control
         }}
       >
         {/* Info Window for selected place - only show if not disabled */}
