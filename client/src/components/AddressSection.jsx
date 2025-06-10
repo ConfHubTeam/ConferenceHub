@@ -35,8 +35,8 @@ export default function AddressSection({
 }) {
   // Track whether the address was manually edited after pin placement
   const [addressManuallyEdited, setAddressManuallyEdited] = useState(false);
-  // Track full screen state for the map
-  const [isFullScreen, setIsFullScreen] = useState(true);
+  // Track full screen state for the map - start with false (embedded view)
+  const [isFullScreen, setIsFullScreen] = useState(false);
   
   // Track window width for responsive behavior
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
