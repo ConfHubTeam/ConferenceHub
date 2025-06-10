@@ -113,6 +113,15 @@ const Place = sequelize.define('Place', {
     allowNull: true,
     defaultValue: 0
   },
+  minimumHours: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 1, // Default minimum booking is 1 hour
+    validate: {
+      min: 1,
+      max: 5
+    }
+  },
   cooldown: {
     type: DataTypes.INTEGER, // minutda ketadi menimcha yani 60, 30, 15 minut shuning uchun Int32
     allowNull: false,

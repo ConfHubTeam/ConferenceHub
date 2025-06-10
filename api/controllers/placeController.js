@@ -12,7 +12,7 @@ const createPlace = async (req, res) => {
     checkIn, checkOut, maxGuests, 
     price, startDate, endDate,
     youtubeLink, lat, lng, currencyId, cooldown,
-    fullDayHours, fullDayDiscountPrice,
+    fullDayHours, fullDayDiscountPrice, minimumHours,
     blockedWeekdays, blockedDates, weekdayTimeSlots,
     squareMeters, isHotel
   } = req.body;
@@ -100,6 +100,7 @@ const createPlace = async (req, res) => {
       cooldown: cooldown ? parseInt(cooldown, 10) : 30,
       fullDayHours: fullDayHours ? parseInt(fullDayHours, 10) : 8,
       fullDayDiscountPrice: fullDayDiscountPrice ? parseFloat(fullDayDiscountPrice) : 0,
+      minimumHours: minimumHours ? parseInt(minimumHours, 10) : 1,
       blockedWeekdays: processedBlockedWeekdays,
       blockedDates: processedBlockedDates,
       weekdayTimeSlots: processedWeekdayTimeSlots,
@@ -185,7 +186,7 @@ const updatePlace = async (req, res) => {
     perks, extraInfo, checkIn, checkOut, maxGuests,
     price, startDate, endDate, youtubeLink, lat, lng,
     currencyId, cooldown, fullDayHours, fullDayDiscountPrice,
-    blockedWeekdays, blockedDates, weekdayTimeSlots,
+    minimumHours, blockedWeekdays, blockedDates, weekdayTimeSlots,
     squareMeters, isHotel
   } = req.body;
   
@@ -267,6 +268,7 @@ const updatePlace = async (req, res) => {
     place.weekdayTimeSlots = processedWeekdayTimeSlots;
     place.fullDayHours = fullDayHours ? parseInt(fullDayHours, 10) : 8;
     place.fullDayDiscountPrice = fullDayDiscountPrice ? parseFloat(fullDayDiscountPrice) : 0;
+    place.minimumHours = minimumHours ? parseInt(minimumHours, 10) : 1;
     place.squareMeters = squareMeters ? parseFloat(squareMeters) : null;
     place.isHotel = Boolean(isHotel);
     
