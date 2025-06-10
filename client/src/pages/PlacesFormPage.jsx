@@ -31,7 +31,7 @@ export default function PlacesFormPage() {
   const [lng, setLng] = useState("");
   const [isGeocodingAddress, setIsGeocodingAddress] = useState(false);
   const [geocodingSuccess, setGeocodingSuccess] = useState(null);
-  const [showMap, setShowMap] = useState(false);
+  const [showMap, setShowMap] = useState(true);
   const [redirect, setRedirect] = useState(false);
   const [error, setError] = useState("");
   const [availableCurrencies, setAvailableCurrencies] = useState([]);

@@ -28,6 +28,9 @@ export default function MapPicker({
 
   const [map, setMap] = useState(null);
   const [marker, setMarker] = useState(null);
+  // Track current map type - 'roadmap' (normal view) or 'satellite' (satellite view)
+  // This works with Google Maps' native map type control for toggling satellite view
+  const [mapTypeId, setMapTypeId] = useState('roadmap');
   // Initialize position state with initialCoordinates if available
   const [position, setPosition] = useState(() => {
     if (initialCoordinates && initialCoordinates.lat && initialCoordinates.lng) {
@@ -53,11 +56,19 @@ export default function MapPicker({
   // Handle mobile full-screen toggling
   const toggleFullScreen = () => {
     if (onToggleFullScreen) {
+      // Store current map type before toggling
+      const currentMapType = map ? map.getMapTypeId() : mapTypeId;
+      
       onToggleFullScreen();
       
       // Trigger map resize after state update to ensure proper rendering
       setTimeout(() => {
         window.dispatchEvent(new Event('resize'));
+        // Re-apply map type after resize
+        if (map) {
+          map.setMapTypeId(currentMapType);
+          setMapTypeId(currentMapType); // Update state to match
+        }
       }, 100);
     }
   };
@@ -66,6 +77,19 @@ export default function MapPicker({
   const isMobile = () => {
     return window.innerWidth <= 768;
   };
+
+  // Listen to map type changes from the native Google Maps controls
+  const handleMapTypeChange = useCallback(() => {
+    if (map) {
+      const currentMapType = map.getMapTypeId();
+      
+      // Only update if the type has actually changed
+      if (currentMapType !== mapTypeId) {
+        console.log("Map type changed to:", currentMapType);
+        setMapTypeId(currentMapType);
+      }
+    }
+  }, [map, mapTypeId]);
 
   // Effect to handle resize events, but not auto-enter full screen on mobile
   useEffect(() => {
@@ -87,20 +111,17 @@ export default function MapPicker({
       return {
         width: '100%',
         height: '100vh', // Full viewport height
+        position: 'relative', // Ensure controls render correctly on fullscreen
+        zIndex: 1, // Ensure controls appear above map but below header
       };
     }
     
-    // For mobile devices, make the height a bit taller to encourage using full-screen mode
-    if (isMobile()) {
-      return {
-        width: '100%',
-        height: 'calc(100vw * 0.5)', // Taller on mobile but not full screen
-      };
-    }
-    
+    // For non-fullscreen mode (desktop), use a reasonable height
     return {
       width: '100%',
       height: 'calc(100vw * 0.3)', // Regular height for desktop
+      position: 'relative', // Ensure controls render correctly
+      zIndex: 1, // Ensure controls appear above map
     };
   };
 
@@ -111,6 +132,23 @@ export default function MapPicker({
       defaultCenter;
     
     map.setCenter(center);
+    map.setMapTypeId(mapTypeId); // Ensure the map type is set correctly on load
+    
+    // Set map type control options right away
+    if (window.google?.maps) {
+      const mapTypeControlOptions = {
+        style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+        position: isFullScreen && isMobile()
+          ? window.google.maps.ControlPosition.TOP_RIGHT
+          : isFullScreen
+            ? window.google.maps.ControlPosition.LEFT_TOP
+            : window.google.maps.ControlPosition.TOP_RIGHT,
+        mapTypeIds: ['roadmap', 'satellite']
+      };
+      
+      map.setOptions({ mapTypeControlOptions });
+    }
+    
     setMap(map);
     
     // Create initial marker if we have a position when map loads
@@ -175,7 +213,7 @@ export default function MapPicker({
         setMarker(newMarker);
       }
     }, 200);
-  }, [position, marker]);
+  }, [position, marker, mapTypeId]);
 
   // Effect to handle body overflow when in full-screen mode
   useEffect(() => {
@@ -185,11 +223,31 @@ export default function MapPicker({
       document.body.style.overflow = '';
     }
     
+    // Update map type control when fullscreen state changes
+    if (map && window.google?.maps) {
+      const mapTypeControlOptions = {
+        style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+        position: isFullScreen && isMobile()
+          ? window.google.maps.ControlPosition.TOP_RIGHT
+          : isFullScreen
+            ? window.google.maps.ControlPosition.LEFT_TOP
+            : window.google.maps.ControlPosition.TOP_RIGHT,
+        mapTypeIds: ['roadmap', 'satellite']
+      };
+      
+      map.setOptions({ mapTypeControlOptions });
+      
+      // Ensure map is refreshed to render controls correctly
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 100);
+    }
+    
     // Cleanup
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isFullScreen]);
+  }, [isFullScreen, map]);
   
   // Add click listener to map when loaded to ensure marker updates
   useEffect(() => {
@@ -207,14 +265,20 @@ export default function MapPicker({
         }
       });
       
-      // Clean up listener
+      // Add listener for map type changes
+      const mapTypeListener = map.addListener('maptypeid_changed', handleMapTypeChange);
+      
+      // Clean up listeners
       return () => {
         if (clickListener) {
           window.google.maps.event.removeListener(clickListener);
         }
+        if (mapTypeListener) {
+          window.google.maps.event.removeListener(mapTypeListener);
+        }
       };
     }
-  }, [map, marker]);
+  }, [map, marker, handleMapTypeChange]);
 
   const onUnmount = useCallback(function callback() {
     // Clean up marker if it exists
@@ -515,16 +579,25 @@ export default function MapPicker({
         onLoad={onLoad}
         onUnmount={onUnmount}
         onClick={handleMapClick}
+        mapTypeId={mapTypeId}
         options={{
           fullscreenControl: false,
-          mapTypeControl: false, // Removed map type control (satellite/roadmap toggle)
+          mapTypeControl: true, // Enable Google's native map type control
+          mapTypeControlOptions: {
+            // Use horizontal bar style for both mobile and desktop views
+            style: window.google?.maps?.MapTypeControlStyle?.HORIZONTAL_BAR,
+            // In mobile fullscreen, position control at top-right for easy access
+            // This is crucial for satellite view toggle visibility in mobile fullscreen mode
+            position: isFullScreen
+              ? window.google?.maps?.ControlPosition?.TOP_RIGHT
+              : window.google?.maps?.ControlPosition?.TOP_RIGHT,
+            mapTypeIds: ['roadmap', 'satellite']
+          },
           streetViewControl: false, // Removed street view control (human icon)
           zoomControl: false // Removed zoom control
         }}
       />
 
-      {/* Full screen button moved to AddressSection */}
-      
       {isFullScreen && (
         <div className="absolute bottom-5 left-0 right-0 flex justify-center">
           <div className="bg-white px-4 py-2 rounded-full shadow-lg text-sm text-center">
