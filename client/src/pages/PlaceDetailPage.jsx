@@ -8,6 +8,10 @@ import { UserContext } from "../components/UserContext";
 import { useNotification } from "../components/NotificationContext";
 import MapView from "../components/MapView";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
+import PlaceDetailsInfo from "../components/PlaceDetailsInfo";
+import WeeklyAvailabilityDisplay from "../components/WeeklyAvailabilityDisplay";
+import PlaceAvailabilityCalendar from "../components/PlaceAvailabilityCalendar";
+import PlacePerks from "../components/PlacePerks";
 
 export default function PlaceDetailPage() {
   const { placeId, bookingId } = useParams();
@@ -18,14 +22,15 @@ export default function PlaceDetailPage() {
   const [error, setError] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteInProgress, setDeleteInProgress] = useState(false);
+  const [selectedCalendarDates, setSelectedCalendarDates] = useState([]); // Shared state for calendar selections
   const { user } = useContext(UserContext);
   const { notify } = useNotification();
   const navigate = useNavigate();
-  const months = [
-    "Jan","Feb","Mar","Apr",
-    "May","Jun","Jul","Aug",
-    "Sep","Oct","Nov","Dec",
-  ];
+
+  // Function to clear calendar selections
+  const clearCalendarSelections = () => {
+    setSelectedCalendarDates([]);
+  };
 
   useEffect(() => {
     if (!placeId) {
@@ -140,38 +145,57 @@ export default function PlaceDetailPage() {
           </div>
           
           <div className="mt-6">
-            <div className="mb-5">
-              <h2 className="text-xl md:text-2xl font-semibold mb-2">Description</h2>
-              <p className="leading-6 md:leading-7 text-sm md:text-base">{placeDetail.description}</p>
-              <div className="my-4 mb-6 leading-6 md:leading-7 text-sm md:text-base">
-                <p>
-                  Available dates: {new Date(placeDetail.startDate).getDate()}{" "}
-                  {months[new Date(placeDetail.startDate).getMonth()]}
-                  {" - "}
-                  {new Date(placeDetail.endDate).getDate()}{" "}
-                  {months[new Date(placeDetail.endDate).getMonth()]}
-                </p>
-                <p>Max number of attendees: {placeDetail.maxGuests} </p>
-                <p>Available from: {placeDetail.checkIn} </p>
-                <p>Available until: {placeDetail.checkOut} </p>
+            {/* Place Details Info Section */}
+            <div className="mb-8">
+              <PlaceDetailsInfo placeDetail={placeDetail} />
+            </div>
+
+            {/* Description Section */}
+            <div className="mb-8">
+              <h2 className="text-xl md:text-2xl font-semibold mb-4">Description</h2>
+              <p className="leading-6 md:leading-7 text-sm md:text-base text-gray-700">{placeDetail.description}</p>
+            </div>
+
+            {/* Perks Section */}
+            {placeDetail.perks && placeDetail.perks.length > 0 && (
+              <div className="mb-8">
+                <PlacePerks perks={placeDetail.perks} />
               </div>
-              <hr />
+            )}
+
+            {/* Weekly Availability Section */}
+            <div className="mb-8">
+              <WeeklyAvailabilityDisplay 
+                weekdayTimeSlots={placeDetail.weekdayTimeSlots}
+                blockedWeekdays={placeDetail.blockedWeekdays}
+              />
+            </div>
+
+            {/* Availability Calendar Section */}
+            <div className="mb-8">
+              <PlaceAvailabilityCalendar 
+                placeDetail={placeDetail} 
+                onSelectedDatesChange={setSelectedCalendarDates}
+              />
             </div>
             
             {/* Location Map */}
             {hasCoordinates && (
-              <div className="mb-5">
-                <h2 className="text-xl md:text-2xl font-semibold mb-2">Location</h2>
-                <div className="h-64 rounded-lg overflow-hidden">
+              <div className="mb-8">
+                <h2 className="text-xl md:text-2xl font-semibold mb-4">Location</h2>
+                <div className="h-64 rounded-lg overflow-hidden border">
                   <MapView places={mapPlaces} disableInfoWindow={true} />
                 </div>
               </div>
             )}
             
-            <div className="mb-5 mt-2">
-              <h2 className="text-xl md:text-2xl font-semibold my-2">Extra information</h2>
-              <p className="leading-6 md:leading-7 text-sm md:text-base">{placeDetail.extraInfo}</p>
-            </div>
+            {/* Extra Information Section */}
+            {placeDetail.extraInfo && (
+              <div className="mb-8">
+                <h2 className="text-xl md:text-2xl font-semibold mb-4">Additional Information</h2>
+                <p className="leading-6 md:leading-7 text-sm md:text-base text-gray-700">{placeDetail.extraInfo}</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -183,6 +207,8 @@ export default function PlaceDetailPage() {
               <BookingWidget
                 placeDetail={placeDetail}
                 buttonDisabled={buttonDisabled || canManage}
+                selectedCalendarDates={selectedCalendarDates}
+                onClearCalendarSelections={clearCalendarSelections}
               />
             )}
             

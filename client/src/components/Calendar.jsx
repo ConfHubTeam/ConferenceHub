@@ -22,7 +22,10 @@ export default function Calendar({
   maxDate,
   blockedDates = [],
   blockedWeekdays = [],
-  onBlockedDateClick = null
+  onBlockedDateClick = null,
+  selectedIndividualDates = [], // New prop for individual date selection
+  onIndividualDateClick = null, // New prop for individual date selection handler
+  individualDateMode = false // New prop to enable individual date selection mode
 }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [hoverDate, setHoverDate] = useState(null);
@@ -89,6 +92,16 @@ export default function Calendar({
     
     // Handle past dates and min/max date restrictions for all calendars
     if ((min && isBefore(day, min)) || (max && isAfter(day, max))) {
+      return;
+    }
+    
+    // Special handling for individual date selection mode
+    if (individualDateMode && onIndividualDateClick) {
+      // In individual date mode, don't allow selecting blocked dates or weekdays
+      if (isBlockedDate || isBlockedWeekday) {
+        return;
+      }
+      onIndividualDateClick(formattedDate);
       return;
     }
     
@@ -176,6 +189,17 @@ export default function Calendar({
     if (!day) return false;
     return (start && isSameDay(day, start)) || (end && isSameDay(day, end));
   };
+
+  // Check if a date is individually selected
+  const isIndividuallySelected = (day) => {
+    if (!individualDateMode || !selectedIndividualDates.length) return false;
+    const formattedDay = format(day, "yyyy-MM-dd");
+    return selectedIndividualDates.some(selectedDate => {
+      // Handle both string dates and objects with date property
+      const dateStr = typeof selectedDate === "string" ? selectedDate : selectedDate.date;
+      return dateStr === formattedDay;
+    });
+  };
   
   // Check if a date is disabled (past dates, outside min/max range, blocked dates or weekdays)
   const isDisabled = (day) => {
@@ -222,6 +246,7 @@ export default function Calendar({
     const isDisabledDate = isDisabled(day);
     const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
     const isPastDate = isBefore(day, new Date()) && day.getDate() !== new Date().getDate();
+    const isIndividualSelected = isIndividuallySelected(day);
     
     // Check if this date is blocked (for visual indication in blocking calendar)
     const formattedDay = format(day, "yyyy-MM-dd");
@@ -245,9 +270,14 @@ export default function Calendar({
     } else {
       classNames += "cursor-pointer hover:scale-105 ";
       
-      if (isStartDate || isEndDate) {
+      // Individual date selection styling (highest priority)
+      if (individualDateMode && isIndividualSelected) {
+        classNames += "bg-green-600 text-white hover:bg-green-700 shadow-md hover:shadow-lg z-20 ";
+      }
+      // Range selection styling
+      else if (isStartDate || isEndDate) {
         classNames += "bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg z-20 ";
-      } else if (isWithinRange) {
+      } else if (isWithinRange && !individualDateMode) {
         classNames += "bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 ";
       } else {
         classNames += "hover:bg-blue-50 hover:border hover:border-blue-200 ";
@@ -258,7 +288,7 @@ export default function Calendar({
         classNames += "bg-red-100 text-red-800 hover:bg-red-200 border border-red-300 ";
       }
       
-      if (isToday && !isStartDate && !isEndDate) {
+      if (isToday && !isStartDate && !isEndDate && !isIndividualSelected) {
         classNames += "ring-2 ring-blue-400 ring-offset-1 ";
       }
     }
@@ -270,8 +300,8 @@ export default function Calendar({
   const renderDateRangeConnection = (day, idx) => {
     if (!start || (!end && !hoverDate) || isDisabled(day)) return null;
     
-    // Skip rendering connections in the date blocking calendar
-    if (onBlockedDateClick) return null;
+    // Skip rendering connections in individual date mode or date blocking calendar
+    if (individualDateMode || onBlockedDateClick) return null;
     
     const isStartDate = start && isSameDay(day, start);
     const isEndDate = end ? isSameDay(day, end) : hoverDate && isSameDay(day, hoverDate);
@@ -372,9 +402,16 @@ export default function Calendar({
               {renderDateRangeConnection(day, idx)}
               
               {/* Show square indicators for start/end dates */}
-              {isStartOrEnd(day) && (
+              {isStartOrEnd(day) && !individualDateMode && (
                 <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <span className="h-8 w-8 rounded-lg bg-blue-600 shadow-lg border-2 border-white"></span>
+                </span>
+              )}
+
+              {/* Show indicators for individually selected dates */}
+              {individualDateMode && isIndividuallySelected(day) && day.getMonth() === currentMonth.getMonth() && (
+                <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <span className="h-8 w-8 rounded-lg bg-green-600 shadow-lg border-2 border-white"></span>
                 </span>
               )}
               
@@ -414,9 +451,11 @@ export default function Calendar({
         <p className="text-sm text-gray-600 text-center font-medium">
           {onBlockedDateClick ? 
             "✨ Click dates to toggle blocked/unblocked status" : 
-            selectingStart ? 
-              "📅 Select your start date" : 
-              "📅 Select your end date (hover to preview range)"
+            individualDateMode ?
+              "🎯 Select individual dates for booking" :
+              selectingStart ? 
+                "📅 Select your start date" : 
+                "📅 Select your end date (hover to preview range)"
           }
         </p>
       </div>

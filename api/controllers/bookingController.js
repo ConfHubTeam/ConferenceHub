@@ -10,6 +10,11 @@ const createBooking = async (req, res) => {
     const {place, checkInDate, checkOutDate, 
       numOfGuests, guestName, guestPhone, totalPrice} = req.body;
 
+    // Only clients can create bookings
+    if (userData.userType !== 'client') {
+      return res.status(403).json({ error: "Only clients can create bookings. Hosts and agents cannot make bookings." });
+    }
+
     // Create booking with Sequelize
     const booking = await Booking.create({
       userId: userData.id, // Use userId instead of user
