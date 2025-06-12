@@ -3,375 +3,295 @@ import React, { useState } from "react";
 /**
  * PlacePerks Component
  * 
- * Displays the perks/amenities of a conference room grouped by categories
- * with compact, modern UI/UX styling and expandable sections.
+ * Displays the perks/amenities of a conference room in Airbnb-style layout
+ * with priority amenities shown first and a modal for viewing all amenities.
  */
 function PlacePerks({ perks }) {
-  const [expandedGroups, setExpandedGroups] = useState(new Set());
+  const [showAllAmenities, setShowAllAmenities] = useState(false);
 
   if (!perks || perks.length === 0) {
     return null;
   }
 
-  const toggleGroup = (groupName) => {
-    const newExpanded = new Set(expandedGroups);
-    if (newExpanded.has(groupName)) {
-      newExpanded.delete(groupName);
-    } else {
-      newExpanded.add(groupName);
-    }
-    setExpandedGroups(newExpanded);
-  };
-
-  // Perk groups with their icons and options (matching PerkSelections.jsx)
-  const perkGroups = [
-    {
-      name: "Audio Equipment",
+  // Conference room priority amenities with modern icons
+  const priorityAmenities = {
+    // Essential Tech & AV
+    wifi: {
+      label: "Wi-Fi",
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" />
         </svg>
-      ),
-      color: "red",
-      options: [
-        { name: "speakerMic", label: "Speaker microphone" },
-        { name: "backupMic", label: "Backup microphone" },
-        { name: "speaker", label: "Speaker" },
-        { name: "mixer", label: "Mixer" },
-        { name: "soundControl", label: "Sound control panel" },
-        { name: "amplifier", label: "Amplifier" },
-        { name: "acoustic", label: "Room acoustic treatment" }
-      ]
+      )
     },
-    {
-      name: "Visual Equipment",
+    projector: {
+      label: "Projector",
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
           <path strokeLinecap="round" strokeLinejoin="round" d="M6 20.25h12m-7.5-3v3m3-3v3m-10.125-3h17.25c.621 0 1.125-.504 1.125-1.125V4.875c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125z" />
         </svg>
-      ),
-      color: "blue",
-      options: [
-        { name: "projector", label: "Projector" },
-        { name: "ledScreen", label: "LED screen" },
-        { name: "projectorScreen", label: "Projector screen" },
-        { name: "hdmiCable", label: "HDMI cable" },
-        { name: "vgaCable", label: "VGA cable" },
-        { name: "adapters", label: "Adapters and converters" },
-        { name: "clicker", label: "Presentation clicker" },
-        { name: "laserPointer", label: "Laser pointer" },
-        { name: "stageLighting", label: "Stage lighting" }
-      ]
+      )
     },
-    {
-      name: "Technical Equipment",
+    ledScreen: {
+      label: "LED screen",
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25z" />
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25z" />
         </svg>
-      ),
-      color: "green",
-      options: [
-        { name: "laptop", label: "Laptop" },
-        { name: "desktop", label: "Desktop computer" },
-        { name: "extensionCords", label: "Extension cords" },
-        { name: "chargers", label: "Chargers" },
-        { name: "wiredInternet", label: "Wired internet" },
-        { name: "wifi", label: "Wi-Fi" },
-        { name: "router", label: "Router" },
-        { name: "wifiAccessPoint", label: "Wi-Fi access point" }
-      ]
+      )
     },
-    {
-      name: "Furniture",
+    speakerMic: {
+      label: "Speaker microphone",
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
         </svg>
-      ),
-      color: "purple",
-      options: [
-        { name: "speakerPodium", label: "Speaker podium" },
-        { name: "speakerTable", label: "Table for speakers" },
-        { name: "speakerChair", label: "Chair for speakers" },
-        { name: "participantChairs", label: "Chairs for participants" },
-        { name: "participantDesks", label: "Desk for participants" },
-        { name: "bottledWater", label: "Water 0.5L" },
-        { name: "waterCooler", label: "Water from cooler" },
-        { name: "cups", label: "Cups" }
-      ]
+      )
     },
-    {
-      name: "Miscellaneous",
+    airConditioner: {
+      label: "Air conditioner", 
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
         </svg>
-      ),
-      color: "orange",
-      options: [
-        { name: "nameTags", label: "Name tags" },
-        { name: "flipChart", label: "Flip chart" },
-        { name: "markers", label: "Markers" },
-        { name: "paper", label: "Paper" },
-        { name: "airConditioner", label: "Air conditioner" },
-        { name: "ventilation", label: "Ventilation system" },
-        { name: "signage", label: "Directional signage" },
-        { name: "registrationDesk", label: "Registration desk" }
-      ]
+      )
     },
-    {
-      name: "Safety",
+    parking: {
+      label: "On-site parking",
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m4.5 4.5v-3.75A1.125 1.125 0 015.625 15h2.25a1.125 1.125 0 011.125 1.125v3.75m6-9h4.5a1.125 1.125 0 011.125 1.125v2.25a1.125 1.125 0 01-1.125 1.125h-4.5m0-6.75h4.5a1.125 1.125 0 011.125 1.125v2.25a1.125 1.125 0 01-1.125 1.125h-4.5m0-6.75v6.75" />
         </svg>
-      ),
-      color: "emerald",
-      options: [
-        { name: "fireExtinguisher", label: "Fire extinguisher" },
-        { name: "firstAidKit", label: "First aid kit" },
-        { name: "emergencyExit", label: "Emergency exit" },
-        { name: "smokeDetector", label: "Smoke detector" },
-        { name: "securityCamera", label: "Security camera" }
-      ]
+      )
     },
-    {
-      name: "Services",
+    coffee: {
+      label: "Coffee service",
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15.182 15.182a4.5 4.5 0 0 1-6.364 0M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Z" />
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925 3.546 5.974 5.974 0 01-2.133-1A3.75 3.75 0 0012 18z" />
         </svg>
-      ),
-      color: "pink",
-      options: [
-        { name: "catering", label: "Catering Available" },
-        { name: "coffee", label: "Coffee Service" },
-        { name: "parking", label: "On-site Parking" }
-      ]
+      )
+    },
+    catering: {
+      label: "Catering available",
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.87c1.355 0 2.697.055 4.024.165C17.155 8.51 18 9.473 18 10.608v2.513m-3-4.87v-1.5m-6 1.5v-1.5m12 9.75l-1.5.75a3.354 3.354 0 01-3 0 3.354 3.354 0 00-3 0 3.354 3.354 0 01-3 0 3.354 3.354 0 00-3 0 3.354 3.354 0 01-3 0L3 16.5m15-3.38a48.474 48.474 0 00-6-.37c-2.032 0-4.034.125-6 .37m12 0c.39.049.777.102 1.163.16 1.07.16 1.837 1.094 1.837 2.175v5.169c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 013 20.625v-5.17c0-1.08.768-2.014 1.837-2.174A47.78 47.78 0 016 13.12M12.265 3.11a.375.375 0 11-.53 0L12 2.845l.265.265zm-3 0a.375.375 0 11-.53 0L9 2.845l.265.265zm6 0a.375.375 0 11-.53 0L15 2.845l.265.265z" />
+        </svg>
+      )
     }
-  ];
-
-  // Map perks to their respective groups
-  const categorizedPerks = perkGroups.map(group => {
-    const groupPerks = group.options.filter(option => 
-      perks.some(perk => {
-        const perkName = typeof perk === 'string' ? perk.toLowerCase() : perk;
-        return perkName === option.name.toLowerCase();
-      })
-    );
-    
-    return groupPerks.length > 0 ? { ...group, perks: groupPerks } : null;
-  }).filter(Boolean);
-
-  // Handle perks that don't belong to any category
-  const categorizedPerkNames = new Set();
-  categorizedPerks.forEach(group => {
-    group.perks.forEach(perk => {
-      categorizedPerkNames.add(perk.name.toLowerCase());
-    });
-  });
-
-  const uncategorizedPerks = perks.filter(perk => {
-    const perkName = typeof perk === 'string' ? perk.toLowerCase() : perk;
-    return !categorizedPerkNames.has(perkName);
-  });
-
-  const getColorClasses = (color) => {
-    const colorMap = {
-      red: {
-        bg: "from-red-50 to-rose-50",
-        border: "border-red-200",
-        text: "text-red-900",
-        icon: "text-red-600",
-        badge: "bg-red-100 text-red-800"
-      },
-      blue: {
-        bg: "from-blue-50 to-indigo-50",
-        border: "border-blue-200",
-        text: "text-blue-900",
-        icon: "text-blue-600",
-        badge: "bg-blue-100 text-blue-800"
-      },
-      green: {
-        bg: "from-green-50 to-emerald-50",
-        border: "border-green-200",
-        text: "text-green-900",
-        icon: "text-green-600",
-        badge: "bg-green-100 text-green-800"
-      },
-      purple: {
-        bg: "from-purple-50 to-violet-50",
-        border: "border-purple-200",
-        text: "text-purple-900",
-        icon: "text-purple-600",
-        badge: "bg-purple-100 text-purple-800"
-      },
-      orange: {
-        bg: "from-orange-50 to-amber-50",
-        border: "border-orange-200",
-        text: "text-orange-900",
-        icon: "text-orange-600",
-        badge: "bg-orange-100 text-orange-800"
-      },
-      emerald: {
-        bg: "from-emerald-50 to-teal-50",
-        border: "border-emerald-200",
-        text: "text-emerald-900",
-        icon: "text-emerald-600",
-        badge: "bg-emerald-100 text-emerald-800"
-      },
-      pink: {
-        bg: "from-pink-50 to-rose-50",
-        border: "border-pink-200",
-        text: "text-pink-900",
-        icon: "text-pink-600",
-        badge: "bg-pink-100 text-pink-800"
-      }
-    };
-    return colorMap[color] || colorMap.blue;
   };
 
-  if (categorizedPerks.length === 0 && uncategorizedPerks.length === 0) {
-    return null;
-  }
+  // All amenities mapping with icons and categories for the modal
+  const allAmenitiesMapping = {
+    // Audio Equipment
+    speakerMic: { label: "Speaker microphone", category: "Audio Equipment" },
+    backupMic: { label: "Backup microphone", category: "Audio Equipment" },
+    speaker: { label: "Speaker", category: "Audio Equipment" },
+    mixer: { label: "Mixer", category: "Audio Equipment" },
+    soundControl: { label: "Sound control panel", category: "Audio Equipment" },
+    amplifier: { label: "Amplifier", category: "Audio Equipment" },
+    acoustic: { label: "Room acoustic treatment", category: "Audio Equipment" },
+    
+    // Visual Equipment
+    projector: { label: "Projector", category: "Visual Equipment" },
+    ledScreen: { label: "LED screen", category: "Visual Equipment" },
+    projectorScreen: { label: "Projector screen", category: "Visual Equipment" },
+    hdmiCable: { label: "HDMI cable", category: "Visual Equipment" },
+    vgaCable: { label: "VGA cable", category: "Visual Equipment" },
+    adapters: { label: "Adapters and converters", category: "Visual Equipment" },
+    clicker: { label: "Presentation clicker", category: "Visual Equipment" },
+    laserPointer: { label: "Laser pointer", category: "Visual Equipment" },
+    stageLighting: { label: "Stage lighting", category: "Visual Equipment" },
+    
+    // Technical Equipment
+    laptop: { label: "Laptop", category: "Technical Equipment" },
+    desktop: { label: "Desktop computer", category: "Technical Equipment" },
+    extensionCords: { label: "Extension cords", category: "Technical Equipment" },
+    chargers: { label: "Chargers", category: "Technical Equipment" },
+    wiredInternet: { label: "Wired internet", category: "Technical Equipment" },
+    wifi: { label: "Wi-Fi", category: "Technical Equipment" },
+    router: { label: "Router", category: "Technical Equipment" },
+    wifiAccessPoint: { label: "Wi-Fi access point", category: "Technical Equipment" },
+    
+    // Furniture & Comfort
+    speakerPodium: { label: "Speaker podium", category: "Furniture & Comfort" },
+    speakerTable: { label: "Table for speakers", category: "Furniture & Comfort" },
+    speakerChair: { label: "Chair for speakers", category: "Furniture & Comfort" },
+    participantChairs: { label: "Chairs for participants", category: "Furniture & Comfort" },
+    participantDesks: { label: "Desk for participants", category: "Furniture & Comfort" },
+    bottledWater: { label: "Water 0.5L", category: "Furniture & Comfort" },
+    waterCooler: { label: "Water from cooler", category: "Furniture & Comfort" },
+    cups: { label: "Cups", category: "Furniture & Comfort" },
+    airConditioner: { label: "Air conditioner", category: "Furniture & Comfort" },
+    ventilation: { label: "Ventilation system", category: "Furniture & Comfort" },
+    
+    // Services & Amenities  
+    catering: { label: "Catering available", category: "Services & Amenities" },
+    coffee: { label: "Coffee service", category: "Services & Amenities" },
+    parking: { label: "On-site parking", category: "Services & Amenities" },
+    
+    // Office Supplies
+    nameTags: { label: "Name tags", category: "Office Supplies" },
+    flipChart: { label: "Flip chart", category: "Office Supplies" },
+    markers: { label: "Markers", category: "Office Supplies" },
+    paper: { label: "Paper", category: "Office Supplies" },
+    signage: { label: "Directional signage", category: "Office Supplies" },
+    registrationDesk: { label: "Registration desk", category: "Office Supplies" },
+    
+    // Safety & Security
+    fireExtinguisher: { label: "Fire extinguisher", category: "Safety & Security" },
+    firstAidKit: { label: "First aid kit", category: "Safety & Security" },
+    evacuationSigns: { label: "Evacuation signs", category: "Safety & Security" }
+  };
+
+  // Get amenities that exist in the perks array
+  const availableAmenities = perks.map(perk => {
+    const perkKey = typeof perk === 'string' ? perk.toLowerCase() : String(perk).toLowerCase();
+    
+    // Check in priority amenities first
+    const priorityMatch = Object.keys(priorityAmenities).find(key => 
+      key.toLowerCase() === perkKey
+    );
+    if (priorityMatch) {
+      return {
+        key: priorityMatch,
+        ...priorityAmenities[priorityMatch],
+        isPriority: true
+      };
+    }
+    
+    // Then check in all amenities mapping
+    const allMatch = Object.keys(allAmenitiesMapping).find(key => 
+      key.toLowerCase() === perkKey
+    );
+    if (allMatch) {
+      return {
+        key: allMatch,
+        ...allAmenitiesMapping[allMatch],
+        isPriority: false
+      };
+    }
+    
+    // Fallback for unmapped amenities
+    return {
+      key: perkKey,
+      label: typeof perk === 'string' ? perk.charAt(0).toUpperCase() + perk.slice(1) : String(perk),
+      category: "Other",
+      isPriority: false
+    };
+  }).filter(Boolean);
+
+  // Split into priority and other amenities
+  const priorityItems = availableAmenities.filter(item => item.isPriority);
+  const otherItems = availableAmenities.filter(item => !item.isPriority);
+  
+  // Show top 10 items in main view (priority first, then others)
+  const mainDisplayItems = [...priorityItems, ...otherItems].slice(0, 10);
+  const hasMoreAmenities = availableAmenities.length > 10;
+
+  // Group all amenities by category for modal
+  const categorizedAmenities = availableAmenities.reduce((acc, amenity) => {
+    const category = amenity.category || "Other";
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(amenity);
+    return acc;
+  }, {});
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-6">
-      <h2 className="text-lg font-semibold mb-4 flex items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2 text-purple-600">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.562.562 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
-        </svg>
-        Amenities & Features
-        <span className="ml-2 px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">
-          {perks.length} total
-        </span>
-      </h2>
+    <div className="mb-8">
+      <h2 className="text-xl md:text-2xl font-semibold mb-6">What this place offers</h2>
       
-      <div className="space-y-3">
-        {categorizedPerks.map((group) => {
-          const colors = getColorClasses(group.color);
-          const isExpanded = expandedGroups.has(group.name);
-          const displayPerks = isExpanded ? group.perks : group.perks.slice(0, 3);
-          
-          return (
-            <div key={group.name} className={`border ${colors.border} rounded-lg overflow-hidden hover:shadow-sm transition-shadow`}>
-              {/* Compact Category Header */}
-              <div 
-                className={`flex items-center justify-between p-3 bg-gradient-to-r ${colors.bg} cursor-pointer hover:bg-opacity-80 transition-all`}
-                onClick={() => toggleGroup(group.name)}
+      {/* Main Amenities Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        {mainDisplayItems.map((amenity, index) => (
+          <div key={index} className="flex items-center py-4 border-b border-gray-100 last:border-b-0">
+            <div className="mr-4 text-gray-700">
+              {amenity.icon || (
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              )}
+            </div>
+            <div className="flex-1">
+              <span className="text-gray-900 font-medium">{amenity.label}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Show All Amenities Button */}
+      {hasMoreAmenities && (
+        <button
+          onClick={() => setShowAllAmenities(true)}
+          className="inline-flex items-center px-6 py-3 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 font-medium transition-colors"
+        >
+          <span>Show all {availableAmenities.length} amenities</span>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 ml-2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+          </svg>
+        </button>
+      )}
+
+      {/* Full Amenities Modal */}
+      {showAllAmenities && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-xl font-semibold text-gray-900">What this place offers</h3>
+              <button
+                onClick={() => setShowAllAmenities(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
-                <div className="flex items-center gap-2">
-                  <div className={colors.icon}>
-                    {group.icon}
-                  </div>
-                  <h3 className={`font-medium ${colors.text} text-sm`}>
-                    {group.name}
-                  </h3>
-                  <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${colors.badge}`}>
-                    {group.perks.length}
-                  </span>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  {/* Show first few perks inline */}
-                  <div className="hidden sm:flex gap-1 max-w-xs">
-                    {group.perks.slice(0, 2).map((perk, idx) => (
-                      <span key={idx} className="text-xs text-gray-600 bg-white bg-opacity-70 px-2 py-1 rounded">
-                        {perk.label.length > 15 ? perk.label.substring(0, 15) + "..." : perk.label}
-                      </span>
-                    ))}
-                    {group.perks.length > 2 && (
-                      <span className="text-xs text-gray-500">+{group.perks.length - 2}</span>
-                    )}
-                  </div>
-                  
-                  {/* Expand/Collapse Button */}
-                  {group.perks.length > 3 && (
-                    <button className="text-gray-400 hover:text-gray-600 transition-colors">
-                      <svg 
-                        className={`w-4 h-4 transform transition-transform ${isExpanded ? 'rotate-180' : ''}`} 
-                        fill="none" 
-                        viewBox="0 0 24 24" 
-                        stroke="currentColor"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                  )}
-                </div>
-              </div>
-              
-              {/* Expanded Perks List */}
-              {(isExpanded || group.perks.length <= 3) && (
-                <div className="p-3 bg-white">
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-                    {displayPerks.map((perk, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-1.5 p-1.5 text-xs bg-gray-50 rounded border hover:bg-gray-100 transition-colors"
-                      >
-                        <div className={`w-1.5 h-1.5 rounded-full ${colors.icon.includes('red') ? 'bg-red-400' : 
-                          colors.icon.includes('blue') ? 'bg-blue-400' :
-                          colors.icon.includes('green') ? 'bg-green-400' :
-                          colors.icon.includes('purple') ? 'bg-purple-400' :
-                          colors.icon.includes('orange') ? 'bg-orange-400' :
-                          colors.icon.includes('emerald') ? 'bg-emerald-400' :
-                          colors.icon.includes('pink') ? 'bg-pink-400' : 'bg-gray-400'}`}></div>
-                        <span className="font-medium text-gray-700 leading-tight">
-                          {perk.label}
-                        </span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              {Object.entries(categorizedAmenities).map(([category, amenities]) => (
+                <div key={category} className="mb-8 last:mb-0">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                    {category}
+                    <span className="ml-2 text-sm text-gray-500 font-normal">({amenities.length})</span>
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {amenities.map((amenity, index) => (
+                      <div key={index} className="flex items-center py-3 px-4 bg-gray-50 rounded-lg">
+                        <div className="mr-3 text-gray-600">
+                          {amenity.icon || (
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          )}
+                        </div>
+                        <span className="text-gray-900 font-medium">{amenity.label}</span>
                       </div>
                     ))}
                   </div>
-                  
-                  {!isExpanded && group.perks.length > 3 && (
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleGroup(group.name);
-                      }}
-                      className="mt-2 text-xs text-gray-500 hover:text-gray-700 font-medium"
-                    >
-                      +{group.perks.length - 3} more...
-                    </button>
-                  )}
                 </div>
-              )}
+              ))}
             </div>
-          );
-        })}
-        
-        {/* Compact Uncategorized perks */}
-        {uncategorizedPerks.length > 0 && (
-          <div className="border border-gray-200 rounded-lg overflow-hidden">
-            <div className="flex items-center justify-between p-3 bg-gray-50">
-              <div className="flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-gray-600">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <h3 className="font-medium text-gray-900 text-sm">Additional Features</h3>
-                <span className="px-1.5 py-0.5 bg-gray-200 text-gray-700 text-xs font-medium rounded">
-                  {uncategorizedPerks.length}
-                </span>
-              </div>
-            </div>
-            
-            <div className="p-3 bg-white">
-              <div className="flex flex-wrap gap-1.5">
-                {uncategorizedPerks.map((perk, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded border hover:bg-gray-200 transition-colors"
-                  >
-                    {typeof perk === 'string' ? perk.charAt(0).toUpperCase() + perk.slice(1) : String(perk)}
-                  </span>
-                ))}
-              </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-gray-200">
+              <button
+                onClick={() => setShowAllAmenities(false)}
+                className="w-full bg-gray-900 text-white py-3 px-6 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+              >
+                Close
+              </button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
