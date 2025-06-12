@@ -39,6 +39,8 @@ export default function AvailabilitySection({
   setFullDayDiscountPrice,
   cooldownMinutes,
   setCooldownMinutes,
+  minimumHours,
+  setMinimumHours,
   
   // Capacity state
   maxGuests,
@@ -89,6 +91,8 @@ export default function AvailabilitySection({
             setFullDayDiscountPrice={setFullDayDiscountPrice}
             cooldownMinutes={cooldownMinutes}
             setCooldownMinutes={setCooldownMinutes}
+            minimumHours={minimumHours}
+            setMinimumHours={setMinimumHours}
             maxGuests={maxGuests}
             setMaxGuests={setMaxGuests}
             squareMeters={squareMeters}

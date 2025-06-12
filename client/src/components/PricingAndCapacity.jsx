@@ -5,6 +5,7 @@ import CooldownInput from "./CooldownInput";
 import FullDayHoursInput from "./FullDayHoursInput";
 import SquareMetersInput from "./SquareMetersInput";
 import HotelCheckbox from "./HotelCheckbox";
+import MinimumHoursInput from "./MinimumHoursInput";
 
 /**
  * PricingAndCapacity Component
@@ -25,6 +26,8 @@ const PricingAndCapacity = ({
   setFullDayDiscountPrice,
   cooldownMinutes,
   setCooldownMinutes,
+  minimumHours,
+  setMinimumHours,
   
   // Capacity state
   maxGuests,
@@ -79,6 +82,11 @@ const PricingAndCapacity = ({
         <FullDayHoursInput
           fullDayHours={fullDayHours}
           setFullDayHours={setFullDayHours}
+        />
+
+        <MinimumHoursInput
+          minimumHours={minimumHours}
+          setMinimumHours={setMinimumHours}
         />
 
         <SquareMetersInput

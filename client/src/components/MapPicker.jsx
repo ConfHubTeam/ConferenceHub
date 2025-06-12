@@ -116,7 +116,17 @@ export default function MapPicker({
       };
     }
     
-    // For non-fullscreen mode (desktop), use a reasonable height
+    // For non-fullscreen mode, adjust height based on device type
+    if (isMobile()) {
+      return {
+        width: '100%',
+        height: '60vh', // Taller height for mobile devices (60% of viewport height)
+        position: 'relative', // Ensure controls render correctly
+        zIndex: 1, // Ensure controls appear above map
+      };
+    }
+    
+    // For desktop, use a reasonable height
     return {
       width: '100%',
       height: 'calc(100vw * 0.3)', // Regular height for desktop

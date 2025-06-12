@@ -233,37 +233,33 @@ export default function Calendar({
       }
     });
     
-    let classNames = "h-10 w-10 relative flex items-center justify-center ";
+    let classNames = "h-10 w-10 relative flex items-center justify-center transition-all duration-200 ";
     
-    // Add special positioning class for range start/end to handle half backgrounds
-    if (isStartDate) {
-      classNames += "rounded-l-full ";
-    } else if (isEndDate) {
-      classNames += "rounded-r-full ";
-    } else {
-      classNames += "rounded-full ";
-    }
+    // Use rounded rectangles instead of circles for better modern look
+    classNames += "rounded-lg ";
     
     if (!isCurrentMonth) {
       classNames += "text-gray-300 ";
     } else if (isDisabledDate) {
       classNames += "text-gray-300 cursor-not-allowed ";
     } else {
-      classNames += "cursor-pointer hover:bg-gray-100 ";
+      classNames += "cursor-pointer hover:scale-105 ";
       
       if (isStartDate || isEndDate) {
-        classNames += "bg-blue-600 text-white hover:bg-blue-700 z-10 ";
+        classNames += "bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg z-20 ";
       } else if (isWithinRange) {
-        classNames += "bg-blue-100 text-blue-800 hover:bg-blue-200 ";
+        classNames += "bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 ";
+      } else {
+        classNames += "hover:bg-blue-50 hover:border hover:border-blue-200 ";
       }
       
       // For the date blocking calendar, highlight blocked dates
       if (onBlockedDateClick && isDateBlocked && isCurrentMonth) {
-        classNames += "bg-red-100 text-red-800 hover:bg-red-200 ";
+        classNames += "bg-red-100 text-red-800 hover:bg-red-200 border border-red-300 ";
       }
       
-      if (isToday) {
-        classNames += isStartDate || isEndDate ? "" : "border-2 border-blue-500 ";
+      if (isToday && !isStartDate && !isEndDate) {
+        classNames += "ring-2 ring-blue-400 ring-offset-1 ";
       }
     }
     
@@ -284,20 +280,20 @@ export default function Calendar({
     // Only render connections for visible range dates in current month
     if ((isStartDate || isEndDate || isWithinRange) && day.getMonth() === currentMonth.getMonth()) {
       return (
-        <div className="absolute inset-0 flex items-center">
-          {/* Left connecting line (from middle to right edge of cell) */}
+        <div className="absolute inset-0 flex items-center pointer-events-none">
+          {/* Left connecting line - enhanced styling */}
           {(isStartDate || isWithinRange) && !isEndDate && (
-            <div className="h-full w-1/2 absolute right-0 bg-blue-100"></div>
+            <div className="h-8 w-1/2 absolute right-0 bg-gradient-to-r from-blue-100 to-blue-200 opacity-60"></div>
           )}
           
-          {/* Right connecting line (from left edge to middle of cell) */}
+          {/* Right connecting line - enhanced styling */}
           {(isEndDate || isWithinRange) && !isStartDate && (
-            <div className="h-full w-1/2 absolute left-0 bg-blue-100"></div>
+            <div className="h-8 w-1/2 absolute left-0 bg-gradient-to-l from-blue-100 to-blue-200 opacity-60"></div>
           )}
           
-          {/* Full cell background for range dates (not start or end) */}
+          {/* Full cell background for range dates (not start or end) - enhanced styling */}
           {isWithinRange && !isStartDate && !isEndDate && (
-            <div className="h-full w-full absolute bg-blue-100"></div>
+            <div className="h-8 w-full absolute bg-gradient-to-r from-blue-100 via-blue-150 to-blue-100 opacity-60 rounded-md"></div>
           )}
         </div>
       );
@@ -311,48 +307,48 @@ export default function Calendar({
   return (
     <div 
       ref={calendarRef}
-      className="w-full bg-white rounded-lg shadow p-4"
+      className="w-full bg-white rounded-xl shadow-sm border border-gray-100 p-5"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Calendar header with month navigation */}
-      <div className="flex items-center justify-between mb-4">
+      {/* Calendar header with month navigation - improved styling */}
+      <div className="flex items-center justify-between mb-6">
         <button 
           type="button"
           onClick={() => handleMonthNavigation(-1)} 
-          className="p-1 rounded-full hover:bg-gray-100"
+          className="p-2 rounded-lg hover:bg-gray-50 hover:shadow-sm transition-all duration-200 border border-gray-200"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-gray-600">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
           </svg>
         </button>
         
-        <h2 className="text-lg font-semibold">
+        <h2 className="text-xl font-semibold text-gray-800">
           {format(currentMonth, "MMMM yyyy")}
         </h2>
         
         <button 
           type="button"
           onClick={() => handleMonthNavigation(1)} 
-          className="p-1 rounded-full hover:bg-gray-100"
+          className="p-2 rounded-lg hover:bg-gray-50 hover:shadow-sm transition-all duration-200 border border-gray-200"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-gray-600">
             <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
           </svg>
         </button>
       </div>
       
-      {/* Weekday headers */}
-      <div className="grid grid-cols-7 gap-1 mb-2">
+      {/* Weekday headers - improved styling */}
+      <div className="grid grid-cols-7 gap-1 mb-3">
         {weekDays.map((day) => (
-          <div key={day} className="h-10 flex items-center justify-center text-sm font-medium text-gray-500">
+          <div key={day} className="h-10 flex items-center justify-center text-sm font-semibold text-gray-600 uppercase tracking-wide">
             {day}
           </div>
         ))}
       </div>
       
-      {/* Calendar grid */}
-      <div className="grid grid-cols-7 gap-1">
+      {/* Calendar grid - improved spacing */}
+      <div className="grid grid-cols-7 gap-1.5">
         {days.map((day, idx) => {
           const formattedDay = format(day, "yyyy-MM-dd");
           const isDateBlocked = blockedDates.some(blockedDate => {
@@ -375,36 +371,36 @@ export default function Calendar({
               {/* Date range connection background */}
               {renderDateRangeConnection(day, idx)}
               
-              {/* Show circle for start/end dates */}
+              {/* Show square indicators for start/end dates */}
               {isStartOrEnd(day) && (
-                <span className="absolute inset-0 flex items-center justify-center">
-                  <span className="h-7 w-7 rounded-full bg-blue-600"></span>
+                <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <span className="h-8 w-8 rounded-lg bg-blue-600 shadow-lg border-2 border-white"></span>
                 </span>
               )}
               
               {/* Show blocked indicator for blocked dates in the blocking calendar */}
               {onBlockedDateClick && isDateBlocked && day.getMonth() === currentMonth.getMonth() && (
                 <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <span className="h-7 w-7 rounded-full bg-red-100 border-2 border-red-400"></span>
+                  <span className="h-8 w-8 rounded-lg bg-red-100 border-2 border-red-400 shadow-sm"></span>
                 </span>
               )}
               
-              <span className="text-sm relative z-10">{format(day, "d")}</span>
+              <span className="text-sm relative z-10 font-medium">{format(day, "d")}</span>
               
-              {/* Display X for disabled dates */}
+              {/* Display X for disabled dates with improved styling */}
               {isDisabled(day) && day.getMonth() === currentMonth.getMonth() && !onBlockedDateClick && (
                 <span className="absolute inset-0 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-300" viewBox="0 0 20 20" fill="currentColor" style={{ zIndex: 5 }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 opacity-60" viewBox="0 0 20 20" fill="currentColor" style={{ zIndex: 5 }}>
                     <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </span>
               )}
               
-              {/* Special indicator for blocked dates in the blocking calendar */}
+              {/* Special indicator for blocked dates in the blocking calendar with improved styling */}
               {onBlockedDateClick && isDateBlocked && day.getMonth() === currentMonth.getMonth() && (
                 <span className="absolute inset-0 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-red-600 z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-red-600 z-10 drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </span>
               )}
@@ -413,14 +409,16 @@ export default function Calendar({
         })}
       </div>
       
-      {/* Selection guidance text */}
-      <div className="mt-4 text-sm text-gray-500">
-        {onBlockedDateClick ? 
-          "Click dates to toggle blocked/unblocked status" : 
-          selectingStart ? 
-            "Select start date" : 
-            "Select end date (hover to preview range)"
-        }
+      {/* Selection guidance text - improved styling */}
+      <div className="mt-5 px-3 py-2 bg-gray-50 rounded-lg border border-gray-100">
+        <p className="text-sm text-gray-600 text-center font-medium">
+          {onBlockedDateClick ? 
+            "✨ Click dates to toggle blocked/unblocked status" : 
+            selectingStart ? 
+              "📅 Select your start date" : 
+              "📅 Select your end date (hover to preview range)"
+          }
+        </p>
       </div>
     </div>
   );

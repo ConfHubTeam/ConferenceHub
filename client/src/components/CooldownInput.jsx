@@ -52,7 +52,7 @@ export default function CooldownInput({ cooldownMinutes, setCooldownMinutes }) {
   return (
     <div className="w-full">
       <label htmlFor="cooldownMinutes" className="block mb-2 text-sm font-medium text-gray-700">
-        Cooldown Period
+        Cooldown period
       </label>
       <div className="relative">
         <div

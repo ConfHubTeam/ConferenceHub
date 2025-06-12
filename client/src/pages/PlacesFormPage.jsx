@@ -24,6 +24,7 @@ export default function PlacesFormPage() {
   const [fullDayHours, setFullDayHours] = useState(8);
   const [fullDayDiscountPrice, setFullDayDiscountPrice] = useState(0);
   const [cooldownMinutes, setCooldownMinutes] = useState(30);
+  const [minimumHours, setMinimumHours] = useState(1);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [youtubeLink, setYoutubeLink] = useState("");
@@ -113,6 +114,7 @@ export default function PlacesFormPage() {
     } else {
       api.get("/places/" + id).then(async (response) => {
         const { data } = response;
+        console.log("Full place data loaded from database:", data);
         console.log("Loaded photos from database:", data.photos);
         setTitle(data.title);
         setAddress(data.address);
@@ -125,6 +127,8 @@ export default function PlacesFormPage() {
         setFullDayHours(data.fullDayHours || 8);
         setFullDayDiscountPrice(data.fullDayDiscountPrice || 0);
         setCooldownMinutes(data.cooldown || 30);
+        setMinimumHours(data.minimumHours || 1);
+        console.log("Loaded minimumHours from database:", data.minimumHours, "Setting to:", data.minimumHours || 1);
         setYoutubeLink(data.youtubeLink || "");
         
         // Load currency if it exists
@@ -372,6 +376,7 @@ export default function PlacesFormPage() {
       fullDayHours,
       fullDayDiscountPrice,
       cooldown: cooldownMinutes,
+      minimumHours,
       currencyId: currency && currency.id ? parseInt(currency.id) : null,
       startDate: startDate || null,
       endDate: endDate || null,
@@ -542,6 +547,8 @@ export default function PlacesFormPage() {
           setFullDayDiscountPrice={setFullDayDiscountPrice}
           cooldownMinutes={cooldownMinutes}
           setCooldownMinutes={setCooldownMinutes}
+          minimumHours={minimumHours}
+          setMinimumHours={setMinimumHours}
           maxGuests={maxGuests}
           setMaxGuests={setMaxGuests}
           squareMeters={squareMeters}

@@ -21,7 +21,7 @@ const SquareMetersInput = ({ squareMeters, setSquareMeters }) => {
   return (
     <div className="w-full">
       <label className={`block text-sm font-medium mb-1 text-base`}>
-        Conference Size (m²)
+        Conference size (m²)
       </label>
       <div className="relative">
         <input

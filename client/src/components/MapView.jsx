@@ -66,7 +66,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
   const { selectedCurrency } = useCurrency();
   
   // Create a custom price marker icon with current currency
-  const createPriceMarkerIcon = async (price, currency, size = "medium") => {
+  const createPriceMarkerIcon = useCallback(async (price, currency, size = "medium") => {
     // Format the price with the current currency
     let formattedPrice;
     
@@ -129,10 +129,10 @@ export default function MapView({ places, disableInfoWindow = false }) {
     
     // Convert canvas to image URL with maximum quality
     return canvas.toDataURL("image/png", 1.0);
-  };
+  }, [selectedCurrency]);
 
   // Update marker icons based on zoom level (without repositioning)
-  const updateMarkerSizes = async (zoomLevel) => {
+  const updateMarkerSizes = useCallback(async (zoomLevel) => {
     if (!markersRef.current.length || isUpdatingMarkersRef.current) return;
     
     isUpdatingMarkersRef.current = true;
@@ -160,7 +160,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
     } finally {
       isUpdatingMarkersRef.current = false;
     }
-  };  // Create markers function that can be reused
+  }, [selectedCurrency]);  // Create markers function that can be reused
   const createMarkersAsync = useCallback(async (map) => {
     // Create new bounds object to fit all markers
     const bounds = new window.google.maps.LatLngBounds();
@@ -252,7 +252,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
     }
     
     return { markers: markers.filter(Boolean), bounds };
-  }, [places, disableInfoWindow]);
+  }, [places, disableInfoWindow, createPriceMarkerIcon]);
 
   const onLoad = useCallback(function callback(map) {
     setMap(map);
@@ -338,7 +338,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
     };
 
     updateMarkerIcons();
-  }, [selectedCurrency]);
+  }, [selectedCurrency, createPriceMarkerIcon, map]);
 
   // Listen for zoom changes to update marker sizes
   useEffect(() => {
@@ -356,7 +356,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
         window.google.maps.event.removeListener(zoomListener);
       }
     };
-  }, [map]);
+  }, [map, updateMarkerSizes]);
 
   // Error state handling
   if (loadError) {
