@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import Calendar from "./Calendar";
 import { format, parseISO } from "date-fns";
 import { UserContext } from "./UserContext";
@@ -12,7 +12,8 @@ import { UserContext } from "./UserContext";
  */
 export default function PlaceAvailabilityCalendar({ 
   placeDetail,
-  onSelectedDatesChange 
+  onSelectedDatesChange,
+  selectedCalendarDates = [] // Add prop to receive external selected dates
 }) {
   const { user } = useContext(UserContext);
   const [selectedDates, setSelectedDates] = useState([]); // Array of selected dates with time slots
@@ -30,6 +31,13 @@ export default function PlaceAvailabilityCalendar({
     checkOut,
     weekdayTimeSlots
   } = placeDetail;
+
+  // Sync external selectedCalendarDates with internal selectedDates state
+  useEffect(() => {
+    if (selectedCalendarDates && selectedCalendarDates.length > 0) {
+      setSelectedDates(selectedCalendarDates);
+    }
+  }, [selectedCalendarDates]);
 
   // Handle individual date selection
   const handleDateClick = (dateString) => {
@@ -65,9 +73,10 @@ export default function PlaceAvailabilityCalendar({
   const removeSelectedDate = (dateToRemove) => {
     const updatedDates = selectedDates.filter(d => d.date !== dateToRemove);
     setSelectedDates(updatedDates);
+    
     // Notify parent component of the change
     if (onSelectedDatesChange) {
-      onSelectedDatesChange(updatedDates);
+      setTimeout(() => onSelectedDatesChange(updatedDates), 0);
     }
   };
 
@@ -136,26 +145,26 @@ export default function PlaceAvailabilityCalendar({
       dayOfWeek: format(parseISO(currentEditingDate), "EEEE")
     };
 
-    setSelectedDates(prev => {
-      const existingIndex = prev.findIndex(d => d.date === currentEditingDate);
-      let updatedDates;
-      if (existingIndex >= 0) {
-        // Update existing date
-        const updated = [...prev];
-        updated[existingIndex] = newDateSlot;
-        updatedDates = updated;
-      } else {
-        // Add new date
-        updatedDates = [...prev, newDateSlot].sort((a, b) => new Date(a.date) - new Date(b.date));
-      }
-      
-      // Notify parent component of the change
-      if (onSelectedDatesChange) {
-        onSelectedDatesChange(updatedDates);
-      }
-      
-      return updatedDates;
-    });
+    // Calculate updated dates
+    const existingIndex = selectedDates.findIndex(d => d.date === currentEditingDate);
+    let updatedDates;
+    if (existingIndex >= 0) {
+      // Update existing date
+      const updated = [...selectedDates];
+      updated[existingIndex] = newDateSlot;
+      updatedDates = updated;
+    } else {
+      // Add new date
+      updatedDates = [...selectedDates, newDateSlot].sort((a, b) => new Date(a.date) - new Date(b.date));
+    }
+
+    // Update state
+    setSelectedDates(updatedDates);
+
+    // Notify parent component after state update
+    if (onSelectedDatesChange) {
+      setTimeout(() => onSelectedDatesChange(updatedDates), 0);
+    }
 
     handleModalClose();
   };

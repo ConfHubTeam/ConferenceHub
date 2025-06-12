@@ -48,6 +48,29 @@ export default function PlaceDetailPage() {
     }
   }, [placeId, bookingId]); // refresh the page if the id changes
 
+  // Restore booking selections from sessionStorage after login redirect
+  useEffect(() => {
+    const storedBookingData = sessionStorage.getItem("bookingSelections");
+    if (storedBookingData && user) {
+      try {
+        const bookingData = JSON.parse(storedBookingData);
+        // Check if this is the same place and the data is recent (within 1 hour)
+        if (
+          bookingData.placeId === placeId &&
+          Date.now() - bookingData.timestamp < 3600000 // 1 hour in milliseconds
+        ) {
+          setSelectedCalendarDates(bookingData.selectedCalendarDates || []);
+          // Clear the stored data after restoring
+          sessionStorage.removeItem("bookingSelections");
+        }
+      } catch (error) {
+        console.error("Error restoring booking selections:", error);
+        // Clear invalid data
+        sessionStorage.removeItem("bookingSelections");
+      }
+    }
+  }, [user, placeId]); // Run when user login state changes or placeId changes
+
   // Show delete confirmation modal
   function handleDeleteClick() {
     setShowDeleteModal(true);
@@ -176,6 +199,7 @@ export default function PlaceDetailPage() {
               <PlaceAvailabilityCalendar 
                 placeDetail={placeDetail} 
                 onSelectedDatesChange={setSelectedCalendarDates}
+                selectedCalendarDates={selectedCalendarDates}
               />
             </div>
             

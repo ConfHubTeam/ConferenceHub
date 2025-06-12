@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import api from "../utils/api";
 import { UserContext } from "./UserContext";
 import { useNotification } from "./NotificationContext";
@@ -14,6 +14,7 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
   const [error, setError] = useState("");
   const { user } = useContext(UserContext);
   const { notify } = useNotification();
+  const location = useLocation();
 
   useEffect(() => {
     if (user) {
@@ -103,6 +104,25 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
 
   const pricingData = calculatePricing();
   const { totalHours, totalPrice, breakdown } = pricingData;
+
+  // Function to handle login redirect with preserved state
+  const handleLoginRedirect = () => {
+    // Store booking selections in sessionStorage to restore after login
+    if (selectedCalendarDates && selectedCalendarDates.length > 0) {
+      sessionStorage.setItem('bookingSelections', JSON.stringify({
+        selectedCalendarDates,
+        numOfGuests,
+        placeId: placeDetail.id
+      }));
+    }
+
+    // Create redirect URL with current page
+    const currentPath = location.pathname + location.search;
+    const redirectUrl = `/login?redirect=${encodeURIComponent(currentPath)}`;
+    
+    // Navigate to login with redirect
+    window.location.href = redirectUrl;
+  };
 
   async function handleReserve(event) {
     event.preventDefault();
@@ -367,21 +387,35 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
         </div>
 
         {/* Login to book button */}
-        <a 
-          href="/login" 
+        <button 
+          onClick={handleLoginRedirect}
           className="block w-full bg-primary text-white py-3 px-6 rounded-lg text-center font-medium hover:bg-primary-dark transition-colors"
         >
           {selectedCalendarDates && selectedCalendarDates.length > 0
             ? "Login to Book Selected Time Slots"
             : "Login to Book This Conference Room"
           }
-        </a>
+        </button>
 
         <p className="mt-3 text-center text-sm text-gray-600">
           Don't have an account?{" "}
-          <a href="/register" className="underline text-primary hover:text-primary-dark">
+          <button 
+            onClick={() => {
+              // Store the same booking selections for register flow
+              if (selectedCalendarDates && selectedCalendarDates.length > 0) {
+                sessionStorage.setItem('bookingSelections', JSON.stringify({
+                  selectedCalendarDates,
+                  numOfGuests,
+                  placeId: placeDetail.id
+                }));
+              }
+              const currentPath = location.pathname + location.search;
+              window.location.href = `/register?redirect=${encodeURIComponent(currentPath)}`;
+            }}
+            className="underline text-primary hover:text-primary-dark bg-transparent border-none cursor-pointer"
+          >
             Sign up here
-          </a>
+          </button>
         </p>
       </div>
     );
