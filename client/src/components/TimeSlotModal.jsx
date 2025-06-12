@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { format, parseISO } from "date-fns";
-import { formatHourTo12, generateTimeOptions } from "../utils/TimeUtils";
+import { formatHourTo12, generateTimeOptions, isTimeBlocked } from "../utils/TimeUtils";
 
 /**
  * TimeSlotModal Component
  * 
  * Modal for selecting time slots for booking a place
+ * Handles display and selection of available time slots with blocked time validation
  */
 export default function TimeSlotModal({
   isOpen,
@@ -18,11 +19,37 @@ export default function TimeSlotModal({
   onEndTimeChange,
   timeSlots,
   placeDetail,
-  isEditMode
+  isEditMode,
+  bookedTimeSlots = [] // Array of existing bookings
 }) {
   if (!isOpen || !currentEditingDate) return null;
 
-  const timeOptions = generateTimeOptions(timeSlots.start, timeSlots.end);
+  // Generate time options and mark blocked times
+  const timeOptions = useMemo(() => {
+    const options = generateTimeOptions(timeSlots.start, timeSlots.end);
+    
+    // Add blocked status to each time option
+    return options.map(option => ({
+      ...option,
+      isBlocked: isTimeBlocked(currentEditingDate, option.value, bookedTimeSlots)
+    }));
+  }, [timeSlots, currentEditingDate, bookedTimeSlots]);
+
+  // Handle start time change with validation
+  const handleStartTimeChange = (value) => {
+    onStartTimeChange(value);
+    
+    // If the selected end time is now invalid due to the new start time, clear it
+    if (selectedEndTime) {
+      const startHour = parseInt(value.split(':')[0], 10);
+      const endHour = parseInt(selectedEndTime.split(':')[0], 10);
+      const minimumHours = placeDetail.minimumHours || 1;
+      
+      if (endHour < startHour + minimumHours) {
+        onEndTimeChange('');
+      }
+    }
+  };
   
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -72,13 +99,18 @@ export default function TimeSlotModal({
               </label>
               <select
                 value={selectedStartTime}
-                onChange={(e) => onStartTimeChange(e.target.value)}
+                onChange={(e) => handleStartTimeChange(e.target.value)}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Select start time</option>
                 {timeOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
+                  <option 
+                    key={option.value} 
+                    value={option.value}
+                    disabled={option.isBlocked}
+                    className={option.isBlocked ? "bg-red-100 text-red-800 line-through" : ""}
+                  >
+                    {option.label}{option.isBlocked ? " (Booked)" : ""}
                   </option>
                 ))}
               </select>
@@ -110,11 +142,37 @@ export default function TimeSlotModal({
                     // End time must be greater than start time and meet minimum hours requirement
                     return endHour >= minimumEndHour;
                   })
-                  .map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
+                  .map((option) => {
+                    // Check if any hour between start time and this option is blocked
+                    const startHour = parseInt(selectedStartTime.split(':')[0], 10);
+                    const endHour = parseInt(option.value.split(':')[0], 10);
+                    
+                    // Check if any hour in the range is blocked
+                    const hasBlockedHoursInRange = Array.from(
+                      { length: endHour - startHour },
+                      (_, i) => startHour + i + 1
+                    ).some(hour => {
+                      const hourStr = hour.toString().padStart(2, '0') + ':00';
+                      return isTimeBlocked(currentEditingDate, hourStr, bookedTimeSlots);
+                    });
+                    
+                    return (
+                      <option 
+                        key={option.value} 
+                        value={option.value}
+                        disabled={hasBlockedHoursInRange || option.isBlocked}
+                        className={
+                          hasBlockedHoursInRange || option.isBlocked 
+                            ? "bg-red-100 text-red-800 line-through" 
+                            : ""
+                        }
+                      >
+                        {option.label}
+                        {hasBlockedHoursInRange ? " (Conflict with booking)" : ""}
+                        {option.isBlocked ? " (Booked)" : ""}
+                      </option>
+                    );
+                  })}
               </select>
             </div>
           </div>
@@ -123,6 +181,57 @@ export default function TimeSlotModal({
             <p className="text-sm text-gray-600">
               <strong>Available hours:</strong> {formatHourTo12(timeSlots.start)} - {formatHourTo12(timeSlots.end)}
             </p>
+          </div>
+          
+          {/* Visual time slot availability indicator */}
+          <div className="mt-4">
+            <h4 className="text-sm font-medium text-gray-700 mb-2">Today's Availability</h4>
+            <div className="flex overflow-x-auto pb-2">
+              {timeOptions.map(option => {
+                const hourParts = option.label.split(':');
+                const displayHour = hourParts[0];
+                const amPm = option.label.includes('AM') ? 'AM' : 'PM';
+                
+                return (
+                  <div 
+                    key={option.value} 
+                    className={`
+                      flex-shrink-0 text-xs text-center p-2 rounded-md mr-1 w-16
+                      ${option.isBlocked 
+                        ? 'bg-red-100 text-red-800' 
+                        : selectedStartTime === option.value
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-100 text-gray-800'
+                      }
+                    `}
+                  >
+                    <div>{displayHour}</div>
+                    <div>{amPm}</div>
+                    {option.isBlocked && (
+                      <div className="mt-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex items-center justify-between mt-3 text-xs text-gray-600">
+              <div className="flex items-center">
+                <div className="h-3 w-3 bg-red-100 rounded mr-1"></div>
+                <span>Booked</span>
+              </div>
+              <div className="flex items-center">
+                <div className="h-3 w-3 bg-gray-100 rounded mr-1"></div>
+                <span>Available</span>
+              </div>
+              <div className="flex items-center">
+                <div className="h-3 w-3 bg-blue-500 rounded mr-1"></div>
+                <span>Selected</span>
+              </div>
+            </div>
           </div>
 
           <div className="flex gap-3 pt-4">

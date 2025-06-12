@@ -5,6 +5,7 @@ import { UserContext } from "./UserContext";
 import TimeSlotModal from "./TimeSlotModal";
 import SelectedDates from "./SelectedDates";
 import UserRoleNotification from "./UserRoleNotification";
+import DateAvailabilityDetails from "./DateAvailabilityDetails";
 import { getAvailableTimeSlots, formatHourTo12 } from "../utils/TimeUtils";
 
 /**
@@ -12,12 +13,13 @@ import { getAvailableTimeSlots, formatHourTo12 } from "../utils/TimeUtils";
  * 
  * Shows a calendar display with time slot selection popup for booking.
  * Only allows clients to interact with the calendar for booking purposes.
- * Hosts and agents see a read-only view.
+ * Hosts and agents see a read-only view with the ability to check date details.
  */
 export default function PlaceAvailabilityCalendar({ 
   placeDetail,
   onSelectedDatesChange,
-  selectedCalendarDates = [] // Add prop to receive external selected dates
+  selectedCalendarDates = [], // Add prop to receive external selected dates
+  existingBookings = [] // Add prop to receive existing bookings data
 }) {
   const { user } = useContext(UserContext);
   const [selectedDates, setSelectedDates] = useState([]); // Array of selected dates with time slots
@@ -25,6 +27,8 @@ export default function PlaceAvailabilityCalendar({
   const [currentEditingDate, setCurrentEditingDate] = useState("");
   const [selectedStartTime, setSelectedStartTime] = useState("");
   const [selectedEndTime, setSelectedEndTime] = useState("");
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedDetailDate, setSelectedDetailDate] = useState("");
   
   const {
     startDate,
@@ -144,8 +148,14 @@ export default function PlaceAvailabilityCalendar({
   const canBook = user && user.userType === 'client';
   const isUnauthorized = !user;
 
+  // Handle date click for host/agent view to show details
+  const handleDetailDateClick = (dateString) => {
+    setSelectedDetailDate(dateString);
+    setShowDetailModal(true);
+  };
+
   // Show interactive calendar for unauthorized users and clients
-  // Show read-only for owners, agents, and hosts
+  // Show calendar with availability details for owners, agents, and hosts
   if (!isUnauthorized && !canBook) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
@@ -162,22 +172,45 @@ export default function PlaceAvailabilityCalendar({
           isAgent={isAgent && !isOwner} 
           isHost={isHost && !isOwner} 
         />
+        
+        <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-center text-blue-800">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2 text-blue-600">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+            </svg>
+            <p className="font-medium">Click on any date to see booking details</p>
+          </div>
+        </div>
 
-        {/* Read-only calendar */}
+        {/* Calendar with click functionality */}
         <div className="max-w-lg mx-auto">
           <Calendar 
             startDate=""
             endDate=""
-            onDateChange={() => {}} // No-op for read-only view
+            onDateChange={() => {}} // We handle clicks separately
             minDate={startDate ? new Date(startDate) : new Date()}
             maxDate={endDate ? new Date(endDate) : null}
             blockedDates={blockedDates || []}
             blockedWeekdays={blockedWeekdays || []}
-            selectedIndividualDates={[]} // No selection in read-only mode
-            onIndividualDateClick={() => {}} // No-op for read-only view
-            individualDateMode={false} // Disable individual date selection mode
+            selectedIndividualDates={[]} // No selection mode
+            onIndividualDateClick={handleDetailDateClick} // Show details on date click
+            individualDateMode={true} // Enable individual date selection mode
           />
         </div>
+        
+        {/* Date Availability Details Modal */}
+        {showDetailModal && (
+          <DateAvailabilityDetails
+            date={selectedDetailDate}
+            onClose={() => setShowDetailModal(false)}
+            bookedTimeSlots={existingBookings}
+            placeDetail={{
+              ...placeDetail,
+              // Ensure weekdayTimeSlots is properly passed
+              weekdayTimeSlots: placeDetail.weekdayTimeSlots || {}
+            }}
+          />
+        )}
       </div>
     );
   }
@@ -229,6 +262,7 @@ export default function PlaceAvailabilityCalendar({
         timeSlots={getAvailableTimeSlots(currentEditingDate, weekdayTimeSlots, checkIn, checkOut)}
         placeDetail={placeDetail}
         isEditMode={selectedDates.some(d => d.date === currentEditingDate)}
+        bookedTimeSlots={existingBookings} // Pass existing bookings to prevent overlaps
       />
     </div>
   );

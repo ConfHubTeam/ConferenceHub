@@ -37,20 +37,51 @@ export const generateTimeOptions = (startHour, endHour) => {
 export const getAvailableTimeSlots = (dateString, weekdayTimeSlots, checkIn, checkOut) => {
   if (!dateString) return { start: checkIn || "09:00", end: checkOut || "17:00" };
   
-  const date = new Date(dateString);
-  const dayOfWeek = date.getDay();
+  // Ensure date is properly parsed
+  const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+  const dayOfWeek = date.getDay(); // 0-6 (Sunday-Saturday)
   
   // Check if there are specific time slots for this weekday
   if (weekdayTimeSlots && weekdayTimeSlots[dayOfWeek]) {
     const timeSlot = weekdayTimeSlots[dayOfWeek];
     if (timeSlot.start && timeSlot.end) {
-      return {
+      const result = {
         start: formatHourTo24(timeSlot.start),
         end: formatHourTo24(timeSlot.end)
       };
+      return result;
     }
   }
   
   // Fallback to general check-in/check-out times
-  return { start: checkIn || "09:00", end: checkOut || "17:00" };
+ return { start: checkIn || "09:00", end: checkOut || "17:00" };
+};
+
+// Check if a specific time is blocked based on existing bookings
+export const isTimeBlocked = (date, hour, blockedTimeSlots = []) => {
+  if (!date || !hour) return false;
+  
+  // Format should match what is stored in blockedTimeSlots
+  const dateString = typeof date === 'string' ? date : date.toISOString().split('T')[0];
+  
+  // Check if there's any booking for this date and time
+  return blockedTimeSlots.some(slot => {
+    if (slot.date !== dateString) return false;
+    
+    const startHour = parseInt(slot.startTime.split(':')[0], 10);
+    const endHour = parseInt(slot.endTime.split(':')[0], 10);
+    const checkHour = parseInt(hour.split(':')[0], 10);
+    
+    // If the hour falls between startTime and endTime (inclusive of start), it's blocked
+    return checkHour >= startHour && checkHour < endHour;
+  });
+};
+
+// Get all booked time slots for a specific date
+export const getBookedTimeSlots = (date, bookedTimeSlots = []) => {
+  if (!date) return [];
+  
+  const dateString = typeof date === 'string' ? date : date.toISOString().split('T')[0];
+  
+  return bookedTimeSlots.filter(slot => slot.date === dateString);
 };
