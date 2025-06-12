@@ -96,10 +96,15 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   const { email, password } = req.body;
   
+  // Check if required fields are provided
+  if (!email || !password) {
+    return res.status(422).json({ error: "Email and password are required" });
+  }
+  
   // Validate email format
   const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   if (!emailRegex.test(String(email).toLowerCase())) {
-    return res.status(400).json({ error: "Invalid email format" });
+    return res.status(422).json({ error: "Invalid email format" });
   }
   
   try {
@@ -139,7 +144,8 @@ const login = async (req, res) => {
       res.status(422).json({ error: "User not found" });
     }
   } catch (e) {
-    res.status(422).json(e);
+    console.error("Login error:", e);
+    res.status(500).json({ error: "Login failed. Please try again." });
   }
 };
 
