@@ -304,81 +304,14 @@ const updatePlace = async (req, res) => {
 };
 
 /**
- * Get all places (with optional filtering)
+ * Get all places
  */
 const getHomePlaces = async (req, res) => {
   try {
-    // Extract filter parameters from query
-    const { 
-      location, 
-      checkIn, 
-      checkOut, 
-      guests, 
-      minPrice, 
-      maxPrice, 
-      tags 
-    } = req.query;
-    
-    // Build where conditions for Sequelize query
-    const whereConditions = {};
     const { Op } = require('sequelize');
     
-    // Filter by location (address)
-    if (location) {
-      whereConditions.address = {
-        [Op.iLike]: `%${location}%` // Case-insensitive search
-      };
-    }
-    
-    // Filter by date availability (conference room should be available during the requested period)
-    if (checkIn && checkOut) {
-      whereConditions[Op.and] = [
-        {
-          startDate: {
-            [Op.lte]: new Date(checkIn)  // Room is available from before or on checkIn date
-          }
-        },
-        {
-          endDate: {
-            [Op.gte]: new Date(checkOut) // Room is available until after or on checkOut date
-          }
-        }
-      ];
-    }
-    
-    // Filter by maximum guests
-    if (guests) {
-      whereConditions.maxGuests = {
-        [Op.gte]: parseInt(guests) // Capacity is at least the requested number of guests
-      };
-    }
-    
-    // Filter by price range
-    if (minPrice) {
-      whereConditions.price = {
-        ...(whereConditions.price || {}),
-        [Op.gte]: parseFloat(minPrice)
-      };
-    }
-    
-    if (maxPrice) {
-      whereConditions.price = {
-        ...(whereConditions.price || {}),
-        [Op.lte]: parseFloat(maxPrice)
-      };
-    }
-
-    // Filter by tags/perks
-    if (tags) {
-      const tagList = tags.split(',');
-      whereConditions.perks = {
-        [Op.overlap]: tagList // Match any of the selected perks (PostgreSQL array overlap)
-      };
-    }
-    
-    // Get all places matching the filters with currency information
+    // Get all places with currency information
     const places = await Place.findAll({
-      where: whereConditions,
       include: [
         {
           model: Currency,
