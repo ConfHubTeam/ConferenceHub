@@ -85,3 +85,51 @@ export const getBookedTimeSlots = (date, bookedTimeSlots = []) => {
   
   return bookedTimeSlots.filter(slot => slot.date === dateString);
 };
+
+// Calculate booking percentage for a specific date
+export const calculateBookingPercentage = (date, bookedTimeSlots = [], weekdayTimeSlots, checkIn, checkOut) => {
+  if (!date) return 0;
+  
+  // Get the available time slots for this date
+  const availableTimeRange = getAvailableTimeSlots(date, weekdayTimeSlots, checkIn, checkOut);
+  const startHour = parseInt(availableTimeRange.start.split(':')[0], 10);
+  const endHour = parseInt(availableTimeRange.end.split(':')[0], 10);
+  
+  // Calculate total available hours
+  const totalHours = endHour - startHour;
+  
+  if (totalHours <= 0) return 0;
+  
+  // Get all bookings for this date
+  const bookingsForDate = getBookedTimeSlots(date, bookedTimeSlots);
+  
+  if (bookingsForDate.length === 0) return 0;
+  
+  // Calculate booked hours
+  let bookedHours = 0;
+  
+  // Create an array to track which hours are booked
+  const hourOccupancy = Array(24).fill(false);
+  
+  // Mark booked hours in the array
+  bookingsForDate.forEach(booking => {
+    const bookingStartHour = parseInt(booking.startTime.split(':')[0], 10);
+    const bookingEndHour = parseInt(booking.endTime.split(':')[0], 10);
+    
+    for (let hour = bookingStartHour; hour < bookingEndHour; hour++) {
+      if (hour >= startHour && hour < endHour) {
+        hourOccupancy[hour] = true;
+      }
+    }
+  });
+  
+  // Count booked hours within operating hours
+  for (let hour = startHour; hour < endHour; hour++) {
+    if (hourOccupancy[hour]) {
+      bookedHours++;
+    }
+  }
+  
+  // Calculate percentage
+  return Math.round((bookedHours / totalHours) * 100);
+};

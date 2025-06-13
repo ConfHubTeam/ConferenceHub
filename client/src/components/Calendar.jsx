@@ -25,7 +25,8 @@ export default function Calendar({
   onBlockedDateClick = null,
   selectedIndividualDates = [], // New prop for individual date selection
   onIndividualDateClick = null, // New prop for individual date selection handler
-  individualDateMode = false // New prop to enable individual date selection mode
+  individualDateMode = false, // New prop to enable individual date selection mode
+  bookingPercentages = {} // New prop for booking percentages by date
 }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [hoverDate, setHoverDate] = useState(null);
@@ -258,6 +259,9 @@ export default function Calendar({
       }
     });
     
+    // Check booking percentage for this date
+    const bookingPercentage = bookingPercentages[formattedDay] || 0;
+    
     let classNames = "h-10 w-10 relative flex items-center justify-center transition-all duration-200 ";
     
     // Use rounded rectangles instead of circles for better modern look
@@ -280,7 +284,23 @@ export default function Calendar({
       } else if (isWithinRange && !individualDateMode) {
         classNames += "bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 ";
       } else {
-        classNames += "hover:bg-blue-50 hover:border hover:border-blue-200 ";
+        // Apply color coding based on booking percentage
+        if (!onBlockedDateClick && isCurrentMonth) {
+          if (bookingPercentage === 0) {
+            // Green: 0% booked
+            classNames += "bg-green-100 text-green-800 hover:bg-green-200 border border-green-200 ";
+          } else if (bookingPercentage === 100) {
+            // Red: 100% booked
+            classNames += "bg-red-100 text-red-800 hover:bg-red-200 border border-red-200 ";
+          } else if (bookingPercentage > 0) {
+            // Orange: partially booked
+            classNames += "bg-orange-100 text-orange-800 hover:bg-orange-200 border border-orange-200 ";
+          } else {
+            classNames += "hover:bg-blue-50 hover:border hover:border-blue-200 ";
+          }
+        } else {
+          classNames += "hover:bg-blue-50 hover:border hover:border-blue-200 ";
+        }
       }
       
       // For the date blocking calendar, highlight blocked dates
@@ -459,6 +479,27 @@ export default function Calendar({
           }
         </p>
       </div>
+
+      {/* Color coding legend */}
+      {!onBlockedDateClick && Object.keys(bookingPercentages).length > 0 && (
+        <div className="mt-3 px-3 py-2 bg-gray-50 rounded-lg border border-gray-100">
+          <p className="text-xs text-gray-600 mb-2 font-medium">Availability Legend:</p>
+          <div className="flex flex-wrap gap-2 justify-center">
+            <div className="flex items-center">
+              <div className="h-3 w-3 bg-green-100 border border-green-200 rounded mr-1"></div>
+              <span className="text-xs text-gray-600">Available</span>
+            </div>
+            <div className="flex items-center">
+              <div className="h-3 w-3 bg-orange-100 border border-orange-200 rounded mr-1"></div>
+              <span className="text-xs text-gray-600">Partially Booked</span>
+            </div>
+            <div className="flex items-center">
+              <div className="h-3 w-3 bg-red-100 border border-red-200 rounded mr-1"></div>
+              <span className="text-xs text-gray-600">Fully Booked</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
