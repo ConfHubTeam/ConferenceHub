@@ -1,12 +1,12 @@
-import React, { useState, useContext, useEffect } from "react";
-import { format, parseISO } from "date-fns";
+import React, { useState, useContext, useEffect, useMemo } from "react";
+import { format, parseISO, addDays, startOfMonth, endOfMonth } from "date-fns";
 import Calendar from "./Calendar";
 import { UserContext } from "./UserContext";
 import TimeSlotModal from "./TimeSlotModal";
 import SelectedDates from "./SelectedDates";
 import UserRoleNotification from "./UserRoleNotification";
 import DateAvailabilityDetails from "./DateAvailabilityDetails";
-import { getAvailableTimeSlots, formatHourTo12 } from "../utils/TimeUtils";
+import { getAvailableTimeSlots, formatHourTo12, calculateBookingPercentage } from "../utils/TimeUtils";
 
 /**
  * PlaceAvailabilityCalendar Component
@@ -29,6 +29,37 @@ export default function PlaceAvailabilityCalendar({
   const [selectedEndTime, setSelectedEndTime] = useState("");
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedDetailDate, setSelectedDetailDate] = useState("");
+  
+  // Calculate booking percentages for calendar days
+  const bookingPercentages = useMemo(() => {
+    if (!existingBookings || existingBookings.length === 0) {
+      return {};
+    }
+    
+    // Generate dates for current month and next month
+    const today = new Date();
+    const startOfCurrentMonth = startOfMonth(today);
+    const endOfNextMonth = endOfMonth(addDays(endOfMonth(today), 31)); // End of next month
+    
+    const percentages = {};
+    let currentDate = startOfCurrentMonth;
+    
+    while (currentDate <= endOfNextMonth) {
+      const dateStr = format(currentDate, "yyyy-MM-dd");
+      const percentage = calculateBookingPercentage(
+        dateStr, 
+        existingBookings, 
+        placeDetail.weekdayTimeSlots,
+        placeDetail.checkIn,
+        placeDetail.checkOut
+      );
+      
+      percentages[dateStr] = percentage;
+      currentDate = addDays(currentDate, 1);
+    }
+    
+    return percentages;
+  }, [existingBookings, placeDetail]);
   
   const {
     startDate,
@@ -195,6 +226,7 @@ export default function PlaceAvailabilityCalendar({
             selectedIndividualDates={[]} // No selection mode
             onIndividualDateClick={handleDetailDateClick} // Show details on date click
             individualDateMode={true} // Enable individual date selection mode
+            bookingPercentages={bookingPercentages} // Pass booking percentages
           />
         </div>
         
@@ -237,6 +269,7 @@ export default function PlaceAvailabilityCalendar({
           selectedIndividualDates={selectedDates} // Pass selected individual dates with time slots
           onIndividualDateClick={handleDateClick} // Handler for individual date selection
           individualDateMode={true} // Enable individual date selection mode
+          bookingPercentages={bookingPercentages} // Pass booking percentages
         />
       </div>
       

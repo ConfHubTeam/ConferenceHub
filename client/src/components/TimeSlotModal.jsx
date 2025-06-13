@@ -45,7 +45,22 @@ export default function TimeSlotModal({
       const endHour = parseInt(selectedEndTime.split(':')[0], 10);
       const minimumHours = placeDetail.minimumHours || 1;
       
+      // Clear end time if it's less than start time + minimum hours
       if (endHour < startHour + minimumHours) {
+        onEndTimeChange('');
+      }
+      
+      // Check if there are any blocked hours between start and end time
+      const hasBlockedHoursInRange = Array.from(
+        { length: endHour - startHour },
+        (_, i) => startHour + i + 1
+      ).some(hour => {
+        const hourStr = hour.toString().padStart(2, '0') + ':00';
+        return isTimeBlocked(currentEditingDate, hourStr, bookedTimeSlots);
+      });
+      
+      // Clear end time if there are blocked hours in the range
+      if (hasBlockedHoursInRange) {
         onEndTimeChange('');
       }
     }
@@ -129,7 +144,7 @@ export default function TimeSlotModal({
                 <option value="">Select end time</option>
                 {timeOptions
                   .filter(option => {
-                    if (!selectedStartTime) return true;
+                    if (!selectedStartTime) return false;
                     
                     // Get minimum hours requirement
                     const minimumHours = placeDetail.minimumHours || 1;
@@ -140,7 +155,8 @@ export default function TimeSlotModal({
                     const endHour = parseInt(option.value.split(':')[0], 10);
                     
                     // End time must be greater than start time and meet minimum hours requirement
-                    return endHour >= minimumEndHour;
+                    // We explicitly check that end hour is greater, not equal to the start hour
+                    return endHour > startHour && endHour >= minimumEndHour;
                   })
                   .map((option) => {
                     // Check if any hour between start time and this option is blocked
@@ -156,20 +172,24 @@ export default function TimeSlotModal({
                       return isTimeBlocked(currentEditingDate, hourStr, bookedTimeSlots);
                     });
                     
+                    // Also check if the end time itself is blocked
+                    const isEndTimeBlocked = option.isBlocked;
+                    const isDisabled = hasBlockedHoursInRange || isEndTimeBlocked;
+                    
                     return (
                       <option 
                         key={option.value} 
                         value={option.value}
-                        disabled={hasBlockedHoursInRange || option.isBlocked}
+                        disabled={isDisabled}
                         className={
-                          hasBlockedHoursInRange || option.isBlocked 
+                          isDisabled
                             ? "bg-red-100 text-red-800 line-through" 
                             : ""
                         }
                       >
                         {option.label}
                         {hasBlockedHoursInRange ? " (Conflict with booking)" : ""}
-                        {option.isBlocked ? " (Booked)" : ""}
+                        {isEndTimeBlocked ? " (Booked)" : ""}
                       </option>
                     );
                   })}
@@ -177,11 +197,6 @@ export default function TimeSlotModal({
             </div>
           </div>
 
-          <div className="bg-gray-50 p-3 rounded-lg">
-            <p className="text-sm text-gray-600">
-              <strong>Available hours:</strong> {formatHourTo12(timeSlots.start)} - {formatHourTo12(timeSlots.end)}
-            </p>
-          </div>
           
           {/* Visual time slot availability indicator */}
           <div className="mt-4">
@@ -191,6 +206,15 @@ export default function TimeSlotModal({
                 const hourParts = option.label.split(':');
                 const displayHour = hourParts[0];
                 const amPm = option.label.includes('AM') ? 'AM' : 'PM';
+                const optionHour = parseInt(option.value.split(':')[0], 10);
+                
+                // Check if this time slot is within the selected range
+                let isInSelectedRange = false;
+                if (selectedStartTime && selectedEndTime) {
+                  const startHour = parseInt(selectedStartTime.split(':')[0], 10);
+                  const endHour = parseInt(selectedEndTime.split(':')[0], 10);
+                  isInSelectedRange = optionHour > startHour && optionHour < endHour;
+                }
                 
                 return (
                   <div 
@@ -198,10 +222,14 @@ export default function TimeSlotModal({
                     className={`
                       flex-shrink-0 text-xs text-center p-2 rounded-md mr-1 w-16
                       ${option.isBlocked 
-                        ? 'bg-red-100 text-red-800' 
+                        ? 'bg-red-100 text-red-800'
                         : selectedStartTime === option.value
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-gray-100 text-gray-800'
+                          ? 'bg-blue-500 text-white' // Start time
+                          : selectedEndTime === option.value
+                            ? 'bg-blue-700 text-white' // End time
+                            : isInSelectedRange
+                              ? 'bg-blue-200 text-blue-800 border border-blue-300' // In range
+                              : 'bg-green-100 text-green-800' // Available
                       }
                     `}
                   >
@@ -214,22 +242,25 @@ export default function TimeSlotModal({
                         </svg>
                       </div>
                     )}
+                    {selectedEndTime === option.value && (
+                      <div className="mt-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mx-auto text-white" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    )}
                   </div>
                 );
               })}
             </div>
-            <div className="flex items-center justify-between mt-3 text-xs text-gray-600">
+            <div className="flex flex-wrap items-center mt-3 text-xs text-gray-600 gap-4">
               <div className="flex items-center">
                 <div className="h-3 w-3 bg-red-100 rounded mr-1"></div>
                 <span>Booked</span>
               </div>
               <div className="flex items-center">
-                <div className="h-3 w-3 bg-gray-100 rounded mr-1"></div>
+                <div className="h-3 w-3 bg-green-100 rounded mr-1"></div>
                 <span>Available</span>
-              </div>
-              <div className="flex items-center">
-                <div className="h-3 w-3 bg-blue-500 rounded mr-1"></div>
-                <span>Selected</span>
               </div>
             </div>
           </div>
