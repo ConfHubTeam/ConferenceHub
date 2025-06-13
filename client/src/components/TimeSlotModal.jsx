@@ -253,7 +253,7 @@ export default function TimeSlotModal({
                 );
               })}
             </div>
-            <div className="flex flex-wrap items-center justify-between mt-3 text-xs text-gray-600 gap-2">
+            <div className="flex flex-wrap items-center mt-3 text-xs text-gray-600 gap-4">
               <div className="flex items-center">
                 <div className="h-3 w-3 bg-red-100 rounded mr-1"></div>
                 <span>Booked</span>
@@ -262,20 +262,6 @@ export default function TimeSlotModal({
                 <div className="h-3 w-3 bg-green-100 rounded mr-1"></div>
                 <span>Available</span>
               </div>
-              <div className="flex items-center">
-                <div className="h-3 w-3 bg-blue-500 rounded mr-1"></div>
-                <span>Start Time</span>
-              </div>
-              <div className="flex items-center">
-                <div className="h-3 w-3 bg-blue-700 rounded mr-1"></div>
-                <span>End Time</span>
-              </div>
-              {selectedStartTime && selectedEndTime && (
-                <div className="flex items-center">
-                  <div className="h-3 w-3 bg-blue-200 border border-blue-300 rounded mr-1"></div>
-                  <span>Selected Range</span>
-                </div>
-              )}
             </div>
           </div>
 
