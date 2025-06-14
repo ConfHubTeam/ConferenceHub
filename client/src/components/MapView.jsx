@@ -11,6 +11,8 @@ import {
   getMarkerGoogleMapsProperties 
 } from "../utils/markerSizeUtils";
 import { drawMarkerShape, drawPriceText } from "../utils/canvasUtils";
+import { MarkerClusterer } from "@googlemaps/markerclusterer";
+import { setMarkerClusterer, clearMarkerClusterer } from "../utils/markerClustererRef";
 
 // Custom styles to hide the InfoWindow close button and arrow
 const infoWindowStyles = `
@@ -266,6 +268,8 @@ export default function MapView({ places, disableInfoWindow = false }) {
       });
       markersRef.current = [];
     }
+    // Clear clusterer
+    clearMarkerClusterer();
     // Reset updating flag
     isUpdatingMarkersRef.current = false;
     setMap(null);
@@ -282,23 +286,29 @@ export default function MapView({ places, disableInfoWindow = false }) {
     markersRef.current = [];
     isUpdatingMarkersRef.current = false; // Reset flag when clearing markers
 
+    // Clear previous clusterer
+    clearMarkerClusterer();
+
     // Create new markers
     createMarkersAsync(map).then(({ markers, bounds }) => {
       markersRef.current = markers;
-      
+
+      // Add marker clustering
+      if (markers.length > 0) {
+        const clusterer = new MarkerClusterer({ markers, map });
+        setMarkerClusterer(clusterer);
+      }
+
       // Fit map to bounds if we have markers
       if (markers.length > 0) {
         map.fitBounds(bounds);
-        
         // Add a one-time listener to adjust zoom after bounds are set
         const boundsChangedListener = map.addListener('bounds_changed', () => {
           const zoom = map.getZoom();
-          
           // If zoom is too close (higher than 13), set it back to city level
           if (zoom > 13) {
             map.setZoom(13);
           }
-          
           // Remove this listener after first use
           window.google.maps.event.removeListener(boundsChangedListener);
         });
