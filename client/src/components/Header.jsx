@@ -1,43 +1,15 @@
 import { useContext, useState, useEffect, useRef } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { UserContext } from "./UserContext";
+import { useCurrency } from "../contexts/CurrencyContext";
+import CurrencySelector from "./CurrencySelector";
 
 export default function Header() {
   const {user} = useContext(UserContext);
+  const { selectedCurrency, changeCurrency, availableCurrencies } = useCurrency();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [filterExpanded, setFilterExpanded] = useState(false);
-  const [adminLinkVisible, setAdminLinkVisible] = useState(false);
-  const navigate = useNavigate();
   const menuRef = useRef(null);
   const menuButtonRef = useRef(null);
-  const filterRef = useRef(null);
-  const filterDropdownRef = useRef(null);
-  const mobileFilterRef = useRef(null);
-  const location = useLocation();
-  
-  // Form state for search
-  const [searchLocation, setSearchLocation] = useState('');
-  const [checkInDate, setCheckInDate] = useState('');
-  const [checkOutDate, setCheckOutDate] = useState('');
-  const [guestCount, setGuestCount] = useState('');
-  const [minPrice, setMinPrice] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
-  const [selectedTags, setSelectedTags] = useState([]);
-  
-  // Available tags for filtering
-  const availableTags = ['wifi', 'parking', 'projector', 'videoConference', 'whiteboard', 'coffee', 'catering', 'accessibility'];
-
-  // Effect to read URL params and set states on initial load
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    if (params.has('location')) setSearchLocation(params.get('location'));
-    if (params.has('checkIn')) setCheckInDate(params.get('checkIn'));
-    if (params.has('checkOut')) setCheckOutDate(params.get('checkOut'));
-    if (params.has('guests')) setGuestCount(params.get('guests'));
-    if (params.has('minPrice')) setMinPrice(params.get('minPrice'));
-    if (params.has('maxPrice')) setMaxPrice(params.get('maxPrice'));
-    if (params.has('tags')) setSelectedTags(params.get('tags').split(','));
-  }, [location.search]);
 
   // Handle clicks outside the menu to close it
   useEffect(() => {
@@ -52,26 +24,13 @@ export default function Header() {
       ) {
         setMobileMenuOpen(false);
       }
-      
-      // Handle filter menu closing - check if the click was outside both the filter trigger and dropdown
-      if (
-        filterExpanded &&
-        filterRef.current &&
-        !filterRef.current.contains(event.target) &&
-        filterDropdownRef.current &&
-        !filterDropdownRef.current.contains(event.target) &&
-        mobileFilterRef.current &&
-        !mobileFilterRef.current.contains(event.target)
-      ) {
-        setFilterExpanded(false);
-      }
     }
     
     // Add event listener when component mounts
     document.addEventListener('mousedown', handleClickOutside);
     
     // Prevent body scrolling when menu is open
-    if (mobileMenuOpen || filterExpanded) {
+    if (mobileMenuOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -82,7 +41,7 @@ export default function Header() {
       document.removeEventListener('mousedown', handleClickOutside);
       document.body.style.overflow = '';
     };
-  }, [mobileMenuOpen, filterExpanded]);
+  }, [mobileMenuOpen]);
 
   // Function to get the first letter of the user's name
   const getFirstLetter = () => {
@@ -104,84 +63,10 @@ export default function Header() {
       setAdminLinkVisible(true);
     }
   };
-
-  // Function to handle search submission
-  const handleSearch = (e) => {
-    if (e) e.preventDefault();
-    // Close the menus
-    setMobileMenuOpen(false);
-    setFilterExpanded(false);
-    
-    // Build query parameters
-    const params = new URLSearchParams();
-    if (searchLocation) params.append('location', searchLocation);
-    if (checkInDate) params.append('checkIn', checkInDate);
-    if (checkOutDate) params.append('checkOut', checkOutDate);
-    if (guestCount) params.append('guests', guestCount);
-    if (minPrice) params.append('minPrice', minPrice);
-    if (maxPrice) params.append('maxPrice', maxPrice);
-    if (selectedTags.length > 0) params.append('tags', selectedTags.join(','));
-    
-    // Navigate to home page with search filters
-    navigate(`/?${params.toString()}`);
-  };
   
   // Function to handle menu link clicks
   const handleMenuLinkClick = () => {
     setMobileMenuOpen(false);
-  };
-  
-  // Function to handle tag selection
-  const handleTagToggle = (tag) => {
-    if (selectedTags.includes(tag)) {
-      setSelectedTags(selectedTags.filter(t => t !== tag));
-    } else {
-      setSelectedTags([...selectedTags, tag]);
-    }
-  };
-
-  // Function to toggle filter expanded state
-  const toggleFilterExpanded = (e) => {
-    if (e) e.stopPropagation();
-    setFilterExpanded(!filterExpanded);
-  };
-
-  // Summary text for search bar based on selected filters
-  const getFilterSummary = () => {
-    let locationText = searchLocation || 'Anywhere';
-    let dateText = (checkInDate && checkOutDate) ? 'Selected dates' : 'Any week';
-    let guestsText = guestCount ? `${guestCount} guests` : 'Add guests';
-    
-    return { locationText, dateText, guestsText };
-  };
-
-  const { locationText, dateText, guestsText } = getFilterSummary();
-
-  // Styles for filter dropdown animation
-  const filterDropdownStyle = {
-    animation: filterExpanded ? 'filterDropdown 0.3s ease-out forwards' : 'none',
-    opacity: filterExpanded ? 1 : 0,
-    transform: filterExpanded ? 'scale(1)' : 'scale(0.95)',
-    maxHeight: filterExpanded ? '1000px' : '0',
-    overflow: 'hidden',
-    transition: 'opacity 0.3s ease, transform 0.3s ease, max-height 0.3s ease'
-  };
-
-  // Function to reset all filters
-  const resetFilters = (e) => {
-    if (e) e.stopPropagation();
-    setSearchLocation('');
-    setCheckInDate('');
-    setCheckOutDate('');
-    setGuestCount('');
-    setMinPrice('');
-    setMaxPrice('');
-    setSelectedTags([]);
-    
-    // If we're on the home page with filters, navigate to home without filters
-    if (location.pathname === '/' && location.search) {
-      navigate('/');
-    }
   };
 
   return (
@@ -196,50 +81,15 @@ export default function Header() {
       <div className="hidden md:block flex-grow"></div>
       
       <div className="flex items-center gap-2 relative z-30">
-        <button 
-          ref={filterRef} 
-          className="hidden md:flex border border-gray-300 rounded-full p-1.5 bg-white hover:shadow-md transition-shadow"
-          onClick={toggleFilterExpanded}
-          aria-label="Toggle search filters"
-        >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            fill="none" 
-            viewBox="0 0 24 24" 
-            strokeWidth={1.8} 
-            stroke="currentColor" 
-            className="w-4 h-4"
-          >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" 
-            />
-          </svg>
-        </button>
-
-        {/* Mobile search button - only shown on mobile */}
-        <button 
-          ref={mobileFilterRef}
-          onClick={toggleFilterExpanded} 
-          className="md:hidden border border-gray-300 rounded-full p-1.5 bg-white hover:shadow-md transition-shadow"
-          aria-label="Toggle mobile search"
-        >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            fill="none" 
-            viewBox="0 0 24 24" 
-            strokeWidth={1.8} 
-            stroke="currentColor" 
-            className="w-4 h-4"
-          >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" 
-            />
-          </svg>
-        </button>
+        {/* Currency Selector */}
+        <div className="hidden md:block" style={{ width: '90px' }}>
+          <CurrencySelector
+            selectedCurrency={selectedCurrency}
+            onChange={changeCurrency}
+            availableCurrencies={availableCurrencies}
+            compact={true}
+          />
+        </div>
         
         {/* Hamburger menu button - only shown on mobile */}
         <button 
@@ -294,7 +144,7 @@ export default function Header() {
       </div>
       
       {/* Semi-transparent overlay when menu is open */}
-      {(mobileMenuOpen /* || filterExpanded */) && (
+      {mobileMenuOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-20" />
       )}
       
@@ -305,6 +155,18 @@ export default function Header() {
           className="absolute top-16 left-0 right-0 bg-white p-4 shadow-md z-20 md:hidden rounded-b-lg"
         >
           <div className="flex flex-col gap-4">
+            {/* Currency selector */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+              <div className="max-w-full">
+                <CurrencySelector
+                  selectedCurrency={selectedCurrency}
+                  onChange={changeCurrency}
+                  availableCurrencies={availableCurrencies}
+                />
+              </div>
+            </div>
+            
             {/* User menu section */}
             <div className="border-t pt-3">
               {user ? (
@@ -378,193 +240,6 @@ export default function Header() {
           </div>
         </div>
       )}
-
-      {filterExpanded && (
-        <div 
-          ref={filterDropdownRef}
-          onClick={(e) => e.stopPropagation()}
-          className="fixed inset-x-0 top-16 z-30 bg-white shadow-lg rounded-b-xl p-4 pb-6 mx-auto overflow-auto"
-          style={{
-            ...filterDropdownStyle,
-            width: '100%',
-            maxWidth: '1200px',
-            maxHeight: 'calc(100vh - 180px)', // Limit height and allow scrolling
-            overflowY: 'auto',
-            bottom: 'auto', // Remove bottom positioning
-            marginBottom: '80px' // Add margin at the bottom
-          }}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            {/* Location filter */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-              <input
-                type="text"
-                placeholder="City, address, etc."
-                className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                value={searchLocation}
-                onChange={(e) => setSearchLocation(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-              />
-            </div>
-            
-            {/* Date filters */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Check in</label>
-              <input
-                type="date"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                value={checkInDate}
-                onChange={(e) => setCheckInDate(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Check out</label>
-              <input
-                type="date"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                value={checkOutDate}
-                onChange={(e) => setCheckOutDate(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-              />
-            </div>
-          
-            {/* Guests count */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Guests</label>
-              <input 
-                type="number" 
-                placeholder="Number of guests" 
-                min="1"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                value={guestCount}
-                onChange={(e) => setGuestCount(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-              />
-            </div>
-            
-            {/* Price range */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Price range ($/hour)</label>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="number"
-                  placeholder="Min"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                  value={minPrice}
-                  onChange={(e) => setMinPrice(e.target.value)}
-                  onClick={(e) => e.stopPropagation()}
-                />
-                <span className="text-gray-500">to</span>
-                <input
-                  type="number"
-                  placeholder="Max"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(e.target.value)}
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </div>
-            </div>
-          </div>
-          
-          {/* Tags */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Features & Services</label>
-            <div className="flex flex-wrap gap-2">
-              {availableTags.map(tag => {
-                // Map tag keys to display-friendly names
-                const tagDisplayNames = {
-                  'wifi': 'High-Speed WiFi',
-                  'parking': 'On-site Parking',
-                  'projector': 'Projector',
-                  'videoConference': 'Video Conference',
-                  'whiteboard': 'Whiteboard',
-                  'coffee': 'Coffee Service',
-                  'catering': 'Catering',
-                  'accessibility': 'Accessibility'
-                };
-                
-                return (
-                  <button
-                    key={tag}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleTagToggle(tag);
-                    }}
-                    className={`px-3 py-1 text-sm rounded-full transition-all ${
-                      selectedTags.includes(tag)
-                        ? 'bg-primary text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {tagDisplayNames[tag] || tag}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          
-          <div className="flex justify-between items-center">
-            {/* Check if any filters are active */}
-            {(searchLocation || checkInDate || checkOutDate || guestCount || 
-              minPrice || maxPrice || selectedTags.length > 0) && (
-              <button 
-                type="button"
-                onClick={resetFilters}
-                className="flex items-center gap-1 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-100"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                </svg>
-                Reset Filters
-              </button>
-            )}
-            <div className="flex ml-auto space-x-2">
-              <button 
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setFilterExpanded(false);
-                }}
-                className="text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100"
-              >
-                Cancel
-              </button>
-              <button 
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSearch();
-                }}
-                className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-opacity-90"
-              >
-                Apply Filters
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Add space at the bottom when filter is expanded on mobile */}
-      {filterExpanded && (
-        <div className="md:hidden h-32"></div>
-      )}
-      
-      {/* Add keyframes for filter dropdown animation */}
-      <style jsx="true">{`
-        @keyframes filterDropdown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </header>
   );
 }

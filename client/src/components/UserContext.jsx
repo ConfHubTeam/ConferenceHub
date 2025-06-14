@@ -9,9 +9,12 @@ export function UserContextProvider({ children }) {
 
   useEffect(() => {
     if (!user) {
-      api.get("/profile").then(({data}) => {
+      api.get("/users/profile").then(({data}) => {
         setUser(data);
         setReady(true); // to check the user data is loaded from backend
+      }).catch(err => {
+        console.error("Failed to fetch user profile:", err);
+        setReady(true); // Set ready even if there's an error to prevent infinite loading
       });
     }
   }, []);

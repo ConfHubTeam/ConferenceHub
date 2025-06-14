@@ -5,6 +5,7 @@ import { UserContext } from "../components/UserContext";
 import { Navigate } from "react-router-dom";
 import List from "../components/List";
 import CloudinaryImage from "../components/CloudinaryImage";
+import PriceDisplay from "../components/PriceDisplay";
 
 export default function AllPlacesPage() {
   const { user } = useContext(UserContext);
@@ -117,7 +118,12 @@ export default function AllPlacesPage() {
                             Host: {place.owner.name}
                           </span>
                           <span className="ml-auto text-sm text-primary font-semibold">
-                            ${place.price}/hour
+                            <PriceDisplay 
+                              price={place.price} 
+                              currency={place.currency}
+                              suffix="/hour"
+                              priceClassName="text-sm"
+                            />
                           </span>
                         </div>
                       )}

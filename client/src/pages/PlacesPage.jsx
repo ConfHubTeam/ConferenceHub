@@ -10,7 +10,7 @@ export default function PlacesPage() {
   const { user } = useContext(UserContext);
   
   useEffect(() => {
-    api.get("/user-places").then(({ data }) => {
+    api.get("/places/user-places").then(({ data }) => {
       setPlaces(data);
     });
   }, []);

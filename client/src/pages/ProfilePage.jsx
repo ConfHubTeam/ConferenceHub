@@ -4,6 +4,7 @@ import { useNotification } from "../components/NotificationContext";
 import { Navigate, useParams, useLocation } from "react-router-dom";
 import api from "../utils/api";
 import AccountNav from "../components/AccountNav";
+import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 
 export default function ProfilePage({}) {
   const [redirect, setRedirect] = useState(); // control the redirect after logout
@@ -15,7 +16,6 @@ export default function ProfilePage({}) {
   
   // Account deletion state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export default function ProfilePage({}) {
     setIsLoggingOut(true);
     try {
       // Regular logout
-      await api.post("/logout");
+      await api.post("/auth/logout");
       
       // Clear any token or auth data from local storage
       localStorage.removeItem('token');
@@ -83,7 +83,7 @@ export default function ProfilePage({}) {
       // First log out from Telegram
       await api.post("/telegram-auth/logout");
       // Then perform regular logout
-      await api.post("/logout");
+      await api.post("/auth/logout");
       
       // Remove any Telegram-related data from local storage
       localStorage.removeItem('telegram_auth_user_type');
@@ -106,13 +106,9 @@ export default function ProfilePage({}) {
   
   // Function to delete account
   async function deleteAccount() {
-    if (deleteConfirmText !== "DELETE") {
-      return;
-    }
-    
     setIsDeleting(true);
     try {
-      await api.delete('/account/delete?confirmation=true');
+      await api.delete('/users/account/delete?confirmation=true');
       
       // Clear local storage and cookies
       localStorage.clear();
@@ -130,9 +126,6 @@ export default function ProfilePage({}) {
       setShowDeleteConfirm(false);
     }
   }
-  
-  // Check if delete should be enabled
-  const isDeleteEnabled = deleteConfirmText === "DELETE" && !isDeleting;
 
   if (redirect) {
     return <Navigate to={redirect} />;
@@ -219,75 +212,27 @@ export default function ProfilePage({}) {
         </div>
         
         {/* Delete account confirmation modal */}
-        {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full">
-              <h3 className="text-xl font-bold mb-4 text-red-600 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                Delete Account - Confirmation Required
-              </h3>
-              
-              <p className="font-semibold text-red-600 mb-2">Warning: This action cannot be undone!</p>
-              <p className="mb-4">
-                The following data will be permanently deleted:
-              </p>
-              <ul className="list-disc ml-6 mb-4 text-sm text-gray-600">
-                <li>Your account and profile information</li>
-                <li>All of your bookings</li>
-                {user?.userType === 'host' && (
-                  <>
-                    <li><span className="font-semibold">All conference rooms you own</span></li>
-                    <li>All bookings associated with your rooms</li>
-                  </>
-                )}
-              </ul>
-              
-              {/* Type DELETE to confirm section */}
-              <div className="mt-4 border-t pt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Type "DELETE" to confirm:
-                </label>
-                <input
-                  type="text"
-                  value={deleteConfirmText}
-                  onChange={(e) => setDeleteConfirmText(e.target.value)}
-                  className="w-full p-2 border rounded focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  placeholder="Type DELETE in all caps"
-                  autoComplete="off"
-                />
-                <div className="text-sm mt-1 text-gray-500">
-                  This helps prevent accidental deletions
-                </div>
-              </div>
-              
-              <div className="flex gap-4 justify-end mt-6">
-                <button 
-                  onClick={() => {
-                    setShowDeleteConfirm(false);
-                    setDeleteConfirmText("");
-                  }}
-                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                  disabled={isDeleting}
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={deleteAccount}
-                  className={`px-4 py-2 rounded text-white focus:outline-none focus:ring-2 focus:ring-red-500 ${
-                    isDeleteEnabled 
-                      ? 'bg-red-600 hover:bg-red-700 cursor-pointer' 
-                      : 'bg-red-300 cursor-not-allowed'
-                  }`}
-                  disabled={!isDeleteEnabled}
-                >
-                  {isDeleting ? 'Deleting Account...' : 'Delete Account'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <DeleteConfirmationModal
+          isOpen={showDeleteConfirm}
+          onClose={() => setShowDeleteConfirm(false)}
+          onDelete={deleteAccount}
+          title="Delete Account"
+          itemToDelete={user}
+          itemDetails={[
+            { label: "Name", value: user?.telegramLinked && user?.telegramFirstName ? user?.telegramFirstName : user?.name },
+            { label: "Email", value: user?.email && !user?.email.includes("telegram_") ? user?.email : "No email provided" },
+            { label: "Account", value: user?.userType === 'host' ? 'Host Account' : 'Client Account' }
+          ]}
+          consequences={[
+            "Your account and profile information",
+            "All of your bookings",
+            ...(user?.userType === 'host' ? [
+              "All conference rooms you own",
+              "All bookings associated with your rooms"
+            ] : [])
+          ]}
+          deleteInProgress={isDeleting}
+        />
       </div>
     </div>
   );

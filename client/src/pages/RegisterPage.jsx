@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import api, { getPasswordRequirements } from "../utils/api";
 import { useNotification } from "../components/NotificationContext";
 import { validateForm, checkPasswordSpecialChars } from "../utils/formUtils";
@@ -12,6 +12,7 @@ export default function RegisterPage() {
   const [userType, setUserType] = useState("client");
   const [error, setError] = useState("");
   const [redirect, setRedirect] = useState(false);
+  const [redirectTo, setRedirectTo] = useState("/account");
   const [emailValid, setEmailValid] = useState(true);
   const [passwordRequirements, setPasswordRequirements] = useState({
     minLength: 8,
@@ -35,6 +36,7 @@ export default function RegisterPage() {
   });
   const { notify } = useNotification();
   const { setUser } = useContext(UserContext);
+  const [searchParams] = useSearchParams();
 
   // Email validation function
   const validateEmail = (email) => {
@@ -120,7 +122,13 @@ export default function RegisterPage() {
     };
     
     fetchPasswordRequirements();
-  }, []);
+
+    // Check for redirect URL in search params
+    const redirectUrl = searchParams.get('redirect');
+    if (redirectUrl) {
+      setRedirectTo(decodeURIComponent(redirectUrl));
+    }
+  }, [searchParams]);
   
   // Update password checklist when password changes
   useEffect(() => {
@@ -202,7 +210,7 @@ export default function RegisterPage() {
     try {
       // Check if user already exists
       try {
-        const checkResponse = await api.post("/check-user", { email });
+        const checkResponse = await api.post("/auth/check-user", { email });
         
         if (checkResponse.data.exists) {
           setError("An account with this email already exists. Please use a different email or login instead.");
@@ -215,7 +223,7 @@ export default function RegisterPage() {
       }
       
       // Register the user
-      const registerResponse = await api.post("/register", {
+      const registerResponse = await api.post("/auth/register", {
         name,
         email,
         password,
@@ -224,7 +232,7 @@ export default function RegisterPage() {
       
       // Auto login after registration
       try {
-        const loginResponse = await api.post("/login", { email, password });
+        const loginResponse = await api.post("/auth/login", { email, password });
         setUser(loginResponse.data);
         
         // Show success notification
@@ -252,7 +260,7 @@ export default function RegisterPage() {
   }
 
   if (redirect) {
-    return <Navigate to="/account" />;
+    return <Navigate to={redirectTo} />;
   }
 
   return (

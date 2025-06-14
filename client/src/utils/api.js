@@ -38,7 +38,7 @@ export default api;
 // Utility function to get password requirements
 export const getPasswordRequirements = async () => {
   try {
-    const response = await api.get('/password-requirements');
+    const response = await api.get('/auth/password-requirements');
     return response.data;
   } catch (error) {
     console.error('Error fetching password requirements:', error);

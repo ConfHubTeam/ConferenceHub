@@ -13,7 +13,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (user?.userType === 'agent') {
       setLoading(true);
-      api.get('/stats')
+      api.get('/users/stats')
         .then(({data}) => {
           setStats(data);
           setLoading(false);

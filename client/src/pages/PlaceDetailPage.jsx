@@ -7,6 +7,11 @@ import BookingCard from "../components/BookingCard";
 import { UserContext } from "../components/UserContext";
 import { useNotification } from "../components/NotificationContext";
 import MapView from "../components/MapView";
+import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
+import PlaceDetailsInfo from "../components/PlaceDetailsInfo";
+import WeeklyAvailabilityDisplay from "../components/WeeklyAvailabilityDisplay";
+import PlaceAvailabilityCalendar from "../components/PlaceAvailabilityCalendar";
+import PlacePerks from "../components/PlacePerks";
 
 export default function PlaceDetailPage() {
   const { placeId, bookingId } = useParams();
@@ -15,52 +20,88 @@ export default function PlaceDetailPage() {
   const [buttonDisabled, setButtonDisabled] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteInProgress, setDeleteInProgress] = useState(false);
+  const [selectedCalendarDates, setSelectedCalendarDates] = useState([]); // Shared state for calendar selections
   const { user } = useContext(UserContext);
   const { notify } = useNotification();
   const navigate = useNavigate();
-  const months = [
-    "Jan","Feb","Mar","Apr",
-    "May","Jun","Jul","Aug",
-    "Sep","Oct","Nov","Dec",
-  ];
+
+  // Function to clear calendar selections
+  const clearCalendarSelections = () => {
+    setSelectedCalendarDates([]);
+  };
 
   useEffect(() => {
     if (!placeId) {
       return;
     }
-    api.get("/place/" + placeId).then((response) => {
+    api.get("/places/" + placeId).then((response) => {
       setPlaceDetail(response.data);
     });
 
     if (placeId && bookingId) {
-      api.get("/place/" + placeId + "/" + bookingId).then((response) => {
+      api.get("/places/" + placeId + "/" + bookingId).then((response) => {
         setBookingDetail(response.data);
       });
       setButtonDisabled(true);
     }
   }, [placeId, bookingId]); // refresh the page if the id changes
 
+  // Restore booking selections from sessionStorage after login redirect
+  useEffect(() => {
+    const storedBookingData = sessionStorage.getItem("bookingSelections");
+    if (storedBookingData && user) {
+      try {
+        const bookingData = JSON.parse(storedBookingData);
+        // Check if this is the same place and the data is recent (within 1 hour)
+        if (
+          bookingData.placeId === placeId &&
+          Date.now() - bookingData.timestamp < 3600000 // 1 hour in milliseconds
+        ) {
+          setSelectedCalendarDates(bookingData.selectedCalendarDates || []);
+          // Clear the stored data after restoring
+          sessionStorage.removeItem("bookingSelections");
+        }
+      } catch (error) {
+        console.error("Error restoring booking selections:", error);
+        // Clear invalid data
+        sessionStorage.removeItem("bookingSelections");
+      }
+    }
+  }, [user, placeId]); // Run when user login state changes or placeId changes
+
+  // Show delete confirmation modal
+  function handleDeleteClick() {
+    setShowDeleteModal(true);
+    setError("");
+  }
+
   // Delete conference room function
   async function handleDelete() {
-    if (window.confirm('Are you sure you want to delete this conference room? This will also cancel all associated bookings and cannot be undone.')) {
-      setIsDeleting(true);
-      setError("");
-      try {
-        await api.delete(`/places/${placeId}`);
-        notify('Conference room deleted successfully', 'success');
-        navigate('/account/user-places'); // Redirect to my conference rooms page
-      } catch (error) {
-        setError(error.response?.data?.error || error.message);
-        notify(`Error: ${error.response?.data?.error || error.message}`, 'error');
-        setIsDeleting(false);
-      }
+    setIsDeleting(true);
+    setDeleteInProgress(true);
+    setError("");
+    
+    try {
+      await api.delete(`/places/${placeId}`);
+      notify('Conference room deleted successfully', 'success');
+      setShowDeleteModal(false);
+      navigate('/account/user-places'); // Redirect to my conference rooms page
+    } catch (error) {
+      setError(error.response?.data?.error || error.message);
+      notify(`Error: ${error.response?.data?.error || error.message}`, 'error');
+    } finally {
+      setIsDeleting(false);
+      setDeleteInProgress(false);
     }
   }
 
   if (!placeDetail) return "";
 
-  // Check if current user is the owner of this conference room
+  // Check if current user is the owner of this conference room or an agent
   const isOwner = user && placeDetail.ownerId === user.id;
+  const canManage = user && (placeDetail.ownerId === user.id || user.userType === 'agent');
 
   // Prepare place for map view (as an array with just this one place)
   const mapPlaces = placeDetail.lat && placeDetail.lng ? [placeDetail] : [];
@@ -68,13 +109,15 @@ export default function PlaceDetailPage() {
 
   return (
     <div className="mx-3 md:mx-8 lg:mx-14 -mt-4">
-      {/* Header section */}
       <div className="mb-4">
         <h1 className="text-xl md:text-2xl mb-2 font-bold">{placeDetail.title}</h1>
         <a
           className="flex gap-1 font-semibold underline items-center text-sm md:text-base"
           target="_blank"
-          href={"http://maps.google.com/?q=" + placeDetail.address}
+          href={placeDetail.lat && placeDetail.lng 
+            ? `http://maps.google.com/?q=${placeDetail.lat},${placeDetail.lng}`
+            : `http://maps.google.com/?q=${encodeURIComponent(placeDetail.address)}`}
+          rel="noopener noreferrer"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -99,6 +142,13 @@ export default function PlaceDetailPage() {
         </div>
       )}
 
+      {/* Agent notification */}
+      {user && user.userType === 'agent' && !isOwner && (
+        <div className="bg-blue-100 p-4 mb-4 rounded-lg">
+          <p className="text-blue-800 font-semibold text-sm md:text-base">Agent Management Access</p>
+        </div>
+      )}
+
       {/* Error notification */}
       {error && (
         <div className="bg-red-100 text-red-800 p-4 mb-4 rounded-lg">
@@ -118,38 +168,58 @@ export default function PlaceDetailPage() {
           </div>
           
           <div className="mt-6">
-            <div className="mb-5">
-              <h2 className="text-xl md:text-2xl font-semibold mb-2">Description</h2>
-              <p className="leading-6 md:leading-7 text-sm md:text-base">{placeDetail.description}</p>
-              <div className="my-4 mb-6 leading-6 md:leading-7 text-sm md:text-base">
-                <p>
-                  Available dates: {new Date(placeDetail.startDate).getDate()}{" "}
-                  {months[new Date(placeDetail.startDate).getMonth()]}
-                  {" - "}
-                  {new Date(placeDetail.endDate).getDate()}{" "}
-                  {months[new Date(placeDetail.endDate).getMonth()]}
-                </p>
-                <p>Max number of attendees: {placeDetail.maxGuests} </p>
-                <p>Available from: {placeDetail.checkIn} </p>
-                <p>Available until: {placeDetail.checkOut} </p>
+            {/* Place Details Info Section */}
+            <div className="mb-8">
+              <PlaceDetailsInfo placeDetail={placeDetail} />
+            </div>
+
+            {/* Description Section */}
+            <div className="mb-8">
+              <h2 className="text-xl md:text-2xl font-semibold mb-4">Description</h2>
+              <p className="leading-6 md:leading-7 text-sm md:text-base text-gray-700">{placeDetail.description}</p>
+            </div>
+
+            {/* Perks Section */}
+            {placeDetail.perks && placeDetail.perks.length > 0 && (
+              <div className="mb-8">
+                <PlacePerks perks={placeDetail.perks} />
               </div>
-              <hr />
+            )}
+
+            {/* Weekly Availability Section */}
+            <div className="mb-8">
+              <WeeklyAvailabilityDisplay 
+                weekdayTimeSlots={placeDetail.weekdayTimeSlots}
+                blockedWeekdays={placeDetail.blockedWeekdays}
+              />
+            </div>
+
+            {/* Availability Calendar Section */}
+            <div className="mb-8">
+              <PlaceAvailabilityCalendar 
+                placeDetail={placeDetail} 
+                onSelectedDatesChange={setSelectedCalendarDates}
+                selectedCalendarDates={selectedCalendarDates}
+              />
             </div>
             
             {/* Location Map */}
             {hasCoordinates && (
-              <div className="mb-5">
-                <h2 className="text-xl md:text-2xl font-semibold mb-2">Location</h2>
-                <div className="h-64 rounded-lg overflow-hidden">
+              <div className="mb-8">
+                <h2 className="text-xl md:text-2xl font-semibold mb-4">Location</h2>
+                <div className="h-64 rounded-lg overflow-hidden border">
                   <MapView places={mapPlaces} disableInfoWindow={true} />
                 </div>
               </div>
             )}
             
-            <div className="mb-5 mt-2">
-              <h2 className="text-xl md:text-2xl font-semibold my-2">Extra information</h2>
-              <p className="leading-6 md:leading-7 text-sm md:text-base">{placeDetail.extraInfo}</p>
-            </div>
+            {/* Extra Information Section */}
+            {placeDetail.extraInfo && (
+              <div className="mb-8">
+                <h2 className="text-xl md:text-2xl font-semibold mb-4">Additional Information</h2>
+                <p className="leading-6 md:leading-7 text-sm md:text-base text-gray-700">{placeDetail.extraInfo}</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -160,12 +230,14 @@ export default function PlaceDetailPage() {
             {(!user || user.userType === 'client' || bookingId) && (
               <BookingWidget
                 placeDetail={placeDetail}
-                buttonDisabled={buttonDisabled || isOwner}
+                buttonDisabled={buttonDisabled || canManage}
+                selectedCalendarDates={selectedCalendarDates}
+                onClearCalendarSelections={clearCalendarSelections}
               />
             )}
             
-            {/* Show management options for hosts who own this conference room */}
-            {user && user.userType === 'host' && isOwner && !bookingId && (
+            {/* Show management options for hosts who own this conference room or agents */}
+            {user && canManage && !bookingId && (
               <div className="bg-white shadow p-4 rounded-2xl">
                 <h2 className="text-xl font-semibold mb-4">Management Options</h2>
                 <div className="flex flex-col gap-2">
@@ -177,7 +249,7 @@ export default function PlaceDetailPage() {
                   </a>
                   <button 
                     className="bg-red-500 py-2 px-5 rounded-2xl text-white"
-                    onClick={handleDelete}
+                    onClick={handleDeleteClick}
                     disabled={isDeleting}
                   >
                     {isDeleting ? 'Deleting...' : 'Delete Conference Room'}
@@ -188,6 +260,27 @@ export default function PlaceDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onDelete={handleDelete}
+        title="Delete Conference Room"
+        itemToDelete={placeDetail}
+        itemDetails={[
+          { label: "Title", value: placeDetail?.title },
+          { label: "Location", value: placeDetail?.address },
+          { label: "Price", value: `$${placeDetail?.price} / hour` }
+        ]}
+        consequences={[
+          "The conference room and all its details",
+          "All photos associated with this conference room",
+          "All bookings made for this conference room",
+          "All ratings and reviews for this conference room"
+        ]}
+        deleteInProgress={deleteInProgress}
+      />
     </div>
   );
 }

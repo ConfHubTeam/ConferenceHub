@@ -1,6 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const User = require('./users');
+const Currency = require('./currency');
 
 const Place = sequelize.define('Place', {
   title: {
@@ -89,15 +90,83 @@ const Place = sequelize.define('Place', {
       model: 'Users',
       key: 'id'
     }
-  }
+  },
+  currencyId: {
+    type: DataTypes.INTEGER,
+    allowNull: true, // oldin tushgan zapislarga xato bermasligi uchun nullable qilindi.
+    references: {
+      model: 'Currencies',
+      key: 'id'
+    }
+  },
+  fullDayHours: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: 8, // 8 hours is considered a full day by default
+    validate: {
+      min: 1,
+      max: 24
+    }
+  },
+  fullDayDiscountPrice: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    defaultValue: 0
+  },
+  minimumHours: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 1, // Default minimum booking is 1 hour
+    validate: {
+      min: 1,
+      max: 5
+    }
+  },
+  cooldown: {
+    type: DataTypes.INTEGER, // minutda ketadi menimcha yani 60, 30, 15 minut shuning uchun Int32
+    allowNull: false,
+    defaultValue: 30 // taxminan default qiymat 30 minut
+  },
+  blockedWeekdays: {
+    type: DataTypes.ARRAY(DataTypes.INTEGER),
+    allowNull: true,
+    defaultValue: []
+  },
+  blockedDates: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    allowNull: true,
+    defaultValue: []
+  },
+  weekdayTimeSlots: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: {
+      0: { start: "", end: "" }, // Sunday
+      1: { start: "", end: "" }, // Monday
+      2: { start: "", end: "" }, // Tuesday
+      3: { start: "", end: "" }, // Wednesday
+      4: { start: "", end: "" }, // Thursday
+      5: { start: "", end: "" }, // Friday
+      6: { start: "", end: "" }  // Saturday
+    }
+  },
+  squareMeters: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    validate: {
+      min: 0
+    }
+  },
+  isHotel: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  },
 }, {
   timestamps: true
 });
 
-// Define relationship with User
-Place.belongsTo(User, { 
-  foreignKey: 'ownerId', // This replaces the owner field in MongoDB
-  as: 'owner' // Alias to maintain compatibility with existing code
-});
+Place.belongsTo(User, { foreignKey: 'ownerId', as: 'owner' });
+Place.belongsTo(Currency, { foreignKey: 'currencyId', as: 'currency' });
 
 module.exports = Place;

@@ -2,10 +2,26 @@ services:
   # Web service for the full stack application
   - type: web
     name: conferencehub-app
-    env: node
-    buildCommand: npm install && cd client && npm install && npx vite build && cd ..
-    startCommand: cd api && node index.js
+    runtime: node
+    buildCommand: |
+      echo "Starting build process..."
+      npm install
+      echo "Root dependencies installed"
+      cd client
+      npm install
+      echo "Client dependencies installed"
+      npm run build
+      echo "Client build completed"
+      cd ..
+      echo "Build directory contents:"
+      ls -la client/dist || echo "Dist directory not found"
+      echo "Assets directory contents:"
+      ls -la client/dist/assets || echo "Assets directory not found"
+      echo "Checking for critical files:"
+      find client/dist -name "*.js" -o -name "*.css" | head -10
+    startCommand: NODE_ENV=production node start.js
     plan: free
+    healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
@@ -14,7 +30,9 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: FRONTEND_URL
-        value: https://${RENDER_EXTERNAL_HOSTNAME}
+        generateValue: false
+      - key: CORS_ALLOWED_ORIGINS
+        generateValue: false
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
       - key: CLOUDINARY_API_KEY
@@ -33,7 +51,7 @@ services:
       - key: TELEGRAM_BOT_TOKEN
         sync: false
       - key: APP_URL
-        value: https://${RENDER_EXTERNAL_HOSTNAME}
+        generateValue: false
       # Session configuration for Telegram authentication
       - key: SESSION_SECRET
         sync: false

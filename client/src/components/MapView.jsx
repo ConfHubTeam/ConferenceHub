@@ -1,11 +1,29 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from "@react-google-maps/api";
+import { GoogleMap, useJsApiLoader, InfoWindow } from "@react-google-maps/api";
 import { Link } from "react-router-dom";
 import CloudinaryImage from "./CloudinaryImage";
+import { useCurrency } from "../contexts/CurrencyContext";
+import { formatPrice } from "../utils/currencyUtils";
+import PriceDisplay from "./PriceDisplay";
+import { 
+  getMarkerSizeByZoom, 
+  getMarkerSizeConfig, 
+  getMarkerGoogleMapsProperties 
+} from "../utils/markerSizeUtils";
+import { drawMarkerShape, drawPriceText } from "../utils/canvasUtils";
 
-// Custom styles to hide the InfoWindow close button
+// Custom styles to hide the InfoWindow close button and arrow
 const infoWindowStyles = `
   .gm-ui-hover-effect {
+    display: none !important;
+  }
+  .gm-style .gm-style-iw-tc::after {
+    display: none !important;
+  }
+  .gm-style .gm-style-iw-tc {
+    display: none !important;
+  }
+  .gm-style .gm-style-iw-t::after {
     display: none !important;
   }
 `;
@@ -44,49 +62,48 @@ export default function MapView({ places, disableInfoWindow = false }) {
   const [map, setMap] = useState(null);
   const [selectedPlace, setSelectedPlace] = useState(null);
   const markersRef = useRef([]);
-
-  // Format price for display
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD',
-      minimumFractionDigits: 0
-    }).format(price);
-  };
+  const isUpdatingMarkersRef = useRef(false);
+  const { selectedCurrency } = useCurrency();
   
-  // Create a custom price marker icon
-  const createPriceMarkerIcon = (price, size = 'medium') => {
-    const formattedPrice = formatPrice(price);
+  // Create a custom price marker icon with current currency
+  const createPriceMarkerIcon = useCallback(async (price, currency, size = "medium") => {
+    // Format the price with the current currency
+    let formattedPrice;
+    
+    try {
+      formattedPrice = await formatPrice(price, currency, selectedCurrency);
+    } catch (error) {
+      console.error("Error formatting price for marker:", error);
+      // Fallback to simple format
+      formattedPrice = `$${price}`;
+    }
     
     // Create a canvas element to draw the custom marker with higher DPI
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
     
     // Device pixel ratio for high DPI screens
     const dpr = window.devicePixelRatio || 1;
     
-    // Size configurations based on the requested size
-    let baseWidth, baseHeight, fontSize, borderRadius;
+    // Get size configuration from utility
+    const sizeConfig = getMarkerSizeConfig(size);
+    let { width: baseWidth, height: baseHeight, fontSize, borderRadius } = sizeConfig;
     
-    switch (size) {
-      case 'small':
-        baseWidth = 50; // Reduced from 70
-        baseHeight = 28; // Reduced from 40
-        fontSize = 11; // Reduced from 13
-        borderRadius = 5; // Reduced from 6
-        break;
-      case 'large':
-        baseWidth = 70; // Reduced from 95
-        baseHeight = 40; // Reduced from 52
-        fontSize = 15; // Reduced from 18
-        borderRadius = 8; // Reduced from 10
-        break;
-      case 'medium':
-      default:
-        baseWidth = 60; // Reduced from 80
-        baseHeight = 35; // Reduced from 46
-        fontSize = 13; // Reduced from 15
-        borderRadius = 6; // Reduced from 8
+    // Calculate text width to dynamically adjust marker width if needed
+    context.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`;
+    const textMetrics = context.measureText(formattedPrice);
+    const initialTextWidth = textMetrics.width;
+    
+    // Add some padding around the text
+    const paddingHorizontal = 16;
+    const minWidth = initialTextWidth + paddingHorizontal;
+    
+    // If the text is wider than our base width, increase the width
+    // For very long text (like some currencies with many zeros), cap the width and reduce font later
+    if (minWidth > baseWidth) {
+      // Cap the maximum width to prevent extremely wide markers
+      const maxWidth = baseWidth * 1.7; // Limit maximum width to 1.7x the base width
+      baseWidth = Math.min(Math.ceil(minWidth), maxWidth);
     }
     
     // Set canvas dimensions accounting for device pixel ratio
@@ -102,177 +119,144 @@ export default function MapView({ places, disableInfoWindow = false }) {
     
     // Apply anti-aliasing
     context.imageSmoothingEnabled = true;
-    context.imageSmoothingQuality = 'high';
+    context.imageSmoothingQuality = "high";
     
-    // Draw hexagon shape
-    const hexHeight = baseHeight * 0.72;
-    const hexWidth = baseWidth * 0.9;
-    const startX = (baseWidth - hexWidth) / 2;
-    const startY = 0;
-    const pointHeight = baseHeight - hexHeight;
+    // Draw the marker shape using extracted utility
+    drawMarkerShape(context, baseWidth, baseHeight, borderRadius);
     
-    // Add shadow
-    context.shadowColor = 'rgba(0, 0, 0, 0.3)';
-    context.shadowBlur = 4;
-    context.shadowOffsetX = 0;
-    context.shadowOffsetY = 2;
-    
-    // Create hexagon path
-    context.beginPath();
-    // Top left corner
-    context.moveTo(startX + borderRadius, startY);
-    // Top side
-    context.lineTo(startX + hexWidth - borderRadius, startY);
-    // Top right corner
-    context.arcTo(startX + hexWidth, startY, startX + hexWidth, startY + borderRadius, borderRadius);
-    // Right side
-    context.lineTo(startX + hexWidth, startY + hexHeight - borderRadius);
-    // Bottom right corner
-    context.arcTo(startX + hexWidth, startY + hexHeight, startX + hexWidth - borderRadius, startY + hexHeight, borderRadius);
-    // Bottom side to pointer start
-    context.lineTo(startX + (hexWidth * 0.55), startY + hexHeight);
-    // Pointer
-    context.lineTo(baseWidth / 2, baseHeight);
-    context.lineTo(startX + (hexWidth * 0.45), startY + hexHeight);
-    // Bottom side from pointer end
-    context.lineTo(startX + borderRadius, startY + hexHeight);
-    // Bottom left corner
-    context.arcTo(startX, startY + hexHeight, startX, startY + hexHeight - borderRadius, borderRadius);
-    // Left side
-    context.lineTo(startX, startY + borderRadius);
-    // Top left corner
-    context.arcTo(startX, startY, startX + borderRadius, startY, borderRadius);
-    
-    // Fill with gradient
-    const gradient = context.createLinearGradient(0, 0, 0, hexHeight);
-    gradient.addColorStop(0, '#ff385c');
-    gradient.addColorStop(1, '#e31c5f');
-    context.fillStyle = gradient;
-    context.fill();
-    
-    // Reset shadow for text
-    context.shadowColor = 'transparent';
-    
-    // Add price text
-    context.fillStyle = 'white';
-    context.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`;
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.fillText(formattedPrice, baseWidth / 2, hexHeight / 2);
+    // Draw the price text using extracted utility
+    drawPriceText(context, formattedPrice, baseWidth, baseHeight, fontSize);
     
     // Convert canvas to image URL with maximum quality
-    return canvas.toDataURL('image/png', 1.0);
-  };
+    return canvas.toDataURL("image/png", 1.0);
+  }, [selectedCurrency]);
 
-  // Update marker icons based on zoom level
-  const updateMarkerSizes = (zoomLevel) => {
-    if (!markersRef.current.length) return;
+  // Update marker icons based on zoom level (without repositioning)
+  const updateMarkerSizes = useCallback(async (zoomLevel) => {
+    if (!markersRef.current.length || isUpdatingMarkersRef.current) return;
     
-    // Determine size based on zoom level
-    let size;
-    if (zoomLevel <= 10) {
-      size = 'small';
-    } else if (zoomLevel >= 14) {
-      size = 'large';
-    } else {
-      size = 'medium';
+    isUpdatingMarkersRef.current = true;
+    
+    try {
+      // Determine size based on zoom level using utility function
+      const size = getMarkerSizeByZoom(zoomLevel);
+      
+      // Update each marker's icon without changing positions
+      for (const marker of markersRef.current) {
+        try {
+          const place = marker.placeData;
+          const iconUrl = await createPriceMarkerIcon(place.price, place.currency, size);
+          const markerProps = getMarkerGoogleMapsProperties(size);
+          
+          marker.setIcon({
+            url: iconUrl,
+            anchor: markerProps.anchor,
+            scaledSize: markerProps.scaledSize
+          });
+        } catch (error) {
+          console.error("Error updating marker icon:", error);
+        }
+      }
+    } finally {
+      isUpdatingMarkersRef.current = false;
     }
-    
-    // Update each marker's icon
-    markersRef.current.forEach(marker => {
-      const place = marker.placeData;
-      marker.setIcon({
-        url: createPriceMarkerIcon(place.price, size),
-        anchor: new window.google.maps.Point(
-          size === 'small' ? 25 : size === 'large' ? 35 : 30, 
-          size === 'small' ? 28 : size === 'large' ? 40 : 35
-        ),
-        scaledSize: new window.google.maps.Size(
-          size === 'small' ? 50 : size === 'large' ? 70 : 60,
-          size === 'small' ? 28 : size === 'large' ? 40 : 35
-        )
-      });
-    });
-  };
-
-  const onLoad = useCallback(function callback(map) {
+  }, [selectedCurrency]);  // Create markers function that can be reused
+  const createMarkersAsync = useCallback(async (map) => {
     // Create new bounds object to fit all markers
     const bounds = new window.google.maps.LatLngBounds();
     
-    // Add markers to the map
-    markersRef.current = places.map(place => {
-      // Skip places without proper coordinates
-      if (!place.lat || !place.lng) return null;
+    // Group places by position to detect overlapping markers
+    const positionGroups = new Map(); // Group markers by position
+    
+    // First pass: group places by position
+    for (const place of places) {
+      if (!place.lat || !place.lng) continue;
       
       const position = { lat: parseFloat(place.lat), lng: parseFloat(place.lng) };
+      const posKey = `${position.lat.toFixed(5)},${position.lng.toFixed(5)}`;
       
-      // Extend bounds to include this marker
+      if (!positionGroups.has(posKey)) {
+        positionGroups.set(posKey, []);
+      }
+      positionGroups.get(posKey).push({ place, position: {...position} });
+      
+      // Extend bounds for all positions
       bounds.extend(position);
-      
-      // Create custom marker with price label
-      const marker = new window.google.maps.Marker({
-        position,
-        map,
-        title: place.title,
-        placeData: place,
-        // Create a custom icon with price, sized based on initial zoom
-        icon: {
-          url: createPriceMarkerIcon(place.price, map.getZoom() <= 10 ? 'small' : map.getZoom() >= 14 ? 'large' : 'medium'),
-          // Position the anchor at the bottom tip of the pointer
-          anchor: new window.google.maps.Point(
-            map.getZoom() <= 10 ? 25 : map.getZoom() >= 14 ? 35 : 30, 
-            map.getZoom() <= 10 ? 28 : map.getZoom() >= 14 ? 40 : 35
-          ),
-          // Set size to match the canvas dimensions
-          scaledSize: new window.google.maps.Size(
-            map.getZoom() <= 10 ? 50 : map.getZoom() >= 14 ? 70 : 60,
-            map.getZoom() <= 10 ? 28 : map.getZoom() >= 14 ? 40 : 35
-          )
-        },
-        animation: window.google.maps.Animation.DROP
-      });
-      
-      // Add click event to marker
-      marker.addListener("click", () => {
-        // Only set selected place if info windows are not disabled
-        if (!disableInfoWindow) {
-          setSelectedPlace(marker.placeData);
-          
-          // Zoom in closer when marker is clicked for better user experience
-          const currentZoom = map.getZoom();
-          const targetZoom = Math.min(16, currentZoom + 2); // Zoom in by 2 levels, up to max of 16
-          map.setZoom(targetZoom);
-          map.panTo(marker.getPosition()); // Center map on the clicked marker
-        }
-      });
-      
-      return marker;
-    }).filter(Boolean); // Filter out any null values
-    
-    // Only adjust bounds if we have markers
-    if (markersRef.current.length > 0) {
-      map.fitBounds(bounds);
-      
-      // Add a zoom changed listener to ensure we don't zoom in too close
-      const zoomChangedListener = map.addListener('bounds_changed', () => {
-        // Get current zoom level
-        const zoom = map.getZoom();
-        
-        // If zoom is too close (higher than 13), set it back to city level
-        if (zoom > 13) {
-          map.setZoom(13);
-        }
-        
-        // Update marker sizes based on zoom level
-        updateMarkerSizes(zoom);
-        
-        // Only need to run this once after initial bounds fitting
-        window.google.maps.event.removeListener(zoomChangedListener);
-      });
     }
     
+    const markers = [];
+    
+    // Second pass: create markers with adjusted positions for overlaps
+    for (const [posKey, placesAtPosition] of positionGroups.entries()) {
+      // Offset markers that are at the same position
+      if (placesAtPosition.length > 1) {
+        const offsetStep = 0.00015; // Small lat/lng offset
+        
+        placesAtPosition.forEach((item, index) => {
+          if (index > 0) { // First marker stays at original position
+            const offsetAngle = (Math.PI * 2 / placesAtPosition.length) * index;
+            
+            // Create a small offset in a circular pattern
+            item.position.lat += Math.sin(offsetAngle) * offsetStep;
+            item.position.lng += Math.cos(offsetAngle) * offsetStep;
+          }
+        });
+      }
+
+      // Create markers with potentially adjusted positions
+      for (const { place, position } of placesAtPosition) {
+        try {
+          // Generate marker icon with price in current currency
+          const size = getMarkerSizeByZoom(map.getZoom());
+          const iconUrl = await createPriceMarkerIcon(place.price, place.currency, size);
+          const markerProps = getMarkerGoogleMapsProperties(size);
+          
+          // Create custom marker with price label
+          const marker = new window.google.maps.Marker({
+            position,
+            map,
+            title: place.title,
+            placeData: place,
+            icon: {
+              url: iconUrl,
+              // Position the anchor at the bottom tip of the pointer
+              anchor: markerProps.anchor,
+              // Set size to match the canvas dimensions
+              scaledSize: markerProps.scaledSize
+            },
+            animation: window.google.maps.Animation.DROP
+          });
+          
+          // Add click event to marker
+          marker.addListener("click", (event) => {
+            // Stop event propagation to prevent map click
+            event.stop();
+            
+            // Only set selected place if info windows are not disabled
+            if (!disableInfoWindow) {
+              setSelectedPlace(marker.placeData);
+              
+              // Zoom in closer when marker is clicked for better user experience
+              const currentZoom = map.getZoom();
+              const targetZoom = Math.min(16, currentZoom + 2); // Zoom in by 2 levels, up to max of 16
+              map.setZoom(targetZoom);
+              map.panTo(marker.getPosition()); // Center map on the clicked marker
+            }
+          });
+          
+          markers.push(marker);
+        } catch (error) {
+          console.error("Error creating marker:", error);
+        }
+      }
+    }
+    
+    return { markers: markers.filter(Boolean), bounds };
+  }, [places, disableInfoWindow, createPriceMarkerIcon]);
+
+  const onLoad = useCallback(function callback(map) {
     setMap(map);
-  }, [places, disableInfoWindow]);
+  }, []);
 
   const onUnmount = useCallback(function callback() {
     // Cleanup markers
@@ -282,73 +266,79 @@ export default function MapView({ places, disableInfoWindow = false }) {
       });
       markersRef.current = [];
     }
+    // Reset updating flag
+    isUpdatingMarkersRef.current = false;
     setMap(null);
   }, []);
 
-  // Update markers when places change
+  // Update markers when places change (but not currency)
   useEffect(() => {
-    if (map) {
-      // Clear existing markers
-      markersRef.current.forEach(marker => {
-        marker.setMap(null);
-      });
-      
-      // Create new bounds object
-      const bounds = new window.google.maps.LatLngBounds();
-      
-      // Create new markers
-      markersRef.current = places.map(place => {
-        if (!place.lat || !place.lng) return null;
-        
-        const position = { lat: parseFloat(place.lat), lng: parseFloat(place.lng) };
-        
-        // Extend bounds to include this marker
-        bounds.extend(position);
-        
-        const marker = new window.google.maps.Marker({
-          position,
-          map,
-          title: place.title,
-          placeData: place,
-          // Create a custom icon with price, sized based on initial zoom
-          icon: {
-            url: createPriceMarkerIcon(place.price, map.getZoom() <= 10 ? 'small' : map.getZoom() >= 14 ? 'large' : 'medium'),
-            // Position the anchor at the bottom tip of the pointer
-            anchor: new window.google.maps.Point(
-              map.getZoom() <= 10 ? 25 : map.getZoom() >= 14 ? 35 : 30, 
-              map.getZoom() <= 10 ? 28 : map.getZoom() >= 14 ? 40 : 35
-            ),
-            // Set size to match the canvas dimensions
-            scaledSize: new window.google.maps.Size(
-              map.getZoom() <= 10 ? 50 : map.getZoom() >= 14 ? 70 : 60,
-              map.getZoom() <= 10 ? 28 : map.getZoom() >= 14 ? 40 : 35
-            )
-          },
-          animation: window.google.maps.Animation.DROP
-        });
-        
-        marker.addListener("click", () => {
-          // Only set selected place if info windows are not disabled
-          if (!disableInfoWindow) {
-            setSelectedPlace(marker.placeData);
-            
-            // Zoom in closer when marker is clicked for better user experience
-            const currentZoom = map.getZoom();
-            const targetZoom = Math.min(16, currentZoom + 2); // Zoom in by 2 levels, up to max of 16
-            map.setZoom(targetZoom);
-            map.panTo(marker.getPosition()); // Center map on the clicked marker
-          }
-        });
-        
-        return marker;
-      }).filter(Boolean);
+    if (!map || !places.length) return;
+
+    // Clear existing markers first
+    markersRef.current.forEach(marker => {
+      marker.setMap(null);
+    });
+    markersRef.current = [];
+    isUpdatingMarkersRef.current = false; // Reset flag when clearing markers
+
+    // Create new markers
+    createMarkersAsync(map).then(({ markers, bounds }) => {
+      markersRef.current = markers;
       
       // Fit map to bounds if we have markers
-      if (markersRef.current.length > 0) {
+      if (markers.length > 0) {
         map.fitBounds(bounds);
+        
+        // Add a one-time listener to adjust zoom after bounds are set
+        const boundsChangedListener = map.addListener('bounds_changed', () => {
+          const zoom = map.getZoom();
+          
+          // If zoom is too close (higher than 13), set it back to city level
+          if (zoom > 13) {
+            map.setZoom(13);
+          }
+          
+          // Remove this listener after first use
+          window.google.maps.event.removeListener(boundsChangedListener);
+        });
       }
-    }
-  }, [places, map, disableInfoWindow]);
+    });
+  }, [map, places, createMarkersAsync]);
+
+  // Update marker icons when currency changes (without recreating markers)
+  useEffect(() => {
+    if (!markersRef.current.length || !selectedCurrency || isUpdatingMarkersRef.current) return;
+
+    const updateMarkerIcons = async () => {
+      isUpdatingMarkersRef.current = true;
+      
+      try {
+        const currentZoom = map?.getZoom() || 12;
+        const size = getMarkerSizeByZoom(currentZoom);
+
+        for (const marker of markersRef.current) {
+          try {
+            const place = marker.placeData;
+            const iconUrl = await createPriceMarkerIcon(place.price, place.currency, size);
+            const markerProps = getMarkerGoogleMapsProperties(size);
+            
+            marker.setIcon({
+              url: iconUrl,
+              anchor: markerProps.anchor,
+              scaledSize: markerProps.scaledSize
+            });
+          } catch (error) {
+            console.error("Error updating marker icon:", error);
+          }
+        }
+      } finally {
+        isUpdatingMarkersRef.current = false;
+      }
+    };
+
+    updateMarkerIcons();
+  }, [selectedCurrency, createPriceMarkerIcon, map]);
 
   // Listen for zoom changes to update marker sizes
   useEffect(() => {
@@ -366,7 +356,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
         window.google.maps.event.removeListener(zoomListener);
       }
     };
-  }, [map]);
+  }, [map, updateMarkerSizes]);
 
   // Error state handling
   if (loadError) {
@@ -422,14 +412,15 @@ export default function MapView({ places, disableInfoWindow = false }) {
         zoom={10}
         onLoad={onLoad}
         onUnmount={onUnmount}
-        onClick={() => setSelectedPlace(null)}
+        onClick={(event) => {
+          // Close InfoWindow when clicking on empty map area
+          setSelectedPlace(null);
+        }}
         options={{
           fullscreenControl: false,
           mapTypeControl: false,
           streetViewControl: false,
-          zoomControlOptions: {
-            position: window.google.maps.ControlPosition.RIGHT_TOP
-          }
+          zoomControl: false // Removed zoom control
         }}
       >
         {/* Info Window for selected place - only show if not disabled */}
@@ -439,8 +430,9 @@ export default function MapView({ places, disableInfoWindow = false }) {
             onCloseClick={() => setSelectedPlace(null)}
             options={{
               maxWidth: 250,
-              pixelOffset: new window.google.maps.Size(0, -30),
-              disableAutoPan: false
+              pixelOffset: new window.google.maps.Size(0, -45),
+              disableAutoPan: false,
+              ariaLabel: selectedPlace.title
             }}
           >
             <div className="w-full" style={{ maxWidth: "230px" }}>
@@ -457,10 +449,17 @@ export default function MapView({ places, disableInfoWindow = false }) {
                 <div className="p-2">
                   <h3 className="font-semibold text-xs mb-1 truncate">{selectedPlace.title}</h3>
                   <p className="text-xs text-gray-500 break-words line-clamp-2">{selectedPlace.address}</p>
-                  <p className="text-xs font-bold mt-1">
-                    {formatPrice(selectedPlace.price)}
-                    <span className="text-gray-500 font-normal"> / hour</span>
-                  </p>
+                  <div className="text-xs font-bold mt-1">
+                    <PriceDisplay 
+                      price={selectedPlace.price} 
+                      currency={selectedPlace.currency} 
+                      suffix=" / hour"
+                      priceClassName="text-xs font-bold" 
+                      suffixClassName="text-gray-500 font-normal"
+                      showOriginalPrice={true}
+                      showConvertedPrice={true}
+                    />
+                  </div>
                 </div>
               </Link>
             </div>

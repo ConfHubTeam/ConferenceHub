@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useSearchParams, useLocation } from "react-router-dom";
 import { UserContext } from "../components/UserContext";
 import { useNotification } from "../components/NotificationContext";
 import api, { getPasswordRequirements } from "../utils/api";
@@ -9,6 +9,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [redirect, setRedirect] = useState(false);
+  const [redirectTo, setRedirectTo] = useState("/");
   const [error, setError] = useState("");
   const [showAdminHint, setShowAdminHint] = useState(false);
   const [emailValid, setEmailValid] = useState(true);
@@ -18,6 +19,8 @@ export default function LoginPage() {
 
   const {setUser} = useContext(UserContext);
   const { notify } = useNotification();
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
 
   // Email validation function
   const validateEmail = (email) => {
@@ -54,7 +57,13 @@ export default function LoginPage() {
       notify(telegramAuthError, "error");
       localStorage.removeItem('telegram_auth_error');
     }
-  }, [notify]);
+
+    // Check for redirect URL in search params
+    const redirectUrl = searchParams.get('redirect');
+    if (redirectUrl) {
+      setRedirectTo(decodeURIComponent(redirectUrl));
+    }
+  }, [notify, searchParams]);
 
   async function loginUser(event) {
     event.preventDefault();
@@ -81,7 +90,7 @@ export default function LoginPage() {
     }
     
     try {
-      const {data} = await api.post("/login", {email, password});
+      const {data} = await api.post("/auth/login", {email, password});
       setUser(data); // get the user data
       
       // Show appropriate notification based on user type
@@ -108,7 +117,7 @@ export default function LoginPage() {
   };
 
   if (redirect) {
-    return <Navigate to={"/"}/>
+    return <Navigate to={redirectTo}/>
   }
 
   return (

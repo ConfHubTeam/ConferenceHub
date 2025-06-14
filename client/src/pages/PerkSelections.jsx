@@ -1,166 +1,203 @@
+import { useState } from "react";
+
 export default function PerkSelections({selectedPerks, setPerks}) {
+  // State to track which groups are expanded
+  const [expandedGroups, setExpandedGroups] = useState({});
+
+  // Toggle group expansion
+  const toggleGroup = (groupName) => {
+    setExpandedGroups(prev => ({
+      ...prev,
+      [groupName]: !prev[groupName]
+    }));
+  };
 
   function handleCheckClick(event) {
     const {checked, name} = event.target;
     if (checked) {
       setPerks([...selectedPerks, name]); 
     } else {
-      setPerks([...selectedPerks.filter(selectedName => selectedName != name)]);
+      setPerks([...selectedPerks.filter(selectedName => selectedName !== name)]);
     }
   }
 
+  // Perk groups with their icons and options
+  const perkGroups = [
+    {
+      name: "Audio Equipment",
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
+        </svg>
+      ),
+      options: [
+        { name: "speakerMic", label: "Speaker microphone" },
+        { name: "backupMic", label: "Backup microphone" },
+        { name: "speaker", label: "Speaker" },
+        { name: "mixer", label: "Mixer" },
+        { name: "soundControl", label: "Sound control panel" },
+        { name: "amplifier", label: "Amplifier" },
+        { name: "acoustic", label: "Room acoustic treatment" }
+      ]
+    },
+    {
+      name: "Visual Equipment",
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 20.25h12m-7.5-3v3m3-3v3m-10.125-3h17.25c.621 0 1.125-.504 1.125-1.125V4.875c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125z" />
+        </svg>
+      ),
+      options: [
+        { name: "projector", label: "Projector" },
+        { name: "ledScreen", label: "LED screen" },
+        { name: "projectorScreen", label: "Projector screen" },
+        { name: "hdmiCable", label: "HDMI cable" },
+        { name: "vgaCable", label: "VGA cable" },
+        { name: "adapters", label: "Adapters and converters" },
+        { name: "clicker", label: "Presentation clicker" },
+        { name: "laserPointer", label: "Laser pointer" },
+        { name: "stageLighting", label: "Stage lighting" }
+      ]
+    },
+    {
+      name: "Technical Equipment",
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" />
+        </svg>
+      ),
+      options: [
+        { name: "laptop", label: "Laptop" },
+        { name: "desktop", label: "Desktop computer" },
+        { name: "extensionCords", label: "Extension cords" },
+        { name: "chargers", label: "Chargers" },
+        { name: "wiredInternet", label: "Wired internet" },
+        { name: "wifi", label: "Wi-Fi" },
+        { name: "router", label: "Router" },
+        { name: "wifiAccessPoint", label: "Wi-Fi access point" }
+      ]
+    },
+    {
+      name: "Furniture",
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+        </svg>
+      ),
+      options: [
+        { name: "speakerPodium", label: "Speaker podium" },
+        { name: "speakerTable", label: "Table for speakers" },
+        { name: "speakerChair", label: "Chair for speakers" },
+        { name: "participantChairs", label: "Chairs for participants" },
+        { name: "participantDesks", label: "Desk for participants" },
+        { name: "bottledWater", label: "Water 0.5L" },
+        { name: "waterCooler", label: "Water from cooler" },
+        { name: "cups", label: "Cups" }
+      ]
+    },
+    {
+      name: "Miscellaneous",
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+        </svg>
+      ),
+      options: [
+        { name: "nameTags", label: "Name tags" },
+        { name: "flipChart", label: "Flip chart" },
+        { name: "markers", label: "Markers" },
+        { name: "paper", label: "Paper" },
+        { name: "airConditioner", label: "Air conditioner" },
+        { name: "ventilation", label: "Ventilation system" },
+        { name: "signage", label: "Directional signage" },
+        { name: "registrationDesk", label: "Registration desk" }
+      ]
+    },
+    {
+      name: "Safety",
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+        </svg>
+      ),
+      options: [
+        { name: "fireExtinguisher", label: "Fire extinguisher" },
+        { name: "firstAidKit", label: "First aid kit" },
+        { name: "evacuationSigns", label: "Evacuation signs" }
+      ]
+    },
+    {
+      name: "Services",
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15.182 15.182a4.5 4.5 0 0 1-6.364 0M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Z" />
+        </svg>
+      ),
+      options: [
+        { name: "catering", label: "Catering Available" },
+        { name: "coffee", label: "Coffee Service" },
+        { name: "parking", label: "On-site Parking" }
+      ]
+    }
+  ];
+
   return (
-    <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-2">
-      <label className="border p-4 flex rounded-2xl gap-2 items-center cursor-pointer hover:shadow-md transition-shadow">
-        <input type="checkbox" checked={selectedPerks.includes("wifi")} name="wifi" onChange={handleCheckClick}/>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="w-6 h-6 ml-1"
+    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mt-2">
+      {perkGroups.map((group) => (
+        <div 
+          key={group.name} 
+          className="border rounded-xl overflow-hidden shadow-sm"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z"
-          />
-        </svg>
-        <span>High-Speed Wifi</span>
-      </label>
-      
-      <label className="border p-4 flex rounded-2xl gap-2 items-center cursor-pointer hover:shadow-md transition-shadow">
-        <input type="checkbox" checked={selectedPerks.includes("parking")} name="parking" onChange={handleCheckClick}/>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="w-6 h-6 m-1"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
-          />
-        </svg>
-        <span>On-site Parking</span>
-      </label>
-      
-      <label className="border p-4 flex rounded-2xl gap-2 items-center cursor-pointer hover:shadow-md transition-shadow">
-        <input type="checkbox" checked={selectedPerks.includes("projector")} name="projector" onChange={handleCheckClick}/>
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          fill="none" 
-          viewBox="0 0 24 24" 
-          strokeWidth={1.5} 
-          stroke="currentColor" 
-          className="w-6 h-6"
-        >
-          <path 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            d="M6 20.25h12m-7.5-3v3m3-3v3m-10.125-3h17.25c.621 0 1.125-.504 1.125-1.125V4.875c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125z" 
-          />
-        </svg>
-        <span>Projector</span>
-      </label>
-      
-      <label className="border p-4 flex rounded-2xl gap-2 items-center cursor-pointer hover:shadow-md transition-shadow">
-        <input type="checkbox" checked={selectedPerks.includes("videoConference")} name="videoConference" onChange={handleCheckClick}/>
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          fill="none" 
-          viewBox="0 0 24 24" 
-          strokeWidth={1.5} 
-          stroke="currentColor" 
-          className="w-6 h-6"
-        >
-          <path 
-            strokeLinecap="round" 
-            d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" 
-          />
-        </svg>
-        <span>Video Conferencing</span>
-      </label>
-      
-      <label className="border p-4 flex rounded-2xl gap-2 items-center cursor-pointer hover:shadow-md transition-shadow">
-        <input type="checkbox" checked={selectedPerks.includes("whiteboard")} name="whiteboard" onChange={handleCheckClick}/>
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          fill="none" 
-          viewBox="0 0 24 24" 
-          strokeWidth={1.5} 
-          stroke="currentColor" 
-          className="w-6 h-6"
-        >
-          <path 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5A3.375 3.375 0 006.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0015 2.25h-1.5a2.251 2.251 0 00-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 00-9-9z" 
-          />
-        </svg>
-        <span>Whiteboard</span>
-      </label>
-      
-      <label className="border p-4 flex rounded-2xl gap-2 items-center cursor-pointer hover:shadow-md transition-shadow">
-        <input type="checkbox" checked={selectedPerks.includes("coffee")} name="coffee" onChange={handleCheckClick}/>
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          fill="none" 
-          viewBox="0 0 24 24" 
-          strokeWidth={1.5} 
-          stroke="currentColor" 
-          className="w-6 h-6"
-        >
-          <path 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" 
-          />
-        </svg>
-        <span>Coffee Service</span>
-      </label>
-      
-      <label className="border p-4 flex rounded-2xl gap-2 items-center cursor-pointer hover:shadow-md transition-shadow">
-        <input type="checkbox" checked={selectedPerks.includes("catering")} name="catering" onChange={handleCheckClick}/>
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          fill="none" 
-          viewBox="0 0 24 24" 
-          strokeWidth={1.5} 
-          stroke="currentColor" 
-          className="w-6 h-6"
-        >
-          <path 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.87c1.355 0 2.697.055 4.024.165C17.155 8.51 18 9.473 18 10.608v2.513m-3-4.87v-1.5m-6 1.5v-1.5m12 9.75l-1.5.75a3.354 3.354 0 01-3 0 3.354 3.354 0 00-3 0 3.354 3.354 0 01-3 0 3.354 3.354 0 00-3 0 3.354 3.354 0 01-3 0L3 16.5m15-3.38a48.474 48.474 0 00-6-.37c-2.032 0-4.034.125-6 .37m12 0c.39.049.777.102 1.163.16 1.07.16 1.837 1.094 1.837 2.175v5.17c0 .62-.504 1.124-1.125 1.124H4.125A1.125 1.125 0 013 20.625v-5.17c0-1.08.768-2.014 1.837-2.174A47.78 47.78 0 016 13.12M12.265 3.11a.375.375 0 11-.53 0L12 2.845l.265.265zm-3 0a.375.375 0 11-.53 0L9 2.845l.265.265zm6 0a.375.375 0 11-.53 0L15 2.845l.265.265z" 
-          />
-        </svg>
-        <span>Catering Available</span>
-      </label>
-      
-      <label className="border p-4 flex rounded-2xl gap-2 items-center cursor-pointer hover:shadow-md transition-shadow">
-        <input type="checkbox" checked={selectedPerks.includes("accessibility")} name="accessibility" onChange={handleCheckClick}/>
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          fill="none" 
-          viewBox="0 0 24 24" 
-          strokeWidth={1.5} 
-          stroke="currentColor" 
-          className="w-6 h-6"
-        >
-          <path 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" 
-          />
-        </svg>
-        <span>Accessibility Features</span>
-      </label>
+          {/* Group Header - Always visible */}
+          <button 
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              toggleGroup(group.name);
+            }} 
+            className="w-full p-4 bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="text-primary">
+                {group.icon}
+              </div>
+              <span className="font-medium">{group.name}</span>
+            </div>
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              strokeWidth={1.5} 
+              stroke="currentColor" 
+              className={`w-5 h-5 transition-transform ${expandedGroups[group.name] ? 'rotate-180' : ''}`}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+            </svg>
+          </button>
+          
+          {/* Dropdown Content - Only visible when expanded */}
+          {expandedGroups[group.name] && (
+            <div className="bg-gray-50 divide-y divide-gray-100">
+              {group.options.map((option) => (
+                <label 
+                  key={option.name} 
+                  className="flex items-center p-3 pl-14 hover:bg-gray-100 cursor-pointer"
+                >
+                  <input 
+                    type="checkbox"
+                    name={option.name}
+                    checked={selectedPerks.includes(option.name)}
+                    onChange={handleCheckClick}
+                    className="mr-3 h-4 w-4 accent-primary"
+                  />
+                  <span className="text-sm">{option.label}</span>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   );
 }

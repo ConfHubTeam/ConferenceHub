@@ -26,7 +26,7 @@ export default function AccountNav() {
   }, [user]);
 
   function linkClasses(type = null) {
-    let classes = "py-2 px-3 sm:px-4 flex items-center justify-center gap-1 rounded-full transition-all whitespace-nowrap";
+    let classes = "py-2 px-3 sm:px-4 flex items-center gap-2 rounded-full transition-all whitespace-nowrap text-sm";
     if (type === subpage) {
       classes += " bg-primary text-white";
     } else {
@@ -37,7 +37,7 @@ export default function AccountNav() {
   
   return (
     <div>
-      <nav className="w-full flex flex-row mt-4 mb-6 sm:mb-10 gap-2 sm:gap-4 items-center justify-center">
+      <nav className="w-full flex flex-wrap mt-4 mb-6 sm:mb-10 gap-2 items-center justify-center px-4">
         <Link className={linkClasses("profile")} to={"/account"}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
