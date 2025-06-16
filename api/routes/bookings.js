@@ -1,17 +1,21 @@
 const express = require("express");
 const router = express.Router();
 const bookingController = require("../controllers/bookingController");
+const { authenticateToken, optionalAuth } = require("../middleware/auth");
 
-// Create new booking
-router.post("/", bookingController.createBooking);
+// Create new booking (requires authentication)
+router.post("/", authenticateToken, bookingController.createBooking);
 
 // Get bookings (different behavior based on user role)
-router.get("/", bookingController.getBookings);
+router.get("/", authenticateToken, bookingController.getBookings);
 
 // Update booking status
-router.put("/:id", bookingController.updateBookingStatus);
+router.put("/:id", authenticateToken, bookingController.updateBookingStatus);
 
 // Get booking counts for hosts
-router.get("/counts", bookingController.getBookingCounts);
+router.get("/counts", authenticateToken, bookingController.getBookingCounts);
+
+// Check availability of time slots (no auth required)
+router.get("/availability", bookingController.checkAvailability);
 
 module.exports = router;

@@ -109,8 +109,46 @@ const hasRole = (roles) => {
   };
 };
 
+/**
+ * Middleware for optional authentication - doesn't reject if no token is present
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next function
+ */
+const optionalAuth = async (req, res, next) => {
+  try {
+    // Get token from Authorization header or cookies
+    const token = req.headers.authorization?.split(' ')[1] || req.cookies.token;
+    
+    if (!token) {
+      // If no token, just continue without setting user
+      req.user = null;
+      return next();
+    }
+    
+    // Verify token
+    jwt.verify(token, authConfig.jwt.secret, {}, async (err, userData) => {
+      if (err) {
+        // Invalid token, but don't block access
+        req.user = null;
+        return next();
+      }
+      
+      // Token is valid, set userData
+      req.user = userData;
+      next();
+    });
+  } catch (error) {
+    // Error occurred, but don't block access
+    req.user = null;
+    next();
+  }
+};
+
 module.exports = {
   getUserDataFromToken,
   isAuthenticated,
-  hasRole
+  authenticateToken: isAuthenticated, // Alias for consistency
+  hasRole,
+  optionalAuth
 };

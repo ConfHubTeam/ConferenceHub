@@ -72,7 +72,10 @@ export const isTimeBlocked = (date, hour, blockedTimeSlots = []) => {
     const endHour = parseInt(slot.endTime.split(':')[0], 10);
     const checkHour = parseInt(hour.split(':')[0], 10);
     
-    // If the hour falls between startTime and endTime (inclusive of start), it's blocked
+    // If the hour falls within the booked range (including start, excluding end), it's blocked
+    // For example: if booked 9-17, hours 9,10,11,12,13,14,15,16 are blocked, but 17 is available
+    // However, if you're checking if you can START a booking at hour 16, and the existing 
+    // booking ends at 17, then hour 16 should be blocked because you can't start there
     return checkHour >= startHour && checkHour < endHour;
   });
 };
@@ -132,4 +135,67 @@ export const calculateBookingPercentage = (date, bookedTimeSlots = [], weekdayTi
   
   // Calculate percentage
   return Math.round((bookedHours / totalHours) * 100);
+};
+
+// Fetch booked time slots from the API for a specific place
+export const fetchBookedTimeSlots = async (placeId, date = null, api) => {
+  try {
+    let url = `/bookings/availability?placeId=${placeId}`;
+    if (date) {
+      url += `&date=${date}`;
+    }
+    
+    const response = await api.get(url);
+    if (response.data && response.data.bookedTimeSlots) {
+      return response.data.bookedTimeSlots;
+    }
+    
+    return [];
+  } catch (error) {
+    console.error("Error fetching booked time slots:", error);
+    return [];
+  }
+};
+
+// Validate if a time slot is available (not overlapping with any booked slots)
+export const validateTimeSlot = (timeSlot, bookedSlots = []) => {
+  if (!bookedSlots || bookedSlots.length === 0) return true;
+  
+  // Filter for booked slots on the same date
+  const bookedSlotsForDate = bookedSlots.filter(slot => slot.date === timeSlot.date);
+  if (bookedSlotsForDate.length === 0) return true;
+  
+  // Parse times as hours for comparison
+  const [startHour] = timeSlot.startTime.split(':').map(Number);
+  const [endHour] = timeSlot.endTime.split(':').map(Number);
+  
+  // Check for overlap with each booked slot
+  return !bookedSlotsForDate.some(booked => {
+    const [bookedStart] = booked.startTime.split(':').map(Number);
+    const [bookedEnd] = booked.endTime.split(':').map(Number);
+    
+    // Check if there's overlap (return true if overlap exists)
+    return (startHour < bookedEnd && endHour > bookedStart);
+  });
+};
+
+// Check if a time range is completely available for booking
+export const isTimeRangeAvailable = (date, startTime, endTime, blockedTimeSlots = []) => {
+  if (!date || !startTime || !endTime) return false;
+  
+  const dateString = typeof date === 'string' ? date : date.toISOString().split('T')[0];
+  const startHour = parseInt(startTime.split(':')[0], 10);
+  const endHour = parseInt(endTime.split(':')[0], 10);
+  
+  // Find all booked slots for this date
+  const bookedSlotsForDate = blockedTimeSlots.filter(slot => slot.date === dateString);
+  
+  // Check if the requested range overlaps with any existing booking
+  return !bookedSlotsForDate.some(slot => {
+    const bookedStart = parseInt(slot.startTime.split(':')[0], 10);
+    const bookedEnd = parseInt(slot.endTime.split(':')[0], 10);
+    
+    // Check for any overlap: requestedStart < bookedEnd AND requestedEnd > bookedStart
+    return (startHour < bookedEnd && endHour > bookedStart);
+  });
 };

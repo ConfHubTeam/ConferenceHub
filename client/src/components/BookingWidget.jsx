@@ -5,6 +5,8 @@ import { UserContext } from "./UserContext";
 import { useNotification } from "./NotificationContext";
 import { validateForm } from "../utils/formUtils";
 import PriceDisplay from "./PriceDisplay";
+import BookingAvailabilityStatus from "./BookingAvailabilityStatus";
+import { isTimeRangeAvailable } from "../utils/TimeUtils";
 
 export default function BookingWidget({ placeDetail, buttonDisabled, selectedCalendarDates = [] }) {
   const [numOfGuests, setNumOfGuests] = useState(1);
@@ -12,6 +14,8 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
   const [guestPhone, setGuestPhone] = useState("");
   const [redirect, setRedirect] = useState();
   const [error, setError] = useState("");
+  const [bookedTimeSlots, setBookedTimeSlots] = useState([]);
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
   const { user } = useContext(UserContext);
   const { notify } = useNotification();
   const location = useLocation();
@@ -21,6 +25,25 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
       setGuestName(user.name);
     }
   }, [user, placeDetail]);
+
+  // Fetch booked time slots when component mounts or placeDetail changes
+  useEffect(() => {
+    if (placeDetail && placeDetail.id) {
+      setIsCheckingAvailability(true);
+      api.get(`/bookings/availability?placeId=${placeDetail.id}`)
+        .then(response => {
+          if (response.data && response.data.bookedTimeSlots) {
+            setBookedTimeSlots(response.data.bookedTimeSlots);
+          }
+        })
+        .catch(err => {
+          console.error("Failed to fetch availability:", err);
+        })
+        .finally(() => {
+          setIsCheckingAvailability(false);
+        });
+    }
+  }, [placeDetail]);
 
   // Calculate total hours and pricing from selected calendar dates
   const calculatePricing = () => {
@@ -124,6 +147,36 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
     window.location.href = redirectUrl;
   };
 
+  // Function to check if selected time slots are available
+  const validateTimeSlotAvailability = () => {
+    if (!selectedCalendarDates || selectedCalendarDates.length === 0) {
+      return true; // No slots selected, so no conflicts
+    }
+
+    // Check each selected time slot for conflicts
+    for (const selectedSlot of selectedCalendarDates) {
+      const conflictingSlot = bookedTimeSlots.find(bookedSlot => {
+        // Skip if not the same date
+        if (bookedSlot.date !== selectedSlot.date) return false;
+        
+        // Convert times to hours for comparison
+        const [selectedStartHour] = selectedSlot.startTime.split(':').map(Number);
+        const [selectedEndHour] = selectedSlot.endTime.split(':').map(Number);
+        const [bookedStartHour] = bookedSlot.startTime.split(':').map(Number);
+        const [bookedEndHour] = bookedSlot.endTime.split(':').map(Number);
+        
+        // Check for overlap
+        return (selectedStartHour < bookedEndHour && selectedEndHour > bookedStartHour);
+      });
+      
+      if (conflictingSlot) {
+        return false; // Found a conflict
+      }
+    }
+    
+    return true; // No conflicts found
+  };
+
   async function handleReserve(event) {
     event.preventDefault();
     setError("");
@@ -166,9 +219,27 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
       return;
     }
 
+    // Check if selected time slots are available
+    if (!validateTimeSlotAvailability()) {
+      setError("Selected time slots are not available. Please choose different times.");
+      return;
+    }
+
     try {
       // Check if user is logged in
       if (!user) {
+        // Store booking selections in sessionStorage for after login
+        sessionStorage.setItem('bookingSelections', JSON.stringify({
+          selectedCalendarDates,
+          numOfGuests,
+          guestName,
+          guestPhone,
+          placeId: placeDetail.id
+        }));
+        
+        // Redirect to login with return URL
+        handleLoginRedirect();
+        return;
         setError("Please log in to book a conference room");
         return;
       }

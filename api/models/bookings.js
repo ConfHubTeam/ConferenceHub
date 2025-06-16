@@ -31,6 +31,24 @@ const Booking = sequelize.define('Booking', {
     type: DataTypes.ENUM('pending', 'approved', 'rejected'),
     defaultValue: 'pending',
     allowNull: false
+  },
+  timeSlots: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: [],
+    comment: 'Array of time slots with date, startTime, endTime for each booking day'
+  },
+  uniqueRequestId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true,
+    comment: 'Unique identifier for booking requests visible to hosts'
+  },
+  notificationSent: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+    comment: 'Flag to track if notifications were sent for this booking'
   }
 }, {
   timestamps: true

@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { format, parseISO } from "date-fns";
-import { formatHourTo12, generateTimeOptions, isTimeBlocked } from "../utils/TimeUtils";
+import { formatHourTo12, generateTimeOptions, isTimeBlocked, isTimeRangeAvailable } from "../utils/TimeUtils";
 
 /**
  * TimeSlotModal Component
@@ -27,13 +27,48 @@ export default function TimeSlotModal({
   // Generate time options and mark blocked times
   const timeOptions = useMemo(() => {
     const options = generateTimeOptions(timeSlots.start, timeSlots.end);
+    const minimumHours = placeDetail.minimumHours || 1;
     
     // Add blocked status to each time option
-    return options.map(option => ({
-      ...option,
-      isBlocked: isTimeBlocked(currentEditingDate, option.value, bookedTimeSlots)
-    }));
-  }, [timeSlots, currentEditingDate, bookedTimeSlots]);
+    return options.map(option => {
+      // Simple check: is this specific hour blocked?
+      const isHourBlocked = isTimeBlocked(currentEditingDate, option.value, bookedTimeSlots);
+      
+      if (isHourBlocked) {
+        return {
+          ...option,
+          isBlocked: true
+        };
+      }
+      
+      // For start times, check if you can book for at least the minimum hours
+      const startHour = parseInt(option.value.split(':')[0], 10);
+      const minimumEndHour = startHour + minimumHours;
+      const placeEndHour = parseInt(timeSlots.end.split(':')[0], 10);
+      
+      // Can't start booking if minimum duration would exceed operating hours
+      if (minimumEndHour > placeEndHour) {
+        return {
+          ...option,
+          isBlocked: true
+        };
+      }
+      
+      // Check if there are any conflicts in the minimum required range
+      const minimumEndTime = minimumEndHour.toString().padStart(2, '0') + ':00';
+      const isRangeAvailable = isTimeRangeAvailable(
+        currentEditingDate, 
+        option.value, 
+        minimumEndTime, 
+        bookedTimeSlots
+      );
+      
+      return {
+        ...option,
+        isBlocked: !isRangeAvailable
+      };
+    });
+  }, [timeSlots, currentEditingDate, bookedTimeSlots, placeDetail.minimumHours]);
 
   // Handle start time change with validation
   const handleStartTimeChange = (value) => {
@@ -159,22 +194,15 @@ export default function TimeSlotModal({
                     return endHour > startHour && endHour >= minimumEndHour;
                   })
                   .map((option) => {
-                    // Check if any hour between start time and this option is blocked
-                    const startHour = parseInt(selectedStartTime.split(':')[0], 10);
-                    const endHour = parseInt(option.value.split(':')[0], 10);
+                    // Check if the range from start time to this end time is available
+                    const isRangeAvailable = isTimeRangeAvailable(
+                      currentEditingDate, 
+                      selectedStartTime, 
+                      option.value, 
+                      bookedTimeSlots
+                    );
                     
-                    // Check if any hour in the range is blocked
-                    const hasBlockedHoursInRange = Array.from(
-                      { length: endHour - startHour },
-                      (_, i) => startHour + i + 1
-                    ).some(hour => {
-                      const hourStr = hour.toString().padStart(2, '0') + ':00';
-                      return isTimeBlocked(currentEditingDate, hourStr, bookedTimeSlots);
-                    });
-                    
-                    // Also check if the end time itself is blocked
-                    const isEndTimeBlocked = option.isBlocked;
-                    const isDisabled = hasBlockedHoursInRange || isEndTimeBlocked;
+                    const isDisabled = !isRangeAvailable;
                     
                     return (
                       <option 
@@ -188,8 +216,7 @@ export default function TimeSlotModal({
                         }
                       >
                         {option.label}
-                        {hasBlockedHoursInRange ? " (Conflict with booking)" : ""}
-                        {isEndTimeBlocked ? " (Booked)" : ""}
+                        {isDisabled ? " (Conflicts with existing booking)" : ""}
                       </option>
                     );
                   })}
