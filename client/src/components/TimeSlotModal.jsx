@@ -85,17 +85,16 @@ export default function TimeSlotModal({
         onEndTimeChange('');
       }
       
-      // Check if there are any blocked hours between start and end time
-      const hasBlockedHoursInRange = Array.from(
-        { length: endHour - startHour },
-        (_, i) => startHour + i + 1
-      ).some(hour => {
-        const hourStr = hour.toString().padStart(2, '0') + ':00';
-        return isTimeBlocked(currentEditingDate, hourStr, bookedTimeSlots);
-      });
+      // Check if the current start-end range would span any blocked time
+      const isCurrentRangeAvailable = isTimeRangeAvailable(
+        currentEditingDate,
+        value, // new start time
+        selectedEndTime,
+        bookedTimeSlots
+      );
       
-      // Clear end time if there are blocked hours in the range
-      if (hasBlockedHoursInRange) {
+      // Clear end time if the range would span blocked time
+      if (!isCurrentRangeAvailable) {
         onEndTimeChange('');
       }
     }
@@ -195,6 +194,7 @@ export default function TimeSlotModal({
                   })
                   .map((option) => {
                     // Check if the range from start time to this end time is available
+                    // This prevents selecting end times that would create a range spanning blocked periods
                     const isRangeAvailable = isTimeRangeAvailable(
                       currentEditingDate, 
                       selectedStartTime, 
@@ -216,7 +216,7 @@ export default function TimeSlotModal({
                         }
                       >
                         {option.label}
-                        {isDisabled ? " (Conflicts with existing booking)" : ""}
+                        {isDisabled ? " (Would span blocked time)" : ""}
                       </option>
                     );
                   })}
