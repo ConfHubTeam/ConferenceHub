@@ -30,9 +30,13 @@ export default function PlaceAvailabilityCalendar({
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedDetailDate, setSelectedDetailDate] = useState("");
   
-  // Calculate booking percentages for calendar days
+  // State for tracking booked time slots from API
+  const [bookedTimeSlots, setBookedTimeSlots] = useState([]);
+  const [isLoadingAvailability, setIsLoadingAvailability] = useState(false);
+  
+  // Calculate booking percentages for calendar days based on booked time slots
   const bookingPercentages = useMemo(() => {
-    if (!existingBookings || existingBookings.length === 0) {
+    if (!bookedTimeSlots || bookedTimeSlots.length === 0) {
       return {};
     }
     
@@ -48,7 +52,7 @@ export default function PlaceAvailabilityCalendar({
       const dateStr = format(currentDate, "yyyy-MM-dd");
       const percentage = calculateBookingPercentage(
         dateStr, 
-        existingBookings, 
+        bookedTimeSlots, // Use fetched booked time slots instead of existingBookings
         placeDetail.weekdayTimeSlots,
         placeDetail.checkIn,
         placeDetail.checkOut
@@ -59,7 +63,7 @@ export default function PlaceAvailabilityCalendar({
     }
     
     return percentages;
-  }, [existingBookings, placeDetail]);
+  }, [bookedTimeSlots, placeDetail]); // Update dependencies
   
   const {
     startDate,
@@ -77,6 +81,29 @@ export default function PlaceAvailabilityCalendar({
       setSelectedDates(selectedCalendarDates);
     }
   }, [selectedCalendarDates]);
+
+  // Fetch booked time slots when component mounts or placeDetail changes
+  useEffect(() => {
+    if (placeDetail && placeDetail.id) {
+      setIsLoadingAvailability(true);
+      
+      // Import api dynamically to avoid circular dependencies
+      import("../utils/api").then(({ default: api }) => {
+        return api.get(`/bookings/availability?placeId=${placeDetail.id}`);
+      })
+      .then(response => {
+        if (response.data && response.data.bookedTimeSlots) {
+          setBookedTimeSlots(response.data.bookedTimeSlots);
+        }
+      })
+      .catch(err => {
+        console.error("Failed to fetch availability:", err);
+      })
+      .finally(() => {
+        setIsLoadingAvailability(false);
+      });
+    }
+  }, [placeDetail]);
 
   // Handle individual date selection
   const handleDateClick = (dateString) => {
@@ -235,7 +262,7 @@ export default function PlaceAvailabilityCalendar({
           <DateAvailabilityDetails
             date={selectedDetailDate}
             onClose={() => setShowDetailModal(false)}
-            bookedTimeSlots={existingBookings}
+            bookedTimeSlots={bookedTimeSlots} // Use fetched booked time slots
             placeDetail={{
               ...placeDetail,
               // Ensure weekdayTimeSlots is properly passed
@@ -253,8 +280,20 @@ export default function PlaceAvailabilityCalendar({
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mr-2 text-blue-600">
           <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0121 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
         </svg>
-        {isUnauthorized || canBook ? "Select Your Dates" : "Availability Calendar"}
+                {isUnauthorized || canBook ? "Select Your Dates" : "Availability Calendar"}
       </h2>
+
+      {/* Information for unauthenticated users */}
+      {isUnauthorized && (
+        <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-center text-blue-800">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2 text-blue-600">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+            </svg>
+            <p className="font-medium">Select dates and time slots to see pricing. You'll need to login to complete booking.</p>
+          </div>
+        </div>
+      )}
       
       {/* Calendar Display */}
       <div className="max-w-lg mx-auto">
@@ -267,13 +306,26 @@ export default function PlaceAvailabilityCalendar({
           blockedDates={blockedDates || []}
           blockedWeekdays={blockedWeekdays || []}
           selectedIndividualDates={selectedDates} // Pass selected individual dates with time slots
-          onIndividualDateClick={handleDateClick} // Handler for individual date selection
+          onIndividualDateClick={handleDateClick} // Both authenticated and unauthenticated users can select dates
           individualDateMode={true} // Enable individual date selection mode
           bookingPercentages={bookingPercentages} // Pass booking percentages
         />
       </div>
       
-      {/* Selected dates display */}
+      {/* Show date availability details modal for hosts/agents only */}
+      {!isUnauthorized && !canBook && showDetailModal && (
+        <DateAvailabilityDetails
+          date={selectedDetailDate}
+          onClose={() => setShowDetailModal(false)}
+          bookedTimeSlots={bookedTimeSlots} // Use fetched booked time slots
+          placeDetail={{
+            ...placeDetail,
+            weekdayTimeSlots: placeDetail.weekdayTimeSlots || {}
+          }}
+        />
+      )}
+      
+      {/* Selected dates display - for both authenticated and unauthenticated users */}
       <SelectedDates 
         selectedDates={selectedDates}
         onClearAll={handleClearAllDates}
@@ -282,7 +334,7 @@ export default function PlaceAvailabilityCalendar({
         onSelectedDatesChange={onSelectedDatesChange}
       />
 
-      {/* Time Slot Selection Modal */}
+      {/* Time Slot Selection Modal - for both authenticated and unauthenticated users */}
       <TimeSlotModal 
         isOpen={showTimeSlotModal}
         onClose={handleModalClose}
@@ -295,7 +347,7 @@ export default function PlaceAvailabilityCalendar({
         timeSlots={getAvailableTimeSlots(currentEditingDate, weekdayTimeSlots, checkIn, checkOut)}
         placeDetail={placeDetail}
         isEditMode={selectedDates.some(d => d.date === currentEditingDate)}
-        bookedTimeSlots={existingBookings} // Pass existing bookings to prevent overlaps
+        bookedTimeSlots={bookedTimeSlots} // Use fetched booked time slots from API
       />
     </div>
   );

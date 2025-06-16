@@ -54,12 +54,20 @@ export default function PlaceDetailPage() {
     if (storedBookingData && user) {
       try {
         const bookingData = JSON.parse(storedBookingData);
-        // Check if this is the same place and the data is recent (within 1 hour)
-        if (
-          bookingData.placeId === placeId &&
-          Date.now() - bookingData.timestamp < 3600000 // 1 hour in milliseconds
-        ) {
+        // Check if this is the same place
+        if (bookingData.placeId === placeId) {
+          // Restore all booking data
           setSelectedCalendarDates(bookingData.selectedCalendarDates || []);
+          
+          // If we have guest information, pre-populate it to the booking widget
+          if (bookingData.guestName) {
+            // We don't need to set it here directly as the BookingWidget component
+            // has its own state, but we can keep the data available for it
+          }
+          
+          // Notify the user that their booking selections were restored
+          notify("Your booking selections have been restored. You can now complete your booking.", "info");
+          
           // Clear the stored data after restoring
           sessionStorage.removeItem("bookingSelections");
         }
@@ -69,7 +77,7 @@ export default function PlaceDetailPage() {
         sessionStorage.removeItem("bookingSelections");
       }
     }
-  }, [user, placeId]); // Run when user login state changes or placeId changes
+  }, [user, placeId, notify]); // Run when user login state changes or placeId changes
 
   // Show delete confirmation modal
   function handleDeleteClick() {
