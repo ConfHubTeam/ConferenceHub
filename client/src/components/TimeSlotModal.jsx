@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { format, parseISO } from "date-fns";
-import { formatHourTo12, generateTimeOptions, generateStartTimeOptions, isTimeBlocked, isTimeRangeAvailable } from "../utils/TimeUtils";
+import { formatHourTo12, generateTimeOptions, generateStartTimeOptions, isTimeBlocked, isTimeRangeAvailable, isValidStartTime } from "../utils/TimeUtils";
 
 /**
  * TimeSlotModal Component
@@ -78,7 +78,8 @@ export default function TimeSlotModal({
     const startOptions = generateStartTimeOptions(timeSlots.start, timeSlots.end, minimumHours, cooldownMinutes);
     
     return startOptions.map(option => {
-      const isHourBlocked = isTimeBlocked(
+      // Use isValidStartTime to check if this can be a start time (includes end-of-day restrictions)
+      const isValidStart = isValidStartTime(
         currentEditingDate, 
         option.value, 
         bookedTimeSlots, 
@@ -89,7 +90,7 @@ export default function TimeSlotModal({
       
       return {
         ...option,
-        isBlocked: isHourBlocked
+        isBlocked: !isValidStart
       };
     });
   }, [timeSlots, currentEditingDate, bookedTimeSlots, placeDetail.minimumHours, placeDetail.cooldown]);
@@ -292,6 +293,16 @@ export default function TimeSlotModal({
                   isInSelectedRange = optionHour > startHour && optionHour < endHour;
                 }
                 
+                // Check if this hour is actually blocked by real bookings (not end-of-day restrictions)
+                const isActuallyBlocked = isTimeBlocked(
+                  currentEditingDate, 
+                  option.value, 
+                  bookedTimeSlots, 
+                  placeDetail.minimumHours || 1, 
+                  timeSlots.end,
+                  placeDetail.cooldown || 0
+                );
+                
                 // Check if this hour is in a cooldown period (for visual indication)
                 const isInCooldownPeriod = bookedTimeSlots.some(slot => {
                   if (slot.date !== currentEditingDate) return false;
@@ -302,28 +313,34 @@ export default function TimeSlotModal({
                   return optionHour >= bookedEndHour && optionHour < cooldownEndHour;
                 });
                 
+                // Check if this hour is the working hours end time (for visual grayout)
+                const workingEndHour = parseInt(timeSlots.end.split(':')[0], 10);
+                const isWorkingHoursEndTime = optionHour === workingEndHour;
+                
                 return (
                   <div 
                     key={option.value} 
                     className={`
                       flex-shrink-0 text-xs text-center p-2 rounded-md mr-1 w-16
-                      ${option.isBlocked 
+                      ${isActuallyBlocked 
                         ? isInCooldownPeriod
                           ? 'bg-orange-100 text-orange-800' // Cooldown period
                           : 'bg-red-100 text-red-800' // Booked
                         : selectedStartTime === option.value
                           ? 'bg-blue-500 text-white' // Start time
                           : selectedEndTime === option.value
-                            ? 'bg-blue-700 text-white' // End time
-                            : isInSelectedRange
-                              ? 'bg-blue-200 text-blue-800 border border-blue-300' // In range
-                              : 'bg-green-100 text-green-800' // Available
+                            ? 'bg-blue-700 text-white' // Selected end time
+                            : isWorkingHoursEndTime
+                              ? 'bg-gray-300 text-gray-600' // Working hours end time (grayed out)
+                              : isInSelectedRange
+                                ? 'bg-blue-200 text-blue-800 border border-blue-300' // In range
+                                : 'bg-green-100 text-green-800' // Available
                       }
                     `}
                   >
                     <div>{displayHour}</div>
                     <div>{amPm}</div>
-                    {option.isBlocked && (
+                    {isActuallyBlocked && (
                       <div className="mt-1">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -334,6 +351,13 @@ export default function TimeSlotModal({
                       <div className="mt-1">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mx-auto text-white" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    )}
+                    {isWorkingHoursEndTime && !isActuallyBlocked && selectedEndTime !== option.value && (
+                      <div className="mt-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mx-auto text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       </div>
                     )}
@@ -349,6 +373,10 @@ export default function TimeSlotModal({
               <div className="flex items-center">
                 <div className="h-3 w-3 bg-orange-100 rounded mr-1"></div>
                 <span>Cooldown</span>
+              </div>
+              <div className="flex items-center">
+                <div className="h-3 w-3 bg-gray-300 rounded mr-1"></div>
+                <span>Day End</span>
               </div>
               <div className="flex items-center">
                 <div className="h-3 w-3 bg-green-100 rounded mr-1"></div>
