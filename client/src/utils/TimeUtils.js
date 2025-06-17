@@ -19,12 +19,39 @@ export const formatHourTo12 = (hour24) => {
 };
 
 // Generate time options for select dropdowns
-export const generateTimeOptions = (startHour, endHour) => {
+export const generateTimeOptions = (startHour, endHour, minimumHours = 1, cooldownMinutes = 0) => {
   const options = [];
   const start = parseInt(startHour.split(":")[0], 10);
   const end = parseInt(endHour.split(":")[0], 10);
   
+  // Generate all time slots from start to end for visual display and end time selection
   for (let i = start; i <= end; i++) {
+    const hour24 = i.toString().padStart(2, "0") + ":00";
+    const hour12 = formatHourTo12(hour24);
+    options.push({ value: hour24, label: hour12 });
+  }
+  
+  return options;
+};
+
+// Generate start time options specifically (limited by cooldown and minimum duration)
+export const generateStartTimeOptions = (startHour, endHour, minimumHours = 1, cooldownMinutes = 0) => {
+  const options = [];
+  const start = parseInt(startHour.split(":")[0], 10);
+  const end = parseInt(endHour.split(":")[0], 10);
+  
+  // Calculate cooldown in hours (convert minutes to hours)
+  const cooldownHours = cooldownMinutes / 60;
+  
+  // Calculate the effective end time considering cooldown
+  // For fractional cooldowns, we need to be more precise
+  const effectiveEndHour = end - cooldownHours;
+  
+  // Calculate the latest possible start time considering minimum booking duration + cooldown
+  // The latest start time is when start + minimum duration + cooldown <= end time
+  const latestStartHour = Math.floor(effectiveEndHour - minimumHours);
+  
+  for (let i = start; i <= latestStartHour; i++) {
     const hour24 = i.toString().padStart(2, "0") + ":00";
     const hour12 = formatHourTo12(hour24);
     options.push({ value: hour24, label: hour12 });
@@ -57,26 +84,48 @@ export const getAvailableTimeSlots = (dateString, weekdayTimeSlots, checkIn, che
  return { start: checkIn || "09:00", end: checkOut || "17:00" };
 };
 
-// Check if a specific time is blocked based on existing bookings
-export const isTimeBlocked = (date, hour, blockedTimeSlots = []) => {
+// Check if a specific time is blocked based on existing bookings and cooldown constraints
+export const isTimeBlocked = (date, hour, blockedTimeSlots = [], minimumHours = 1, placeEndTime = "19:00", cooldownMinutes = 0) => {
   if (!date || !hour) return false;
   
   // Format should match what is stored in blockedTimeSlots
   const dateString = typeof date === 'string' ? date : date.toISOString().split('T')[0];
   
-  // Check if there's any booking for this date and time
+  const checkHour = parseInt(hour.split(':')[0], 10);
+  const placeEndHour = parseInt(placeEndTime.split(':')[0], 10);
+  
+  // Calculate cooldown constraint for end-of-day bookings
+  const cooldownHours = cooldownMinutes / 60;
+  const effectiveEndHour = placeEndHour - Math.ceil(cooldownHours);
+  
+  // Check if there's enough time left to meet minimum booking duration before effective end time
+  const remainingHours = effectiveEndHour - checkHour;
+  if (remainingHours < minimumHours) {
+    return true; // Not enough time left for minimum booking considering cooldown
+  }
+  
+  // Check if there's any booking for this date and time (including cooldown periods)
   return blockedTimeSlots.some(slot => {
     if (slot.date !== dateString) return false;
     
     const startHour = parseInt(slot.startTime.split(':')[0], 10);
     const endHour = parseInt(slot.endTime.split(':')[0], 10);
-    const checkHour = parseInt(hour.split(':')[0], 10);
+    
+    // Calculate cooldown period after the booking
+    const cooldownHoursDecimal = cooldownMinutes / 60;
+    const cooldownEndHour = endHour + cooldownHoursDecimal;
     
     // If the hour falls within the booked range (including start, excluding end), it's blocked
-    // For example: if booked 9-17, hours 9,10,11,12,13,14,15,16 are blocked, but 17 is available
-    // However, if you're checking if you can START a booking at hour 16, and the existing 
-    // booking ends at 17, then hour 16 should be blocked because you can't start there
-    return checkHour >= startHour && checkHour < endHour;
+    if (checkHour >= startHour && checkHour < endHour) {
+      return true;
+    }
+    
+    // If the hour falls within the cooldown period after the booking, it's blocked
+    if (checkHour >= endHour && checkHour < cooldownEndHour) {
+      return true;
+    }
+    
+    return false;
   });
 };
 
@@ -89,8 +138,8 @@ export const getBookedTimeSlots = (date, bookedTimeSlots = []) => {
   return bookedTimeSlots.filter(slot => slot.date === dateString);
 };
 
-// Calculate booking percentage for a specific date
-export const calculateBookingPercentage = (date, bookedTimeSlots = [], weekdayTimeSlots, checkIn, checkOut) => {
+// Calculate booking percentage for a specific date (including cooldown periods)
+export const calculateBookingPercentage = (date, bookedTimeSlots = [], weekdayTimeSlots, checkIn, checkOut, cooldownMinutes = 0) => {
   if (!date) return 0;
   
   // Get the available time slots for this date
@@ -108,20 +157,32 @@ export const calculateBookingPercentage = (date, bookedTimeSlots = [], weekdayTi
   
   if (bookingsForDate.length === 0) return 0;
   
-  // Calculate booked hours
+  // Calculate booked hours including cooldown periods
   let bookedHours = 0;
   
-  // Create an array to track which hours are booked
+  // Create an array to track which hours are booked (including cooldown)
   const hourOccupancy = Array(24).fill(false);
   
-  // Mark booked hours in the array
+  // Mark booked hours and cooldown hours in the array
   bookingsForDate.forEach(booking => {
     const bookingStartHour = parseInt(booking.startTime.split(':')[0], 10);
     const bookingEndHour = parseInt(booking.endTime.split(':')[0], 10);
     
+    // Mark actual booking hours
     for (let hour = bookingStartHour; hour < bookingEndHour; hour++) {
       if (hour >= startHour && hour < endHour) {
         hourOccupancy[hour] = true;
+      }
+    }
+    
+    // Mark cooldown hours
+    const cooldownHours = cooldownMinutes / 60;
+    const cooldownEndHour = bookingEndHour + cooldownHours;
+    
+    for (let hour = bookingEndHour; hour < cooldownEndHour; hour++) {
+      const hourIndex = Math.floor(hour);
+      if (hourIndex >= startHour && hourIndex < endHour) {
+        hourOccupancy[hourIndex] = true;
       }
     }
   });
@@ -157,8 +218,8 @@ export const fetchBookedTimeSlots = async (placeId, date = null, api) => {
   }
 };
 
-// Validate if a time slot is available (not overlapping with any booked slots)
-export const validateTimeSlot = (timeSlot, bookedSlots = []) => {
+// Validate if a time slot is available (not overlapping with any booked slots or cooldown periods)
+export const validateTimeSlot = (timeSlot, bookedSlots = [], cooldownMinutes = 0) => {
   if (!bookedSlots || bookedSlots.length === 0) return true;
   
   // Filter for booked slots on the same date
@@ -169,18 +230,27 @@ export const validateTimeSlot = (timeSlot, bookedSlots = []) => {
   const [startHour] = timeSlot.startTime.split(':').map(Number);
   const [endHour] = timeSlot.endTime.split(':').map(Number);
   
-  // Check for overlap with each booked slot
+  // Check for overlap with each booked slot (including cooldown periods)
   return !bookedSlotsForDate.some(booked => {
     const [bookedStart] = booked.startTime.split(':').map(Number);
     const [bookedEnd] = booked.endTime.split(':').map(Number);
     
-    // Check if there's overlap (return true if overlap exists)
-    return (startHour < bookedEnd && endHour > bookedStart);
+    // Calculate cooldown period after the booking
+    const cooldownHours = cooldownMinutes / 60;
+    const cooldownEnd = bookedEnd + cooldownHours;
+    
+    // Check for overlap with the actual booking
+    const hasBookingOverlap = (startHour < bookedEnd && endHour > bookedStart);
+    
+    // Check for overlap with the cooldown period
+    const hasCooldownOverlap = (startHour < cooldownEnd && endHour > bookedEnd);
+    
+    return hasBookingOverlap || hasCooldownOverlap;
   });
 };
 
 // Check if a time range is completely available for booking
-export const isTimeRangeAvailable = (date, startTime, endTime, blockedTimeSlots = []) => {
+export const isTimeRangeAvailable = (date, startTime, endTime, blockedTimeSlots = [], cooldownMinutes = 0) => {
   if (!date || !startTime || !endTime) return false;
   
   const dateString = typeof date === 'string' ? date : date.toISOString().split('T')[0];
@@ -190,12 +260,21 @@ export const isTimeRangeAvailable = (date, startTime, endTime, blockedTimeSlots 
   // Find all booked slots for this date
   const bookedSlotsForDate = blockedTimeSlots.filter(slot => slot.date === dateString);
   
-  // Check if the requested range overlaps with any existing booking
+  // Check if the requested range overlaps with any existing booking or their cooldown periods
   return !bookedSlotsForDate.some(slot => {
     const bookedStart = parseInt(slot.startTime.split(':')[0], 10);
     const bookedEnd = parseInt(slot.endTime.split(':')[0], 10);
     
-    // Check for any overlap: requestedStart < bookedEnd AND requestedEnd > bookedStart
-    return (startHour < bookedEnd && endHour > bookedStart);
+    // Calculate cooldown period after the booking
+    const cooldownHoursDecimal = cooldownMinutes / 60;
+    const cooldownEnd = bookedEnd + cooldownHoursDecimal;
+    
+    // Check for overlap with the actual booking
+    const hasBookingOverlap = (startHour < bookedEnd && endHour > bookedStart);
+    
+    // Check for overlap with the cooldown period
+    const hasCooldownOverlap = (startHour < cooldownEnd && endHour > bookedEnd);
+    
+    return hasBookingOverlap || hasCooldownOverlap;
   });
 };

@@ -55,7 +55,8 @@ export default function PlaceAvailabilityCalendar({
         bookedTimeSlots, // Use fetched booked time slots instead of existingBookings
         placeDetail.weekdayTimeSlots,
         placeDetail.checkIn,
-        placeDetail.checkOut
+        placeDetail.checkOut,
+        placeDetail.cooldown || 0
       );
       
       percentages[dateStr] = percentage;

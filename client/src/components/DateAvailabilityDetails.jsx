@@ -31,20 +31,13 @@ export default function DateAvailabilityDetails({
     const dayOfWeek = dateObj.getDay(); // 0-6 (Sunday-Saturday)
     const dayName = format(dateObj, 'EEEE');
     
-    console.log(`Processing date: ${format(dateObj, 'yyyy-MM-dd')} (${dayName}, day ${dayOfWeek})`);
-    console.log('weekdayTimeSlots available:', weekdayTimeSlots ? Object.keys(weekdayTimeSlots).length : 'none');
-    
     // Use getAvailableTimeSlots to get the correct time range for this day
     const availableTimeSlots = getAvailableTimeSlots(date, weekdayTimeSlots, checkIn, checkOut);
     setTimeRange(availableTimeSlots);
-    
-    console.log(`Time range determined: ${availableTimeSlots.start} - ${availableTimeSlots.end}`);
-    
+  
     // Generate all possible time slots for the day using the correct time range
     const startHour = parseInt(availableTimeSlots.start.split(":")[0], 10);
     const endHour = parseInt(availableTimeSlots.end.split(":")[0], 10);
-    
-    console.log(`Generating time slots from hour ${startHour} to ${endHour}`);
     
     const slots = [];
     for (let hour = startHour; hour < endHour; hour++) {
@@ -73,7 +66,6 @@ export default function DateAvailabilityDetails({
     
     setAllTimeSlots(slots);
     
-    console.log(`Generated ${slots.length} time slots for ${dayName}`);
   }, [date, bookedTimeSlots, placeDetail]);
 
   if (!date) return null;
