@@ -118,12 +118,6 @@ export default function PlaceDetailsInfo({ placeDetail }) {
               <span className="text-sm text-gray-600">Cooldown:</span>
               <span className="font-bold text-purple-900">{cooldown} min</span>
             </div>
-            {checkIn && checkOut && (
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Hours:</span>
-                <span className="font-bold text-purple-900">{checkIn} - {checkOut}</span>
-              </div>
-            )}
           </div>
         </div>
       </div>
