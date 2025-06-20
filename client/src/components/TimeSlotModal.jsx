@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { format, parseISO } from "date-fns";
-import { formatHourTo12, generateTimeOptions, generateStartTimeOptions, isTimeBlocked, isTimeRangeAvailable, isValidStartTime } from "../utils/TimeUtils";
+import { formatHourTo12, generateTimeOptions, generateStartTimeOptions, isTimeBlocked, isTimeRangeAvailableEnhanced, isValidStartTimeEnhanced } from "../utils/TimeUtils";
 
 /**
  * TimeSlotModal Component
@@ -55,7 +55,7 @@ export default function TimeSlotModal({
       const minimumEndHour = startHour + minimumHours;
       const minimumEndTime = minimumEndHour.toString().padStart(2, '0') + ':00';
       
-      const isRangeAvailable = isTimeRangeAvailable(
+      const isRangeAvailable = isTimeRangeAvailableEnhanced(
         currentEditingDate, 
         option.value, 
         minimumEndTime, 
@@ -78,8 +78,8 @@ export default function TimeSlotModal({
     const startOptions = generateStartTimeOptions(timeSlots.start, timeSlots.end, minimumHours, cooldownMinutes);
     
     return startOptions.map(option => {
-      // Use isValidStartTime to check if this can be a start time (includes end-of-day restrictions)
-      const isValidStart = isValidStartTime(
+      // Use isValidStartTimeEnhanced to check if this can be a start time (includes end-of-day restrictions)
+      const isValidStart = isValidStartTimeEnhanced(
         currentEditingDate, 
         option.value, 
         bookedTimeSlots, 
@@ -111,7 +111,7 @@ export default function TimeSlotModal({
       }
       
       // Check if the current start-end range would span any blocked time
-      const isCurrentRangeAvailable = isTimeRangeAvailable(
+      const isCurrentRangeAvailable = isTimeRangeAvailableEnhanced(
         currentEditingDate,
         value, // new start time
         selectedEndTime,
@@ -244,7 +244,7 @@ export default function TimeSlotModal({
                   .map((option) => {
                     // Check if the range from start time to this end time is available
                     // This prevents selecting end times that would create a range spanning blocked periods
-                    const isRangeAvailable = isTimeRangeAvailable(
+                    const isRangeAvailable = isTimeRangeAvailableEnhanced(
                       currentEditingDate, 
                       selectedStartTime, 
                       option.value, 

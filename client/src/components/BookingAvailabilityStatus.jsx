@@ -1,5 +1,5 @@
 import React from "react";
-import { isTimeRangeAvailable } from "../utils/TimeUtils";
+import { isTimeRangeAvailableEnhanced } from "../utils/TimeUtils";
 
 /**
  * BookingAvailabilityStatus Component
@@ -10,7 +10,8 @@ import { isTimeRangeAvailable } from "../utils/TimeUtils";
 export default function BookingAvailabilityStatus({ 
   selectedCalendarDates = [], 
   bookedTimeSlots = [],
-  isLoadingAvailability = false 
+  isLoadingAvailability = false,
+  cooldownMinutes = 0
 }) {
   if (!selectedCalendarDates || selectedCalendarDates.length === 0) {
     return null;
@@ -20,8 +21,8 @@ export default function BookingAvailabilityStatus({
   const checkDateAvailability = (selectedDate) => {
     const { date, startTime, endTime } = selectedDate;
     
-    // Use the utility function to check if the entire time range is available
-    const isAvailable = isTimeRangeAvailable(date, startTime, endTime, bookedTimeSlots);
+    // Use the enhanced utility function to check if the entire time range is available
+    const isAvailable = isTimeRangeAvailableEnhanced(date, startTime, endTime, bookedTimeSlots, cooldownMinutes);
     
     return isAvailable ? 'available' : 'unavailable';
   };
