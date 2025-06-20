@@ -6,10 +6,13 @@ import { UserContext } from "./UserContext";
 import { useNotification } from "./NotificationContext";
 import { validateForm } from "../utils/formUtils";
 import PriceDisplay from "./PriceDisplay";
+import SelectedTimeSlots from "./SelectedTimeSlots";
+import PricingBreakdown from "./PricingBreakdown";
 import { isTimeRangeAvailableEnhanced } from "../utils/TimeUtils";
+import { calculateBookingPricing } from "../utils/pricingCalculator";
 
 export default function BookingWidget({ placeDetail, buttonDisabled, selectedCalendarDates = [] }) {
-  const [numOfGuests, setNumOfGuests] = useState(1);
+  const [numOfGuests, setNumOfGuests] = useState(0);
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
   const [redirect, setRedirect] = useState();
@@ -23,6 +26,10 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
   useEffect(() => {
     if (user) {
       setGuestName(user.name);
+      // Auto-populate phone number if user has one
+      if (user.phoneNumber) {
+        setGuestPhone(user.phoneNumber);
+      }
     }
   }, [user, placeDetail]);
 
@@ -45,88 +52,8 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
     }
   }, [placeDetail]);
 
-  // Calculate total hours and pricing from selected calendar dates
-  const calculatePricing = () => {
-    if (!selectedCalendarDates || selectedCalendarDates.length === 0) {
-      return {
-        totalHours: 0,
-        regularHours: 0,
-        fullDays: 0,
-        regularPrice: 0,
-        fullDayPrice: 0,
-        totalPrice: 0,
-        breakdown: []
-      };
-    }
-
-    const { 
-      price: hourlyRate, 
-      fullDayHours = 8, 
-      fullDayDiscountPrice = 0 
-    } = placeDetail;
-
-    let totalHours = 0;
-    let totalPrice = 0;
-    let breakdown = [];
-
-    selectedCalendarDates.forEach(dateSlot => {
-      const startTime = dateSlot.startTime;
-      const endTime = dateSlot.endTime;
-      
-      // Calculate hours for this date slot
-      const [startHour] = startTime.split(':').map(Number);
-      const [endHour] = endTime.split(':').map(Number);
-      const hoursForThisSlot = endHour - startHour;
-      
-      totalHours += hoursForThisSlot;
-      
-      // Determine pricing for this slot
-      let slotPrice = 0;
-      let priceType = '';
-      
-      if (hoursForThisSlot >= fullDayHours && fullDayDiscountPrice > 0) {
-        // Full day pricing
-        const fullDaysUsed = Math.floor(hoursForThisSlot / fullDayHours);
-        const remainingHours = hoursForThisSlot % fullDayHours;
-        
-        slotPrice = (fullDaysUsed * fullDayDiscountPrice) + (remainingHours * hourlyRate);
-        priceType = fullDaysUsed > 0 ? `${fullDaysUsed} full day${fullDaysUsed > 1 ? 's' : ''} + ${remainingHours}h` : `${hoursForThisSlot}h`;
-      } else {
-        // Regular hourly pricing
-        slotPrice = hoursForThisSlot * hourlyRate;
-        priceType = `${hoursForThisSlot}h`;
-      }
-      
-      totalPrice += slotPrice;
-      
-      breakdown.push({
-        date: dateSlot.formattedDate,
-        timeSlot: `${formatHourTo12(startTime)} - ${formatHourTo12(endTime)}`,
-        hours: hoursForThisSlot,
-        price: slotPrice,
-        priceType
-      });
-    });
-
-    return {
-      totalHours,
-      totalPrice,
-      breakdown
-    };
-  };
-
-  // Helper function to format hour to 12-hour format
-  const formatHourTo12 = (hour24) => {
-    if (!hour24) return "";
-    const [hours] = hour24.split(':');
-    const hourNum = parseInt(hours, 10);
-    const displayHour = hourNum === 0 ? 12 : hourNum > 12 ? hourNum - 12 : hourNum;
-    const amPm = hourNum < 12 ? 'AM' : 'PM';
-    return `${displayHour}:00 ${amPm}`;
-  };
-
-  const pricingData = calculatePricing();
-  const { totalHours, totalPrice, breakdown } = pricingData;
+  const pricingData = calculateBookingPricing(selectedCalendarDates, placeDetail);
+  const { totalHours, totalPrice, breakdown, serviceFee, finalTotal } = pricingData;
 
   // Function to handle login redirect with preserved state
   const handleLoginRedirect = () => {
@@ -202,7 +129,7 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
           required: true,
           min: 1, 
           max: placeDetail.maxGuests,
-          minErrorMessage: "Number of guests must be at least 1",
+          minErrorMessage: "Please specify the number of attendees (minimum 1)",
           maxErrorMessage: `Maximum capacity is ${placeDetail.maxGuests} people`
         }
       }
@@ -305,45 +232,12 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
         </div>
 
         {/* Calendar-based booking information for unauthorized users */}
-        {selectedCalendarDates && selectedCalendarDates.length > 0 && (
-          <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <h4 className="font-medium text-blue-900 flex items-center mb-2">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0121 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-              </svg>
-              Selected Time Slots
-            </h4>
-            <div className="space-y-1 text-sm text-blue-800">
-              {selectedCalendarDates.map((dateSlot, index) => (
-                <div key={index} className="flex justify-between">
-                  <span>{dateSlot.formattedDate}</span>
-                  <span>{formatHourTo12(dateSlot.startTime)} - {formatHourTo12(dateSlot.endTime)}</span>
-                </div>
-              ))}
-            </div>
-            <div className="mt-2 pt-2 border-t border-blue-200">
-              <div className="flex justify-between font-medium text-blue-900">
-                <span>Total Hours:</span>
-                <span>{totalHours}h</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Helpful message when no calendar selections */}
-        {(!selectedCalendarDates || selectedCalendarDates.length === 0) && (
-          <div className="mb-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
-            <div className="flex items-start">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-2 text-amber-600 mt-0.5 flex-shrink-0">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-              </svg>
-              <div className="text-sm">
-                <p className="font-medium text-amber-800">Select specific time slots for pricing</p>
-                <p className="text-amber-700 mt-1">Use the calendar above to select individual dates and time slots to see the total cost.</p>
-              </div>
-            </div>
-          </div>
-        )}
+        <SelectedTimeSlots 
+          selectedCalendarDates={selectedCalendarDates}
+          totalHours={totalHours}
+          placeDetail={placeDetail}
+          isAuthorized={false}
+        />
 
         <div className="my-2 border rounded-xl">
           {/* Number of Attendees for unauthorized users */}
@@ -360,8 +254,8 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
               <div className="flex items-center space-x-2">
                 <button
                   type="button"
-                  onClick={() => setNumOfGuests(Math.max(1, parseInt(numOfGuests) - 1))}
-                  disabled={numOfGuests <= 1}
+                  onClick={() => setNumOfGuests(Math.max(0, parseInt(numOfGuests) - 1))}
+                  disabled={numOfGuests <= 0}
                   className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
@@ -371,8 +265,8 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
                 <input
                   type="number"
                   value={numOfGuests}
-                  onChange={(event) => setNumOfGuests(Math.max(1, Math.min(placeDetail.maxGuests, parseInt(event.target.value) || 1)))}
-                  min="1"
+                  onChange={(event) => setNumOfGuests(Math.max(0, Math.min(placeDetail.maxGuests, parseInt(event.target.value) || 0)))}
+                  min="0"
                   max={placeDetail.maxGuests}
                   className="w-16 text-center border border-gray-300 rounded-lg py-1 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -396,65 +290,15 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
           </div>
           
           {/* Pricing breakdown for unauthorized users */}
-          {selectedCalendarDates && selectedCalendarDates.length > 0 && totalHours > 0 && (
-            <div className="border-t">
-              <div className="border-b">
-                {/* Calendar-based pricing breakdown */}
-                {breakdown.length > 0 && (
-                  <>
-                    {breakdown.map((item, index) => (
-                      <div key={index} className="flex px-3 py-2 justify-between items-center text-gray-600 text-sm">
-                        <div className="flex-1">
-                          <p className="font-medium">{item.date}</p>
-                          <p className="text-xs text-gray-500">{item.timeSlot} • {item.priceType}</p>
-                        </div>
-                        <p className="">
-                          <PriceDisplay 
-                            price={item.price} 
-                            currency={placeDetail.currency} 
-                            bold={false}
-                          />
-                        </p>
-                      </div>
-                    ))}
-                    <div className="flex px-3 py-3 justify-between items-center text-gray-600 border-t">
-                      <p className="underline font-medium">Subtotal ({totalHours} hours)</p>
-                      <p className="">
-                        <PriceDisplay 
-                          price={totalPrice} 
-                          currency={placeDetail.currency} 
-                          bold={false}
-                        />
-                      </p>
-                    </div>
-                  </>
-                )}
-                
-                <div className="flex px-3 pb-4 justify-between items-center text-gray-600">
-                  <p className="underline">Service fee</p>
-                  <p className="">
-                    <PriceDisplay 
-                      price={20} 
-                      currency={placeDetail.currency} 
-                      bold={false}
-                    />
-                  </p>
-                </div>
-              </div>
-              <div>
-                <div className="flex px-3 py-4 justify-between items-center">
-                  <p className="underline">Total</p>
-                  <p className="">
-                    <PriceDisplay 
-                      price={totalPrice + 20} 
-                      currency={placeDetail.currency} 
-                      bold={true}
-                    />
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
+          <PricingBreakdown 
+            selectedCalendarDates={selectedCalendarDates}
+            totalHours={totalHours}
+            totalPrice={totalPrice}
+            breakdown={breakdown}
+            placeDetail={placeDetail}
+            serviceFee={serviceFee}
+            finalTotal={finalTotal}
+          />
         </div>
 
         {/* Login to book button */}
@@ -521,45 +365,12 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
         )}
 
         {/* Calendar-based booking information */}
-        {selectedCalendarDates && selectedCalendarDates.length > 0 && (
-          <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <h4 className="font-medium text-blue-900 flex items-center mb-2">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0121 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-              </svg>
-              Selected Time Slots
-            </h4>
-            <div className="space-y-1 text-sm text-blue-800">
-              {selectedCalendarDates.map((dateSlot, index) => (
-                <div key={index} className="flex justify-between">
-                  <span>{dateSlot.formattedDate}</span>
-                  <span>{formatHourTo12(dateSlot.startTime)} - {formatHourTo12(dateSlot.endTime)}</span>
-                </div>
-              ))}
-            </div>
-            <div className="mt-2 pt-2 border-t border-blue-200">
-              <div className="flex justify-between font-medium text-blue-900">
-                <span>Total Hours:</span>
-                <span>{totalHours}h</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Helpful message when no calendar selections */}
-        {(!selectedCalendarDates || selectedCalendarDates.length === 0) && (
-          <div className="mb-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
-            <div className="flex items-start">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-2 text-amber-600 mt-0.5 flex-shrink-0">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-              </svg>
-              <div className="text-sm">
-                <p className="font-medium text-amber-800">Select specific time slots for better pricing</p>
-                <p className="text-amber-700 mt-1">Use the calendar above to select individual dates and time slots. This allows for precise booking and may qualify for full-day discounts.</p>
-              </div>
-            </div>
-          </div>
-        )}
+        <SelectedTimeSlots 
+          selectedCalendarDates={selectedCalendarDates}
+          totalHours={totalHours}
+          placeDetail={placeDetail}
+          isAuthorized={true}
+        />
 
         <div className="my-2 border rounded-xl">
           {/* Compact Booking Details Section */}
@@ -577,8 +388,8 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
               <div className="flex items-center space-x-2">
                 <button
                   type="button"
-                  onClick={() => setNumOfGuests(Math.max(1, parseInt(numOfGuests) - 1))}
-                  disabled={numOfGuests <= 1}
+                  onClick={() => setNumOfGuests(Math.max(0, parseInt(numOfGuests) - 1))}
+                  disabled={numOfGuests <= 0}
                   className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
@@ -589,8 +400,8 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
                   id="numOfGuests"
                   type="number"
                   value={numOfGuests}
-                  onChange={(event) => setNumOfGuests(Math.max(1, Math.min(placeDetail.maxGuests, parseInt(event.target.value) || 1)))}
-                  min="1"
+                  onChange={(event) => setNumOfGuests(Math.max(0, Math.min(placeDetail.maxGuests, parseInt(event.target.value) || 0)))}
+                  min="0"
                   max={placeDetail.maxGuests}
                   className="w-16 text-center border border-gray-300 rounded-lg py-1 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -609,6 +420,11 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
             {placeDetail.maxGuests && (
               <p className="text-gray-500 text-xs ml-7">
                 Maximum capacity: {placeDetail.maxGuests} people
+                {numOfGuests === 0 && (
+                  <span className="block text-orange-600 font-medium mt-1">
+                    ⚠️ Please specify the number of attendees
+                  </span>
+                )}
               </p>
             )}
 
@@ -647,65 +463,15 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
           </div>
           
           {/* Pricing breakdown */}
-          {selectedCalendarDates && selectedCalendarDates.length > 0 && totalHours > 0 && (
-            <div className="border-t">
-              <div className="border-b">
-                {/* Calendar-based pricing breakdown */}
-                {breakdown.length > 0 && (
-                  <>
-                    {breakdown.map((item, index) => (
-                      <div key={index} className="flex px-3 py-2 justify-between items-center text-gray-600 text-sm">
-                        <div className="flex-1">
-                          <p className="font-medium">{item.date}</p>
-                          <p className="text-xs text-gray-500">{item.timeSlot} • {item.priceType}</p>
-                        </div>
-                        <p className="">
-                          <PriceDisplay 
-                            price={item.price} 
-                            currency={placeDetail.currency} 
-                            bold={false}
-                          />
-                        </p>
-                      </div>
-                    ))}
-                    <div className="flex px-3 py-3 justify-between items-center text-gray-600 border-t">
-                      <p className="underline font-medium">Subtotal ({totalHours} hours)</p>
-                      <p className="">
-                        <PriceDisplay 
-                          price={totalPrice} 
-                          currency={placeDetail.currency} 
-                          bold={false}
-                        />
-                      </p>
-                    </div>
-                  </>
-                )}
-                
-                <div className="flex px-3 pb-4 justify-between items-center text-gray-600">
-                  <p className="underline">Service fee</p>
-                  <p className="">
-                    <PriceDisplay 
-                      price={20} 
-                      currency={placeDetail.currency} 
-                      bold={false}
-                    />
-                  </p>
-                </div>
-              </div>
-              <div>
-                <div className="flex px-3 py-4 justify-between items-center">
-                  <p className="underline">Total</p>
-                  <p className="">
-                    <PriceDisplay 
-                      price={totalPrice + 20} 
-                      currency={placeDetail.currency} 
-                      bold={true}
-                    />
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
+          <PricingBreakdown 
+            selectedCalendarDates={selectedCalendarDates}
+            totalHours={totalHours}
+            totalPrice={totalPrice}
+            breakdown={breakdown}
+            placeDetail={placeDetail}
+            serviceFee={serviceFee}
+            finalTotal={finalTotal}
+          />
         </div>
         <button
           type="submit"
