@@ -12,6 +12,9 @@ router.use((req, res, next) => {
 // Get user profile
 router.get("/profile", userController.getProfile);
 
+// Update user profile
+router.put("/profile", userController.updateProfile);
+
 // Get all users (agent only)
 router.get("/", userController.getAllUsers);
 router.get("/all", userController.getAllUsers); // Alias for /users endpoint
