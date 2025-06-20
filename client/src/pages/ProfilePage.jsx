@@ -296,10 +296,12 @@ export default function ProfilePage({}) {
               <div className="flex items-center">
                 <span className="text-gray-600">Account Type:</span> 
                 <span className="font-medium ml-1">
-                  {user.userType === 'host' ? 'Host' : 'Client'}
+                  {user.userType === 'host' ? 'Host' : 
+                   user.userType === 'agent' ? 'Agent' : 'Client'}
                 </span>
                 <span className="text-xs text-gray-400 ml-1">
-                  {user.userType === 'host' ? '(manages rooms)' : '(books rooms)'}
+                  {user.userType === 'host' ? '(manages rooms)' : 
+                   user.userType === 'agent' ? '(system administrator)' : '(books rooms)'}
                 </span>
               </div>
               <div className="flex items-center">
@@ -355,7 +357,9 @@ export default function ProfilePage({}) {
           itemDetails={[
             { label: "Name", value: user?.telegramLinked && user?.telegramFirstName ? user?.telegramFirstName : user?.name },
             { label: "Email", value: user?.email && !user?.email.includes("telegram_") ? user?.email : "No email provided" },
-            { label: "Account", value: user?.userType === 'host' ? 'Host Account' : 'Client Account' }
+            { label: "Account", value: 
+              user?.userType === 'host' ? 'Host Account' : 
+              user?.userType === 'agent' ? 'Agent Account' : 'Client Account' }
           ]}
           consequences={[
             "Your account and profile information",
@@ -363,6 +367,10 @@ export default function ProfilePage({}) {
             ...(user?.userType === 'host' ? [
               "All conference rooms you own",
               "All bookings associated with your rooms"
+            ] : []),
+            ...(user?.userType === 'agent' ? [
+              "All administrative access to the system",
+              "Access to user and booking management"
             ] : [])
           ]}
           deleteInProgress={isDeleting}
