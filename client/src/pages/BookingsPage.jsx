@@ -7,6 +7,8 @@ import BookingRequestCard from "../components/BookingRequestCard";
 import Pagination from "../components/Pagination";
 import { useLocation } from "react-router-dom";
 import { useNotification } from "../components/NotificationContext";
+import { useBookingNotifications } from "../contexts/BookingNotificationContext";
+import BookingNotificationBanner from "../components/BookingNotificationBanner";
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState([]);
@@ -17,6 +19,32 @@ export default function BookingsPage() {
   const [filteredBookings, setFilteredBookings] = useState([]);
   const location = useLocation();
   const { notify } = useNotification();
+  const { markAsViewed, markAllAsViewed, loadNotificationCounts } = useBookingNotifications();
+  
+  // Track when user visits the page to dismiss notifications
+  useEffect(() => {
+    if (!user) return;
+    
+    // For hosts/agents, DON'T automatically mark as viewed - let them dismiss the banner
+    // For clients, mark notifications as viewed when they see the filtered bookings
+    if (user.userType === 'client') {
+      const currentBookings = getCurrentPageItems();
+      const approvedBookings = currentBookings.filter(b => b.status === 'approved');
+      const rejectedBookings = currentBookings.filter(b => b.status === 'rejected');
+      
+      if (approvedBookings.length > 0 && statusFilter === 'approved') {
+        markAsViewed('approved');
+      }
+      if (rejectedBookings.length > 0 && statusFilter === 'rejected') {
+        markAsViewed('rejected');
+      }
+      // If showing all bookings, mark both as viewed if they exist
+      if (statusFilter === 'all') {
+        if (approvedBookings.length > 0) markAsViewed('approved');
+        if (rejectedBookings.length > 0) markAsViewed('rejected');
+      }
+    }
+  }, [user, markAsViewed, statusFilter, filteredBookings]);
   
   // Extract userId from query params if present (for agent filtering)
   const params = new URLSearchParams(location.search);
@@ -49,6 +77,25 @@ export default function BookingsPage() {
   useEffect(() => {
     loadBookings();
   }, [userId]);
+
+  // Mark notifications as viewed when user visits bookings page
+  useEffect(() => {
+    if (!user || loading) return;
+
+    // Mark relevant notifications as viewed based on user type and status filter
+    if (user.userType === 'host' || user.userType === 'agent') {
+      if (statusFilter === 'pending' || statusFilter === 'all') {
+        markAsViewed('pending');
+      }
+    } else if (user.userType === 'client') {
+      if (statusFilter === 'approved' || statusFilter === 'all') {
+        markAsViewed('approved');
+      }
+      if (statusFilter === 'rejected' || statusFilter === 'all') {
+        markAsViewed('rejected');
+      }
+    }
+  }, [user, statusFilter, loading, markAsViewed]);
 
   // Load bookings from API
   async function loadBookings() {
@@ -182,6 +229,9 @@ export default function BookingsPage() {
     
     // Update stats for all user types
     calculateStats(updatedBookings);
+    
+    // Refresh notification counts after booking update
+    loadNotificationCounts();
   };
 
   // Get current page items for all user types with pagination
@@ -226,6 +276,9 @@ export default function BookingsPage() {
     <div>
       <AccountNav />
       <div className="px-8 py-4">
+        {/* Notification Banner */}
+        <BookingNotificationBanner />
+        
         {/* Agent view - Production-level booking management */}
         {user?.userType === 'agent' && (
           <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">

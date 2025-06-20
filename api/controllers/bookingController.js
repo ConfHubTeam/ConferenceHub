@@ -327,23 +327,33 @@ const getBookingCounts = async (req, res) => {
   try {
     const userData = await getUserDataFromToken(req);
     
-    if (userData.userType !== 'host') {
-      return res.status(403).json({ error: "Only hosts can access booking counts" });
+    if (userData.userType !== 'host' && userData.userType !== 'agent') {
+      return res.status(403).json({ error: "Only hosts and agents can access booking counts" });
     }
     
-    const pendingCount = await Booking.count({
-      include: [
-        {
-          model: Place,
-          as: 'place',
-          where: { ownerId: userData.id },
-          attributes: []
+    let pendingCount;
+    
+    if (userData.userType === 'agent') {
+      // Agents can see all pending bookings
+      pendingCount = await Booking.count({
+        where: { status: 'pending' }
+      });
+    } else {
+      // Hosts see only their pending bookings
+      pendingCount = await Booking.count({
+        include: [
+          {
+            model: Place,
+            as: 'place',
+            where: { ownerId: userData.id },
+            attributes: []
+          }
+        ],
+        where: {
+          status: 'pending'
         }
-      ],
-      where: {
-        status: 'pending'
-      }
-    });
+      });
+    }
     
     res.json({ pendingCount });
   } catch (error) {

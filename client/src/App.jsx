@@ -7,6 +7,7 @@ import RegisterPage from "./pages/RegisterPage";
 import Layout from "./components/Layout";
 import { UserContextProvider } from "./components/UserContext";
 import { NotificationProvider } from "./components/NotificationContext";
+import { BookingNotificationProvider } from "./contexts/BookingNotificationContext";
 import { CurrencyProvider } from "./contexts/CurrencyContext";
 import PlacesPage from "./pages/PlacesPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -27,7 +28,8 @@ function App() {
     <UserContextProvider>
       <CurrencyProvider>
         <NotificationProvider>
-          <Routes>
+          <BookingNotificationProvider>
+            <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<IndexPage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -51,6 +53,7 @@ function App() {
             <Route path="/account/all-places" element={<AllPlacesPage />}/>
           </Route>
         </Routes>
+        </BookingNotificationProvider>
       </NotificationProvider>
       </CurrencyProvider>
     </UserContextProvider>

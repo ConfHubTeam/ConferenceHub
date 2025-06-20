@@ -2,11 +2,14 @@ import { useContext, useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { UserContext } from "./UserContext";
 import { useCurrency } from "../contexts/CurrencyContext";
+import { useBookingNotifications } from "../contexts/BookingNotificationContext";
 import CurrencySelector from "./CurrencySelector";
+import NotificationBadge from "./NotificationBadge";
 
 export default function Header() {
   const {user} = useContext(UserContext);
   const { selectedCurrency, changeCurrency, availableCurrencies } = useCurrency();
+  const { getRelevantCount } = useBookingNotifications();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const menuButtonRef = useRef(null);
@@ -116,7 +119,7 @@ export default function Header() {
         
         <Link
           to={user ? "/account" : "/login"}
-          className="profile items-center flex border border-gray-300 rounded-full py-2 px-4 gap-2 bg-white hover:shadow-md transition-shadow"
+          className="profile items-center flex border border-gray-300 rounded-full py-2 px-4 gap-2 bg-white hover:shadow-md transition-shadow relative"
         >
           {!user ? (
             <div className="user">
@@ -135,8 +138,9 @@ export default function Header() {
             </div>
           ) : (
             <>
-              <div className="bg-rose-400 text-white rounded-full w-8 h-8 flex items-center justify-center font-semibold">
+              <div className="bg-rose-400 text-white rounded-full w-8 h-8 flex items-center justify-center font-semibold relative">
                 {getFirstLetter()}
+                <NotificationBadge count={getRelevantCount()} size="sm" />
               </div>
             </>
           )}
