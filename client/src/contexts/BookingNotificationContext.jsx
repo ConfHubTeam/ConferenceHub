@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { UserContext } from "../components/UserContext";
 import api from "../utils/api";
 
@@ -29,18 +29,29 @@ export function BookingNotificationProvider({ children }) {
     rejected: null
   });
 
-  // Load notification counts based on user type
-  const loadNotificationCounts = async () => {
+  // Load notification counts based on user type (memoized to prevent unnecessary re-runs)
+  const loadNotificationCounts = useCallback(async () => {
     if (!user) return;
 
     try {
       if (user.userType === 'host' || user.userType === 'agent') {
-        // For hosts/agents: count pending bookings that need attention
-        const { data } = await api.get('/bookings/counts');
-        setNotifications(prev => ({
-          ...prev,
-          pending: data.pendingCount || 0
-        }));
+        // For hosts/agents: count pending bookings since last view (timestamp-based like clients)
+        const { data } = await api.get('/bookings');
+        const lastViewedTimes = getLastViewedTimes();
+        
+        // Count pending bookings that are newer than last viewed time
+        const newPendingCount = data.filter(booking => 
+          booking.status === 'pending' && 
+          (!lastViewedTimes.pending || new Date(booking.createdAt) > new Date(lastViewedTimes.pending) || new Date(booking.updatedAt) > new Date(lastViewedTimes.pending))
+        ).length;
+        
+        // Only update state if the count has actually changed
+        setNotifications(prev => {
+          if (prev.pending !== newPendingCount) {
+            return { ...prev, pending: newPendingCount };
+          }
+          return prev; // No change, prevent re-render
+        });
       } else if (user.userType === 'client') {
         // For clients: count approved/rejected bookings since last view
         const { data } = await api.get('/bookings');
@@ -56,16 +67,22 @@ export function BookingNotificationProvider({ children }) {
           (!lastViewedTimes.rejected || new Date(booking.updatedAt) > new Date(lastViewedTimes.rejected))
         ).length;
 
-        setNotifications({
-          pending: 0,
-          approved: newApproved,
-          rejected: newRejected
+        // Only update state if counts have actually changed
+        setNotifications(prev => {
+          if (prev.approved !== newApproved || prev.rejected !== newRejected) {
+            return {
+              pending: 0,
+              approved: newApproved,
+              rejected: newRejected
+            };
+          }
+          return prev; // No change, prevent re-render
         });
       }
     } catch (error) {
       console.error("Error loading notification counts:", error);
     }
-  };
+  }, [user]); // Only recreate when user changes
 
   // Get last viewed times from localStorage
   const getLastViewedTimes = () => {
@@ -133,13 +150,34 @@ export function BookingNotificationProvider({ children }) {
     }
   }, [user]);
 
-  // Refresh notifications periodically (every 30 seconds)
+  // Refresh notifications periodically (every 30 seconds) without affecting other components
   useEffect(() => {
     if (!user) return;
 
-    const interval = setInterval(loadNotificationCounts, 30000);
-    return () => clearInterval(interval);
-  }, [user]);
+    // Start the interval for periodic refresh
+    const interval = setInterval(() => {
+      // Only refresh if the document is visible (tab is active)
+      if (!document.hidden) {
+        loadNotificationCounts();
+      }
+    }, 30000); // 30 seconds
+
+    // Add visibility change listener to refresh when tab becomes active
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        // Tab became active, refresh notifications immediately
+        loadNotificationCounts();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Cleanup function to clear interval and event listener
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [user, loadNotificationCounts]); // Include loadNotificationCounts in dependency array
 
   const value = {
     notifications,
