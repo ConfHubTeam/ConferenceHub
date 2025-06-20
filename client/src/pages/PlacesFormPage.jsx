@@ -1,10 +1,11 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import PerkSelections from "./PerkSelections";
 import PhotoUploader from "../components/PhotoUploader";
 import { Navigate, useParams, useNavigate } from "react-router-dom";
 import { UserContext } from "../components/UserContext";
 import api from "../utils/api";
 import { geocodeAddress } from "../utils/formUtils";
+import { validateFormWithScrolling, scrollToAndHighlightField } from "../utils/formValidationUtils";
 import AddressSection from "../components/AddressSection";
 import AvailabilitySection from "../components/AvailabilitySection";
 import YouTubeSection, { extractYouTubeVideoId } from "../components/YouTubeSection";
@@ -56,6 +57,9 @@ export default function PlacesFormPage() {
   const [squareMeters, setSquareMeters] = useState(null);
   const [isHotel, setIsHotel] = useState(false);
 
+  // Track the source of coordinate updates to prevent circular geocoding
+  const coordinateUpdateSource = useRef('address'); // 'address' or 'map'
+
   // Redirect if user is not a host
   if (user && user.userType !== 'host' && user.userType !== 'agent') {
     return <Navigate to="/" />;
@@ -67,7 +71,6 @@ export default function PlacesFormPage() {
       try {
         const response = await api.get("/currency");
         if (response.data && response.data.length > 0) {
-          console.log("Available currencies:", response.data);
           setAvailableCurrencies(response.data);
           
           // If there's no currency selected yet, set default to UZS
@@ -75,7 +78,6 @@ export default function PlacesFormPage() {
             const uzsDefault = response.data.find(c => c.charCode === "UZS");
             if (uzsDefault) {
               setCurrency(uzsDefault);
-              console.log("Set default currency to UZS:", uzsDefault);
             }
           }
         } else {
@@ -226,13 +228,21 @@ export default function PlacesFormPage() {
       return;
     }
 
+    // Skip geocoding if coordinates were just updated via map interaction
+    // This prevents circular updates between address field and map coordinates
+    if (coordinateUpdateSource.current === 'map') {
+      console.log("Skipping geocoding - coordinates were just updated via map interaction");
+      coordinateUpdateSource.current = 'address'; // Reset for next update
+      return;
+    }
+
     // Set a timer to geocode the address after the user stops typing
     const timer = setTimeout(() => {
       handleGeocodeAddress();
     }, 1000); // Wait 1 second after typing stops
 
     return () => clearTimeout(timer); // Clean up the timer
-  }, [address, id, lat, lng]);
+  }, [address, id, lat, lng, geocodingSuccess]);
 
   // Function to geocode the address
   async function handleGeocodeAddress() {
@@ -243,6 +253,7 @@ export default function PlacesFormPage() {
       const coordinates = await geocodeAddress(address);
       
       if (coordinates) {
+        coordinateUpdateSource.current = 'address'; // Mark as address-based update
         setLat(coordinates.lat);
         setLng(coordinates.lng);
         setGeocodingSuccess(true);
@@ -261,6 +272,9 @@ export default function PlacesFormPage() {
   // Handle map location selection
   function handleLocationSelect(location) {
     if (location && (parseFloat(lat) !== parseFloat(location.lat) || parseFloat(lng) !== parseFloat(location.lng))) {
+      // Mark this update as coming from map interaction
+      coordinateUpdateSource.current = 'map';
+      
       // Ensure we store values as strings consistently, but compare as numbers
       setLat(location.lat.toString());
       setLng(location.lng.toString());
@@ -286,17 +300,22 @@ export default function PlacesFormPage() {
     }
   }
 
-  function preInput(header, description) {
+  function preInput(header, description, isRequired = false) {
     return (
       <div>
-        {inputHeader(header)}
+        {inputHeader(header, isRequired)}
         {inputDescription(description)}
       </div>
     );
   }
 
-  function inputHeader(text) {
-    return <h2 className="text-xl md:text-2xl mt-4">{text}</h2>;
+  function inputHeader(text, isRequired = false) {
+    return (
+      <h2 className="text-xl md:text-2xl mt-4 flex items-center">
+        {text}
+        {isRequired && <span className="text-red-500 ml-1">*</span>}
+      </h2>
+    );
   }
 
   function inputDescription(text) {
@@ -307,39 +326,104 @@ export default function PlacesFormPage() {
     event.preventDefault();
     setError("");
 
-    // Validate required fields
-    if (!title.trim()) {
-      setError("Title is required");
-      return;
-    }
+    // Define validation rules with field IDs for scrolling
+    const validations = [
+      {
+        isValid: title.trim(),
+        fieldId: "place-title",
+        errorMessage: "Title is required"
+      },
+      {
+        isValid: address.trim(),
+        fieldId: "place-address", 
+        errorMessage: "Address is required"
+      },
+      {
+        isValid: price && parseFloat(price) > 0,
+        fieldId: "pricing-capacity",
+        errorMessage: "Price per hour is required and must be greater than 0"
+      },
+      {
+        isValid: fullDayDiscountPrice && parseFloat(fullDayDiscountPrice) > 0,
+        fieldId: "pricing-capacity",
+        errorMessage: "Full day discount price is required and must be greater than 0"
+      },
+      {
+        isValid: currency,
+        fieldId: "pricing-capacity",
+        errorMessage: "Please select a currency"
+      },
+      {
+        isValid: startDate && endDate,
+        fieldId: "date-availability",
+        errorMessage: "Both start date and end date must be selected"
+      },
+      {
+        customCheck: () => {
+          if (startDate && endDate) {
+            return new Date(startDate) <= new Date(endDate);
+          }
+          return true;
+        },
+        fieldId: "date-availability",
+        errorMessage: "End date must be later than or equal to start date"
+      },
+      {
+        customCheck: () => {
+          // Check if all weekdays are blocked
+          return blockedWeekdays.length < 7;
+        },
+        fieldId: "time-slots",
+        errorMessage: "At least one weekday must be available (not blocked)"
+      },
+      {
+        customCheck: () => {
+          // Validate time slots
+          for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+            // Skip blocked weekdays
+            if (blockedWeekdays.includes(dayIndex)) {
+              continue;
+            }
+
+            const timeSlot = weekdayTimeSlots[dayIndex];
+            
+            // If a weekday is not blocked, it must have both start and end times
+            if (!timeSlot.start || !timeSlot.end) {
+              return false;
+            }
+
+            // Validate that start time is before end time
+            const startHour = parseInt(timeSlot.start);
+            const endHour = parseInt(timeSlot.end);
+            
+            if (startHour >= endHour) {
+              return false;
+            }
+          }
+          return true;
+        },
+        fieldId: "time-slots",
+        errorMessage: "All available weekdays must have valid time slots (start and end times, with start before end)"
+      }
+    ];
+
+    // Run validation with automatic scrolling
+    const isValid = validateFormWithScrolling(validations, setError);
     
-    if (!address.trim()) {
-      setError("Address is required");
-      return;
+    if (!isValid) {
+      return; // Stop execution if validation fails
     }
 
-    // Validate dates if both are provided
-    if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
-      setError("End date must be later than Start date");
+    // Validate and clean YouTube link
+    const cleanedYouTubeLink = extractYouTubeVideoId(youtubeLink);
+    if (youtubeLink && !cleanedYouTubeLink) {
+      scrollToAndHighlightField("youtube-section", "Invalid YouTube URL", setError);
       return;
     }
 
     // Ensure numeric fields are valid
     const numGuests = parseInt(maxGuests) || 1;
     const numPrice = parseFloat(price) || 0;
-
-    // Check if currency is selected
-    if (!currency) {
-      setError("Please select a currency");
-      return;
-    }
-
-    // Validate and clean YouTube link
-    const cleanedYouTubeLink = extractYouTubeVideoId(youtubeLink);
-    if (youtubeLink && !cleanedYouTubeLink) {
-      setError("Invalid YouTube URL");
-      return;
-    }
     
     console.log("Photos before saving:", addedPhotos);
     
@@ -473,9 +557,11 @@ export default function PlacesFormPage() {
         
         {preInput(
           "Title",
-          "title for your conference room. It's better to have a short and catchy title."
+          "title for your conference room. It's better to have a short and catchy title.",
+          true // Required field
         )}
         <input
+          id="place-title"
           type="text"
           placeholder="title, for example: Executive Conference Room"
           value={title}
@@ -566,7 +652,15 @@ export default function PlacesFormPage() {
         />
         
         <div className="flex justify-center md:justify-start">
-          <button className="primary my-5 max-w-xs">Save Conference Room</button>
+          <button 
+            type="submit"
+            className="primary my-5 max-w-xs flex items-center justify-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            Save Conference Room
+          </button>
         </div>
       </form>
     </div>

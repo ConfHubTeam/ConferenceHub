@@ -17,8 +17,11 @@ const DateAvailability = ({
   blockedWeekdays
 }) => {
   return (
-    <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-      <h3 className="text-lg font-semibold mb-4 text-gray-800">📅 Available dates</h3>
+    <div id="date-availability" className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+      <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+        📅 Available dates
+        <span className="text-red-500 ml-1">*</span>
+      </h3>
       <Calendar 
         startDate={startDate}
         endDate={endDate}
