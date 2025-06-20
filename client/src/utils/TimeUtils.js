@@ -356,8 +356,8 @@ export const getBookedTimeSlots = (date, bookedTimeSlots = []) => {
   return bookedTimeSlots.filter(slot => slot.date === dateString);
 };
 
-// Calculate booking percentage for a specific date (including cooldown periods)
-export const calculateBookingPercentage = (date, bookedTimeSlots = [], weekdayTimeSlots, checkIn, checkOut, cooldownMinutes = 0) => {
+// Calculate booking percentage for a specific date (including cooldown periods and unbookable slots)
+export const calculateBookingPercentage = (date, bookedTimeSlots = [], weekdayTimeSlots, checkIn, checkOut, cooldownMinutes = 0, minimumHours = 1) => {
   if (!date) return 0;
   
   // Get the available time slots for this date
@@ -373,15 +373,10 @@ export const calculateBookingPercentage = (date, bookedTimeSlots = [], weekdayTi
   // Get all bookings for this date
   const bookingsForDate = getBookedTimeSlots(date, bookedTimeSlots);
   
-  if (bookingsForDate.length === 0) return 0;
-  
-  // Calculate booked hours including cooldown periods (only for actual bookings)
-  let bookedHours = 0;
-  
-  // Create an array to track which hours are booked (including cooldown)
+  // Create an array to track which hours are unavailable (booked, cooldown, or conflicted)
   const hourOccupancy = Array(24).fill(false);
   
-  // Mark booked hours and cooldown hours in the array (only for actual bookings)
+  // First, mark directly booked hours and cooldown hours
   bookingsForDate.forEach(booking => {
     const bookingStartHour = parseInt(booking.startTime.split(':')[0], 10);
     const bookingEndHour = parseInt(booking.endTime.split(':')[0], 10);
@@ -405,15 +400,55 @@ export const calculateBookingPercentage = (date, bookedTimeSlots = [], weekdayTi
     }
   });
   
-  // Count booked hours within operating hours
+  // Second, mark hours that are unbookable due to conflicts or insufficient time
+  // Only do this if there are existing bookings
+  if (bookingsForDate.length > 0) {
+    for (let hour = startHour; hour < endHour; hour++) {
+      // Skip if already marked as occupied
+      if (hourOccupancy[hour]) continue;
+      
+      // Check if this hour is unbookable due to conflicts or time constraints
+      const timeSlot = `${hour.toString().padStart(2, '0')}:00`;
+      const isValidStart = isValidStartTimeEnhanced(
+        date,
+        timeSlot,
+        bookingsForDate,
+        minimumHours,
+        availableTimeRange.end,
+        cooldownMinutes
+      );
+      
+      // If it's not a valid start time due to conflicts (not just end-of-day constraints),
+      // mark it as occupied
+      if (!isValidStart) {
+        // Additional check: only mark as occupied if there's an actual conflict with existing bookings
+        const testEndTime = `${(hour + minimumHours).toString().padStart(2, '0')}:00`;
+        const hasActualConflict = hasConflictWithExistingBookings(
+          date,
+          timeSlot,
+          testEndTime,
+          bookingsForDate,
+          cooldownMinutes,
+          minimumHours
+        );
+        
+        if (hasActualConflict) {
+          hourOccupancy[hour] = true;
+        }
+      }
+    }
+  }
+  
+  // Count unavailable hours within operating hours
+  let unavailableHours = 0;
   for (let hour = startHour; hour < endHour; hour++) {
     if (hourOccupancy[hour]) {
-      bookedHours++;
+      unavailableHours++;
     }
   }
   
   // Calculate percentage
-  return Math.round((bookedHours / totalHours) * 100);
+  return Math.round((unavailableHours / totalHours) * 100);
 };
 
 // Fetch booked time slots from the API for a specific place
