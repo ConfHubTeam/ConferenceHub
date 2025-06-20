@@ -14,7 +14,7 @@ export default function BookingsPage() {
   const { user } = useContext(UserContext);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState(user?.userType === "agent" ? "all" : "pending");
+  const [statusFilter, setStatusFilter] = useState("pending");
   const [filteredBookings, setFilteredBookings] = useState([]);
   const location = useLocation();
   const { notify } = useNotification();
@@ -61,40 +61,15 @@ export default function BookingsPage() {
     total: 0
   });
 
-  // Set initial status filter based on user type
+  // Set initial status filter based on user type (all user types default to pending)
   useEffect(() => {
-    if (user?.userType === 'client') {
-      setStatusFilter('pending');
-    } else if (user?.userType === 'host') {
-      setStatusFilter('pending');
-    } else {
-      setStatusFilter('all');
-    }
+    setStatusFilter('pending');
   }, [user?.userType]);
 
   // Fetch all bookings
   useEffect(() => {
     loadBookings();
   }, [userId]);
-
-  // Mark notifications as viewed when user visits bookings page
-  useEffect(() => {
-    if (!user || loading) return;
-
-    // Mark relevant notifications as viewed based on user type and status filter
-    if (user.userType === 'host' || user.userType === 'agent') {
-      if (statusFilter === 'pending' || statusFilter === 'all') {
-        markAsViewed('pending');
-      }
-    } else if (user.userType === 'client') {
-      if (statusFilter === 'approved' || statusFilter === 'all') {
-        markAsViewed('approved');
-      }
-      if (statusFilter === 'rejected' || statusFilter === 'all') {
-        markAsViewed('rejected');
-      }
-    }
-  }, [user, statusFilter, loading, markAsViewed]);
 
   // Load bookings from API
   async function loadBookings() {
@@ -396,8 +371,8 @@ export default function BookingsPage() {
                       backgroundSize: '16px'
                     }}
                   >
-                    <option value="all">All ({stats.total})</option>
                     <option value="pending">Pending ({stats.pending})</option>
+                    <option value="all">All ({stats.total})</option>
                     <option value="approved">Approved ({stats.approved})</option>
                     <option value="rejected">Rejected ({stats.rejected})</option>
                   </select>
