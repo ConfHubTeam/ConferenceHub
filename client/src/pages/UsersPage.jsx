@@ -8,6 +8,7 @@ import { useNotification } from "../components/NotificationContext";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import EditUserModal from "../components/EditUserModal";
 import Pagination from "../components/Pagination";
+import ActiveFilters, { FilterCreators } from "../components/ActiveFilters";
 
 export default function UsersPage() {
   const { user } = useContext(UserContext);
@@ -119,6 +120,27 @@ export default function UsersPage() {
   // Pagination info for the component
   const showingFrom = totalUsers > 0 ? startIndex + 1 : 0;
   const showingTo = Math.min(endIndex, totalUsers);
+
+  // Helper function to clear all filters
+  const clearAllFilters = () => {
+    setSearchTerm("");
+    setFilterType("all");
+  };
+
+  // Helper function to get active filters for the ActiveFilters component
+  const getActiveFilters = () => {
+    const filters = [];
+    
+    if (searchTerm) {
+      filters.push(FilterCreators.search(searchTerm, () => setSearchTerm("")));
+    }
+    
+    if (filterType !== "all") {
+      filters.push(FilterCreators.userType(filterType, () => setFilterType("all")));
+    }
+    
+    return filters;
+  };
 
   // Get user type badge class
   const getUserTypeClass = (userType) => {
@@ -294,6 +316,12 @@ export default function UsersPage() {
             Showing {currentUsers.length} of {totalUsers} users
             {searchTerm && ` matching "${searchTerm}"`}
           </div>
+          
+          {/* Active filters */}
+          <ActiveFilters 
+            filters={getActiveFilters()}
+            onClearAllFilters={clearAllFilters}
+          />
         </div>
         
         {/* Edit User Modal */}
