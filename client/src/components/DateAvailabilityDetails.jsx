@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { format, parseISO } from "date-fns";
-import { formatHourTo12, getBookedTimeSlots, getAvailableTimeSlots, isTimeBlocked } from "../utils/TimeUtils";
+import { 
+  formatHourTo12, 
+  getBookedTimeSlots, 
+  getAvailableTimeSlots, 
+  isTimeBlocked,
+  hasConflictWithExistingBookings,
+  isValidStartTimeEnhanced 
+} from "../utils/TimeUtils";
 
 /**
  * DateAvailabilityDetails Component
@@ -48,11 +55,12 @@ export default function DateAvailabilityDetails({
         display: formatHourTo12(`${hour.toString().padStart(2, "0")}:00`),
         isBooked: false,
         isInCooldown: false,
+        isConflicted: false, // New field for enhanced conflict detection
         isWorkingHoursEnd: hour === endHour,
         booking: null
       };
       
-      // Check if this time slot is blocked by actual bookings or cooldown
+      // Check if this time slot is blocked by actual bookings or cooldown (legacy check)
       const isBlocked = isTimeBlocked(
         date,
         timeSlot.time24,
@@ -77,11 +85,32 @@ export default function DateAvailabilityDetails({
         return hour >= bookedEndHour && hour < cooldownEndHour;
       });
       
+      // Only check for booking conflicts if this slot is not already booked or in cooldown
+      let hasActualConflict = false;
+      
+      if (!booking && !isInCooldownPeriod && !timeSlot.isWorkingHoursEnd && slotsForDate.length > 0) {
+        const minEndHour = hour + (placeDetail.minimumHours || 1);
+        const cooldownEndHour = minEndHour + (cooldownMinutes / 60);
+        
+        // Only check for actual booking conflicts, not time constraints
+        hasActualConflict = slotsForDate.some(existingSlot => {
+          const existingStart = parseInt(existingSlot.startTime.split(':')[0], 10);
+          const existingEnd = parseInt(existingSlot.endTime.split(':')[0], 10);
+          
+          // Would the proposed booking + cooldown overlap with existing booking?
+          return (minEndHour > existingStart && hour < existingEnd) || 
+                 (cooldownEndHour > existingStart && minEndHour <= existingStart);
+        });
+      }
+      
       if (booking) {
         timeSlot.isBooked = true;
         timeSlot.booking = booking;
       } else if (isInCooldownPeriod) {
         timeSlot.isInCooldown = true;
+      } else if (hasActualConflict) {
+        // Mark as conflicted only when there's an actual scheduling conflict
+        timeSlot.isConflicted = true;
       }
       
       slots.push(timeSlot);
@@ -146,9 +175,11 @@ export default function DateAvailabilityDetails({
                       ? 'bg-red-50 border border-red-200' 
                       : slot.isInCooldown
                         ? 'bg-orange-50 border border-orange-200'
-                        : slot.isWorkingHoursEnd
-                          ? 'bg-gray-50 border border-gray-200'
-                          : 'bg-green-50 border border-green-200'
+                        : slot.isConflicted
+                          ? 'bg-purple-50 border border-purple-200'
+                          : slot.isWorkingHoursEnd
+                            ? 'bg-gray-50 border border-gray-200'
+                            : 'bg-green-50 border border-green-200'
                     }
                   `}
                 >
@@ -157,9 +188,11 @@ export default function DateAvailabilityDetails({
                       ? 'bg-red-500' 
                       : slot.isInCooldown
                         ? 'bg-orange-500'
-                        : slot.isWorkingHoursEnd
-                          ? 'bg-gray-500'
-                          : 'bg-green-500'
+                        : slot.isConflicted
+                          ? 'bg-purple-500'
+                          : slot.isWorkingHoursEnd
+                            ? 'bg-gray-500'
+                            : 'bg-green-500'
                   }`}></div>
                   <div>
                     <div className="font-medium">{slot.display}</div>
@@ -168,6 +201,8 @@ export default function DateAvailabilityDetails({
                         <span className="text-red-700">Booked</span>
                       ) : slot.isInCooldown ? (
                         <span className="text-orange-700">Cooldown</span>
+                      ) : slot.isConflicted ? (
+                        <span className="text-purple-700">Conflicts</span>
                       ) : slot.isWorkingHoursEnd ? (
                         <span className="text-gray-700">Day End</span>
                       ) : (
@@ -191,6 +226,10 @@ export default function DateAvailabilityDetails({
               <div className="flex items-center">
                 <div className="h-3 w-3 bg-orange-500 rounded mr-1"></div>
                 <span>Cooldown</span>
+              </div>
+              <div className="flex items-center">
+                <div className="h-3 w-3 bg-purple-500 rounded mr-1"></div>
+                <span>Not bookable</span>
               </div>
               <div className="flex items-center">
                 <div className="h-3 w-3 bg-gray-500 rounded mr-1"></div>

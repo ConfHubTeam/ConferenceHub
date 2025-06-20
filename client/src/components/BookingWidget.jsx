@@ -6,8 +6,7 @@ import { UserContext } from "./UserContext";
 import { useNotification } from "./NotificationContext";
 import { validateForm } from "../utils/formUtils";
 import PriceDisplay from "./PriceDisplay";
-import BookingAvailabilityStatus from "./BookingAvailabilityStatus";
-import { isTimeRangeAvailable } from "../utils/TimeUtils";
+import { isTimeRangeAvailableEnhanced } from "../utils/TimeUtils";
 
 export default function BookingWidget({ placeDetail, buttonDisabled, selectedCalendarDates = [] }) {
   const [numOfGuests, setNumOfGuests] = useState(1);
@@ -156,33 +155,18 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
 
     const cooldownMinutes = placeDetail.cooldown || 0;
 
-    // Check each selected time slot for conflicts
+    // Check each selected time slot for conflicts using enhanced detection
     for (const selectedSlot of selectedCalendarDates) {
-      const conflictingSlot = bookedTimeSlots.find(bookedSlot => {
-        // Skip if not the same date
-        if (bookedSlot.date !== selectedSlot.date) return false;
-        
-        // Convert times to hours for comparison
-        const [selectedStartHour] = selectedSlot.startTime.split(':').map(Number);
-        const [selectedEndHour] = selectedSlot.endTime.split(':').map(Number);
-        const [bookedStartHour] = bookedSlot.startTime.split(':').map(Number);
-        const [bookedEndHour] = bookedSlot.endTime.split(':').map(Number);
-        
-        // Calculate cooldown period after the booking
-        const cooldownHours = cooldownMinutes / 60;
-        const cooldownEndHour = bookedEndHour + cooldownHours;
-        
-        // Check for overlap with the actual booking
-        const hasBookingOverlap = (selectedStartHour < bookedEndHour && selectedEndHour > bookedStartHour);
-        
-        // Check for overlap with the cooldown period
-        const hasCooldownOverlap = (selectedStartHour < cooldownEndHour && selectedEndHour > bookedEndHour);
-        
-        return hasBookingOverlap || hasCooldownOverlap;
-      });
+      const isAvailable = isTimeRangeAvailableEnhanced(
+        selectedSlot.date,
+        selectedSlot.startTime,
+        selectedSlot.endTime,
+        bookedTimeSlots,
+        cooldownMinutes
+      );
       
-      if (conflictingSlot) {
-        return false; // Found a conflict
+      if (!isAvailable) {
+        return false; // Found a conflict using enhanced detection
       }
     }
     

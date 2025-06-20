@@ -119,25 +119,232 @@ export const isTimeBlocked = (date, hour, blockedTimeSlots = [], minimumHours = 
   });
 };
 
-// Check if a specific time can be used as a start time (considering end-of-day cooldown restrictions)
-export const isValidStartTime = (date, hour, blockedTimeSlots = [], minimumHours = 1, placeEndTime = "19:00", cooldownMinutes = 0) => {
-  if (!date || !hour) return false;
+/**
+ * Enhanced conflict detection that considers both backward and forward conflicts
+ * This addresses the issue where a booking might be valid in isolation but creates
+ * conflicts with existing bookings due to cooldown requirements
+ */
+export const hasConflictWithExistingBookings = (
+  date, 
+  proposedStartTime, 
+  proposedEndTime, 
+  blockedTimeSlots = [], 
+  cooldownMinutes = 0,
+  minimumHours = 1
+) => {
+  if (!date || !proposedStartTime || !proposedEndTime) return true;
   
-  const checkHour = parseInt(hour.split(':')[0], 10);
-  const placeEndHour = parseInt(placeEndTime.split(':')[0], 10);
-  
-  // Calculate cooldown constraint for end-of-day bookings
+  const dateString = typeof date === 'string' ? date : date.toISOString().split('T')[0];
+  const proposedStart = parseInt(proposedStartTime.split(':')[0], 10);
+  const proposedEnd = parseInt(proposedEndTime.split(':')[0], 10);
   const cooldownHours = cooldownMinutes / 60;
-  const effectiveEndHour = placeEndHour - cooldownHours;
   
-  // Check if there's enough time left to meet minimum booking duration before effective end time
-  const remainingHours = effectiveEndHour - checkHour;
-  if (remainingHours < minimumHours) {
-    return false; // Not enough time left for minimum booking considering cooldown
+  // Get all bookings for this date
+  const bookedSlotsForDate = blockedTimeSlots.filter(slot => slot.date === dateString);
+  
+  // If no existing bookings, no conflict
+  if (bookedSlotsForDate.length === 0) {
+    return false;
   }
   
-  // Also check if this time is blocked by actual bookings
-  return !isTimeBlocked(date, hour, blockedTimeSlots, minimumHours, placeEndTime, cooldownMinutes);
+  return bookedSlotsForDate.some(existingBooking => {
+    const existingStart = parseInt(existingBooking.startTime.split(':')[0], 10);
+    const existingEnd = parseInt(existingBooking.endTime.split(':')[0], 10);
+    const existingCooldownEnd = existingEnd + cooldownHours;
+    
+    // Case 1: Direct overlap with existing booking
+    if (proposedStart < existingEnd && proposedEnd > existingStart) {
+      return true;
+    }
+    
+    // Case 2: Proposed booking overlaps with existing booking's cooldown period
+    if (proposedStart < existingCooldownEnd && proposedEnd > existingEnd) {
+      return true;
+    }
+    
+    // Case 3: FORWARD CONFLICT - Proposed booking would need cooldown that overlaps with existing booking
+    // This is the key fix for the reported issue
+    const proposedCooldownEnd = proposedEnd + cooldownHours;
+    if (proposedCooldownEnd > existingStart && proposedEnd <= existingStart) {
+      return true;
+    }
+    
+    // Case 4: Check if there's enough gap between bookings for both cooldowns
+    if (proposedEnd <= existingStart) {
+      // Proposed booking ends before existing starts - check cooldown gap
+      const gapBetweenBookings = existingStart - proposedEnd;
+      if (gapBetweenBookings < cooldownHours) {
+        return true;
+      }
+    }
+    
+    if (existingEnd <= proposedStart) {
+      // Existing booking ends before proposed starts - check cooldown gap
+      const gapBetweenBookings = proposedStart - existingEnd;
+      if (gapBetweenBookings < cooldownHours) {
+        return true;
+      }
+    }
+    
+    return false;
+  });
+};
+
+/**
+ * Enhanced validation for start times that considers forward conflicts
+ * This replaces isValidStartTime with more comprehensive conflict checking
+ */
+export const isValidStartTimeEnhanced = (
+  date, 
+  startTime, 
+  blockedTimeSlots = [], 
+  minimumHours = 1, 
+  placeEndTime = "19:00", 
+  cooldownMinutes = 0
+) => {
+  if (!date || !startTime) return false;
+  
+  const startHour = parseInt(startTime.split(':')[0], 10);
+  const placeEndHour = parseInt(placeEndTime.split(':')[0], 10);
+  const cooldownHours = cooldownMinutes / 60;
+  
+  // First check: is this the last hour of operation? If so, it's always invalid for booking start
+  if (startHour >= placeEndHour) {
+    return false;
+  }
+  
+  // Second check: is there enough time for minimum booking + cooldown before place closes?
+  const requiredTimeBeforeClose = minimumHours + cooldownHours;
+  const availableTimeBeforeClose = placeEndHour - startHour;
+  
+  if (availableTimeBeforeClose < requiredTimeBeforeClose) {
+    return false;
+  }
+  
+  // If there are no existing bookings, and we pass the above checks, it's valid
+  if (!blockedTimeSlots || blockedTimeSlots.length === 0) {
+    return true;
+  }
+  
+  // Calculate the minimum end time for this start time
+  const minimumEndTime = `${(startHour + minimumHours).toString().padStart(2, '0')}:00`;
+  
+  // Check for conflicts with existing bookings using enhanced conflict detection
+  return !hasConflictWithExistingBookings(
+    date, 
+    startTime, 
+    minimumEndTime, 
+    blockedTimeSlots, 
+    cooldownMinutes, 
+    minimumHours
+  );
+};
+
+/**
+ * Enhanced validation for complete time ranges
+ * This replaces isTimeRangeAvailable with more comprehensive conflict checking
+ */
+export const isTimeRangeAvailableEnhanced = (
+  date, 
+  startTime, 
+  endTime, 
+  blockedTimeSlots = [], 
+  cooldownMinutes = 0
+) => {
+  if (!date || !startTime || !endTime) return false;
+  
+  const startHour = parseInt(startTime.split(':')[0], 10);
+  const endHour = parseInt(endTime.split(':')[0], 10);
+  
+  // Basic validation - end must be after start
+  if (endHour <= startHour) return false;
+  
+  // Use enhanced conflict detection
+  return !hasConflictWithExistingBookings(
+    date, 
+    startTime, 
+    endTime, 
+    blockedTimeSlots, 
+    cooldownMinutes
+  );
+};
+
+/**
+ * Get all valid start time options considering enhanced conflict resolution
+ */
+export const getValidStartTimeOptions = (
+  date,
+  startHour, 
+  endHour, 
+  blockedTimeSlots = [],
+  minimumHours = 1, 
+  cooldownMinutes = 0
+) => {
+  const options = [];
+  const start = parseInt(startHour.split(":")[0], 10);
+  const end = parseInt(endHour.split(":")[0], 10);
+  
+  for (let i = start; i < end; i++) {
+    const timeOption = `${i.toString().padStart(2, "0")}:00`;
+    
+    if (isValidStartTimeEnhanced(
+      date,
+      timeOption,
+      blockedTimeSlots,
+      minimumHours,
+      endHour,
+      cooldownMinutes
+    )) {
+      options.push({
+        value: timeOption,
+        label: formatHourTo12(timeOption)
+      });
+    }
+  }
+  
+  return options;
+};
+
+/**
+ * Get valid end time options for a given start time
+ */
+export const getValidEndTimeOptions = (
+  date,
+  startTime,
+  placeEndTime,
+  blockedTimeSlots = [],
+  minimumHours = 1,
+  cooldownMinutes = 0
+) => {
+  if (!startTime) return [];
+  
+  const options = [];
+  const startHour = parseInt(startTime.split(':')[0], 10);
+  const placeEndHour = parseInt(placeEndTime.split(':')[0], 10);
+  const cooldownHours = cooldownMinutes / 60;
+  
+  // Calculate the latest possible end time considering cooldown
+  const maxEndHour = Math.floor(placeEndHour - cooldownHours);
+  
+  // Start from minimum booking duration
+  for (let i = startHour + minimumHours; i <= maxEndHour; i++) {
+    const endTimeOption = `${i.toString().padStart(2, "0")}:00`;
+    
+    if (isTimeRangeAvailableEnhanced(
+      date,
+      startTime,
+      endTimeOption,
+      blockedTimeSlots,
+      cooldownMinutes
+    )) {
+      options.push({
+        value: endTimeOption,
+        label: formatHourTo12(endTimeOption)
+      });
+    }
+  }
+  
+  return options;
 };
 
 // Get all booked time slots for a specific date
@@ -260,32 +467,6 @@ export const validateTimeSlot = (timeSlot, bookedSlots = [], cooldownMinutes = 0
   });
 };
 
-// Check if a time range is completely available for booking
-export const isTimeRangeAvailable = (date, startTime, endTime, blockedTimeSlots = [], cooldownMinutes = 0) => {
-  if (!date || !startTime || !endTime) return false;
-  
-  const dateString = typeof date === 'string' ? date : date.toISOString().split('T')[0];
-  const startHour = parseInt(startTime.split(':')[0], 10);
-  const endHour = parseInt(endTime.split(':')[0], 10);
-  
-  // Find all booked slots for this date
-  const bookedSlotsForDate = blockedTimeSlots.filter(slot => slot.date === dateString);
-  
-  // Check if the requested range overlaps with any existing booking or their cooldown periods
-  return !bookedSlotsForDate.some(slot => {
-    const bookedStart = parseInt(slot.startTime.split(':')[0], 10);
-    const bookedEnd = parseInt(slot.endTime.split(':')[0], 10);
-    
-    // Calculate cooldown period after the booking
-    const cooldownHoursDecimal = cooldownMinutes / 60;
-    const cooldownEnd = bookedEnd + cooldownHoursDecimal;
-    
-    // Check for overlap with the actual booking
-    const hasBookingOverlap = (startHour < bookedEnd && endHour > bookedStart);
-    
-    // Check for overlap with the cooldown period
-    const hasCooldownOverlap = (startHour < cooldownEnd && endHour > bookedEnd);
-    
-    return hasBookingOverlap || hasCooldownOverlap;
-  });
-};
+// Backward compatibility exports (deprecated - use Enhanced versions)
+export const isTimeRangeAvailable = isTimeRangeAvailableEnhanced;
+export const isValidStartTime = isValidStartTimeEnhanced;

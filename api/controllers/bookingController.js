@@ -1,6 +1,7 @@
 const { Booking, Place, User } = require("../models");
 const { getUserDataFromToken } = require("../middleware/auth");
 const { Op } = require("sequelize");
+const { validateBookingTimeSlots, findConflictingBookings } = require("../utils/bookingUtils");
 
 /**
  * Create a new booking
@@ -26,6 +27,28 @@ const createBooking = async (req, res) => {
 
     // Generate unique request ID
     const uniqueRequestId = `REQ-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`.toUpperCase();
+    
+    // Get place details for cooldown information
+    const placeDetails = await Place.findByPk(place);
+    if (!placeDetails) {
+      return res.status(404).json({ error: "Place not found" });
+    }
+    
+    // Validate time slots for conflicts using enhanced detection
+    if (selectedTimeSlots && selectedTimeSlots.length > 0) {
+      const validation = await validateBookingTimeSlots(
+        selectedTimeSlots, 
+        place, 
+        placeDetails.cooldown || 0
+      );
+      
+      if (!validation.isValid) {
+        return res.status(422).json({ 
+          error: `Booking conflict detected: ${validation.message}`,
+          conflictingSlot: validation.conflictingSlot
+        });
+      }
+    }
     
     // Determine check-in/check-out dates
     // If time slots are provided, use first and last date from slots
@@ -223,6 +246,10 @@ const updateBookingStatus = async (req, res) => {
     
     // Handle conflicts if approving a booking
     if (status === 'approved') {
+      // Get place details for cooldown information
+      const placeDetails = await Place.findByPk(booking.placeId);
+      const cooldownMinutes = placeDetails ? placeDetails.cooldown || 0 : 0;
+      
       // Find pending bookings for the same place
       const pendingBookings = await Booking.findAll({
         where: {
@@ -232,29 +259,12 @@ const updateBookingStatus = async (req, res) => {
         }
       });
       
-      // Check for conflicts and reject conflicting bookings
-      const conflictingBookings = [];
-      
-      for (const pendingBooking of pendingBookings) {
-        if (!pendingBooking.timeSlots || !booking.timeSlots) continue;
-        
-        const hasConflict = pendingBooking.timeSlots.some(pendingSlot => 
-          booking.timeSlots.some(approvedSlot => {
-            if (pendingSlot.date !== approvedSlot.date) return false;
-            
-            const [pendingStart] = pendingSlot.startTime.split(':').map(Number);
-            const [pendingEnd] = pendingSlot.endTime.split(':').map(Number);
-            const [approvedStart] = approvedSlot.startTime.split(':').map(Number);
-            const [approvedEnd] = approvedSlot.endTime.split(':').map(Number);
-            
-            return (pendingStart < approvedEnd && pendingEnd > approvedStart);
-          })
-        );
-        
-        if (hasConflict) {
-          conflictingBookings.push(pendingBooking);
-        }
-      }
+      // Use enhanced conflict detection to find conflicting bookings
+      const conflictingBookings = findConflictingBookings(
+        booking,
+        pendingBookings,
+        cooldownMinutes
+      );
       
       // Reject all conflicting bookings
       if (conflictingBookings.length > 0) {
