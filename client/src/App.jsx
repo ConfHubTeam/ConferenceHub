@@ -16,6 +16,7 @@ import PlaceDetailPage from "./pages/PlaceDetailPage";
 import DashboardPage from "./pages/DashboardPage";
 import UsersPage from "./pages/UsersPage";
 import AllPlacesPage from "./pages/AllPlacesPage";
+import HostBookingManagementPage from "./pages/HostBookingManagementPage";
 import TelegramAuth from "./components/TelegramAuth";
 import TelegramCallbackHandler from "./components/TelegramCallbackHandler";
 import LoginSuccessPage from "./pages/LoginSuccessPage";
@@ -42,6 +43,7 @@ function App() {
             <Route path="/place/:placeId" element={<PlaceDetailPage />}/>
             <Route path="/place/:placeId/:bookingId" element={<PlaceDetailPage />}/>
             <Route path="/account/bookings" element={<BookingsPage />}/>
+            <Route path="/account/host-management" element={<HostBookingManagementPage />}/>
             
             {/* Agent-specific routes */}
             <Route path="/account/dashboard" element={<DashboardPage />}/>

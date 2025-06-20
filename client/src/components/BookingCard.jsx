@@ -1,5 +1,6 @@
 import { differenceInCalendarDays } from "date-fns";
 import DateDuration from "./DateDuration";
+import PriceDisplay from "./PriceDisplay";
 import { useContext, useState } from "react";
 import { UserContext } from "./UserContext";
 import { useNotification } from "./NotificationContext";
@@ -130,7 +131,7 @@ export default function BookingCard({bookingDetail, onBookingUpdate}) {
                 <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                   <h3 className="font-medium mb-2">Booking Details</h3>
                   <p>Number of Guests: {bookingDetail.numOfGuests}</p>
-                  <p>Total Price: ${bookingDetail.totalPrice}</p>
+                  <p>Total Price: <PriceDisplay price={bookingDetail.totalPrice} currency={bookingDetail.place?.currency} bold={false} /></p>
                   <p className="mt-2 text-sm text-gray-500 italic">Client details are hidden for privacy reasons.</p>
                 </div>
               )}
@@ -155,22 +156,19 @@ export default function BookingCard({bookingDetail, onBookingUpdate}) {
                   )}
                 </div>
               )}
-              
-              {/* Guest information for clients (their own bookings) */}
-              {user?.userType === 'client' && (
-                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                  <h3 className="font-medium mb-2">Your Information</h3>
-                  <p>Name: {bookingDetail.guestName}</p>
-                  <p>Phone: {bookingDetail.guestPhone}</p>
-                  <p>Number of Guests: {bookingDetail.numOfGuests}</p>
-                </div>
-              )}
             </div>
             
             <div className="flex flex-col">
               <div className="bg-primary w-full rounded-2xl text-white px-4 py-3 text-center mb-4">
                 <p>Total price</p>
-                <div className="text-2xl">${bookingDetail.totalPrice}</div>
+                <div className="text-2xl">
+                  <PriceDisplay 
+                    price={bookingDetail.totalPrice} 
+                    currency={bookingDetail.place?.currency}
+                    className="text-2xl text-white"
+                    bold={true}
+                  />
+                </div>
               </div>
               
               {/* Action buttons for host */}
