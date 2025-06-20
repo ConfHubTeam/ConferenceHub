@@ -4,7 +4,7 @@ import api from "../utils/api";
 import { UserContext } from "../components/UserContext";
 import BookingRequestCard from "../components/BookingRequestCard";
 import Pagination from "../components/Pagination";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useNotification } from "../components/NotificationContext";
 import { useBookingNotifications } from "../contexts/BookingNotificationContext";
 import BookingNotificationBanner from "../components/BookingNotificationBanner";
@@ -17,8 +17,16 @@ export default function BookingsPage() {
   const [statusFilter, setStatusFilter] = useState("pending");
   const [filteredBookings, setFilteredBookings] = useState([]);
   const location = useLocation();
+  const navigate = useNavigate();
   const { notify } = useNotification();
   const { markAsViewed, markAllAsViewed, loadNotificationCounts } = useBookingNotifications();
+  
+  // Agent-specific state for user filtering
+  const [allUsers, setAllUsers] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState("");
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [userSearchTerm, setUserSearchTerm] = useState("");
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
   
   // Track when user visits the page to dismiss notifications
   useEffect(() => {
@@ -66,18 +74,72 @@ export default function BookingsPage() {
     setStatusFilter('pending');
   }, [user?.userType]);
 
+  // Load users list for agent filtering
+  useEffect(() => {
+    if (user?.userType === 'agent') {
+      setLoadingUsers(true);
+      api.get('/users/all')
+        .then(({data}) => {
+          setAllUsers(data);
+          setLoadingUsers(false);
+        })
+        .catch(err => {
+          console.error('Error fetching users:', err);
+          setLoadingUsers(false);
+        });
+    }
+  }, [user]);
+
+  // Set selected user ID from URL params
+  useEffect(() => {
+    if (userId && user?.userType === 'agent') {
+      setSelectedUserId(userId);
+    }
+  }, [userId, user]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showUserDropdown && !event.target.closest('.user-filter-container')) {
+        setShowUserDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showUserDropdown]);
+
   // Fetch all bookings
   useEffect(() => {
     loadBookings();
-  }, [userId]);
+  }, [selectedUserId]);
+
+  // Handle user filter change
+  const handleUserFilterChange = (newUserId) => {
+    setSelectedUserId(newUserId);
+    
+    // Update URL to reflect the filter
+    const newParams = new URLSearchParams(location.search);
+    if (newUserId) {
+      newParams.set('userId', newUserId);
+    } else {
+      newParams.delete('userId');
+    }
+    
+    // Navigate to the new URL
+    const newUrl = `${location.pathname}?${newParams.toString()}`;
+    navigate(newUrl, { replace: true });
+  };
 
   // Load bookings from API
   async function loadBookings() {
     setLoading(true);
     try {
       // Get endpoint based on if we're filtering by user
-      const endpoint = userId 
-        ? `/bookings?userId=${userId}` 
+      const endpoint = selectedUserId 
+        ? `/bookings?userId=${selectedUserId}` 
         : "/bookings";
         
       const { data } = await api.get(endpoint);
@@ -215,6 +277,12 @@ export default function BookingsPage() {
     return filteredBookings.slice(startIndex, endIndex);
   }
 
+  // Get selected user details
+  function getSelectedUser() {
+    if (!selectedUserId || !allUsers.length) return null;
+    return allUsers.find(u => u.id.toString() === selectedUserId);
+  }
+
   // Calculate pagination info for all user types
   const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
   const showingFrom = filteredBookings.length > 0 
@@ -259,13 +327,21 @@ export default function BookingsPage() {
             {/* Page header */}
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {userId ? 'User Booking Management' : 'All Booking Management'}
+                {selectedUserId ? 'User Booking Management' : 'All Booking Management'}
               </h1>
               <p className="text-gray-600">
-                {userId 
-                  ? `Manage bookings for User ID: ${userId}` 
-                  : 'Manage all booking requests across the system'
-                }
+                {selectedUserId ? (
+                  <>
+                    Manage bookings for: {getSelectedUser()?.name || `User ID: ${selectedUserId}`}
+                    {getSelectedUser() && (
+                      <span className="ml-2 text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                        {getSelectedUser().userType}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  'Manage all booking requests across the system'
+                )}
               </p>
             </div>
 
@@ -339,6 +415,107 @@ export default function BookingsPage() {
             {/* Filters and controls */}
             <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
               <div className="flex flex-col lg:flex-row gap-4">
+                {/* User filter */}
+                <div className="lg:w-64 user-filter-container">
+                  <label htmlFor="userFilter" className="block text-sm font-medium text-gray-700 mb-2">
+                    Filter by User
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder={selectedUserId ? getSelectedUser()?.name || "Select user..." : "Search users..."}
+                      value={userSearchTerm}
+                      onChange={(e) => setUserSearchTerm(e.target.value)}
+                      onFocus={() => setShowUserDropdown(true)}
+                      disabled={loadingUsers}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+                    {selectedUserId && (
+                      <button
+                        onClick={() => {
+                          handleUserFilterChange("");
+                          setUserSearchTerm("");
+                          setShowUserDropdown(false);
+                        }}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    )}
+                    
+                    {/* Dropdown */}
+                    {showUserDropdown && !loadingUsers && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                        {/* All Users option */}
+                        <button
+                          onClick={() => {
+                            handleUserFilterChange("");
+                            setUserSearchTerm("");
+                            setShowUserDropdown(false);
+                          }}
+                          className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 text-sm"
+                        >
+                          <span className="font-medium">All Users</span>
+                          <span className="text-gray-500 ml-2">({allUsers.length} total)</span>
+                        </button>
+                        
+                        {/* Filtered users */}
+                        {allUsers
+                          .filter(user => {
+                            if (!userSearchTerm) return true;
+                            const searchLower = userSearchTerm.toLowerCase();
+                            return (
+                              user.name.toLowerCase().includes(searchLower) ||
+                              user.email.toLowerCase().includes(searchLower) ||
+                              user.userType.toLowerCase().includes(searchLower)
+                            );
+                          })
+                          .map(user => (
+                            <button
+                              key={user.id}
+                              onClick={() => {
+                                handleUserFilterChange(user.id.toString());
+                                setUserSearchTerm("");
+                                setShowUserDropdown(false);
+                              }}
+                              className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 text-sm"
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <span className="font-medium">{user.name}</span>
+                                  <span className="text-gray-500 ml-2">({user.userType})</span>
+                                </div>
+                                <span className="text-xs text-gray-400">{user.email}</span>
+                              </div>
+                            </button>
+                          ))
+                        }
+                        
+                        {/* No results */}
+                        {userSearchTerm && allUsers.filter(user => {
+                          const searchLower = userSearchTerm.toLowerCase();
+                          return (
+                            user.name.toLowerCase().includes(searchLower) ||
+                            user.email.toLowerCase().includes(searchLower) ||
+                            user.userType.toLowerCase().includes(searchLower)
+                          );
+                        }).length === 0 && (
+                          <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                            No users found matching "{userSearchTerm}"
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Loading state */}
+                  {loadingUsers && (
+                    <p className="mt-2 text-xs text-gray-500">Loading users...</p>
+                  )}
+                </div>
+
                 {/* Search */}
                 <div className="flex-1">
                   <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
@@ -418,20 +595,38 @@ export default function BookingsPage() {
                 </svg>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No bookings found</h3>
                 <p className="text-gray-600 mb-4">
-                  {searchTerm || statusFilter !== "all" 
-                    ? "Try adjusting your search or filter criteria." 
-                    : "There are no bookings in the system yet."
-                  }
+                  {selectedUserId ? (
+                    `No bookings found for ${getSelectedUser()?.name || 'this user'}.`
+                  ) : searchTerm || statusFilter !== "all" ? (
+                    "Try adjusting your search or filter criteria."
+                  ) : (
+                    "There are no bookings in the system yet."
+                  )}
                 </p>
+                {selectedUserId && (
+                  <button
+                    onClick={() => handleUserFilterChange("")}
+                    className="text-primary hover:text-primary-dark underline text-sm"
+                  >
+                    View all users' bookings
+                  </button>
+                )}
               </div>
             ) : (
               <>
                 {/* Results header */}
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-medium text-gray-900">
-                    {statusFilter === "all" ? "All" : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Bookings
-                    <span className="ml-2 text-sm text-gray-500">({filteredBookings.length})</span>
-                  </h2>
+                  <div className="flex flex-col">
+                    <h2 className="text-lg font-medium text-gray-900">
+                      {statusFilter === "all" ? "All" : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Bookings
+                      <span className="ml-2 text-sm text-gray-500">({filteredBookings.length})</span>
+                    </h2>
+                    {selectedUserId && getSelectedUser() && (
+                      <p className="text-sm text-gray-500 mt-1">
+                        Filtered for: {getSelectedUser().name} ({getSelectedUser().userType})
+                      </p>
+                    )}
+                  </div>
                   
                   {statusFilter === "pending" && stats.pending > 0 && (
                     <div className="text-sm text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full">
