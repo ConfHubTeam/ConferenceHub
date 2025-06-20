@@ -394,24 +394,55 @@ const getAllPlaces = async (req, res) => {
       return res.status(403).json({ error: "Only agents can access all places" });
     }
     
-    // Get all places with their owners
-    const places = await Place.findAll({
-      include:[
+    // Get query parameters for filtering and pagination
+    const { userId, page = 1, limit = 50 } = req.query;
+    const offset = (page - 1) * limit;
+    
+    // Build query options
+    const queryOptions = {
+      include: [
         {
           model: User,
           as: 'owner',
           attributes: ['id', 'name', 'email']
-       },
-       {
+        },
+        {
           model: Currency,
           as: 'currency',
           attributes: ['id', 'name', 'code', 'charCode']
-      }
-    ],
-      order: [['createdAt', 'DESC']]
-    });
+        }
+      ],
+      order: [['createdAt', 'DESC']],
+      limit: parseInt(limit),
+      offset: parseInt(offset)
+    };
     
-    res.json(places);
+    // Add userId filter if provided
+    if (userId) {
+      queryOptions.where = {
+        owner: userId
+      };
+    }
+    
+    // Get places with count for pagination
+    const { count, rows: places } = await Place.findAndCountAll(queryOptions);
+    
+    // Calculate pagination info
+    const totalPages = Math.ceil(count / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+    
+    res.json({
+      places,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages,
+        totalItems: count,
+        itemsPerPage: parseInt(limit),
+        hasNextPage,
+        hasPrevPage
+      }
+    });
   } catch (error) {
     console.error("Error fetching places:", error);
     res.status(422).json({ error: error.message });

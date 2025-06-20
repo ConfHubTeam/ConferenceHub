@@ -8,6 +8,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useNotification } from "../components/NotificationContext";
 import { useBookingNotifications } from "../contexts/BookingNotificationContext";
 import BookingNotificationBanner from "../components/BookingNotificationBanner";
+import ActiveFilters, { FilterCreators } from "../components/ActiveFilters";
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState([]);
@@ -282,6 +283,36 @@ export default function BookingsPage() {
     if (!selectedUserId || !allUsers.length) return null;
     return allUsers.find(u => u.id.toString() === selectedUserId);
   }
+
+  // Helper function to clear all filters
+  const clearAllFilters = () => {
+    handleUserFilterChange("");
+    setSearchTerm("");
+    setStatusFilter("pending"); // Reset to default
+    setUserSearchTerm("");
+  };
+
+  // Helper function to get active filters for the ActiveFilters component
+  const getActiveFilters = () => {
+    const filters = [];
+    
+    if (selectedUserId && user?.userType === 'agent') {
+      filters.push(FilterCreators.user(getSelectedUser(), () => {
+        handleUserFilterChange("");
+        setUserSearchTerm("");
+      }));
+    }
+    
+    if (searchTerm) {
+      filters.push(FilterCreators.search(searchTerm, () => setSearchTerm("")));
+    }
+    
+    if (statusFilter !== "pending" && statusFilter !== "all") {
+      filters.push(FilterCreators.status(statusFilter, () => setStatusFilter("pending")));
+    }
+    
+    return filters;
+  };
 
   // Calculate pagination info for all user types
   const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
@@ -585,6 +616,12 @@ export default function BookingsPage() {
                   </select>
                 </div>
               </div>
+              
+              {/* Active filters */}
+              <ActiveFilters 
+                filters={getActiveFilters()}
+                onClearAllFilters={clearAllFilters}
+              />
             </div>
 
             {/* Bookings list */}
@@ -813,6 +850,12 @@ export default function BookingsPage() {
                   </select>
                 </div>
               </div>
+              
+              {/* Active filters */}
+              <ActiveFilters 
+                filters={getActiveFilters()}
+                onClearAllFilters={clearAllFilters}
+              />
             </div>
 
             {/* Booking requests list */}
