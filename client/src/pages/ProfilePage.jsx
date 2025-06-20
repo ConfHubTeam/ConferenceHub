@@ -5,6 +5,7 @@ import { Navigate, useParams, useLocation } from "react-router-dom";
 import api from "../utils/api";
 import AccountNav from "../components/AccountNav";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
+import CustomPhoneInput from "../components/CustomPhoneInput";
 
 export default function ProfilePage({}) {
   const [redirect, setRedirect] = useState(); // control the redirect after logout
@@ -17,6 +18,12 @@ export default function ProfilePage({}) {
   // Account deletion state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Profile editing state
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editPhoneNumber, setEditPhoneNumber] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     // Only process notifications once to prevent infinite loops
@@ -104,6 +111,45 @@ export default function ProfilePage({}) {
     }
   }
   
+  // Start editing profile
+  function startEditing() {
+    setEditName(user.telegramLinked && user.telegramFirstName ? user.telegramFirstName : user.name);
+    setEditPhoneNumber(user.phoneNumber || '');
+    setIsEditing(true);
+  }
+  
+  // Cancel editing
+  function cancelEditing() {
+    setIsEditing(false);
+    setEditName('');
+    setEditPhoneNumber('');
+  }
+  
+  // Save profile changes
+  async function saveProfile() {
+    if (!editName.trim()) {
+      notify("Name is required", "error");
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+      const response = await api.put('/users/profile', {
+        name: editName.trim(),
+        phoneNumber: editPhoneNumber.trim()
+      });
+      
+      // Update the user context with the new data
+      setUser(response.data.user);
+      setIsEditing(false);
+      notify(response.data.message, "success");
+    } catch (error) {
+      notify(error.response?.data?.error || "Error updating profile", "error");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+  
   // Function to delete account
   async function deleteAccount() {
     setIsDeleting(true);
@@ -138,21 +184,109 @@ export default function ProfilePage({}) {
         {/* User info card */}
         <div className="bg-white shadow p-6 rounded-lg">
           <div className="mb-5">
-            {/* For Telegram users, prioritize displaying first name if available, otherwise fallback to regular name */}
-            <div className="text-2xl font-bold mb-1">
-              {user.telegramLinked && user.telegramFirstName ? user.telegramFirstName : user.name}
-            </div>
-            
-            {/* Only show email if it exists and doesn't contain "telegram_" */}
-            {user.email && !user.email.includes("telegram_") && (
-              <div className="text-sm text-gray-500">{user.email}</div>
-            )}
-            
-            {/* Show Telegram username if available */}
-            {user.telegramUsername && (
-              <div className="text-xs text-gray-500 mt-1">
-                Telegram: @{user.telegramUsername}
-              </div>
+            {!isEditing ? (
+              <>
+                {/* View mode */}
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold">Profile Information</h2>
+                  <button
+                    onClick={startEditing}
+                    className="text-blue-600 hover:text-blue-800 transition-colors flex items-center"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Edit
+                  </button>
+                </div>
+                
+                <div className="text-left space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600">Name</label>
+                    <div className="text-lg font-semibold">
+                      {user.telegramLinked && user.telegramFirstName ? user.telegramFirstName : user.name}
+                    </div>
+                  </div>
+                  
+                  {user.email && !user.email.includes("telegram_") && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600">Email</label>
+                      <div className="text-sm text-gray-700">{user.email}</div>
+                    </div>
+                  )}
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600">Phone Number</label>
+                    <div className="text-sm text-gray-700">
+                      {user.phoneNumber || 'Not provided'}
+                    </div>
+                  </div>
+                  
+                  {/* Show Telegram username if available */}
+                  {user.telegramUsername && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600">Telegram</label>
+                      <div className="text-sm text-gray-700">@{user.telegramUsername}</div>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Edit mode */}
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold">Edit Profile</h2>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={cancelEditing}
+                      className="text-gray-600 hover:text-gray-800 transition-colors"
+                      disabled={isSaving}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={saveProfile}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                      disabled={isSaving}
+                    >
+                      {isSaving ? 'Saving...' : 'Save'}
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="text-left space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Name *</label>
+                    <input
+                      type="text"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Enter your name"
+                      disabled={isSaving}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Phone Number</label>
+                    <CustomPhoneInput
+                      value={editPhoneNumber}
+                      onChange={setEditPhoneNumber}
+                      placeholder="Enter your phone number"
+                      disabled={isSaving}
+                    />
+                  </div>
+                  
+                  {user.email && !user.email.includes("telegram_") && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600">Email</label>
+                      <div className="text-sm text-gray-500 bg-gray-50 p-2 rounded-md">
+                        {user.email} (cannot be changed)
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </div>
 

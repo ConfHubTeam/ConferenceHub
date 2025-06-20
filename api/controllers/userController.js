@@ -31,9 +31,9 @@ const getProfile = async (req, res) => {
       try {
         // Update Mongoose findById to Sequelize findByPk
         const user = await User.findByPk(userData.id, {
-          // Include all relevant user attributes, particularly Telegram fields
+          // Include all relevant user attributes, including phone number
           attributes: [
-            'id', 'name', 'email', 'userType', 
+            'id', 'name', 'email', 'phoneNumber', 'userType', 
             'telegramId', 'telegramUsername', 'telegramFirstName',
             'telegramPhotoUrl', 'telegramPhone', 'telegramLinked'
           ]
@@ -54,6 +54,74 @@ const getProfile = async (req, res) => {
   } else {
     console.log('No token found in either cookies or Authorization header');
     res.json(null);
+  }
+};
+
+/**
+ * Update user profile
+ */
+const updateProfile = async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+    const { name, phoneNumber } = req.body;
+
+    // Validate input
+    if (!name || name.trim() === '') {
+      return res.status(400).json({ error: 'Name is required' });
+    }
+
+    // Validate phone number format if provided
+    if (phoneNumber && phoneNumber.trim() !== '') {
+      const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+      if (!phoneRegex.test(phoneNumber.replace(/[\s\-\(\)]/g, ''))) {
+        return res.status(400).json({ error: 'Please enter a valid phone number' });
+      }
+    }
+
+    // Check if phone number is already taken by another user
+    if (phoneNumber && phoneNumber.trim() !== '') {
+      const existingUser = await User.findOne({
+        where: {
+          phoneNumber: phoneNumber.trim(),
+          id: { [require('sequelize').Op.ne]: userData.id }
+        }
+      });
+
+      if (existingUser) {
+        return res.status(400).json({ error: 'Phone number is already in use by another user' });
+      }
+    }
+
+    // Update user profile
+    const updateData = {
+      name: name.trim()
+    };
+
+    // Only update phone number if provided
+    if (phoneNumber !== undefined) {
+      updateData.phoneNumber = phoneNumber.trim() || null;
+    }
+
+    await User.update(updateData, {
+      where: { id: userData.id }
+    });
+
+    // Fetch updated user data
+    const updatedUser = await User.findByPk(userData.id, {
+      attributes: [
+        'id', 'name', 'email', 'phoneNumber', 'userType', 
+        'telegramId', 'telegramUsername', 'telegramFirstName',
+        'telegramPhotoUrl', 'telegramPhone', 'telegramLinked'
+      ]
+    });
+
+    res.json({
+      message: 'Profile updated successfully',
+      user: updatedUser
+    });
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    res.status(422).json({ error: error.message });
   }
 };
 
@@ -295,6 +363,7 @@ const getStatistics = async (req, res) => {
 
 module.exports = {
   getProfile,
+  updateProfile,
   getAllUsers,
   deleteUser,
   deleteOwnAccount,
