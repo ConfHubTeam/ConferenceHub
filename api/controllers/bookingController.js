@@ -1,4 +1,4 @@
-const { Booking, Place, User } = require("../models");
+const { Booking, Place, User, Currency } = require("../models");
 const { getUserDataFromToken } = require("../middleware/auth");
 const { Op } = require("sequelize");
 const { validateBookingTimeSlots, findConflictingBookings } = require("../utils/bookingUtils");
@@ -104,12 +104,19 @@ const getBookings = async (req, res) => {
           {
             model: Place,
             as: 'place',
-            include: [{
-              model: User,
-              as: 'owner',
-              attributes: ['id', 'name', 'email']
-            }],
-            attributes: ['id', 'title', 'address', 'photos', 'price', 'checkIn', 'checkOut', 'ownerId']
+            include: [
+              {
+                model: User,
+                as: 'owner',
+                attributes: ['id', 'name', 'email']
+              },
+              {
+                model: Currency,
+                as: 'currency',
+                attributes: ['id', 'name', 'code', 'charCode']
+              }
+            ],
+            attributes: ['id', 'title', 'address', 'photos', 'price', 'checkIn', 'checkOut', 'ownerId', 'currencyId']
           },
           {
             model: User,
@@ -132,12 +139,19 @@ const getBookings = async (req, res) => {
           {
             model: Place,
             as: 'place',
-            include: [{
-              model: User,
-              as: 'owner',
-              attributes: ['id', 'name', 'email']
-            }],
-            attributes: ['id', 'title', 'address', 'photos', 'price', 'checkIn', 'checkOut', 'ownerId']
+            include: [
+              {
+                model: User,
+                as: 'owner',
+                attributes: ['id', 'name', 'email']
+              },
+              {
+                model: Currency,
+                as: 'currency',
+                attributes: ['id', 'name', 'code', 'charCode']
+              }
+            ],
+            attributes: ['id', 'title', 'address', 'photos', 'price', 'checkIn', 'checkOut', 'ownerId', 'currencyId']
           },
           {
             model: User,
@@ -161,7 +175,14 @@ const getBookings = async (req, res) => {
             model: Place,
             as: 'place',
             where: { ownerId: userData.id },
-            attributes: ['id', 'title', 'address', 'photos', 'price', 'checkIn', 'checkOut']
+            include: [
+              {
+                model: Currency,
+                as: 'currency',
+                attributes: ['id', 'name', 'code', 'charCode']
+              }
+            ],
+            attributes: ['id', 'title', 'address', 'photos', 'price', 'checkIn', 'checkOut', 'currencyId']
           },
           {
             model: User,
@@ -177,16 +198,23 @@ const getBookings = async (req, res) => {
       res.json(hostBookings);
     } else {
       // For clients: Find bookings made by this user
-      // Exclude rejected/cancelled bookings
+      // Include all booking statuses so clients can see their full booking history
       const clientBookings = await Booking.findAll({
         where: { 
-          userId: userData.id,
-          status: ['pending', 'approved'] // Only return pending and approved bookings
+          userId: userData.id
+          // Note: Include all statuses (pending, approved, rejected) for client's visibility
         },
         include: {
           model: Place,
           as: 'place',
-          attributes: ['id', 'title', 'address', 'photos', 'price', 'checkIn', 'checkOut']
+          include: [
+            {
+              model: Currency,
+              as: 'currency',
+              attributes: ['id', 'name', 'code', 'charCode']
+            }
+          ],
+          attributes: ['id', 'title', 'address', 'photos', 'price', 'checkIn', 'checkOut', 'currencyId']
         },
         order: [
           ['createdAt', 'DESC'] // Most recent bookings first
