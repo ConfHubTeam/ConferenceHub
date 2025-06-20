@@ -62,6 +62,11 @@ export default function BookingNotificationBanner() {
     } else if (user.userType === 'client') {
       if (notifications.approved > 0) markAsViewed('approved');
       if (notifications.rejected > 0) markAsViewed('rejected');
+      
+      // Refresh the page for clients so they can see the latest booking status
+      setTimeout(() => {
+        window.location.reload();
+      }, 500); // Small delay to ensure the notification is marked as viewed first
     }
   };
 
