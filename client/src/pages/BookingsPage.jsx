@@ -2,7 +2,6 @@ import { useContext, useEffect, useState } from "react";
 import AccountNav from "../components/AccountNav";
 import api from "../utils/api";
 import { UserContext } from "../components/UserContext";
-import BookingCard from "../components/BookingCard";
 import BookingRequestCard from "../components/BookingRequestCard";
 import Pagination from "../components/Pagination";
 import { useLocation } from "react-router-dom";
