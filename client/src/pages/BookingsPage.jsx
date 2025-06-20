@@ -8,7 +8,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useNotification } from "../components/NotificationContext";
 import { useBookingNotifications } from "../contexts/BookingNotificationContext";
 import BookingNotificationBanner from "../components/BookingNotificationBanner";
-import ActiveFilters, { FilterCreators } from "../components/ActiveFilters";
+import BookingFilters from "../components/BookingFilters";
+import BookingStatsCards from "../components/BookingStatsCards";
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState([]);
@@ -23,11 +24,7 @@ export default function BookingsPage() {
   const { markAsViewed, markAllAsViewed, loadNotificationCounts } = useBookingNotifications();
   
   // Agent-specific state for user filtering
-  const [allUsers, setAllUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState("");
-  const [loadingUsers, setLoadingUsers] = useState(false);
-  const [userSearchTerm, setUserSearchTerm] = useState("");
-  const [showUserDropdown, setShowUserDropdown] = useState(false);
   
   // Track when user visits the page to dismiss notifications
   useEffect(() => {
@@ -75,22 +72,6 @@ export default function BookingsPage() {
     setStatusFilter('pending');
   }, [user?.userType]);
 
-  // Load users list for agent filtering
-  useEffect(() => {
-    if (user?.userType === 'agent') {
-      setLoadingUsers(true);
-      api.get('/users/all')
-        .then(({data}) => {
-          setAllUsers(data);
-          setLoadingUsers(false);
-        })
-        .catch(err => {
-          console.error('Error fetching users:', err);
-          setLoadingUsers(false);
-        });
-    }
-  }, [user]);
-
   // Set selected user ID from URL params
   useEffect(() => {
     if (userId && user?.userType === 'agent') {
@@ -98,41 +79,10 @@ export default function BookingsPage() {
     }
   }, [userId, user]);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (showUserDropdown && !event.target.closest('.user-filter-container')) {
-        setShowUserDropdown(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showUserDropdown]);
-
   // Fetch all bookings
   useEffect(() => {
     loadBookings();
   }, [selectedUserId]);
-
-  // Handle user filter change
-  const handleUserFilterChange = (newUserId) => {
-    setSelectedUserId(newUserId);
-    
-    // Update URL to reflect the filter
-    const newParams = new URLSearchParams(location.search);
-    if (newUserId) {
-      newParams.set('userId', newUserId);
-    } else {
-      newParams.delete('userId');
-    }
-    
-    // Navigate to the new URL
-    const newUrl = `${location.pathname}?${newParams.toString()}`;
-    navigate(newUrl, { replace: true });
-  };
 
   // Load bookings from API
   async function loadBookings() {
@@ -278,40 +228,11 @@ export default function BookingsPage() {
     return filteredBookings.slice(startIndex, endIndex);
   }
 
-  // Get selected user details
-  function getSelectedUser() {
-    if (!selectedUserId || !allUsers.length) return null;
-    return allUsers.find(u => u.id.toString() === selectedUserId);
-  }
-
   // Helper function to clear all filters
   const clearAllFilters = () => {
-    handleUserFilterChange("");
+    setSelectedUserId("");
     setSearchTerm("");
     setStatusFilter("pending"); // Reset to default
-    setUserSearchTerm("");
-  };
-
-  // Helper function to get active filters for the ActiveFilters component
-  const getActiveFilters = () => {
-    const filters = [];
-    
-    if (selectedUserId && user?.userType === 'agent') {
-      filters.push(FilterCreators.user(getSelectedUser(), () => {
-        handleUserFilterChange("");
-        setUserSearchTerm("");
-      }));
-    }
-    
-    if (searchTerm) {
-      filters.push(FilterCreators.search(searchTerm, () => setSearchTerm("")));
-    }
-    
-    if (statusFilter !== "pending" && statusFilter !== "all") {
-      filters.push(FilterCreators.status(statusFilter, () => setStatusFilter("pending")));
-    }
-    
-    return filters;
   };
 
   // Calculate pagination info for all user types
@@ -362,14 +283,7 @@ export default function BookingsPage() {
               </h1>
               <p className="text-gray-600">
                 {selectedUserId ? (
-                  <>
-                    Manage bookings for: {getSelectedUser()?.name || `User ID: ${selectedUserId}`}
-                    {getSelectedUser() && (
-                      <span className="ml-2 text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                        {getSelectedUser().userType}
-                      </span>
-                    )}
-                  </>
+                  `Manage bookings for selected user (ID: ${selectedUserId})`
                 ) : (
                   'Manage all booking requests across the system'
                 )}
@@ -377,252 +291,24 @@ export default function BookingsPage() {
             </div>
 
             {/* Summary cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                      <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <div className="text-sm font-medium text-yellow-800">Pending</div>
-                    <div className="text-2xl font-bold text-yellow-900">{stats.pending}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <div className="text-sm font-medium text-green-800">Approved</div>
-                    <div className="text-2xl font-bold text-green-900">{stats.approved}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                      <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <div className="text-sm font-medium text-red-800">Rejected</div>
-                    <div className="text-2xl font-bold text-red-900">{stats.rejected}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                      <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <div className="text-sm font-medium text-blue-800">Total</div>
-                    <div className="text-2xl font-bold text-blue-900">{stats.total}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <BookingStatsCards stats={stats} userType={user?.userType} />
 
             {/* Filters and controls */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-              <div className="flex flex-col lg:flex-row gap-4">
-                {/* User filter */}
-                <div className="lg:w-64 user-filter-container">
-                  <label htmlFor="userFilter" className="block text-sm font-medium text-gray-700 mb-2">
-                    Filter by User
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder={selectedUserId ? getSelectedUser()?.name || "Select user..." : "Search users..."}
-                      value={userSearchTerm}
-                      onChange={(e) => setUserSearchTerm(e.target.value)}
-                      onFocus={() => setShowUserDropdown(true)}
-                      disabled={loadingUsers}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                    />
-                    {selectedUserId && (
-                      <button
-                        onClick={() => {
-                          handleUserFilterChange("");
-                          setUserSearchTerm("");
-                          setShowUserDropdown(false);
-                        }}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    )}
-                    
-                    {/* Dropdown */}
-                    {showUserDropdown && !loadingUsers && (
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
-                        {/* All Users option */}
-                        <button
-                          onClick={() => {
-                            handleUserFilterChange("");
-                            setUserSearchTerm("");
-                            setShowUserDropdown(false);
-                          }}
-                          className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 text-sm"
-                        >
-                          <span className="font-medium">All Users</span>
-                          <span className="text-gray-500 ml-2">({allUsers.length} total)</span>
-                        </button>
-                        
-                        {/* Filtered users */}
-                        {allUsers
-                          .filter(user => {
-                            if (!userSearchTerm) return true;
-                            const searchLower = userSearchTerm.toLowerCase();
-                            return (
-                              user.name.toLowerCase().includes(searchLower) ||
-                              user.email.toLowerCase().includes(searchLower) ||
-                              user.userType.toLowerCase().includes(searchLower)
-                            );
-                          })
-                          .map(user => (
-                            <button
-                              key={user.id}
-                              onClick={() => {
-                                handleUserFilterChange(user.id.toString());
-                                setUserSearchTerm("");
-                                setShowUserDropdown(false);
-                              }}
-                              className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 text-sm"
-                            >
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <span className="font-medium">{user.name}</span>
-                                  <span className="text-gray-500 ml-2">({user.userType})</span>
-                                </div>
-                                <span className="text-xs text-gray-400">{user.email}</span>
-                              </div>
-                            </button>
-                          ))
-                        }
-                        
-                        {/* No results */}
-                        {userSearchTerm && allUsers.filter(user => {
-                          const searchLower = userSearchTerm.toLowerCase();
-                          return (
-                            user.name.toLowerCase().includes(searchLower) ||
-                            user.email.toLowerCase().includes(searchLower) ||
-                            user.userType.toLowerCase().includes(searchLower)
-                          );
-                        }).length === 0 && (
-                          <div className="px-4 py-3 text-sm text-gray-500 text-center">
-                            No users found matching "{userSearchTerm}"
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Loading state */}
-                  {loadingUsers && (
-                    <p className="mt-2 text-xs text-gray-500">Loading users...</p>
-                  )}
-                </div>
-
-                {/* Search */}
-                <div className="flex-1">
-                  <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
-                    Search bookings
-                  </label>
-                  <input
-                    id="search"
-                    type="text"
-                    placeholder="Search by request ID, host name, client name, or property name..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 text-sm"
-                  />
-                </div>
-
-                {/* Status filter */}
-                <div className="lg:w-64">
-                  <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
-                    Status
-                  </label>
-                  <select
-                    id="status"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 bg-white cursor-pointer text-sm appearance-none"
-                    style={{
-                      backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
-                      backgroundRepeat: 'no-repeat',
-                      backgroundPosition: 'right 12px center',
-                      backgroundSize: '16px'
-                    }}
-                  >
-                    <option value="pending">Pending ({stats.pending})</option>
-                    <option value="all">All ({stats.total})</option>
-                    <option value="approved">Approved ({stats.approved})</option>
-                    <option value="rejected">Rejected ({stats.rejected})</option>
-                  </select>
-                </div>
-
-                {/* Sort options */}
-                <div className="lg:w-64">
-                  <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-2">
-                    Sort by
-                  </label>
-                  <select
-                    id="sort"
-                    value={`${sortBy}-${sortOrder}`}
-                    onChange={(e) => {
-                      const [field, order] = e.target.value.split("-");
-                      setSortBy(field);
-                      setSortOrder(order);
-                    }}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 bg-white cursor-pointer text-sm appearance-none"
-                    style={{
-                      backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
-                      backgroundRepeat: 'no-repeat',
-                      backgroundPosition: 'right 12px center',
-                      backgroundSize: '16px'
-                    }}
-                  >
-                    <option value="createdAt-desc">Newest first</option>
-                    <option value="createdAt-asc">Oldest first</option>
-                    <option value="checkInDate-asc">Check-in date</option>
-                    <option value="totalPrice-desc">Highest price</option>
-                    <option value="totalPrice-asc">Lowest price</option>
-                    <option value="place-asc">Property name</option>
-                  </select>
-                </div>
-              </div>
-              
-              {/* Active filters */}
-              <ActiveFilters 
-                filters={getActiveFilters()}
-                onClearAllFilters={clearAllFilters}
-              />
-            </div>
+            <BookingFilters
+              user={user}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              sortOrder={sortOrder}
+              setSortOrder={setSortOrder}
+              stats={stats}
+              selectedUserId={selectedUserId}
+              setSelectedUserId={setSelectedUserId}
+              onClearAllFilters={clearAllFilters}
+            />
 
             {/* Bookings list */}
             {filteredBookings.length === 0 ? (
@@ -633,7 +319,7 @@ export default function BookingsPage() {
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No bookings found</h3>
                 <p className="text-gray-600 mb-4">
                   {selectedUserId ? (
-                    `No bookings found for ${getSelectedUser()?.name || 'this user'}.`
+                    `No bookings found for selected user.`
                   ) : searchTerm || statusFilter !== "all" ? (
                     "Try adjusting your search or filter criteria."
                   ) : (
@@ -642,7 +328,7 @@ export default function BookingsPage() {
                 </p>
                 {selectedUserId && (
                   <button
-                    onClick={() => handleUserFilterChange("")}
+                    onClick={() => setSelectedUserId("")}
                     className="text-primary hover:text-primary-dark underline text-sm"
                   >
                     View all users' bookings
@@ -658,9 +344,9 @@ export default function BookingsPage() {
                       {statusFilter === "all" ? "All" : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Bookings
                       <span className="ml-2 text-sm text-gray-500">({filteredBookings.length})</span>
                     </h2>
-                    {selectedUserId && getSelectedUser() && (
+                    {selectedUserId && (
                       <p className="text-sm text-gray-500 mt-1">
-                        Filtered for: {getSelectedUser().name} ({getSelectedUser().userType})
+                        Filtered for user ID: {selectedUserId}
                       </p>
                     )}
                   </div>
@@ -712,151 +398,24 @@ export default function BookingsPage() {
             </div>
 
             {/* Summary cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                      <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <div className="text-sm font-medium text-yellow-800">Pending</div>
-                    <div className="text-2xl font-bold text-yellow-900">{stats.pending}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <div className="text-sm font-medium text-green-800">Approved</div>
-                    <div className="text-2xl font-bold text-green-900">{stats.approved}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                      <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <div className="text-sm font-medium text-red-800">Rejected</div>
-                    <div className="text-2xl font-bold text-red-900">{stats.rejected}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                      <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <div className="text-sm font-medium text-blue-800">Total</div>
-                    <div className="text-2xl font-bold text-blue-900">{stats.total}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <BookingStatsCards stats={stats} userType={user?.userType} />
 
             {/* Filters and controls */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-              <div className="flex flex-col lg:flex-row gap-4">
-                {/* Search */}
-                <div className="flex-1">
-                  <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
-                    Search requests
-                  </label>
-                  <input
-                    id="search"
-                    type="text"
-                    placeholder="Search by request ID, property name, or address..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 text-sm"
-                  />
-                </div>
-
-                {/* Status filter */}
-                <div className="lg:w-64">
-                  <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
-                    Status
-                  </label>
-                  <select
-                    id="status"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 bg-white cursor-pointer text-sm appearance-none"
-                    style={{
-                      backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
-                      backgroundRepeat: 'no-repeat',
-                      backgroundPosition: 'right 12px center',
-                      backgroundSize: '16px'
-                    }}
-                  >
-                    <option value="pending">Pending ({stats.pending})</option>
-                    <option value="all">All ({stats.total})</option>
-                    <option value="approved">Approved ({stats.approved})</option>
-                    <option value="rejected">Rejected ({stats.rejected})</option>
-                  </select>
-                </div>
-
-                {/* Sort options */}
-                <div className="lg:w-64">
-                  <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-2">
-                    Sort by
-                  </label>
-                  <select
-                    id="sort"
-                    value={`${sortBy}-${sortOrder}`}
-                    onChange={(e) => {
-                      const [field, order] = e.target.value.split("-");
-                      setSortBy(field);
-                      setSortOrder(order);
-                    }}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 bg-white cursor-pointer text-sm appearance-none"
-                    style={{
-                      backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
-                      backgroundRepeat: 'no-repeat',
-                      backgroundPosition: 'right 12px center',
-                      backgroundSize: '16px'
-                    }}
-                  >
-                    <option value="createdAt-desc">Newest first</option>
-                    <option value="createdAt-asc">Oldest first</option>
-                    <option value="checkInDate-asc">Check-in date</option>
-                    <option value="totalPrice-desc">Highest price</option>
-                    <option value="totalPrice-asc">Lowest price</option>
-                    <option value="place-asc">Property name</option>
-                  </select>
-                </div>
-              </div>
-              
-              {/* Active filters */}
-              <ActiveFilters 
-                filters={getActiveFilters()}
-                onClearAllFilters={clearAllFilters}
-              />
-            </div>
+            <BookingFilters
+              user={user}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              sortOrder={sortOrder}
+              setSortOrder={setSortOrder}
+              stats={stats}
+              selectedUserId={selectedUserId}
+              setSelectedUserId={setSelectedUserId}
+              onClearAllFilters={clearAllFilters}
+            />
 
             {/* Booking requests list */}
             {filteredBookings.length === 0 ? (
@@ -928,145 +487,24 @@ export default function BookingsPage() {
             </div>
 
             {/* Summary cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                      <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <div className="text-sm font-medium text-yellow-800">Pending</div>
-                    <div className="text-2xl font-bold text-yellow-900">{stats.pending}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <div className="text-sm font-medium text-green-800">Confirmed</div>
-                    <div className="text-2xl font-bold text-green-900">{stats.approved}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                      <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <div className="text-sm font-medium text-red-800">Rejected</div>
-                    <div className="text-2xl font-bold text-red-900">{stats.rejected}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                      <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <div className="text-sm font-medium text-blue-800">Total</div>
-                    <div className="text-2xl font-bold text-blue-900">{stats.total}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <BookingStatsCards stats={stats} userType={user?.userType} />
 
             {/* Filters and controls */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-              <div className="flex flex-col lg:flex-row gap-4">
-                {/* Search */}
-                <div className="flex-1">
-                  <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
-                    Search bookings
-                  </label>
-                  <input
-                    id="search"
-                    type="text"
-                    placeholder="Search by property name or address..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 text-sm"
-                  />
-                </div>
-
-                {/* Status filter */}
-                <div className="lg:w-64">
-                  <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
-                    Status
-                  </label>
-                  <select
-                    id="status"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 bg-white cursor-pointer text-sm appearance-none"
-                    style={{
-                      backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
-                      backgroundRepeat: 'no-repeat',
-                      backgroundPosition: 'right 12px center',
-                      backgroundSize: '16px'
-                    }}
-                  >
-                    <option value="pending">Pending ({stats.pending})</option>
-                    <option value="all">All ({stats.total})</option>
-                    <option value="approved">Confirmed ({stats.approved})</option>
-                    <option value="rejected">Rejected ({stats.rejected})</option>
-                  </select>
-                </div>
-
-                {/* Sort options */}
-                <div className="lg:w-64">
-                  <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-2">
-                    Sort by
-                  </label>
-                  <select
-                    id="sort"
-                    value={`${sortBy}-${sortOrder}`}
-                    onChange={(e) => {
-                      const [field, order] = e.target.value.split("-");
-                      setSortBy(field);
-                      setSortOrder(order);
-                    }}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 bg-white cursor-pointer text-sm appearance-none"
-                    style={{
-                      backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
-                      backgroundRepeat: 'no-repeat',
-                      backgroundPosition: 'right 12px center',
-                      backgroundSize: '16px'
-                    }}
-                  >
-                    <option value="createdAt-desc">Newest first</option>
-                    <option value="createdAt-asc">Oldest first</option>
-                    <option value="checkInDate-asc">Check-in date</option>
-                    <option value="totalPrice-desc">Highest price</option>
-                    <option value="totalPrice-asc">Lowest price</option>
-                    <option value="place-asc">Property name</option>
-                  </select>
-                </div>
-              </div>
-            </div>
+            <BookingFilters
+              user={user}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              sortOrder={sortOrder}
+              setSortOrder={setSortOrder}
+              stats={stats}
+              selectedUserId={selectedUserId}
+              setSelectedUserId={setSelectedUserId}
+              onClearAllFilters={clearAllFilters}
+            />
 
             {/* Bookings list */}
             {filteredBookings.length === 0 ? (
