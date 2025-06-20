@@ -108,7 +108,7 @@ const getBookings = async (req, res) => {
               {
                 model: User,
                 as: 'owner',
-                attributes: ['id', 'name', 'email']
+                attributes: ['id', 'name', 'email', 'phoneNumber']
               },
               {
                 model: Currency,
@@ -306,10 +306,32 @@ const updateBookingStatus = async (req, res) => {
     // Update booking status
     booking.status = status;
     await booking.save();
-    
+
+    // Reload the booking with all associations to ensure we return complete data
+    const updatedBooking = await Booking.findByPk(booking.id, {
+      include: [
+        {
+          model: Place,
+          as: 'place',
+          include: [
+            {
+              model: User,
+              as: 'owner',
+              attributes: ['id', 'name', 'phoneNumber', 'email']
+            }
+          ]
+        },
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'name', 'phoneNumber', 'email']
+        }
+      ]
+    });
+
     return res.json({ 
       success: true, 
-      booking,
+      booking: updatedBooking,
       message: status === 'approved' ? 
         'Booking approved. Any conflicting bookings have been automatically rejected.' : 
         `Booking ${status} successfully.`
