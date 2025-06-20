@@ -37,7 +37,7 @@ export default function AccountNav() {
   
   return (
     <div>
-      <nav className="w-full flex flex-wrap mt-4 mb-6 sm:mb-10 gap-2 items-center justify-center px-4">
+      <nav className="w-full flex flex-wrap mt-4 mb-2 sm:mb-4 gap-2 items-center justify-center px-4">
         <Link className={linkClasses("profile")} to={"/account"}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -166,21 +166,6 @@ export default function AccountNav() {
           </>
         )}
       </nav>
-      
-      {/* Show user type indicator */}
-      {user && (
-        <div className="text-center mb-6">
-          <span className={`px-3 py-1 rounded-full text-sm ${
-            user.userType === 'host' ? 'bg-green-100 text-green-800' : 
-            user.userType === 'agent' ? 'bg-purple-100 text-purple-800' :
-            'bg-blue-100 text-blue-800'
-          }`}>
-            {user.userType === 'host' ? 'Host Account' : 
-             user.userType === 'agent' ? 'Agent Account' : 
-             'Client Account'}
-          </span>
-        </div>
-      )}
     </div>
   );
 }
