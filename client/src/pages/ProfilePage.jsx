@@ -187,7 +187,8 @@ export default function ProfilePage({}) {
         return {
           label: 'Host Account',
           description: 'Manage conference rooms and bookings',
-          icon: '🏠',
+          icon: '🏢',
+
           bgColor: 'bg-blue-50',
           textColor: 'text-blue-700'
         };
