@@ -65,6 +65,13 @@ export default function AddressSection({
   const handleAddressInputChange = (event) => {
     setAddress(event.target.value);
     setAddressManuallyEdited(true);
+    
+    // Reset any geocoding success state when user manually edits address
+    // This allows new geocoding attempts when the user changes the address
+    if (geocodingSuccess !== null) {
+      // Don't call setGeocodingSuccess here as it's controlled by parent
+      // The parent component will handle geocoding when address changes
+    }
   };
   
   // Handle address suggestions from the map
@@ -116,6 +123,7 @@ export default function AddressSection({
       {preInput("Address", "name or description of this location. You can enter any name you want, independently of the map coordinates.")}
       <div className="relative">
         <input
+          id="place-address"
           type="text"
           placeholder="address"
           value={address}
@@ -215,9 +223,10 @@ export default function AddressSection({
               Map and Address Usage:
             </div>
             <ul className="list-disc list-inside space-y-1 ml-1">
-              <li>Pin the location on the map for setting precise coordinates</li>
-              <li>You can freely name the location regardless of its map position</li>
-              <li>Map will suggest an address based on the pin, which you can choose to use or ignore</li>
+              <li><span className="font-medium">Address field:</span> Enter any name or description you want for your location</li>
+              <li><span className="font-medium">Map pin:</span> Drag or click to set the exact coordinates</li>
+              <li><span className="font-medium">Independence:</span> Address name and map location work separately - you can have a custom name with precise coordinates</li>
+              <li><span className="font-medium">Tip:</span> Type an address first to get close, then fine-tune with the map pin</li>
             </ul>
           </div>
         </div>

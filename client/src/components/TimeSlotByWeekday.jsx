@@ -15,12 +15,13 @@ const TimeSlotByWeekday = ({
   const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   
   return (
-    <div className="mt-5">
+    <div id="time-slots" className="mt-5">
       <h4 className="text-base font-medium mb-4 text-gray-800 flex items-center">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-1 text-blue-600">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         Time slots by weekday
+        <span className="text-red-500 ml-1">*</span>
       </h4>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3">
         {weekdays.map((day, index) => (
