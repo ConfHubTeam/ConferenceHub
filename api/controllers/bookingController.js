@@ -121,7 +121,7 @@ const getBookings = async (req, res) => {
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'name', 'email']
+            attributes: ['id', 'name', 'email', 'phoneNumber']
           }
         ],
         order: [
@@ -143,7 +143,7 @@ const getBookings = async (req, res) => {
               {
                 model: User,
                 as: 'owner',
-                attributes: ['id', 'name', 'email']
+                attributes: ['id', 'name', 'email', 'phoneNumber']
               },
               {
                 model: Currency,
@@ -156,7 +156,7 @@ const getBookings = async (req, res) => {
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'name', 'email']
+            attributes: ['id', 'name', 'email', 'phoneNumber']
           }
         ],
         order: [

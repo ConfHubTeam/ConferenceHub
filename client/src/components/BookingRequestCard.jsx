@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useNotification } from "./NotificationContext";
 import { UserContext } from "./UserContext";
 import PriceDisplay from "./PriceDisplay";
+import ConfirmationModal from "./ConfirmationModal";
 import api from "../utils/api";
 import { format } from "date-fns";
 
@@ -16,34 +17,55 @@ export default function BookingRequestCard({ booking, onBookingUpdate }) {
   const { user } = useContext(UserContext);
   const { notify } = useNotification();
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: "",
+    message: "",
+    action: "",
+    status: ""
+  });
 
-  // Update booking status
-  async function updateBookingStatus(status) {
+  // Show confirmation modal
+  const showConfirmationModal = (status) => {
     const action = user?.userType === 'client' 
       ? (status === "rejected" ? "cancel" : status)
       : (status === "approved" ? "approve" : "reject");
     
-    const confirmMessage = user?.userType === 'client' 
+    const title = user?.userType === 'client' 
+      ? `${action.charAt(0).toUpperCase() + action.slice(1)} Booking`
+      : `${action.charAt(0).toUpperCase() + action.slice(1)} Booking Request`;
+    
+    const message = user?.userType === 'client' 
       ? `Are you sure you want to ${action} this booking?`
       : `Are you sure you want to ${action} this booking request?`;
     
-    if (window.confirm(confirmMessage)) {
-      setIsUpdating(true);
-      try {
-        const { data } = await api.put(`/bookings/${booking.id}`, { status });
-        onBookingUpdate(data.booking);
-        
-        const successMessage = user?.userType === 'client'
-          ? `Booking ${action}led successfully`
-          : `Booking ${action}d successfully`;
-        notify(successMessage, "success");
-      } catch (error) {
-        notify(`Error: ${error.response?.data?.error || error.message}`, "error");
-      } finally {
-        setIsUpdating(false);
-      }
+    setModalConfig({
+      title,
+      message,
+      action,
+      status
+    });
+    setShowModal(true);
+  };
+
+  // Update booking status
+  const updateBookingStatus = async () => {
+    setIsUpdating(true);
+    try {
+      const { data } = await api.put(`/bookings/${booking.id}`, { status: modalConfig.status });
+      onBookingUpdate(data.booking);
+      
+      const successMessage = user?.userType === 'client'
+        ? `Booking ${modalConfig.action}led successfully`
+        : `Booking ${modalConfig.action}d successfully`;
+      notify(successMessage, "success");
+      setShowModal(false);
+    } catch (error) {
+      notify(`Error: ${error.response?.data?.error || error.message}`, "error");
+    } finally {
+      setIsUpdating(false);
     }
-  }
+  };
 
   // Format time slots for display
   const formatTimeSlots = (timeSlots) => {
@@ -70,7 +92,8 @@ export default function BookingRequestCard({ booking, onBookingUpdate }) {
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+    <>
+      <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
       {/* Header with Request ID and Status */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
@@ -145,6 +168,33 @@ export default function BookingRequestCard({ booking, onBookingUpdate }) {
             </div>
           </div>
         )}
+
+        {/* Agent-specific contact information */}
+        {user?.userType === 'agent' && (
+          <div className="mt-3 pt-3 border-t border-gray-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              {/* Client info */}
+              <div className="bg-blue-50 border border-blue-200 rounded p-2">
+                <div className="font-medium text-blue-700 mb-1">Client</div>
+                <div className="text-blue-600">
+                  <div><span className="font-medium">Name:</span> {booking.guestName || booking.user?.name || 'N/A'}</div>
+                  <div><span className="font-medium">Phone:</span> {booking.guestPhone || booking.user?.phoneNumber || 'N/A'}</div>
+                </div>
+              </div>
+              
+              {/* Host info */}
+              {booking.place?.owner && (
+                <div className="bg-green-50 border border-green-200 rounded p-2">
+                  <div className="font-medium text-green-700 mb-1">Host</div>
+                  <div className="text-green-600">
+                    <div><span className="font-medium">Name:</span> {booking.place.owner.name}</div>
+                    <div><span className="font-medium">Phone:</span> {booking.place.owner.phoneNumber || 'N/A'}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Action buttons for pending requests */}
@@ -153,14 +203,14 @@ export default function BookingRequestCard({ booking, onBookingUpdate }) {
           {user?.userType === 'host' && (
             <>
               <button
-                onClick={() => updateBookingStatus("approved")}
+                onClick={() => showConfirmationModal("approved")}
                 disabled={isUpdating}
                 className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
               >
                 {isUpdating ? "Processing..." : "Approve"}
               </button>
               <button
-                onClick={() => updateBookingStatus("rejected")}
+                onClick={() => showConfirmationModal("rejected")}
                 disabled={isUpdating}
                 className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
               >
@@ -170,7 +220,7 @@ export default function BookingRequestCard({ booking, onBookingUpdate }) {
           )}
           {user?.userType === 'client' && (
             <button
-              onClick={() => updateBookingStatus("rejected")}
+              onClick={() => showConfirmationModal("rejected")}
               disabled={isUpdating}
               className="w-full bg-red-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
             >
@@ -180,14 +230,14 @@ export default function BookingRequestCard({ booking, onBookingUpdate }) {
           {user?.userType === 'agent' && (
             <>
               <button
-                onClick={() => updateBookingStatus("approved")}
+                onClick={() => showConfirmationModal("approved")}
                 disabled={isUpdating}
                 className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
               >
                 {isUpdating ? "Processing..." : "Approve"}
               </button>
               <button
-                onClick={() => updateBookingStatus("rejected")}
+                onClick={() => showConfirmationModal("rejected")}
                 disabled={isUpdating}
                 className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
               >
@@ -207,6 +257,20 @@ export default function BookingRequestCard({ booking, onBookingUpdate }) {
           }
         </div>
       )}
-    </div>
+      </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onConfirm={updateBookingStatus}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmText="OK"
+        cancelText="Cancel"
+        confirmButtonClass={modalConfig.status === "approved" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
+        isLoading={isUpdating}
+      />
+    </>
   );
 }

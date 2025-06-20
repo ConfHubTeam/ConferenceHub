@@ -114,20 +114,23 @@ export default function BookingsPage() {
           `req-${booking.id}`.toLowerCase().includes(term)
         );
         
-        // For agents, also search in user name and email
-        const userMatch = user?.userType === 'agent' && booking.user && (
-          booking.user.name.toLowerCase().includes(term) ||
-          booking.user.email.toLowerCase().includes(term)
+        // For agents, also search in request ID, user name, and host name
+        const agentRequestIdMatch = user?.userType === 'agent' && (
+          booking.uniqueRequestId?.toLowerCase().includes(term) ||
+          `req-${booking.id}`.toLowerCase().includes(term)
         );
         
-        // For agents, also search in host name and email
+        const userMatch = user?.userType === 'agent' && booking.user && (
+          booking.user.name.toLowerCase().includes(term)
+        );
+        
+        // For agents, also search in host name  
         const hostMatch = user?.userType === 'agent' && 
           booking.place?.owner && (
-            booking.place.owner.name.toLowerCase().includes(term) ||
-            booking.place.owner.email.toLowerCase().includes(term)
+            booking.place.owner.name.toLowerCase().includes(term)
           );
           
-        return placeMatch || requestIdMatch || userMatch || hostMatch;
+        return placeMatch || requestIdMatch || userMatch || hostMatch || agentRequestIdMatch;
       });
     }
 
@@ -223,137 +226,214 @@ export default function BookingsPage() {
     <div>
       <AccountNav />
       <div className="px-8 py-4">
-        {/* Agent view */}
+        {/* Agent view - Production-level booking management */}
         {user?.userType === 'agent' && (
-          <div>
-            <h1 className="text-2xl font-bold mb-4">
-              {userId ? 'User Bookings' : 'All Bookings'} 
-              {userId && <span className="ml-2 text-sm text-gray-500">(User ID: {userId})</span>}
-            </h1>
-            
-            {/* Search and filter controls */}
-            <div className="bg-white p-4 rounded-lg shadow-md mb-6">
-              <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-                <div className="w-full md:w-1/2">
-                  <input
-                    type="text"
-                    placeholder="Search bookings..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
+          <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
+            {/* Page header */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                {userId ? 'User Booking Management' : 'All Booking Management'}
+              </h1>
+              <p className="text-gray-600">
+                {userId 
+                  ? `Manage bookings for User ID: ${userId}` 
+                  : 'Manage all booking requests across the system'
+                }
+              </p>
+            </div>
+
+            {/* Summary cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                      <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <div className="text-sm font-medium text-yellow-800">Pending</div>
+                    <div className="text-2xl font-bold text-yellow-900">{stats.pending}</div>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => setStatusFilter('all')}
-                    className={`px-4 py-2 rounded-full text-sm ${statusFilter === 'all' ? 'bg-primary text-white' : 'bg-gray-200 text-gray-800'}`}
-                  >
-                    All
-                  </button>
-                  <button 
-                    onClick={() => setStatusFilter('pending')}
-                    className={`px-4 py-2 rounded-full text-sm ${statusFilter === 'pending' ? 'bg-yellow-500 text-white' : 'bg-gray-200 text-gray-800'}`}
-                  >
-                    Pending
-                  </button>
-                  <button 
-                    onClick={() => setStatusFilter('approved')}
-                    className={`px-4 py-2 rounded-full text-sm ${statusFilter === 'approved' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-800'}`}
-                  >
-                    Approved
-                  </button>
-                  <button 
-                    onClick={() => setStatusFilter('rejected')}
-                    className={`px-4 py-2 rounded-full text-sm ${statusFilter === 'rejected' ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-800'}`}
-                  >
-                    Rejected
-                  </button>
+              </div>
+
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <div className="text-sm font-medium text-green-800">Approved</div>
+                    <div className="text-2xl font-bold text-green-900">{stats.approved}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                      <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <div className="text-sm font-medium text-red-800">Rejected</div>
+                    <div className="text-2xl font-bold text-red-900">{stats.rejected}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <div className="text-sm font-medium text-blue-800">Total</div>
+                    <div className="text-2xl font-bold text-blue-900">{stats.total}</div>
+                  </div>
                 </div>
               </div>
             </div>
 
+            {/* Filters and controls */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+              <div className="flex flex-col lg:flex-row gap-4">
+                {/* Search */}
+                <div className="flex-1">
+                  <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
+                    Search bookings
+                  </label>
+                  <input
+                    id="search"
+                    type="text"
+                    placeholder="Search by request ID, host name, client name, or property name..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 text-sm"
+                  />
+                </div>
+
+                {/* Status filter */}
+                <div className="lg:w-64">
+                  <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
+                    Status
+                  </label>
+                  <select
+                    id="status"
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 bg-white cursor-pointer text-sm appearance-none"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'right 12px center',
+                      backgroundSize: '16px'
+                    }}
+                  >
+                    <option value="all">All ({stats.total})</option>
+                    <option value="pending">Pending ({stats.pending})</option>
+                    <option value="approved">Approved ({stats.approved})</option>
+                    <option value="rejected">Rejected ({stats.rejected})</option>
+                  </select>
+                </div>
+
+                {/* Sort options */}
+                <div className="lg:w-64">
+                  <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-2">
+                    Sort by
+                  </label>
+                  <select
+                    id="sort"
+                    value={`${sortBy}-${sortOrder}`}
+                    onChange={(e) => {
+                      const [field, order] = e.target.value.split("-");
+                      setSortBy(field);
+                      setSortOrder(order);
+                    }}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 bg-white cursor-pointer text-sm appearance-none"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'right 12px center',
+                      backgroundSize: '16px'
+                    }}
+                  >
+                    <option value="createdAt-desc">Newest first</option>
+                    <option value="createdAt-asc">Oldest first</option>
+                    <option value="checkInDate-asc">Check-in date</option>
+                    <option value="totalPrice-desc">Highest price</option>
+                    <option value="totalPrice-asc">Lowest price</option>
+                    <option value="place-asc">Property name</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Bookings list */}
             {filteredBookings.length === 0 ? (
-              <div className="bg-blue-50 border border-blue-200 p-6 rounded-lg">
-                <h3 className="text-xl font-semibold text-blue-700 mb-2">No Bookings Found</h3>
-                <p className="text-blue-600">
-                  There are no bookings matching your search criteria.
+              <div className="bg-white border border-gray-200 rounded-lg p-12 text-center">
+                <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No bookings found</h3>
+                <p className="text-gray-600 mb-4">
+                  {searchTerm || statusFilter !== "all" 
+                    ? "Try adjusting your search or filter criteria." 
+                    : "There are no bookings in the system yet."
+                  }
                 </p>
               </div>
             ) : (
-              <div className="space-y-6">
-                {/* Display bookings by status */}
-                {statusFilter === 'all' ? (
-                  <>
-                    {/* Pending bookings section */}
-                    {pendingBookings.length > 0 && (
-                      <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                        <h2 className="text-xl font-semibold mb-4">Pending Bookings ({pendingBookings.length})</h2>
-                        <div className="space-y-4">
-                          {pendingBookings.map(booking => (
-                            <BookingCard 
-                              key={booking.id} 
-                              bookingDetail={booking} 
-                              onBookingUpdate={handleBookingUpdate}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Approved bookings section */}
-                    {approvedBookings.length > 0 && (
-                      <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                        <h2 className="text-xl font-semibold mb-4">Approved Bookings ({approvedBookings.length})</h2>
-                        <div className="space-y-4">
-                          {approvedBookings.map(booking => (
-                            <BookingCard 
-                              key={booking.id} 
-                              bookingDetail={booking} 
-                              onBookingUpdate={handleBookingUpdate}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Rejected bookings section */}
-                    {rejectedBookings.length > 0 && (
-                      <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                        <h2 className="text-xl font-semibold mb-4">Rejected Bookings ({rejectedBookings.length})</h2>
-                        <div className="space-y-4">
-                          {rejectedBookings.map(booking => (
-                            <BookingCard 
-                              key={booking.id} 
-                              bookingDetail={booking} 
-                              onBookingUpdate={handleBookingUpdate}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className={`
-                    p-4 rounded-lg border
-                    ${statusFilter === 'pending' ? 'bg-yellow-50 border-yellow-200' : 
-                     statusFilter === 'approved' ? 'bg-green-50 border-green-200' :
-                     'bg-red-50 border-red-200'}
-                  `}>
-                    <h2 className="text-xl font-semibold mb-4">
-                      {statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Bookings ({filteredBookings.length})
-                    </h2>
-                    <div className="space-y-4">
-                      {filteredBookings.map(booking => (
-                        <BookingCard 
-                          key={booking.id} 
-                          bookingDetail={booking} 
-                          onBookingUpdate={handleBookingUpdate}
-                        />
-                      ))}
+              <>
+                {/* Results header */}
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-medium text-gray-900">
+                    {statusFilter === "all" ? "All" : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Bookings
+                    <span className="ml-2 text-sm text-gray-500">({filteredBookings.length})</span>
+                  </h2>
+                  
+                  {statusFilter === "pending" && stats.pending > 0 && (
+                    <div className="text-sm text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full">
+                      {stats.pending} booking{stats.pending > 1 ? "s" : ""} awaiting approval
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+
+                {/* Booking cards grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
+                  {getCurrentPageItems().map((booking) => (
+                    <BookingRequestCard
+                      key={booking.id}
+                      booking={booking}
+                      onBookingUpdate={handleBookingUpdate}
+                    />
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                  showingFrom={showingFrom}
+                  showingTo={showingTo}
+                  totalItems={filteredBookings.length}
+                />
+              </>
             )}
           </div>
         )}

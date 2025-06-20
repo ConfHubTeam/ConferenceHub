@@ -4,6 +4,7 @@ import PriceDisplay from "./PriceDisplay";
 import { useContext, useState } from "react";
 import { UserContext } from "./UserContext";
 import { useNotification } from "./NotificationContext";
+import ConfirmationModal from "./ConfirmationModal";
 import api from "../utils/api";
 
 export default function BookingCard({bookingDetail, onBookingUpdate}) {
@@ -11,6 +12,13 @@ export default function BookingCard({bookingDetail, onBookingUpdate}) {
   const { notify } = useNotification();
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: "",
+    message: "",
+    action: "",
+    status: ""
+  });
   
   // Get the status color based on the booking status
   const getStatusColor = (status) => {
@@ -21,40 +29,54 @@ export default function BookingCard({bookingDetail, onBookingUpdate}) {
     }
   };
 
-  // Update booking status (approve, reject, cancel)
-  async function updateBookingStatus(status) {
+  // Show confirmation modal
+  const showConfirmationModal = (status) => {
     const action = user?.userType === 'host' ? status : 'cancel';
-    setError("");
     
-    if (window.confirm(`Are you sure you want to ${action} this booking?`)) {
-      setIsUpdating(true);
-      try {
-        const { data } = await api.put(`/bookings/${bookingDetail.id}`, { status });
-        setIsUpdating(false);
-        if (onBookingUpdate) {
-          onBookingUpdate(data.booking);
-        }
-        
-        if (status === 'rejected') {
-          if (user?.userType === 'host') {
-            notify(`Booking rejected successfully`, "success");
-          } else {
-            notify(`Booking cancelled successfully`, "success");
-          }
-        } else {
-          notify(`Booking ${status} successfully`, "success");
-        }
-      } catch (error) {
-        setIsUpdating(false);
-        setError(error.response?.data?.error || error.message);
-        notify(`Error: ${error.response?.data?.error || error.message}`, "error");
+    const title = `${action.charAt(0).toUpperCase() + action.slice(1)} Booking`;
+    const message = `Are you sure you want to ${action} this booking?`;
+    
+    setModalConfig({
+      title,
+      message,
+      action,
+      status
+    });
+    setShowModal(true);
+  };
+
+  // Update booking status (approve, reject, cancel)
+  const updateBookingStatus = async () => {
+    setError("");
+    setIsUpdating(true);
+    try {
+      const { data } = await api.put(`/bookings/${bookingDetail.id}`, { status: modalConfig.status });
+      setIsUpdating(false);
+      if (onBookingUpdate) {
+        onBookingUpdate(data.booking);
       }
+      
+      if (modalConfig.status === 'rejected') {
+        if (user?.userType === 'host') {
+          notify(`Booking rejected successfully`, "success");
+        } else {
+          notify(`Booking cancelled successfully`, "success");
+        }
+      } else {
+        notify(`Booking ${modalConfig.status} successfully`, "success");
+      }
+      setShowModal(false);
+    } catch (error) {
+      setIsUpdating(false);
+      setError(error.response?.data?.error || error.message);
+      notify(`Error: ${error.response?.data?.error || error.message}`, "error");
     }
-  }
+  };
 
   return (
-    <div>
-      {bookingDetail && (
+    <>
+      <div>
+        {bookingDetail && (
         <div className="bg-gray-100 rounded-3xl p-4 mb-5">
           {/* Status badge */}
           <div className="flex justify-between items-start mb-4">
@@ -136,24 +158,34 @@ export default function BookingCard({bookingDetail, onBookingUpdate}) {
                 </div>
               )}
               
-              {/* Guest information for agents */}
+              {/* Client and Host information for agents - minimal display */}
               {user?.userType === 'agent' && (
                 <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                  <h3 className="font-medium mb-2">Guest Information</h3>
-                  <p>Name: {bookingDetail.guestName}</p>
-                  <p>Phone: {bookingDetail.guestPhone}</p>
-                  {bookingDetail.user && (
-                    <p>Email: {bookingDetail.user.email}</p>
-                  )}
-                  <p>Number of Guests: {bookingDetail.numOfGuests}</p>
+                  <h3 className="font-medium mb-2">Contact Information</h3>
                   
-                  {bookingDetail.place && bookingDetail.place.owner && (
-                    <div className="mt-2 pt-2 border-t">
-                      <h3 className="font-medium mb-1">Host Information</h3>
-                      <p>Host: {bookingDetail.place.owner.name}</p>
-                      <p>Email: {bookingDetail.place.owner.email}</p>
+                  {/* Client info */}
+                  <div className="mb-3">
+                    <h4 className="text-sm font-medium text-gray-700 mb-1">Client:</h4>
+                    <div className="text-sm text-gray-600">
+                      <p><span className="font-medium">Name:</span> {bookingDetail.guestName || bookingDetail.user?.name || 'N/A'}</p>
+                      <p><span className="font-medium">Phone:</span> {bookingDetail.guestPhone || bookingDetail.user?.phoneNumber || 'N/A'}</p>
+                    </div>
+                  </div>
+                  
+                  {/* Host info */}
+                  {bookingDetail.place?.owner && (
+                    <div className="pt-2 border-t border-gray-200">
+                      <h4 className="text-sm font-medium text-gray-700 mb-1">Host:</h4>
+                      <div className="text-sm text-gray-600">
+                        <p><span className="font-medium">Name:</span> {bookingDetail.place.owner.name}</p>
+                        <p><span className="font-medium">Phone:</span> {bookingDetail.place.owner.phoneNumber || 'N/A'}</p>
+                      </div>
                     </div>
                   )}
+                  
+                  <div className="mt-3 pt-2 border-t border-gray-200">
+                    <p className="text-sm text-gray-600">Guests: {bookingDetail.numOfGuests}</p>
+                  </div>
                 </div>
               )}
             </div>
@@ -175,14 +207,14 @@ export default function BookingCard({bookingDetail, onBookingUpdate}) {
               {bookingDetail.status === 'pending' && user?.userType === 'host' && (
                 <div className="flex gap-2">
                   <button 
-                    onClick={() => updateBookingStatus('approved')} 
+                    onClick={() => showConfirmationModal('approved')} 
                     disabled={isUpdating}
                     className="flex-1 bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 disabled:opacity-50"
                   >
                     {isUpdating ? 'Processing...' : 'Approve'}
                   </button>
                   <button 
-                    onClick={() => updateBookingStatus('rejected')} 
+                    onClick={() => showConfirmationModal('rejected')} 
                     disabled={isUpdating}
                     className="flex-1 bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 disabled:opacity-50"
                   >
@@ -195,14 +227,14 @@ export default function BookingCard({bookingDetail, onBookingUpdate}) {
               {bookingDetail.status === 'pending' && user?.userType === 'agent' && (
                 <div className="flex gap-2">
                   <button 
-                    onClick={() => updateBookingStatus('approved')} 
+                    onClick={() => showConfirmationModal('approved')} 
                     disabled={isUpdating}
                     className="flex-1 bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 disabled:opacity-50"
                   >
                     {isUpdating ? 'Processing...' : 'Approve'}
                   </button>
                   <button 
-                    onClick={() => updateBookingStatus('rejected')} 
+                    onClick={() => showConfirmationModal('rejected')} 
                     disabled={isUpdating}
                     className="flex-1 bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 disabled:opacity-50"
                   >
@@ -214,7 +246,7 @@ export default function BookingCard({bookingDetail, onBookingUpdate}) {
               {/* Cancel button for client */}
               {bookingDetail.status === 'pending' && user?.userType === 'client' && (
                 <button 
-                  onClick={() => updateBookingStatus('rejected')} 
+                  onClick={() => showConfirmationModal('rejected')} 
                   disabled={isUpdating}
                   className="w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 disabled:opacity-50"
                 >
@@ -225,6 +257,20 @@ export default function BookingCard({bookingDetail, onBookingUpdate}) {
           </div>
         </div>
       )}
-    </div>
+      </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onConfirm={updateBookingStatus}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmText="OK"
+        cancelText="Cancel"
+        confirmButtonClass={modalConfig.status === "approved" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
+        isLoading={isUpdating}
+      />
+    </>
   );
 }
