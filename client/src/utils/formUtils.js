@@ -56,6 +56,17 @@ export const validateForm = (formData, validationRules) => {
       }
     }
     
+    // Check custom validation function
+    if (rule.customValidation && value) {
+      const customError = rule.customValidation(value);
+      if (customError) {
+        isValid = false;
+        errorMessage = customError;
+        firstInvalidField = field;
+        break;
+      }
+    }
+    
     // Check regex patterns
     if (rule.pattern && value && !rule.pattern.test(value)) {
       isValid = false;

@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import PerkSelections from "./PerkSelections";
 import PhotoUploader from "../components/PhotoUploader";
-import { Navigate, useParams } from "react-router-dom";
+import { Navigate, useParams, useNavigate } from "react-router-dom";
 import { UserContext } from "../components/UserContext";
 import api from "../utils/api";
 import { geocodeAddress } from "../utils/formUtils";
@@ -12,6 +12,7 @@ import YouTubeSection, { extractYouTubeVideoId } from "../components/YouTubeSect
 export default function PlacesFormPage() {
   const { id } = useParams();
   const { user } = useContext(UserContext);
+  const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [address, setAddress] = useState("");
   const [addedPhotos, setAddedPhotos] = useState([]);
@@ -400,13 +401,18 @@ export default function PlacesFormPage() {
           id,
           ...placeData,
         });
+        // Redirect to the place detail page after successful update
+        console.log("Place updated successfully, redirecting to place detail page");
+        navigate(`/place/${id}`);
+        return;
       } else {
         //create a new place
         response = await api.post("/places", placeData);
+        // For new places, redirect to places list
+        setRedirect(true);
       }
       
       console.log("Response after saving:", response.data);
-      setRedirect(true);
     } catch (error) {
       console.error("Submission error:", error.response?.data || error);
       setError(error.response?.data?.error || "Submit failed, please try again later.");

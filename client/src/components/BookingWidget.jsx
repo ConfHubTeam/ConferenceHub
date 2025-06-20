@@ -1,10 +1,12 @@
 import { useContext, useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
+import CustomPhoneInput, { isPossiblePhoneNumber } from "./CustomPhoneInput";
 import api from "../utils/api";
 import { UserContext } from "./UserContext";
 import { useNotification } from "./NotificationContext";
 import { validateForm } from "../utils/formUtils";
 import PriceDisplay from "./PriceDisplay";
+import { isTimeRangeAvailableEnhanced } from "../utils/TimeUtils";
 
 export default function BookingWidget({ placeDetail, buttonDisabled, selectedCalendarDates = [] }) {
   const [numOfGuests, setNumOfGuests] = useState(1);
@@ -12,6 +14,8 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
   const [guestPhone, setGuestPhone] = useState("");
   const [redirect, setRedirect] = useState();
   const [error, setError] = useState("");
+  const [bookedTimeSlots, setBookedTimeSlots] = useState([]);
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
   const { user } = useContext(UserContext);
   const { notify } = useNotification();
   const location = useLocation();
@@ -21,6 +25,25 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
       setGuestName(user.name);
     }
   }, [user, placeDetail]);
+
+  // Fetch booked time slots when component mounts or placeDetail changes
+  useEffect(() => {
+    if (placeDetail && placeDetail.id) {
+      setIsCheckingAvailability(true);
+      api.get(`/bookings/availability?placeId=${placeDetail.id}`)
+        .then(response => {
+          if (response.data && response.data.bookedTimeSlots) {
+            setBookedTimeSlots(response.data.bookedTimeSlots);
+          }
+        })
+        .catch(err => {
+          console.error("Failed to fetch availability:", err);
+        })
+        .finally(() => {
+          setIsCheckingAvailability(false);
+        });
+    }
+  }, [placeDetail]);
 
   // Calculate total hours and pricing from selected calendar dates
   const calculatePricing = () => {
@@ -124,6 +147,32 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
     window.location.href = redirectUrl;
   };
 
+  // Function to check if selected time slots are available
+  const validateTimeSlotAvailability = () => {
+    if (!selectedCalendarDates || selectedCalendarDates.length === 0) {
+      return true; // No slots selected, so no conflicts
+    }
+
+    const cooldownMinutes = placeDetail.cooldown || 0;
+
+    // Check each selected time slot for conflicts using enhanced detection
+    for (const selectedSlot of selectedCalendarDates) {
+      const isAvailable = isTimeRangeAvailableEnhanced(
+        selectedSlot.date,
+        selectedSlot.startTime,
+        selectedSlot.endTime,
+        bookedTimeSlots,
+        cooldownMinutes
+      );
+      
+      if (!isAvailable) {
+        return false; // Found a conflict using enhanced detection
+      }
+    }
+    
+    return true; // No conflicts found
+  };
+
   async function handleReserve(event) {
     event.preventDefault();
     setError("");
@@ -142,7 +191,11 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
         },
         guestPhone: { 
           required: true, 
-          errorMessage: "Please provide your phone number for contact"
+          customValidation: (value) => {
+            if (!value) return "Please provide your phone number for contact";
+            if (!isPossiblePhoneNumber(value)) return "Please enter a valid phone number";
+            return null;
+          }
         },
         numOfGuests: { 
           type: "number", 
@@ -166,9 +219,27 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
       return;
     }
 
+    // Check if selected time slots are available
+    if (!validateTimeSlotAvailability()) {
+      setError("Selected time slots are not available. Please choose different times.");
+      return;
+    }
+
     try {
       // Check if user is logged in
       if (!user) {
+        // Store booking selections in sessionStorage for after login
+        sessionStorage.setItem('bookingSelections', JSON.stringify({
+          selectedCalendarDates,
+          numOfGuests,
+          guestName,
+          guestPhone,
+          placeId: placeDetail.id
+        }));
+        
+        // Redirect to login with return URL
+        handleLoginRedirect();
+        return;
         setError("Please log in to book a conference room");
         return;
       }
@@ -563,17 +634,13 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
                 </div>
                 
                 <div className="relative">
-                  <input
-                    id="guestPhone"
-                    type="tel"
+                  <CustomPhoneInput
                     value={guestPhone}
-                    onChange={(event) => setGuestPhone(event.target.value)}
+                    onChange={setGuestPhone}
+                    defaultCountry="UZ"
                     placeholder="Phone number"
-                    className="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    required
                   />
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
-                  </svg>
                 </div>
               </div>
             </div>

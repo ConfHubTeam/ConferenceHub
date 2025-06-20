@@ -73,9 +73,6 @@ export default function AddressSection({
     // But we won't automatically update the address field anymore
     // This keeps the address completely independent from the coordinates
     
-    // You could display this suggested address somewhere if desired
-    console.log("Map suggested address:", suggestedAddress);
-    
     // If the user wants to update the address field programmatically,
     // they can uncomment this:
     /*

@@ -38,7 +38,6 @@ export default function MapPicker({
       const parsedLat = parseFloat(initialCoordinates.lat);
       const parsedLng = parseFloat(initialCoordinates.lng);
       
-      console.log("MapPicker initializing with coordinates:", { lat: parsedLat, lng: parsedLng });
       return {
         lat: parsedLat,
         lng: parsedLng
@@ -85,7 +84,6 @@ export default function MapPicker({
       
       // Only update if the type has actually changed
       if (currentMapType !== mapTypeId) {
-        console.log("Map type changed to:", currentMapType);
         setMapTypeId(currentMapType);
       }
     }
@@ -168,8 +166,6 @@ export default function MapPicker({
         lng: parseFloat(position.lng) 
       };
       
-      console.log("Creating initial marker on map load at:", parsedPosition);
-      
       const newMarker = new window.google.maps.Marker({
         position: parsedPosition,
         map,
@@ -200,7 +196,6 @@ export default function MapPicker({
       
       // One more check to ensure marker exists
       if (position && !marker) {
-        console.log("Ensuring marker exists after resize");
         const parsedPosition = { 
           lat: parseFloat(position.lat), 
           lng: parseFloat(position.lng) 
@@ -266,9 +261,6 @@ export default function MapPicker({
       const clickListener = map.addListener('click', (e) => {
         const lat = e.latLng.lat();
         const lng = e.latLng.lng();
-        
-        console.log("Direct map click detected at:", { lat, lng });
-        
         // Update marker position directly for immediate feedback
         if (marker) {
           marker.setPosition({ lat, lng });
@@ -305,9 +297,6 @@ export default function MapPicker({
     if (initialCoordinates && initialCoordinates.lat && initialCoordinates.lng) {
       const newLat = parseFloat(initialCoordinates.lat);
       const newLng = parseFloat(initialCoordinates.lng);
-      
-      // Log for debugging
-      console.log("Initial coordinates received:", { lat: newLat, lng: newLng });
       
       // Skip update if position is already set to these coordinates
       const currentLat = lastPosition.current?.lat;
@@ -362,7 +351,6 @@ export default function MapPicker({
     if (marker) {
       // Update existing marker
       marker.setPosition(newPosition);
-      console.log("Updated existing marker at:", newPosition);
     } else {
       // Create new marker
       const newMarker = new window.google.maps.Marker({
@@ -381,9 +369,6 @@ export default function MapPicker({
       });
       
       setMarker(newMarker);
-      
-      // Log for debugging
-      console.log("Created new marker at:", newPosition);
     }
     
     // Ensure the map is centered on the marker
@@ -411,8 +396,6 @@ export default function MapPicker({
       const lat = e.latLng.lat();
       const lng = e.latLng.lng();
       const newPosition = { lat, lng };
-      
-      console.log("Map clicked at:", newPosition);
       
       // Force immediate marker update for responsive UI
       if (marker) {
@@ -464,11 +447,8 @@ export default function MapPicker({
     // Check if position actually changed to avoid unnecessary updates
     if (lastPosition.current?.lat === newPosition.lat && 
         lastPosition.current?.lng === newPosition.lng) {
-      console.log("Position unchanged, skipping update");
       return;
     }
-    
-    console.log("Updating position to:", newPosition);
     
     // Mark this position update as internal (from map interaction)
     positionUpdateSource.current = 'internal';

@@ -1,5 +1,7 @@
 const { Booking, Place, User } = require("../models");
 const { getUserDataFromToken } = require("../middleware/auth");
+const { Op } = require("sequelize");
+const { validateBookingTimeSlots, findConflictingBookings } = require("../utils/bookingUtils");
 
 /**
  * Create a new booking
@@ -7,25 +9,75 @@ const { getUserDataFromToken } = require("../middleware/auth");
 const createBooking = async (req, res) => {
   try {
     const userData = await getUserDataFromToken(req);
-    const {place, checkInDate, checkOutDate, 
-      numOfGuests, guestName, guestPhone, totalPrice} = req.body;
+    const {
+      place, 
+      checkInDate, 
+      checkOutDate, 
+      selectedTimeSlots, // New field for time slot bookings
+      numOfGuests, 
+      guestName, 
+      guestPhone, 
+      totalPrice
+    } = req.body;
 
     // Only clients can create bookings
     if (userData.userType !== 'client') {
       return res.status(403).json({ error: "Only clients can create bookings. Hosts and agents cannot make bookings." });
     }
 
+    // Generate unique request ID
+    const uniqueRequestId = `REQ-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`.toUpperCase();
+    
+    // Get place details for cooldown information
+    const placeDetails = await Place.findByPk(place);
+    if (!placeDetails) {
+      return res.status(404).json({ error: "Place not found" });
+    }
+    
+    // Validate time slots for conflicts using enhanced detection
+    if (selectedTimeSlots && selectedTimeSlots.length > 0) {
+      const validation = await validateBookingTimeSlots(
+        selectedTimeSlots, 
+        place, 
+        placeDetails.cooldown || 0
+      );
+      
+      if (!validation.isValid) {
+        return res.status(422).json({ 
+          error: `Booking conflict detected: ${validation.message}`,
+          conflictingSlot: validation.conflictingSlot
+        });
+      }
+    }
+    
+    // Determine check-in/check-out dates
+    // If time slots are provided, use first and last date from slots
+    let finalCheckInDate = checkInDate;
+    let finalCheckOutDate = checkOutDate;
+    
+    if (selectedTimeSlots && selectedTimeSlots.length > 0) {
+      // Sort time slots by date
+      const sortedDates = [...selectedTimeSlots].sort((a, b) => 
+        new Date(a.date) - new Date(b.date)
+      );
+      
+      finalCheckInDate = sortedDates[0].date;
+      finalCheckOutDate = sortedDates[sortedDates.length - 1].date;
+    }
+
     // Create booking with Sequelize
     const booking = await Booking.create({
-      userId: userData.id, // Use userId instead of user
-      placeId: place, // Use placeId instead of place
-      checkInDate,
-      checkOutDate, 
+      userId: userData.id,
+      placeId: place, 
+      checkInDate: finalCheckInDate,
+      checkOutDate: finalCheckOutDate, 
       numOfGuests, 
       guestName, 
       guestPhone, 
       totalPrice,
-      status: 'pending' // Explicitly set status to pending
+      status: 'pending',
+      timeSlots: selectedTimeSlots || [], // Store the selected time slots
+      uniqueRequestId // Add the unique request ID
     });
     
     res.json(booking);
@@ -181,36 +233,59 @@ const updateBookingStatus = async (req, res) => {
       return res.status(404).json({ error: "Booking not found" });
     }
     
-    // Check if logged in user is the host of the place
-    if (userData.userType === 'host') {
-      // Verify this host owns the place
-      if (booking.place.ownerId !== userData.id) {
-        return res.status(403).json({ error: "You can only manage bookings for your own places" });
-      }
-      
-      booking.status = status;
-      await booking.save();
-      
-      return res.json({ success: true, booking });
-    } else if (userData.userType === 'agent') {
-      // Agents can update booking status for any booking
-      booking.status = status;
-      await booking.save();
-      
-      return res.json({ success: true, booking });
-    } else if (userData.userType === 'client' && booking.userId === userData.id) {
-      // Client can cancel their own booking by setting status to 'rejected'
-      if (status !== 'rejected') {
-        return res.status(403).json({ error: "Clients can only cancel their bookings" });
-      }
-      
-      booking.status = status;
-      await booking.save();
-      
-      return res.json({ success: true, booking });
-    } else {
-      return res.status(403).json({ error: "Not authorized to update this booking" });
+    // Check authorization
+    const isAuthorized = (
+      (userData.userType === 'host' && booking.place.ownerId === userData.id) ||
+      (userData.userType === 'agent') ||
+      (userData.userType === 'client' && booking.userId === userData.id && status === 'rejected')
+    );
+    
+    if (!isAuthorized) {
+      return res.status(403).json({ error: "You are not authorized to update this booking" });
     }
+    
+    // Handle conflicts if approving a booking
+    if (status === 'approved') {
+      // Get place details for cooldown information
+      const placeDetails = await Place.findByPk(booking.placeId);
+      const cooldownMinutes = placeDetails ? placeDetails.cooldown || 0 : 0;
+      
+      // Find pending bookings for the same place
+      const pendingBookings = await Booking.findAll({
+        where: {
+          placeId: booking.placeId,
+          status: 'pending',
+          id: { [Op.ne]: booking.id }
+        }
+      });
+      
+      // Use enhanced conflict detection to find conflicting bookings
+      const conflictingBookings = findConflictingBookings(
+        booking,
+        pendingBookings,
+        cooldownMinutes
+      );
+      
+      // Reject all conflicting bookings
+      if (conflictingBookings.length > 0) {
+        for (const conflictBooking of conflictingBookings) {
+          conflictBooking.status = 'rejected';
+          await conflictBooking.save();
+        }
+      }
+    }
+    
+    // Update booking status
+    booking.status = status;
+    await booking.save();
+    
+    return res.json({ 
+      success: true, 
+      booking,
+      message: status === 'approved' ? 
+        'Booking approved. Any conflicting bookings have been automatically rejected.' : 
+        `Booking ${status} successfully.`
+    });
   } catch (error) {
     console.error("Error updating booking:", error);
     res.status(422).json({ error: error.message });
@@ -249,9 +324,75 @@ const getBookingCounts = async (req, res) => {
   }
 };
 
+/**
+ * Check availability of time slots for a place
+ * This endpoint allows unauthenticated users to check availability
+ */
+const checkAvailability = async (req, res) => {
+  try {
+    const { placeId, date } = req.query;
+    
+    if (!placeId) {
+      return res.status(400).json({ error: "Place ID is required" });
+    }
+
+    // Get the place
+    const place = await Place.findByPk(placeId);
+    if (!place) {
+      return res.status(404).json({ error: "Place not found" });
+    }
+    
+    // Get bookings with approved status for this place
+    const query = { 
+      placeId, 
+      status: 'approved' 
+    };
+    
+    // Get all approved bookings
+    const approvedBookings = await Booking.findAll({ where: query });
+    
+    // Extract booked time slots
+    const bookedTimeSlots = [];
+    
+    approvedBookings.forEach(booking => {
+      if (booking.timeSlots && booking.timeSlots.length > 0) {
+        booking.timeSlots.forEach(slot => {
+          // If no date specified or date matches
+          if (!date || slot.date === date) {
+            bookedTimeSlots.push(slot);
+          }
+        });
+      }
+    });
+    
+    // Build response
+    const response = {
+      placeId,
+      placeName: place.title,
+      bookedTimeSlots,
+      operatingHours: {
+        checkIn: place.checkIn || "09:00",
+        checkOut: place.checkOut || "17:00",
+        weekdayTimeSlots: place.weekdayTimeSlots || {},
+        minimumHours: place.minimumHours || 1,
+        cooldown: place.cooldown || 30
+      },
+      blockedDates: place.blockedDates || [],
+      blockedWeekdays: place.blockedWeekdays || []
+    };
+    
+    res.json(response);
+  } catch (error) {
+    console.error("Error checking availability:", error);
+    res.status(422).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createBooking,
   getBookings,
   updateBookingStatus,
-  getBookingCounts
+  getBookingCounts,
+  checkAvailability,
+  checkAvailability
 };

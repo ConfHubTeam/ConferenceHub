@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { format, parseISO } from "date-fns";
-import { formatHourTo12, generateTimeOptions, isTimeBlocked } from "../utils/TimeUtils";
+import { formatHourTo12, generateTimeOptions, generateStartTimeOptions, isTimeBlocked, isTimeRangeAvailableEnhanced, isValidStartTimeEnhanced } from "../utils/TimeUtils";
 
 /**
  * TimeSlotModal Component
@@ -26,14 +26,74 @@ export default function TimeSlotModal({
 
   // Generate time options and mark blocked times
   const timeOptions = useMemo(() => {
-    const options = generateTimeOptions(timeSlots.start, timeSlots.end);
+    const minimumHours = placeDetail.minimumHours || 1;
+    const cooldownMinutes = placeDetail.cooldown || 0;
+    
+    // Generate all time options (for visual display and end time selection)
+    const allOptions = generateTimeOptions(timeSlots.start, timeSlots.end, minimumHours, cooldownMinutes);
     
     // Add blocked status to each time option
-    return options.map(option => ({
-      ...option,
-      isBlocked: isTimeBlocked(currentEditingDate, option.value, bookedTimeSlots)
-    }));
-  }, [timeSlots, currentEditingDate, bookedTimeSlots]);
+    return allOptions.map(option => {
+      const isHourBlocked = isTimeBlocked(
+        currentEditingDate, 
+        option.value, 
+        bookedTimeSlots, 
+        minimumHours, 
+        timeSlots.end,
+        cooldownMinutes
+      );
+      
+      if (isHourBlocked) {
+        return {
+          ...option,
+          isBlocked: true
+        };
+      }
+      
+      // Additional check: if there are any conflicts in the minimum required range
+      const startHour = parseInt(option.value.split(':')[0], 10);
+      const minimumEndHour = startHour + minimumHours;
+      const minimumEndTime = minimumEndHour.toString().padStart(2, '0') + ':00';
+      
+      const isRangeAvailable = isTimeRangeAvailableEnhanced(
+        currentEditingDate, 
+        option.value, 
+        minimumEndTime, 
+        bookedTimeSlots,
+        cooldownMinutes
+      );
+      
+      return {
+        ...option,
+        isBlocked: !isRangeAvailable
+      };
+    });
+  }, [timeSlots, currentEditingDate, bookedTimeSlots, placeDetail.minimumHours, placeDetail.cooldown]);
+
+  // Generate start time options (limited by cooldown and minimum duration)
+  const startTimeOptions = useMemo(() => {
+    const minimumHours = placeDetail.minimumHours || 1;
+    const cooldownMinutes = placeDetail.cooldown || 0;
+    
+    const startOptions = generateStartTimeOptions(timeSlots.start, timeSlots.end, minimumHours, cooldownMinutes);
+    
+    return startOptions.map(option => {
+      // Use isValidStartTimeEnhanced to check if this can be a start time (includes end-of-day restrictions)
+      const isValidStart = isValidStartTimeEnhanced(
+        currentEditingDate, 
+        option.value, 
+        bookedTimeSlots, 
+        minimumHours, 
+        timeSlots.end,
+        cooldownMinutes
+      );
+      
+      return {
+        ...option,
+        isBlocked: !isValidStart
+      };
+    });
+  }, [timeSlots, currentEditingDate, bookedTimeSlots, placeDetail.minimumHours, placeDetail.cooldown]);
 
   // Handle start time change with validation
   const handleStartTimeChange = (value) => {
@@ -50,17 +110,17 @@ export default function TimeSlotModal({
         onEndTimeChange('');
       }
       
-      // Check if there are any blocked hours between start and end time
-      const hasBlockedHoursInRange = Array.from(
-        { length: endHour - startHour },
-        (_, i) => startHour + i + 1
-      ).some(hour => {
-        const hourStr = hour.toString().padStart(2, '0') + ':00';
-        return isTimeBlocked(currentEditingDate, hourStr, bookedTimeSlots);
-      });
+      // Check if the current start-end range would span any blocked time
+      const isCurrentRangeAvailable = isTimeRangeAvailableEnhanced(
+        currentEditingDate,
+        value, // new start time
+        selectedEndTime,
+        bookedTimeSlots,
+        cooldownMinutes
+      );
       
-      // Clear end time if there are blocked hours in the range
-      if (hasBlockedHoursInRange) {
+      // Clear end time if the range would span blocked time
+      if (!isCurrentRangeAvailable) {
         onEndTimeChange('');
       }
     }
@@ -105,6 +165,20 @@ export default function TimeSlotModal({
             </div>
           </div>
         )}
+
+        {/* Cooldown information */}
+        {placeDetail.cooldown && placeDetail.cooldown > 0 && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center text-blue-800">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-2 flex-shrink-0">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-xs">
+                <strong>Cooldown period:</strong> {placeDetail.cooldown >= 60 ? `${Math.floor(placeDetail.cooldown / 60)}h ${placeDetail.cooldown % 60 > 0 ? `${placeDetail.cooldown % 60}min` : ''}`.trim() : `${placeDetail.cooldown} min`} after each booking
+              </p>
+            </div>
+          </div>
+        )}
         
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -118,14 +192,14 @@ export default function TimeSlotModal({
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Select start time</option>
-                {timeOptions.map((option) => (
+                {startTimeOptions.map((option) => (
                   <option 
                     key={option.value} 
                     value={option.value}
                     disabled={option.isBlocked}
                     className={option.isBlocked ? "bg-red-100 text-red-800 line-through" : ""}
                   >
-                    {option.label}{option.isBlocked ? " (Booked)" : ""}
+                    {option.label}{option.isBlocked ? " (Unavailable)" : ""}
                   </option>
                 ))}
               </select>
@@ -148,33 +222,37 @@ export default function TimeSlotModal({
                     
                     // Get minimum hours requirement
                     const minimumHours = placeDetail.minimumHours || 1;
+                    const cooldownMinutes = placeDetail.cooldown || 0;
                     
                     // Calculate the minimum end time based on start time + minimum hours
                     const startHour = parseInt(selectedStartTime.split(':')[0], 10);
                     const minimumEndHour = startHour + minimumHours;
                     const endHour = parseInt(option.value.split(':')[0], 10);
                     
+                    // Calculate if this end time would require cooldown beyond operating hours
+                    const cooldownHours = cooldownMinutes / 60;
+                    const endTimeWithCooldown = endHour + cooldownHours;
+                    const operatingEndHour = parseInt(timeSlots.end.split(':')[0], 10);
+                    
                     // End time must be greater than start time and meet minimum hours requirement
                     // We explicitly check that end hour is greater, not equal to the start hour
-                    return endHour > startHour && endHour >= minimumEndHour;
+                    // Also check that end time + cooldown doesn't exceed operating hours
+                    return endHour > startHour && 
+                           endHour >= minimumEndHour && 
+                           endTimeWithCooldown <= operatingEndHour;
                   })
                   .map((option) => {
-                    // Check if any hour between start time and this option is blocked
-                    const startHour = parseInt(selectedStartTime.split(':')[0], 10);
-                    const endHour = parseInt(option.value.split(':')[0], 10);
+                    // Check if the range from start time to this end time is available
+                    // This prevents selecting end times that would create a range spanning blocked periods
+                    const isRangeAvailable = isTimeRangeAvailableEnhanced(
+                      currentEditingDate, 
+                      selectedStartTime, 
+                      option.value, 
+                      bookedTimeSlots,
+                      placeDetail.cooldown || 0
+                    );
                     
-                    // Check if any hour in the range is blocked
-                    const hasBlockedHoursInRange = Array.from(
-                      { length: endHour - startHour },
-                      (_, i) => startHour + i + 1
-                    ).some(hour => {
-                      const hourStr = hour.toString().padStart(2, '0') + ':00';
-                      return isTimeBlocked(currentEditingDate, hourStr, bookedTimeSlots);
-                    });
-                    
-                    // Also check if the end time itself is blocked
-                    const isEndTimeBlocked = option.isBlocked;
-                    const isDisabled = hasBlockedHoursInRange || isEndTimeBlocked;
+                    const isDisabled = !isRangeAvailable;
                     
                     return (
                       <option 
@@ -188,8 +266,7 @@ export default function TimeSlotModal({
                         }
                       >
                         {option.label}
-                        {hasBlockedHoursInRange ? " (Conflict with booking)" : ""}
-                        {isEndTimeBlocked ? " (Booked)" : ""}
+                        {isDisabled ? " (Unavailable)" : ""}
                       </option>
                     );
                   })}
@@ -216,26 +293,54 @@ export default function TimeSlotModal({
                   isInSelectedRange = optionHour > startHour && optionHour < endHour;
                 }
                 
+                // Check if this hour is actually blocked by real bookings (not end-of-day restrictions)
+                const isActuallyBlocked = isTimeBlocked(
+                  currentEditingDate, 
+                  option.value, 
+                  bookedTimeSlots, 
+                  placeDetail.minimumHours || 1, 
+                  timeSlots.end,
+                  placeDetail.cooldown || 0
+                );
+                
+                // Check if this hour is in a cooldown period (for visual indication)
+                const isInCooldownPeriod = bookedTimeSlots.some(slot => {
+                  if (slot.date !== currentEditingDate) return false;
+                  const bookedEndHour = parseInt(slot.endTime.split(':')[0], 10);
+                  const cooldownMinutes = placeDetail.cooldown || 0;
+                  const cooldownHours = cooldownMinutes / 60;
+                  const cooldownEndHour = bookedEndHour + cooldownHours;
+                  return optionHour >= bookedEndHour && optionHour < cooldownEndHour;
+                });
+                
+                // Check if this hour is the working hours end time (for visual grayout)
+                const workingEndHour = parseInt(timeSlots.end.split(':')[0], 10);
+                const isWorkingHoursEndTime = optionHour === workingEndHour;
+                
                 return (
                   <div 
                     key={option.value} 
                     className={`
                       flex-shrink-0 text-xs text-center p-2 rounded-md mr-1 w-16
-                      ${option.isBlocked 
-                        ? 'bg-red-100 text-red-800'
+                      ${isActuallyBlocked 
+                        ? isInCooldownPeriod
+                          ? 'bg-orange-100 text-orange-800' // Cooldown period
+                          : 'bg-red-100 text-red-800' // Booked
                         : selectedStartTime === option.value
                           ? 'bg-blue-500 text-white' // Start time
                           : selectedEndTime === option.value
-                            ? 'bg-blue-700 text-white' // End time
-                            : isInSelectedRange
-                              ? 'bg-blue-200 text-blue-800 border border-blue-300' // In range
-                              : 'bg-green-100 text-green-800' // Available
+                            ? 'bg-blue-700 text-white' // Selected end time
+                            : isWorkingHoursEndTime
+                              ? 'bg-gray-300 text-gray-600' // Working hours end time (grayed out)
+                              : isInSelectedRange
+                                ? 'bg-blue-200 text-blue-800 border border-blue-300' // In range
+                                : 'bg-green-100 text-green-800' // Available
                       }
                     `}
                   >
                     <div>{displayHour}</div>
                     <div>{amPm}</div>
-                    {option.isBlocked && (
+                    {isActuallyBlocked && (
                       <div className="mt-1">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -249,6 +354,13 @@ export default function TimeSlotModal({
                         </svg>
                       </div>
                     )}
+                    {isWorkingHoursEndTime && !isActuallyBlocked && selectedEndTime !== option.value && (
+                      <div className="mt-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mx-auto text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -257,6 +369,14 @@ export default function TimeSlotModal({
               <div className="flex items-center">
                 <div className="h-3 w-3 bg-red-100 rounded mr-1"></div>
                 <span>Booked</span>
+              </div>
+              <div className="flex items-center">
+                <div className="h-3 w-3 bg-orange-100 rounded mr-1"></div>
+                <span>Cooldown</span>
+              </div>
+              <div className="flex items-center">
+                <div className="h-3 w-3 bg-gray-300 rounded mr-1"></div>
+                <span>Day End</span>
               </div>
               <div className="flex items-center">
                 <div className="h-3 w-3 bg-green-100 rounded mr-1"></div>
