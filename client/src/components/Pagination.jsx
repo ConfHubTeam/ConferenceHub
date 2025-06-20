@@ -11,7 +11,8 @@ export default function Pagination({
   onPageChange, 
   showingFrom, 
   showingTo, 
-  totalItems 
+  totalItems,
+  itemName = "items" // Default to "items" if not specified
 }) {
   if (totalPages <= 1) return null;
 
@@ -54,7 +55,7 @@ export default function Pagination({
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 p-4 bg-white border border-gray-200 rounded-lg">
       {/* Results info */}
       <div className="text-sm text-gray-600">
-        Showing {showingFrom}-{showingTo} of {totalItems} requests
+        Showing {showingFrom}-{showingTo} of {totalItems} {itemName}
       </div>
       
       {/* Pagination controls */}

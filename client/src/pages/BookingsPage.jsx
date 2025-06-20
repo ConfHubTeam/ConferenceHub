@@ -654,6 +654,7 @@ export default function BookingsPage() {
                   showingFrom={showingFrom}
                   showingTo={showingTo}
                   totalItems={filteredBookings.length}
+                  itemName="bookings"
                 />
               </>
             )}
@@ -863,6 +864,7 @@ export default function BookingsPage() {
                   showingFrom={showingFrom}
                   showingTo={showingTo}
                   totalItems={filteredBookings.length}
+                  itemName="booking requests"
                 />
               </>
             )}
@@ -1077,6 +1079,7 @@ export default function BookingsPage() {
                   showingFrom={showingFrom}
                   showingTo={showingTo}
                   totalItems={filteredBookings.length}
+                  itemName="bookings"
                 />
               </>
             )}
