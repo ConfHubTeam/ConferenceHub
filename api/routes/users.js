@@ -25,6 +25,9 @@ router.get("/stats", userController.getStatistics);
 // Delete own account (must come before /:id route to ensure proper matching)
 router.delete("/account/delete", userController.deleteOwnAccount);
 
+// Update a user (agent only)
+router.put("/:id", userController.updateUser);
+
 // Delete a user (agent only)
 router.delete("/:id", userController.deleteUser);
 
