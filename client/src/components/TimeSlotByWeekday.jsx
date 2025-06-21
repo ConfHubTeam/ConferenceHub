@@ -59,10 +59,24 @@ const TimeSlotByWeekday = ({
                     <select
                       value={weekdayTimeSlots[index].start}
                       onChange={(e) => {
-                        setWeekdayTimeSlots(prev => ({
-                          ...prev, 
-                          [index]: {...prev[index], start: e.target.value}
-                        }));
+                        const newStartTime = e.target.value;
+                        setWeekdayTimeSlots(prev => {
+                          const currentEndTime = prev[index].end;
+                          const startHour = parseInt(newStartTime);
+                          const endHour = parseInt(currentEndTime);
+                          
+                          // Clear end time if it's now invalid (less than or equal to new start time)
+                          const shouldClearEndTime = currentEndTime && endHour <= startHour;
+                          
+                          return {
+                            ...prev, 
+                            [index]: {
+                              ...prev[index], 
+                              start: newStartTime,
+                              end: shouldClearEndTime ? "" : currentEndTime
+                            }
+                          };
+                        });
                       }}
                       className="w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white appearance-none"
                       disabled={blockedWeekdays.includes(index)}
@@ -98,10 +112,16 @@ const TimeSlotByWeekday = ({
                         }));
                       }}
                       className="w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white appearance-none"
-                      disabled={blockedWeekdays.includes(index)}
+                      disabled={blockedWeekdays.includes(index) || !weekdayTimeSlots[index].start}
                     >
-                      <option value="">Select</option>
-                      {Array.from({ length: 24 }, (_, i) => {
+                      <option value="">
+                        {!weekdayTimeSlots[index].start ? "Select start time first" : "Select"}
+                      </option>
+                      {weekdayTimeSlots[index].start && Array.from({ length: 24 }, (_, i) => {
+                        const startHour = parseInt(weekdayTimeSlots[index].start);
+                        // Only show hours after the selected start time
+                        if (i <= startHour) return null;
+                        
                         const hour = i.toString().padStart(2, '0');
                         const displayHour = i === 0 ? 12 : i > 12 ? i - 12 : i;
                         const amPm = i < 12 ? 'AM' : 'PM';
