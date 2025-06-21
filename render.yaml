@@ -21,6 +21,7 @@ services:
       find client/dist -name "*.js" -o -name "*.css" | head -10
     startCommand: NODE_ENV=production node start.js
     plan: free
+    region: oregon
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
@@ -30,9 +31,9 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: FRONTEND_URL
-        generateValue: false
+        sync: false
       - key: CORS_ALLOWED_ORIGINS
-        generateValue: false
+        sync: false
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
       - key: CLOUDINARY_API_KEY
@@ -51,7 +52,7 @@ services:
       - key: TELEGRAM_BOT_TOKEN
         sync: false
       - key: APP_URL
-        generateValue: false
+        sync: false
       # Session configuration for Telegram authentication
       - key: SESSION_SECRET
         sync: false
@@ -59,4 +60,5 @@ services:
 databases:
   - name: conferencehub-db
     plan: free
+    region: singapore
     databaseName: conferencehub
