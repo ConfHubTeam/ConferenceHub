@@ -12,6 +12,9 @@ router.use((req, res, next) => {
 // Get user profile
 router.get("/profile", userController.getProfile);
 
+// Update user profile
+router.put("/profile", userController.updateProfile);
+
 // Get all users (agent only)
 router.get("/", userController.getAllUsers);
 router.get("/all", userController.getAllUsers); // Alias for /users endpoint
@@ -21,6 +24,9 @@ router.get("/stats", userController.getStatistics);
 
 // Delete own account (must come before /:id route to ensure proper matching)
 router.delete("/account/delete", userController.deleteOwnAccount);
+
+// Update a user (agent only)
+router.put("/:id", userController.updateUser);
 
 // Delete a user (agent only)
 router.delete("/:id", userController.deleteUser);

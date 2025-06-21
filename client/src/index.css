@@ -63,3 +63,25 @@ button.normal {
     width: 100%;
   }
 }
+
+/* Form validation highlighting styles */
+.validation-error-highlight {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+  animation: validationPulse 0.5s ease-in-out;
+}
+
+@keyframes validationPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0.1);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  }
+}

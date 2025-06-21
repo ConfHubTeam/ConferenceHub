@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getCurrencySymbol } from "../utils/currencyUtils";
 
-export default function PriceInput({ value, onChange, currency, label = null }) {
+export default function PriceInput({ value, onChange, currency, label = null, isRequired = false }) {
   const [inputValue, setInputValue] = useState("");
   const [formattedValue, setFormattedValue] = useState("");
   const [isEditing, setIsEditing] = useState(false);
@@ -103,13 +103,13 @@ export default function PriceInput({ value, onChange, currency, label = null }) 
   return (
     <div className="w-full">
         
-      <div className="relative w-full">
-        {label && (
-            <label htmlFor={inputId} className="block mb-2 text-sm font-medium text-gray-700 break-words">
-              <span className="inline-block mr-1">{label}</span>
-              <span className="inline-block">{getCurrencyDisplay()}</span>
-            </label>
-        )}
+      <div className="relative w-full">      {label && (
+          <label htmlFor={inputId} className="block mb-2 text-sm font-medium text-gray-700 break-words">
+            <span className="inline-block mr-1">{label}</span>
+            {isRequired && <span className="text-red-500">*</span>}
+            <span className="inline-block ml-1">{getCurrencyDisplay()}</span>
+          </label>
+      )}
         <input
           id={inputId}
           type="text"

@@ -25,7 +25,7 @@ function extractYouTubeVideoId(url) {
 
 export default function YouTubeSection({ youtubeLink, setYoutubeLink, preInput }) {
   return (
-    <>
+    <div id="youtube-section">
       {preInput("YouTube Video", "add a YouTube link showcasing your conference room.")}
       <input
         type="text"
@@ -34,7 +34,7 @@ export default function YouTubeSection({ youtubeLink, setYoutubeLink, preInput }
         onChange={(event) => setYoutubeLink(event.target.value)}
         className="w-full border my-2 py-2 px-3 rounded-2xl"
       />
-    </>
+    </div>
   );
 }
 

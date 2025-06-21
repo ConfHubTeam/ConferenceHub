@@ -7,6 +7,7 @@ import RegisterPage from "./pages/RegisterPage";
 import Layout from "./components/Layout";
 import { UserContextProvider } from "./components/UserContext";
 import { NotificationProvider } from "./components/NotificationContext";
+import { BookingNotificationProvider } from "./contexts/BookingNotificationContext";
 import { CurrencyProvider } from "./contexts/CurrencyContext";
 import PlacesPage from "./pages/PlacesPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -16,6 +17,7 @@ import PlaceDetailPage from "./pages/PlaceDetailPage";
 import DashboardPage from "./pages/DashboardPage";
 import UsersPage from "./pages/UsersPage";
 import AllPlacesPage from "./pages/AllPlacesPage";
+import HostBookingManagementPage from "./pages/HostBookingManagementPage";
 import TelegramAuth from "./components/TelegramAuth";
 import TelegramCallbackHandler from "./components/TelegramCallbackHandler";
 import LoginSuccessPage from "./pages/LoginSuccessPage";
@@ -26,7 +28,8 @@ function App() {
     <UserContextProvider>
       <CurrencyProvider>
         <NotificationProvider>
-          <Routes>
+          <BookingNotificationProvider>
+            <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<IndexPage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -42,6 +45,7 @@ function App() {
             <Route path="/place/:placeId" element={<PlaceDetailPage />}/>
             <Route path="/place/:placeId/:bookingId" element={<PlaceDetailPage />}/>
             <Route path="/account/bookings" element={<BookingsPage />}/>
+            <Route path="/account/host-management" element={<HostBookingManagementPage />}/>
             
             {/* Agent-specific routes */}
             <Route path="/account/dashboard" element={<DashboardPage />}/>
@@ -49,6 +53,7 @@ function App() {
             <Route path="/account/all-places" element={<AllPlacesPage />}/>
           </Route>
         </Routes>
+        </BookingNotificationProvider>
       </NotificationProvider>
       </CurrencyProvider>
     </UserContextProvider>

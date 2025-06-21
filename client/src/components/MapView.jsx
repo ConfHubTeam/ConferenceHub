@@ -3,7 +3,7 @@ import { GoogleMap, useJsApiLoader, InfoWindow } from "@react-google-maps/api";
 import { Link } from "react-router-dom";
 import CloudinaryImage from "./CloudinaryImage";
 import { useCurrency } from "../contexts/CurrencyContext";
-import { formatPrice } from "../utils/currencyUtils";
+import { formatPrice, formatUZSShort, convertCurrency } from "../utils/currencyUtils";
 import PriceDisplay from "./PriceDisplay";
 import { 
   getMarkerSizeByZoom, 
@@ -13,6 +13,7 @@ import {
 import { drawMarkerShape, drawPriceText } from "../utils/canvasUtils";
 import { MarkerClusterer } from "@googlemaps/markerclusterer";
 import { setMarkerClusterer, clearMarkerClusterer } from "../utils/markerClustererRef";
+import { getClusterOptions } from "../utils/clusterRenderer";
 
 // Custom styles to hide the InfoWindow close button and arrow
 const infoWindowStyles = `
@@ -73,7 +74,30 @@ export default function MapView({ places, disableInfoWindow = false }) {
     let formattedPrice;
     
     try {
-      formattedPrice = await formatPrice(price, currency, selectedCurrency);
+      // Check if we need to convert currency first
+      if (selectedCurrency && currency && selectedCurrency.charCode !== currency.charCode) {
+        // Convert to selected currency first
+        const fromCode = currency?.charCode || currency;
+        const toCode = selectedCurrency?.charCode;
+        const convertedPrice = await convertCurrency(price, fromCode, toCode);
+        
+        // Use shorter format for UZS currency on map markers
+        if (selectedCurrency.charCode === 'UZS') {
+          formattedPrice = formatUZSShort(convertedPrice);
+        } else {
+          formattedPrice = await formatPrice(convertedPrice, selectedCurrency, selectedCurrency);
+        }
+      } else {
+        // Use original currency
+        const currencyCode = currency?.charCode || currency;
+        
+        // Use shorter format for UZS currency on map markers
+        if (currencyCode === 'UZS') {
+          formattedPrice = formatUZSShort(price);
+        } else {
+          formattedPrice = await formatPrice(price, currency, selectedCurrency);
+        }
+      }
     } catch (error) {
       console.error("Error formatting price for marker:", error);
       // Fallback to simple format
@@ -293,9 +317,14 @@ export default function MapView({ places, disableInfoWindow = false }) {
     createMarkersAsync(map).then(({ markers, bounds }) => {
       markersRef.current = markers;
 
-      // Add marker clustering
+      // Add marker clustering with custom reddish theme
       if (markers.length > 0) {
-        const clusterer = new MarkerClusterer({ markers, map });
+        const clusterOptions = getClusterOptions();
+        const clusterer = new MarkerClusterer({ 
+          markers, 
+          map,
+          ...clusterOptions
+        });
         setMarkerClusterer(clusterer);
       }
 

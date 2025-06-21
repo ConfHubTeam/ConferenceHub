@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { UserContext } from "./UserContext";
 import { useCurrency } from "../contexts/CurrencyContext";
 import CurrencySelector from "./CurrencySelector";
+import NotificationBell from "./NotificationBell";
 
 export default function Header() {
   const {user} = useContext(UserContext);
@@ -81,6 +82,9 @@ export default function Header() {
       <div className="hidden md:block flex-grow"></div>
       
       <div className="flex items-center gap-2 relative z-30">
+        {/* Notification Bell - only shown for logged-in users */}
+        <NotificationBell />
+        
         {/* Currency Selector */}
         <div className="hidden md:block" style={{ width: '90px' }}>
           <CurrencySelector
@@ -116,7 +120,7 @@ export default function Header() {
         
         <Link
           to={user ? "/account" : "/login"}
-          className="profile items-center flex border border-gray-300 rounded-full py-2 px-4 gap-2 bg-white hover:shadow-md transition-shadow"
+          className="profile items-center flex border border-gray-300 rounded-full py-2 px-4 gap-2 bg-white hover:shadow-md transition-shadow relative"
         >
           {!user ? (
             <div className="user">
@@ -185,7 +189,7 @@ export default function Header() {
                   </Link>
                   <Link 
                     to="/account/bookings" 
-                    className="flex items-center py-3 px-2 hover:bg-gray-100 rounded-lg"
+                    className="flex items-center py-3 px-2 hover:bg-gray-100 rounded-lg relative"
                     onClick={handleMenuLinkClick}
                   >
                     <span className="mr-3">
@@ -194,6 +198,7 @@ export default function Header() {
                       </svg>
                     </span>
                     My Bookings
+                    <NotificationBell isMobile={true} />
                   </Link>
                   <Link 
                     to={user.userType === 'host' ? "/account/user-places" : "/"}

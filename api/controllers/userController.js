@@ -31,9 +31,9 @@ const getProfile = async (req, res) => {
       try {
         // Update Mongoose findById to Sequelize findByPk
         const user = await User.findByPk(userData.id, {
-          // Include all relevant user attributes, particularly Telegram fields
+          // Include all relevant user attributes, including phone number
           attributes: [
-            'id', 'name', 'email', 'userType', 
+            'id', 'name', 'email', 'phoneNumber', 'userType', 
             'telegramId', 'telegramUsername', 'telegramFirstName',
             'telegramPhotoUrl', 'telegramPhone', 'telegramLinked'
           ]
@@ -58,6 +58,81 @@ const getProfile = async (req, res) => {
 };
 
 /**
+ * Update user profile
+ */
+const updateProfile = async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+    const { name, phoneNumber } = req.body;
+
+    // Validate input
+    if (!name || name.trim() === '') {
+      return res.status(400).json({ error: 'Name is required' });
+    }
+
+    // Validate phone number format if provided
+    if (phoneNumber && phoneNumber.trim() !== '') {
+      // Enhanced phone validation - should be in E.164 format (starting with +)
+      const phoneRegex = /^\+[1-9]\d{1,14}$/;
+      const cleanPhone = phoneNumber.trim();
+      
+      if (!phoneRegex.test(cleanPhone)) {
+        return res.status(400).json({ 
+          error: 'Please enter a valid phone number in international format (e.g., +998901234567)',
+          code: 'INVALID_PHONE_FORMAT'
+        });
+      }
+
+      // Check if phone number is already taken by another user
+      const existingUser = await User.findOne({
+        where: {
+          phoneNumber: cleanPhone,
+          id: { [require('sequelize').Op.ne]: userData.id }
+        }
+      });
+
+      if (existingUser) {
+        return res.status(400).json({ 
+          error: 'A user with this phone number already exists',
+          code: 'PHONE_NUMBER_EXISTS'
+        });
+      }
+    }
+
+    // Update user profile
+    const updateData = {
+      name: name.trim()
+    };
+
+    // Only update phone number if provided
+    if (phoneNumber !== undefined) {
+      updateData.phoneNumber = phoneNumber.trim() || null;
+    }
+
+    await User.update(updateData, {
+      where: { id: userData.id }
+    });
+
+    // Fetch updated user data
+    const updatedUser = await User.findByPk(userData.id, {
+      attributes: [
+        'id', 'name', 'email', 'phoneNumber', 'userType', 
+        'telegramId', 'telegramUsername', 'telegramFirstName',
+        'telegramPhotoUrl', 'telegramPhone', 'telegramLinked'
+      ]
+    });
+
+    res.json({
+      message: 'Profile updated successfully',
+      user: updatedUser
+    });
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    res.status(422).json({ error: error.message });
+  }
+};
+
+/**
  * Get all users (for agents only)
  */
 const getAllUsers = async (req, res) => {
@@ -71,7 +146,7 @@ const getAllUsers = async (req, res) => {
     
     // Get all users
     const users = await User.findAll({
-      attributes: ['id', 'name', 'email', 'userType', 'createdAt']
+      attributes: ['id', 'name', 'email', 'phoneNumber', 'userType', 'createdAt']
     });
     
     res.json(users);
@@ -293,10 +368,104 @@ const getStatistics = async (req, res) => {
   }
 };
 
+/**
+ * Update a user's details (for agents only)
+ */
+const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, phoneNumber } = req.body;
+    const userData = await req.getUserDataFromToken();
+    
+    // Verify user is an agent
+    if (userData.userType !== 'agent') {
+      return res.status(403).json({ error: "Only agents can update user details" });
+    }
+    
+    // Validate input
+    if (!name || name.trim() === '') {
+      return res.status(400).json({ error: 'Name is required' });
+    }
+
+    // Validate phone number format if provided
+    if (phoneNumber && phoneNumber.trim() !== '') {
+      // Enhanced phone validation - should be in E.164 format (starting with +)
+      const phoneRegex = /^\+[1-9]\d{1,14}$/;
+      const cleanPhone = phoneNumber.trim();
+      
+      if (!phoneRegex.test(cleanPhone)) {
+        return res.status(400).json({ 
+          error: 'Please enter a valid phone number in international format (e.g., +998901234567)',
+          code: 'INVALID_PHONE_FORMAT'
+        });
+      }
+    }
+
+    // Find the user to update
+    const userToUpdate = await User.findByPk(id);
+    if (!userToUpdate) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Check if phone number is already taken by another user
+    if (phoneNumber && phoneNumber.trim() !== '') {
+      const cleanPhone = phoneNumber.trim();
+      
+      const existingUser = await User.findOne({
+        where: {
+          phoneNumber: cleanPhone,
+          id: { [require('sequelize').Op.ne]: id }
+        }
+      });
+
+      if (existingUser) {
+        return res.status(400).json({ 
+          error: 'A user with this phone number already exists',
+          code: 'PHONE_NUMBER_EXISTS'
+        });
+      }
+    }
+
+    // Update user details
+    const updateData = {
+      name: name.trim()
+    };
+
+    // Only update phone number if provided
+    if (phoneNumber !== undefined) {
+      updateData.phoneNumber = phoneNumber.trim() || null;
+    }
+
+    await User.update(updateData, {
+      where: { id: id }
+    });
+
+    // Fetch updated user data
+    const updatedUser = await User.findByPk(id, {
+      attributes: [
+        'id', 'name', 'email', 'phoneNumber', 'userType', 
+        'telegramId', 'telegramUsername', 'telegramFirstName',
+        'telegramPhotoUrl', 'telegramPhone', 'telegramLinked',
+        'createdAt'
+      ]
+    });
+
+    res.json({
+      message: 'User updated successfully',
+      user: updatedUser
+    });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(422).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getProfile,
+  updateProfile,
   getAllUsers,
   deleteUser,
   deleteOwnAccount,
-  getStatistics
+  getStatistics,
+  updateUser
 };

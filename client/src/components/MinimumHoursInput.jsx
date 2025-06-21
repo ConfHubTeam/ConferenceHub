@@ -14,7 +14,6 @@ const MinimumHoursInput = ({ minimumHours, setMinimumHours }) => {
   // Sync local state with prop changes (important for editing existing places)
   useEffect(() => {
     if (minimumHours !== undefined && minimumHours !== null) {
-      console.log("MinimumHoursInput: Updating local value from", localValue, "to", minimumHours);
       setLocalValue(minimumHours);
     }
   }, [minimumHours]);

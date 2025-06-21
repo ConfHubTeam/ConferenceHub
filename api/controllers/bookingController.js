@@ -1,4 +1,4 @@
-const { Booking, Place, User } = require("../models");
+const { Booking, Place, User, Currency } = require("../models");
 const { getUserDataFromToken } = require("../middleware/auth");
 const { Op } = require("sequelize");
 const { validateBookingTimeSlots, findConflictingBookings } = require("../utils/bookingUtils");
@@ -104,17 +104,24 @@ const getBookings = async (req, res) => {
           {
             model: Place,
             as: 'place',
-            include: [{
-              model: User,
-              as: 'owner',
-              attributes: ['id', 'name', 'email']
-            }],
-            attributes: ['id', 'title', 'address', 'photos', 'price', 'checkIn', 'checkOut', 'ownerId']
+            include: [
+              {
+                model: User,
+                as: 'owner',
+                attributes: ['id', 'name', 'email', 'phoneNumber']
+              },
+              {
+                model: Currency,
+                as: 'currency',
+                attributes: ['id', 'name', 'code', 'charCode']
+              }
+            ],
+            attributes: ['id', 'title', 'address', 'photos', 'price', 'checkIn', 'checkOut', 'ownerId', 'currencyId']
           },
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'name', 'email']
+            attributes: ['id', 'name', 'email', 'phoneNumber']
           }
         ],
         order: [
@@ -132,17 +139,24 @@ const getBookings = async (req, res) => {
           {
             model: Place,
             as: 'place',
-            include: [{
-              model: User,
-              as: 'owner',
-              attributes: ['id', 'name', 'email']
-            }],
-            attributes: ['id', 'title', 'address', 'photos', 'price', 'checkIn', 'checkOut', 'ownerId']
+            include: [
+              {
+                model: User,
+                as: 'owner',
+                attributes: ['id', 'name', 'email', 'phoneNumber']
+              },
+              {
+                model: Currency,
+                as: 'currency',
+                attributes: ['id', 'name', 'code', 'charCode']
+              }
+            ],
+            attributes: ['id', 'title', 'address', 'photos', 'price', 'checkIn', 'checkOut', 'ownerId', 'currencyId']
           },
           {
             model: User,
             as: 'user',
-            attributes: ['id', 'name', 'email']
+            attributes: ['id', 'name', 'email', 'phoneNumber']
           }
         ],
         order: [
@@ -161,7 +175,14 @@ const getBookings = async (req, res) => {
             model: Place,
             as: 'place',
             where: { ownerId: userData.id },
-            attributes: ['id', 'title', 'address', 'photos', 'price', 'checkIn', 'checkOut']
+            include: [
+              {
+                model: Currency,
+                as: 'currency',
+                attributes: ['id', 'name', 'code', 'charCode']
+              }
+            ],
+            attributes: ['id', 'title', 'address', 'photos', 'price', 'checkIn', 'checkOut', 'currencyId']
           },
           {
             model: User,
@@ -177,16 +198,23 @@ const getBookings = async (req, res) => {
       res.json(hostBookings);
     } else {
       // For clients: Find bookings made by this user
-      // Exclude rejected/cancelled bookings
+      // Include all booking statuses so clients can see their full booking history
       const clientBookings = await Booking.findAll({
         where: { 
-          userId: userData.id,
-          status: ['pending', 'approved'] // Only return pending and approved bookings
+          userId: userData.id
+          // Note: Include all statuses (pending, approved, rejected) for client's visibility
         },
         include: {
           model: Place,
           as: 'place',
-          attributes: ['id', 'title', 'address', 'photos', 'price', 'checkIn', 'checkOut']
+          include: [
+            {
+              model: Currency,
+              as: 'currency',
+              attributes: ['id', 'name', 'code', 'charCode']
+            }
+          ],
+          attributes: ['id', 'title', 'address', 'photos', 'price', 'checkIn', 'checkOut', 'currencyId']
         },
         order: [
           ['createdAt', 'DESC'] // Most recent bookings first
@@ -278,10 +306,32 @@ const updateBookingStatus = async (req, res) => {
     // Update booking status
     booking.status = status;
     await booking.save();
-    
+
+    // Reload the booking with all associations to ensure we return complete data
+    const updatedBooking = await Booking.findByPk(booking.id, {
+      include: [
+        {
+          model: Place,
+          as: 'place',
+          include: [
+            {
+              model: User,
+              as: 'owner',
+              attributes: ['id', 'name', 'phoneNumber', 'email']
+            }
+          ]
+        },
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'name', 'phoneNumber', 'email']
+        }
+      ]
+    });
+
     return res.json({ 
       success: true, 
-      booking,
+      booking: updatedBooking,
       message: status === 'approved' ? 
         'Booking approved. Any conflicting bookings have been automatically rejected.' : 
         `Booking ${status} successfully.`
@@ -299,23 +349,33 @@ const getBookingCounts = async (req, res) => {
   try {
     const userData = await getUserDataFromToken(req);
     
-    if (userData.userType !== 'host') {
-      return res.status(403).json({ error: "Only hosts can access booking counts" });
+    if (userData.userType !== 'host' && userData.userType !== 'agent') {
+      return res.status(403).json({ error: "Only hosts and agents can access booking counts" });
     }
     
-    const pendingCount = await Booking.count({
-      include: [
-        {
-          model: Place,
-          as: 'place',
-          where: { ownerId: userData.id },
-          attributes: []
+    let pendingCount;
+    
+    if (userData.userType === 'agent') {
+      // Agents can see all pending bookings
+      pendingCount = await Booking.count({
+        where: { status: 'pending' }
+      });
+    } else {
+      // Hosts see only their pending bookings
+      pendingCount = await Booking.count({
+        include: [
+          {
+            model: Place,
+            as: 'place',
+            where: { ownerId: userData.id },
+            attributes: []
+          }
+        ],
+        where: {
+          status: 'pending'
         }
-      ],
-      where: {
-        status: 'pending'
-      }
-    });
+      });
+    }
     
     res.json({ pendingCount });
   } catch (error) {

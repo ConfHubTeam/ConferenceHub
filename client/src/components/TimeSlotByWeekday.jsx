@@ -15,12 +15,13 @@ const TimeSlotByWeekday = ({
   const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   
   return (
-    <div className="mt-5">
+    <div id="time-slots" className="mt-5">
       <h4 className="text-base font-medium mb-4 text-gray-800 flex items-center">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-1 text-blue-600">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         Time slots by weekday
+        <span className="text-red-500 ml-1">*</span>
       </h4>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3">
         {weekdays.map((day, index) => (
@@ -58,10 +59,24 @@ const TimeSlotByWeekday = ({
                     <select
                       value={weekdayTimeSlots[index].start}
                       onChange={(e) => {
-                        setWeekdayTimeSlots(prev => ({
-                          ...prev, 
-                          [index]: {...prev[index], start: e.target.value}
-                        }));
+                        const newStartTime = e.target.value;
+                        setWeekdayTimeSlots(prev => {
+                          const currentEndTime = prev[index].end;
+                          const startHour = parseInt(newStartTime);
+                          const endHour = parseInt(currentEndTime);
+                          
+                          // Clear end time if it's now invalid (less than or equal to new start time)
+                          const shouldClearEndTime = currentEndTime && endHour <= startHour;
+                          
+                          return {
+                            ...prev, 
+                            [index]: {
+                              ...prev[index], 
+                              start: newStartTime,
+                              end: shouldClearEndTime ? "" : currentEndTime
+                            }
+                          };
+                        });
                       }}
                       className="w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white appearance-none"
                       disabled={blockedWeekdays.includes(index)}
@@ -97,10 +112,16 @@ const TimeSlotByWeekday = ({
                         }));
                       }}
                       className="w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white appearance-none"
-                      disabled={blockedWeekdays.includes(index)}
+                      disabled={blockedWeekdays.includes(index) || !weekdayTimeSlots[index].start}
                     >
-                      <option value="">Select</option>
-                      {Array.from({ length: 24 }, (_, i) => {
+                      <option value="">
+                        {!weekdayTimeSlots[index].start ? "Select start time first" : "Select"}
+                      </option>
+                      {weekdayTimeSlots[index].start && Array.from({ length: 24 }, (_, i) => {
+                        const startHour = parseInt(weekdayTimeSlots[index].start);
+                        // Only show hours after the selected start time
+                        if (i <= startHour) return null;
+                        
                         const hour = i.toString().padStart(2, '0');
                         const displayHour = i === 0 ? 12 : i > 12 ? i - 12 : i;
                         const amPm = i < 12 ? 'AM' : 'PM';

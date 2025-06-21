@@ -40,7 +40,7 @@ const PricingAndCapacity = ({
   setIsHotel,
 }) => {
   return (
-    <div className="bg-white p-3 rounded-2xl shadow-sm border">
+    <div id="pricing-capacity" className="bg-white p-3 rounded-2xl shadow-sm border">
       <div className="w-full mb-3">
         <CurrencySelector 
           selectedCurrency={currency} 
@@ -55,6 +55,7 @@ const PricingAndCapacity = ({
             onChange={setPrice} 
             currency={currency}
             label="Price per hour"
+            isRequired={true}
           />
         </div>
         <div className="w-full">
@@ -63,6 +64,7 @@ const PricingAndCapacity = ({
             onChange={setFullDayDiscountPrice} 
             currency={currency}
             label="Full day discount price"
+            isRequired={true}
           />
         </div>
       </div>

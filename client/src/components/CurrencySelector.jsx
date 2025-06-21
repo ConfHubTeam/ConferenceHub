@@ -73,7 +73,6 @@ export default function CurrencySelector({ selectedCurrency, onChange, available
       // Instead of the hardcoded default currency objects
       const matchingCurrency = currencies.find(c => c.charCode === selectedCurrency.charCode);
       if (matchingCurrency && matchingCurrency.id !== selectedCurrency.id) {
-        console.log("Updating currency to match database ID:", matchingCurrency);
         onChange(matchingCurrency);
       }
     }

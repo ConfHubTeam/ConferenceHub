@@ -178,7 +178,14 @@ export default function MapPicker({
         const newPos = newMarker.getPosition();
         const lat = newPos.lat();
         const lng = newPos.lng();
+        console.log('Marker dragged to new position:', { lat, lng });
         handlePositionChange({ lat, lng });
+      });
+      
+      // Add drag start listener for better UX feedback
+      newMarker.addListener('dragstart', () => {
+        console.log('Marker drag started');
+        setAddressFetchStatus('loading');
       });
       
       setMarker(newMarker);
@@ -212,7 +219,14 @@ export default function MapPicker({
           const newPos = newMarker.getPosition();
           const lat = newPos.lat();
           const lng = newPos.lng();
+          console.log('Marker dragged to new position:', { lat, lng });
           handlePositionChange({ lat, lng });
+        });
+        
+        // Add drag start listener for better UX feedback
+        newMarker.addListener('dragstart', () => {
+          console.log('Marker drag started');
+          setAddressFetchStatus('loading');
         });
         
         setMarker(newMarker);
@@ -328,7 +342,14 @@ export default function MapPicker({
               const newPos = newMarker.getPosition();
               const lat = newPos.lat();
               const lng = newPos.lng();
+              console.log('Marker dragged to new position:', { lat, lng });
               handlePositionChange({ lat, lng });
+            });
+            
+            // Add drag start listener for better UX feedback
+            newMarker.addListener('dragstart', () => {
+              console.log('Marker drag started');
+              setAddressFetchStatus('loading');
             });
             
             setMarker(newMarker);
@@ -365,7 +386,14 @@ export default function MapPicker({
         const newPos = newMarker.getPosition();
         const lat = newPos.lat();
         const lng = newPos.lng();
+        console.log('Marker dragged to new position:', { lat, lng });
         handlePositionChange({ lat, lng });
+      });
+      
+      // Add drag start listener for better UX feedback
+      newMarker.addListener('dragstart', () => {
+        console.log('Marker drag started');
+        setAddressFetchStatus('loading');
       });
       
       setMarker(newMarker);
@@ -416,7 +444,14 @@ export default function MapPicker({
           const newPos = newMarker.getPosition();
           const dragLat = newPos.lat();
           const dragLng = newPos.lng();
+          console.log('Marker dragged to new position:', { lat: dragLat, lng: dragLng });
           handlePositionChange({ lat: dragLat, lng: dragLng });
+        });
+        
+        // Add drag start listener for better UX feedback
+        newMarker.addListener('dragstart', () => {
+          console.log('Marker drag started');
+          setAddressFetchStatus('loading');
         });
         
         setMarker(newMarker);
@@ -461,13 +496,13 @@ export default function MapPicker({
     });
     
     // Only notify parent component about the position change
-    // without altering the address field
+    // DO NOT update the address field to prevent circular geocoding
     if (onLocationSelect) {
       onLocationSelect(newPosition);
     }
     
     // We'll still fetch the address to show as a suggestion in the UI
-    // but we won't automatically update the address field
+    // but we won't automatically update the address field to prevent circular updates
     try {
       setAddressFetchStatus('loading');
       
@@ -481,17 +516,11 @@ export default function MapPicker({
         const address = data.results[0].formatted_address;
         setAddressFetchStatus('success');
         
-        // Pass the suggested address to parent component, but don't force update
-        if (onAddressUpdate) {
-          // The parent component can decide whether to use this address or not
-          onAddressUpdate(address);
-        }
+        // DO NOT call onAddressUpdate to prevent circular geocoding
+        // The address field should remain independent of map coordinates
+        console.log('Map reverse geocoded address (not updating field):', address);
       } else {
         setAddressFetchStatus('failed');
-        if (onAddressUpdate) {
-          // Signal that address fetch failed
-          onAddressUpdate('');
-        }
       }
     } catch (error) {
       console.error('Error reverse geocoding:', error);

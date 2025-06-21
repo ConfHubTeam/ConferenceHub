@@ -62,7 +62,8 @@ export default function AvailabilitySection({
     <>
       {preInput(
         "Availability times",
-        "add available times, remember to have some time for cleaning the room between bookings."
+        "add available times, remember to have some time for cleaning the room between bookings. Both date range and time slots are required.",
+        true // Required field
       )}
       
       <div className="grid gap-3 grid-cols-1 md:grid-cols-2 mt-2">
