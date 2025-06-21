@@ -51,7 +51,9 @@ services:
         sync: false
       - key: TELEGRAM_BOT_TOKEN
         sync: false
-      - key: TELEGRAM_BOT_NAME
+      - key: VITE_TELEGRAM_BOT_USERNAME
+        sync: false
+      - key: TELEGRAM_BOT_USERNAME
         sync: false
       - key: APP_URL
         sync: false
