@@ -13,6 +13,7 @@ import {
 import { drawMarkerShape, drawPriceText } from "../utils/canvasUtils";
 import { MarkerClusterer } from "@googlemaps/markerclusterer";
 import { setMarkerClusterer, clearMarkerClusterer } from "../utils/markerClustererRef";
+import { getClusterOptions } from "../utils/clusterRenderer";
 
 // Custom styles to hide the InfoWindow close button and arrow
 const infoWindowStyles = `
@@ -293,9 +294,14 @@ export default function MapView({ places, disableInfoWindow = false }) {
     createMarkersAsync(map).then(({ markers, bounds }) => {
       markersRef.current = markers;
 
-      // Add marker clustering
+      // Add marker clustering with custom reddish theme
       if (markers.length > 0) {
-        const clusterer = new MarkerClusterer({ markers, map });
+        const clusterOptions = getClusterOptions();
+        const clusterer = new MarkerClusterer({ 
+          markers, 
+          map,
+          ...clusterOptions
+        });
         setMarkerClusterer(clusterer);
       }
 
