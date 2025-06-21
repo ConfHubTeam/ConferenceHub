@@ -25,7 +25,7 @@ export default function PlacesFormPage() {
   const [currency, setCurrency] = useState(null);
   const [fullDayHours, setFullDayHours] = useState(8);
   const [fullDayDiscountPrice, setFullDayDiscountPrice] = useState(0);
-  const [cooldownMinutes, setCooldownMinutes] = useState(30);
+  const [cooldownMinutes, setCooldownMinutes] = useState(60);
   const [minimumHours, setMinimumHours] = useState(1);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -129,7 +129,7 @@ export default function PlacesFormPage() {
         setMaxGuests(data.maxGuests);
         setFullDayHours(data.fullDayHours || 8);
         setFullDayDiscountPrice(data.fullDayDiscountPrice || 0);
-        setCooldownMinutes(data.cooldown || 30);
+        setCooldownMinutes(data.cooldown || 60);
         setMinimumHours(data.minimumHours || 1);
         console.log("Loaded minimumHours from database:", data.minimumHours, "Setting to:", data.minimumHours || 1);
         setYoutubeLink(data.youtubeLink || "");

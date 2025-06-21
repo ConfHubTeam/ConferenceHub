@@ -2,14 +2,13 @@ import { useState } from "react";
 
 export default function CooldownInput({ cooldownMinutes, setCooldownMinutes }) {
   const [isOpen, setIsOpen] = useState(false);
-  const options = Array.from({ length: 6 }, (_, i) => (i + 1) * 30);
+  // Generate options for 1-12 hours in minutes (60, 120, 180, ... 720)
+  const options = Array.from({ length: 12 }, (_, i) => (i + 1) * 60);
   
-  // Format the display value
+  // Format the display value - always show in hours for 1-12 hour range
   const formatDisplayValue = (minutes) => {
-    if (minutes >= 60) {
-      return `${Math.floor(minutes / 60)}h ${minutes % 60 > 0 ? `${minutes % 60}min` : ""}`.trim();
-    }
-    return `${minutes} min`;
+    const hours = Math.floor(minutes / 60);
+    return `${hours} hour${hours !== 1 ? 's' : ''}`;
   };
 
   // Handle option selection
@@ -89,7 +88,7 @@ export default function CooldownInput({ cooldownMinutes, setCooldownMinutes }) {
             role="listbox"
             aria-labelledby="cooldownMinutes"
           >
-            {Array.from({ length: 6 }, (_, i) => (i + 1) * 30).map((minutes) => (
+            {Array.from({ length: 12 }, (_, i) => (i + 1) * 60).map((minutes) => (
               <li
                 key={minutes}
                 className={`cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-blue-50 ${cooldownMinutes === minutes ? 'bg-blue-100 font-medium text-blue-800' : ''}`}
