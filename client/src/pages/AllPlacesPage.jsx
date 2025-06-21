@@ -20,9 +20,7 @@ export default function AllPlacesPage() {
   // Agent-specific state for user filtering
   const [allUsers, setAllUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState("");
-  const [loadingUsers, setLoadingUsers] = useState(false);
   const [userSearchTerm, setUserSearchTerm] = useState("");
-  const [showUserDropdown, setShowUserDropdown] = useState(false);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -45,15 +43,12 @@ export default function AllPlacesPage() {
   // Load users list for agent filtering
   useEffect(() => {
     if (user?.userType === 'agent') {
-      setLoadingUsers(true);
       api.get('/users/all')
         .then(({data}) => {
           setAllUsers(data);
-          setLoadingUsers(false);
         })
         .catch(err => {
           console.error('Error fetching users:', err);
-          setLoadingUsers(false);
         });
     }
   }, [user]);
@@ -64,18 +59,6 @@ export default function AllPlacesPage() {
       setSelectedUserId(userId);
     }
   }, [userId, user]);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!event.target.closest('.user-filter-container')) {
-        setShowUserDropdown(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   // Handle user filter changes
   const handleUserFilterChange = (newUserId) => {
@@ -246,84 +229,6 @@ export default function AllPlacesPage() {
         {/* Filters and controls */}
         <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
-            {/* User filter */}
-            <div className="lg:w-64 user-filter-container">
-              <label htmlFor="userFilter" className="block text-sm font-medium text-gray-700 mb-2">
-                Filter by Host
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder={selectedUserId ? getSelectedUser()?.name || "Select host..." : "Search hosts..."}
-                  value={userSearchTerm}
-                  onChange={(e) => setUserSearchTerm(e.target.value)}
-                  onFocus={() => setShowUserDropdown(true)}
-                  disabled={loadingUsers}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-                {selectedUserId && (
-                  <button
-                    onClick={() => {
-                      handleUserFilterChange("");
-                      setUserSearchTerm("");
-                      setShowUserDropdown(false);
-                    }}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                )}
-                
-                {/* Dropdown */}
-                {showUserDropdown && !loadingUsers && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
-                    {/* Clear option */}
-                    <div
-                      onClick={() => {
-                        handleUserFilterChange("");
-                        setUserSearchTerm("");
-                        setShowUserDropdown(false);
-                      }}
-                      className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 text-sm text-gray-600"
-                    >
-                      <div className="flex items-center">
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                        Show all hosts
-                      </div>
-                    </div>
-                    
-                    {filteredUsers.length > 0 ? (
-                      filteredUsers.map(u => (
-                        <div
-                          key={u.id}
-                          onClick={() => {
-                            handleUserFilterChange(u.id.toString());
-                            setUserSearchTerm("");
-                            setShowUserDropdown(false);
-                          }}
-                          className={`px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm ${
-                            selectedUserId === u.id.toString() ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
-                          }`}
-                        >
-                          <div className="font-medium">{u.name}</div>
-                          <div className="text-xs text-gray-500">{u.email}</div>
-                          {u.userType && (
-                            <div className="text-xs text-gray-400 mt-1 capitalize">{u.userType}</div>
-                          )}
-                        </div>
-                      ))
-                    ) : (
-                      <div className="px-4 py-3 text-sm text-gray-500">No hosts found</div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-            
             {/* Search input */}
             <div className="flex-1">
               <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
