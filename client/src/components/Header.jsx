@@ -2,14 +2,12 @@ import { useContext, useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { UserContext } from "./UserContext";
 import { useCurrency } from "../contexts/CurrencyContext";
-import { useBookingNotifications } from "../contexts/BookingNotificationContext";
 import CurrencySelector from "./CurrencySelector";
-import NotificationBadge from "./NotificationBadge";
+import NotificationBell from "./NotificationBell";
 
 export default function Header() {
   const {user} = useContext(UserContext);
   const { selectedCurrency, changeCurrency, availableCurrencies } = useCurrency();
-  const { getRelevantCount } = useBookingNotifications();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const menuButtonRef = useRef(null);
@@ -84,6 +82,9 @@ export default function Header() {
       <div className="hidden md:block flex-grow"></div>
       
       <div className="flex items-center gap-2 relative z-30">
+        {/* Notification Bell - only shown for logged-in users */}
+        <NotificationBell />
+        
         {/* Currency Selector */}
         <div className="hidden md:block" style={{ width: '90px' }}>
           <CurrencySelector
@@ -138,9 +139,8 @@ export default function Header() {
             </div>
           ) : (
             <>
-              <div className="bg-rose-400 text-white rounded-full w-8 h-8 flex items-center justify-center font-semibold relative">
+              <div className="bg-rose-400 text-white rounded-full w-8 h-8 flex items-center justify-center font-semibold">
                 {getFirstLetter()}
-                <NotificationBadge count={getRelevantCount()} size="sm" />
               </div>
             </>
           )}
@@ -189,7 +189,7 @@ export default function Header() {
                   </Link>
                   <Link 
                     to="/account/bookings" 
-                    className="flex items-center py-3 px-2 hover:bg-gray-100 rounded-lg"
+                    className="flex items-center py-3 px-2 hover:bg-gray-100 rounded-lg relative"
                     onClick={handleMenuLinkClick}
                   >
                     <span className="mr-3">
@@ -198,6 +198,7 @@ export default function Header() {
                       </svg>
                     </span>
                     My Bookings
+                    <NotificationBell isMobile={true} />
                   </Link>
                   <Link 
                     to={user.userType === 'host' ? "/account/user-places" : "/"}
