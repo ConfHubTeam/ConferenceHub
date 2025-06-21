@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import CustomPhoneInput from "./CustomPhoneInput";
+import { isValidPhoneNumber, isPossiblePhoneNumber } from "react-phone-number-input";
 
 export default function EditUserModal({ isOpen, onClose, onSave, user, isSaving }) {
   const [formData, setFormData] = useState({
@@ -31,9 +32,14 @@ export default function EditUserModal({ isOpen, onClose, onSave, user, isSaving 
 
     // Validate phone number if provided
     if (formData.phoneNumber && formData.phoneNumber.trim()) {
-      const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-      const cleanPhone = formData.phoneNumber.replace(/[\s\-\(\)]/g, "");
-      if (!phoneRegex.test(cleanPhone)) {
+      try {
+        // Check if phone number is valid for the selected country
+        if (!isPossiblePhoneNumber(formData.phoneNumber)) {
+          newErrors.phoneNumber = "Please enter a valid phone number";
+        } else if (!isValidPhoneNumber(formData.phoneNumber)) {
+          newErrors.phoneNumber = "Please enter a valid phone number for the selected country";
+        }
+      } catch (error) {
         newErrors.phoneNumber = "Please enter a valid phone number";
       }
     }
@@ -159,7 +165,7 @@ export default function EditUserModal({ isOpen, onClose, onSave, user, isSaving 
                 <p className="text-sm text-red-600 mt-1">{errors.phoneNumber}</p>
               )}
               <p className="text-xs text-gray-500 mt-1">
-                Leave empty to remove phone number
+                Enter phone number in international format (e.g., +998901234567). Leave empty to remove phone number.
               </p>
             </div>
           </div>
