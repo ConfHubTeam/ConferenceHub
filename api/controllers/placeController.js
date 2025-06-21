@@ -97,7 +97,7 @@ const createPlace = async (req, res) => {
       lat: lat ? parseFloat(lat) : null,
       lng: lng ? parseFloat(lng) : null,
       currencyId: validatedCurrencyId,
-      cooldown: cooldown ? parseInt(cooldown, 10) : 30,
+      cooldown: cooldown ? parseInt(cooldown, 10) : 60,
       fullDayHours: fullDayHours ? parseInt(fullDayHours, 10) : 8,
       fullDayDiscountPrice: fullDayDiscountPrice ? parseFloat(fullDayDiscountPrice) : 0,
       minimumHours: minimumHours ? parseInt(minimumHours, 10) : 1,
@@ -293,7 +293,7 @@ const updatePlace = async (req, res) => {
       place.currencyId = null;
     }
     
-    place.cooldown = cooldown ? parseInt(cooldown, 10) : 30;
+    place.cooldown = cooldown ? parseInt(cooldown, 10) : 60;
     
     await place.save();
     res.json("ok");

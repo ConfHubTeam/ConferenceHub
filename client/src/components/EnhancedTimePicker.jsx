@@ -210,9 +210,7 @@ export default function EnhancedTimePicker({
             )}
             {placeDetail.cooldown > 0 && (
               <p>
-                <strong>Cooldown period:</strong> {placeDetail.cooldown >= 60 
-                  ? `${Math.floor(placeDetail.cooldown / 60)}h ${placeDetail.cooldown % 60 > 0 ? `${placeDetail.cooldown % 60}min` : ''}`.trim() 
-                  : `${placeDetail.cooldown} min`} required after each booking
+                <strong>Cooldown period:</strong> {Math.floor(placeDetail.cooldown / 60)} hour{Math.floor(placeDetail.cooldown / 60) !== 1 ? 's' : ''} required after each booking
               </p>
             )}
           </div>
