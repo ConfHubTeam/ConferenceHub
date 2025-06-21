@@ -185,7 +185,16 @@ export default function UsersPage() {
       setFilteredUsers(data);
     } catch (error) {
       console.error("Error updating user:", error);
-      notify(error.response?.data?.error || "Error updating user", "error");
+      
+      // Handle specific error codes
+      const errorData = error.response?.data;
+      if (errorData?.code === 'PHONE_NUMBER_EXISTS') {
+        notify("A user with this phone number already exists", "error");
+      } else if (errorData?.code === 'INVALID_PHONE_FORMAT') {
+        notify("Please enter a valid phone number in international format", "error");
+      } else {
+        notify(errorData?.error || "Error updating user", "error");
+      }
     } finally {
       setIsSavingEdit(false);
     }

@@ -72,23 +72,30 @@ const updateProfile = async (req, res) => {
 
     // Validate phone number format if provided
     if (phoneNumber && phoneNumber.trim() !== '') {
-      const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-      if (!phoneRegex.test(phoneNumber.replace(/[\s\-\(\)]/g, ''))) {
-        return res.status(400).json({ error: 'Please enter a valid phone number' });
+      // Enhanced phone validation - should be in E.164 format (starting with +)
+      const phoneRegex = /^\+[1-9]\d{1,14}$/;
+      const cleanPhone = phoneNumber.trim();
+      
+      if (!phoneRegex.test(cleanPhone)) {
+        return res.status(400).json({ 
+          error: 'Please enter a valid phone number in international format (e.g., +998901234567)',
+          code: 'INVALID_PHONE_FORMAT'
+        });
       }
-    }
 
-    // Check if phone number is already taken by another user
-    if (phoneNumber && phoneNumber.trim() !== '') {
+      // Check if phone number is already taken by another user
       const existingUser = await User.findOne({
         where: {
-          phoneNumber: phoneNumber.trim(),
+          phoneNumber: cleanPhone,
           id: { [require('sequelize').Op.ne]: userData.id }
         }
       });
 
       if (existingUser) {
-        return res.status(400).json({ error: 'Phone number is already in use by another user' });
+        return res.status(400).json({ 
+          error: 'A user with this phone number already exists',
+          code: 'PHONE_NUMBER_EXISTS'
+        });
       }
     }
 
@@ -382,9 +389,15 @@ const updateUser = async (req, res) => {
 
     // Validate phone number format if provided
     if (phoneNumber && phoneNumber.trim() !== '') {
-      const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-      if (!phoneRegex.test(phoneNumber.replace(/[\s\-\(\)]/g, ''))) {
-        return res.status(400).json({ error: 'Please enter a valid phone number' });
+      // Enhanced phone validation - should be in E.164 format (starting with +)
+      const phoneRegex = /^\+[1-9]\d{1,14}$/;
+      const cleanPhone = phoneNumber.trim();
+      
+      if (!phoneRegex.test(cleanPhone)) {
+        return res.status(400).json({ 
+          error: 'Please enter a valid phone number in international format (e.g., +998901234567)',
+          code: 'INVALID_PHONE_FORMAT'
+        });
       }
     }
 
@@ -396,15 +409,20 @@ const updateUser = async (req, res) => {
 
     // Check if phone number is already taken by another user
     if (phoneNumber && phoneNumber.trim() !== '') {
+      const cleanPhone = phoneNumber.trim();
+      
       const existingUser = await User.findOne({
         where: {
-          phoneNumber: phoneNumber.trim(),
+          phoneNumber: cleanPhone,
           id: { [require('sequelize').Op.ne]: id }
         }
       });
 
       if (existingUser) {
-        return res.status(400).json({ error: 'Phone number is already in use by another user' });
+        return res.status(400).json({ 
+          error: 'A user with this phone number already exists',
+          code: 'PHONE_NUMBER_EXISTS'
+        });
       }
     }
 

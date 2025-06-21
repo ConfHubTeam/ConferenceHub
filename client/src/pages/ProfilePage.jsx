@@ -6,6 +6,7 @@ import api from "../utils/api";
 import AccountNav from "../components/AccountNav";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import CustomPhoneInput from "../components/CustomPhoneInput";
+import { isValidPhoneNumber, isPossiblePhoneNumber } from "react-phone-number-input";
 
 export default function ProfilePage({}) {
   const [redirect, setRedirect] = useState(); // control the redirect after logout
@@ -132,6 +133,23 @@ export default function ProfilePage({}) {
       return;
     }
     
+    // Validate phone number if provided
+    if (editPhoneNumber && editPhoneNumber.trim()) {
+      try {
+        if (!isPossiblePhoneNumber(editPhoneNumber)) {
+          notify("Please enter a valid phone number", "error");
+          return;
+        }
+        if (!isValidPhoneNumber(editPhoneNumber)) {
+          notify("Please enter a valid phone number for the selected country", "error");
+          return;
+        }
+      } catch (error) {
+        notify("Please enter a valid phone number", "error");
+        return;
+      }
+    }
+    
     setIsSaving(true);
     try {
       const response = await api.put('/users/profile', {
@@ -144,7 +162,14 @@ export default function ProfilePage({}) {
       setIsEditing(false);
       notify(response.data.message, "success");
     } catch (error) {
-      notify(error.response?.data?.error || "Error updating profile", "error");
+      const errorData = error.response?.data;
+      if (errorData?.code === 'PHONE_NUMBER_EXISTS') {
+        notify("A user with this phone number already exists", "error");
+      } else if (errorData?.code === 'INVALID_PHONE_FORMAT') {
+        notify("Please enter a valid phone number in international format", "error");
+      } else {
+        notify(errorData?.error || "Error updating profile", "error");
+      }
     } finally {
       setIsSaving(false);
     }
@@ -378,6 +403,9 @@ export default function ProfilePage({}) {
                           placeholder="Enter your phone number"
                           disabled={isSaving}
                         />
+                        <p className="text-xs text-gray-500">
+                          Enter phone number in international format (e.g., +998901234567). Leave empty to remove phone number.
+                        </p>
                       </div>
                       
                       {user.email && !user.email.includes("telegram_") && (
