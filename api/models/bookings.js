@@ -41,7 +41,6 @@ const Booking = sequelize.define('Booking', {
   uniqueRequestId: {
     type: DataTypes.STRING,
     allowNull: true,
-    unique: true,
     comment: 'Unique identifier for booking requests visible to hosts'
   },
   notificationSent: {
