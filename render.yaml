@@ -21,7 +21,7 @@ services:
       find client/dist -name "*.js" -o -name "*.css" | head -10
     startCommand: NODE_ENV=production node start.js
     plan: free
-    region: oregon
+    region: singapore
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
