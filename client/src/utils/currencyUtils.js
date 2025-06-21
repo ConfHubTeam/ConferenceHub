@@ -276,3 +276,39 @@ export async function formatPrice(price, currency, selectedCurrency = null) {
     }).format(price);
   }
 }
+
+/**
+ * Formats UZS currency in shorter format for map markers
+ * @param {number} value - The numeric value to format
+ * @returns {string} - Shortened formatted price (e.g., "1.2 mln so'm", "50 mln so'm", "2.5 ming so'm", "1 mlrd so'm")
+ */
+export function formatUZSShort(value) {
+  if (value === null || value === undefined || value === "") return "";
+  
+  const num = parseFloat(value);
+  if (isNaN(num)) return "";
+  
+  // Handle different ranges for UZS
+  if (num >= 1000000000) {
+    // Billion range - use "mlrd" (milliard)
+    const formatted = (num / 1000000000).toFixed(1);
+    // Remove trailing .0
+    const cleanFormatted = formatted.endsWith('.0') ? formatted.slice(0, -2) : formatted;
+    return `${cleanFormatted} mlrd so'm`;
+  } else if (num >= 1000000) {
+    // Million range - use "mln" 
+    const formatted = (num / 1000000).toFixed(1);
+    // Remove trailing .0
+    const cleanFormatted = formatted.endsWith('.0') ? formatted.slice(0, -2) : formatted;
+    return `${cleanFormatted} mln so'm`;
+  } else if (num >= 1000) {
+    // Thousand range - use "ming"
+    const formatted = (num / 1000).toFixed(1);
+    // Remove trailing .0
+    const cleanFormatted = formatted.endsWith('.0') ? formatted.slice(0, -2) : formatted;
+    return `${cleanFormatted} mng so'm`;
+  } else {
+    // Less than 1000 - show as is
+    return `${Math.round(num)} so'm`;
+  }
+}
