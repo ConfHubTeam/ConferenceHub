@@ -41,7 +41,6 @@ export default function DashboardPage() {
       <div>
         <AccountNav />
         <div className="px-8 py-4">
-          <h1 className="text-2xl font-bold mb-4">Agent Dashboard</h1>
           <div className="animate-pulse space-y-4">
             <div className="h-48 bg-gray-200 rounded"></div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -72,8 +71,6 @@ export default function DashboardPage() {
       <div className="px-8">
         {/* Notification Banner */}
         <BookingNotificationBanner />
-        
-        <h1 className="text-2xl font-bold mb-4">Agent Dashboard</h1>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Total Users Stat Card */}

@@ -256,7 +256,6 @@ export default function UsersPage() {
       <div>
         <AccountNav />
         <div className="px-8 py-4">
-          <h1 className="text-2xl font-bold mb-4">Users Management</h1>
           <div className="animate-pulse space-y-4">
             <div className="h-10 bg-gray-200 rounded w-full"></div>
             <div className="h-96 bg-gray-200 rounded"></div>
@@ -270,8 +269,7 @@ export default function UsersPage() {
     <div>
       <AccountNav />
       <div className="px-8">
-        <h1 className="text-2xl font-bold mb-4">Users Management</h1>
-        
+       
         {/* Search and filter controls */}
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
           <div className="flex flex-col lg:flex-row gap-4 items-center justify-between mb-4">
