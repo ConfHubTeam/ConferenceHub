@@ -202,16 +202,7 @@ export default function HostBookingManagementPage() {
     <div>
       <AccountNav />
       <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
-        {/* Page header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Booking Request Management
-          </h1>
-          <p className="text-gray-600">
-            Manage booking requests for your conference rooms efficiently
-          </p>
-        </div>
-
+        
         {/* Summary cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">

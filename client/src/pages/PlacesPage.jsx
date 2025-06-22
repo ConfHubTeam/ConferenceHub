@@ -98,14 +98,6 @@ export default function PlacesPage() {
         {/* Page header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                My Conference Rooms
-              </h1>
-              <p className="text-gray-600">
-                Manage your conference room listings and track performance
-              </p>
-            </div>
             
             {/* Add new room button */}
             {user && user.userType === 'host' && (
