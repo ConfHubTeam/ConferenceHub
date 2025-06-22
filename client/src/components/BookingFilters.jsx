@@ -101,12 +101,113 @@ export default function BookingFilters({
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-      <div className="flex flex-col lg:flex-row gap-4">
-        {/* Agent User Filter */}
+    <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 lg:p-6 mb-4 sm:mb-6">
+      <div className="flex flex-col gap-3 sm:gap-4">
+        {/* Mobile: Search Bar First (Most Important) - Hidden on desktop */}
+        <div className="order-1 lg:hidden">
+          <label htmlFor="search" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+            Search bookings
+          </label>
+          <input
+            id="search"
+            type="text"
+            placeholder={
+              user?.userType === "agent" 
+                ? "Search by request ID, host, client, or property..."
+                : user?.userType === "host"
+                ? "Search by request ID or property..."
+                : "Search by property name..."
+            }
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 text-sm"
+          />
+        </div>
+
+        {/* Desktop: Search, Status, and Sort in Row | Mobile: Status and Sort in Row */}
+        <div className="order-2 lg:order-1 grid grid-cols-2 gap-2 sm:gap-3 lg:flex lg:gap-4">
+          {/* Search - Hidden on mobile, shown on desktop */}
+          <div className="hidden lg:block lg:flex-1">
+            <label htmlFor="search-desktop" className="block text-sm font-medium text-gray-700 mb-2">
+              Search bookings
+            </label>
+            <input
+              id="search-desktop"
+              type="text"
+              placeholder={
+                user?.userType === "agent" 
+                  ? "Search by request ID, host, client, or property..."
+                  : user?.userType === "host"
+                  ? "Search by request ID or property..."
+                  : "Search by property name..."
+              }
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 text-sm"
+            />
+          </div>
+
+          {/* Status Filter */}
+          <div className="lg:w-48">
+            <label htmlFor="status" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+              Status
+            </label>
+            <select
+              id="status"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full px-2 sm:px-3 lg:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 bg-white cursor-pointer text-xs sm:text-sm appearance-none"
+              style={{
+                backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "right 8px center",
+                backgroundSize: "12px"
+              }}
+            >
+              <option value="pending">Pending ({stats.pending})</option>
+              <option value="all">All ({stats.total})</option>
+              <option value="approved">
+                {user?.userType === "client" ? "Confirmed" : "Approved"} ({stats.approved})
+              </option>
+              <option value="rejected">Rejected ({stats.rejected})</option>
+            </select>
+          </div>
+
+          {/* Sort Options */}
+          <div className="lg:w-48">
+            <label htmlFor="sort" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+              Sort by
+            </label>
+            <select
+              id="sort"
+              value={`${sortBy}-${sortOrder}`}
+              onChange={(e) => {
+                const [field, order] = e.target.value.split("-");
+                setSortBy(field);
+                setSortOrder(order);
+              }}
+              className="w-full px-2 sm:px-3 lg:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 bg-white cursor-pointer text-xs sm:text-sm appearance-none"
+              style={{
+                backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "right 8px center",
+                backgroundSize: "12px"
+              }}
+            >
+              <option value="createdAt-desc">Newest first</option>
+              <option value="createdAt-asc">Oldest first</option>
+              <option value="checkInDate-asc">Check-in date</option>
+              <option value="totalPrice-desc">Highest price</option>
+              <option value="totalPrice-asc">Lowest price</option>
+              <option value="place-asc">Property name</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Agent User Filter - Last (Least Common) */}
         {user?.userType === "agent" && (
-          <div className="lg:w-64 user-filter-container">
-            <label htmlFor="userFilter" className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="order-3 lg:order-2 user-filter-container">
+            <label htmlFor="userFilter" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
               Filter by User
             </label>
             <div className="relative">
@@ -117,7 +218,7 @@ export default function BookingFilters({
                 onChange={(e) => setUserSearchTerm(e.target.value)}
                 onFocus={() => setShowUserDropdown(true)}
                 disabled={loadingUsers}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               />
               {selectedUserId && (
                 <button
@@ -136,14 +237,14 @@ export default function BookingFilters({
               
               {/* User Dropdown */}
               {showUserDropdown && !loadingUsers && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-48 sm:max-h-60 overflow-y-auto">
                   <button
                     onClick={() => {
                       handleUserFilterChange("");
                       setUserSearchTerm("");
                       setShowUserDropdown(false);
                     }}
-                    className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 text-sm"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 text-left hover:bg-gray-50 border-b border-gray-100 text-sm"
                   >
                     <span className="font-medium">All Users</span>
                     <span className="text-gray-500 ml-2">({allUsers.length} total)</span>
@@ -167,7 +268,7 @@ export default function BookingFilters({
                           setUserSearchTerm("");
                           setShowUserDropdown(false);
                         }}
-                        className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 text-sm"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 text-sm"
                       >
                         <div className="flex items-center justify-between">
                           <div>
@@ -194,90 +295,13 @@ export default function BookingFilters({
                   )}
                 </div>
               )}
+              
+              {loadingUsers && (
+                <p className="mt-2 text-xs text-gray-500">Loading users...</p>
+              )}
             </div>
-            
-            {loadingUsers && (
-              <p className="mt-2 text-xs text-gray-500">Loading users...</p>
-            )}
           </div>
         )}
-
-        {/* Search */}
-        <div className="flex-1">
-          <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
-            Search bookings
-          </label>
-          <input
-            id="search"
-            type="text"
-            placeholder={
-              user?.userType === "agent" 
-                ? "Search by request ID, host name, client name, or property name..."
-                : user?.userType === "host"
-                ? "Search by request ID, property name, or address..."
-                : "Search by property name or address..."
-            }
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 text-sm"
-          />
-        </div>
-
-        {/* Status Filter */}
-        <div className="lg:w-64">
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
-            Status
-          </label>
-          <select
-            id="status"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 bg-white cursor-pointer text-sm appearance-none"
-            style={{
-              backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
-              backgroundRepeat: "no-repeat",
-              backgroundPosition: "right 12px center",
-              backgroundSize: "16px"
-            }}
-          >
-            <option value="pending">Pending ({stats.pending})</option>
-            <option value="all">All ({stats.total})</option>
-            <option value="approved">
-              {user?.userType === "client" ? "Confirmed" : "Approved"} ({stats.approved})
-            </option>
-            <option value="rejected">Rejected ({stats.rejected})</option>
-          </select>
-        </div>
-
-        {/* Sort Options */}
-        <div className="lg:w-64">
-          <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-2">
-            Sort by
-          </label>
-          <select
-            id="sort"
-            value={`${sortBy}-${sortOrder}`}
-            onChange={(e) => {
-              const [field, order] = e.target.value.split("-");
-              setSortBy(field);
-              setSortOrder(order);
-            }}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 bg-white cursor-pointer text-sm appearance-none"
-            style={{
-              backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
-              backgroundRepeat: "no-repeat",
-              backgroundPosition: "right 12px center",
-              backgroundSize: "16px"
-            }}
-          >
-            <option value="createdAt-desc">Newest first</option>
-            <option value="createdAt-asc">Oldest first</option>
-            <option value="checkInDate-asc">Check-in date</option>
-            <option value="totalPrice-desc">Highest price</option>
-            <option value="totalPrice-asc">Lowest price</option>
-            <option value="place-asc">Property name</option>
-          </select>
-        </div>
       </div>
       
       {/* Active Filters */}

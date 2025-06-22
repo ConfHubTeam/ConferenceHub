@@ -203,7 +203,6 @@ export default function AllPlacesPage() {
       <div>
         <AccountNav />
         <div className="px-8 py-4">
-          <h1 className="text-2xl font-bold mb-4">All Conference Rooms</h1>
           <div className="animate-pulse space-y-4">
             <div className="h-16 bg-gray-200 rounded-lg mb-6"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -221,10 +220,6 @@ export default function AllPlacesPage() {
     <div>
       <AccountNav />
       <div className="px-8">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-2">All Conference Rooms</h1>
-          <p className="text-gray-600">Manage and monitor all conference room listings across the platform</p>
-        </div>
         
         {/* Filters and controls */}
         <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">

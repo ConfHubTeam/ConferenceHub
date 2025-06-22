@@ -276,20 +276,6 @@ export default function BookingsPage() {
         {/* Agent view - Production-level booking management */}
         {user?.userType === 'agent' && (
           <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
-            {/* Page header */}
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {selectedUserId ? 'User Booking Management' : 'All Booking Management'}
-              </h1>
-              <p className="text-gray-600">
-                {selectedUserId ? (
-                  `Manage bookings for selected user (ID: ${selectedUserId})`
-                ) : (
-                  'Manage all booking requests across the system'
-                )}
-              </p>
-            </div>
-
             {/* Summary cards */}
             <BookingStatsCards stats={stats} userType={user?.userType} />
 
@@ -387,15 +373,6 @@ export default function BookingsPage() {
         {/* Host view - Production-level booking request management */}
         {user?.userType === 'host' && (
           <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
-            {/* Page header */}
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Booking Request Management
-              </h1>
-              <p className="text-gray-600">
-                Manage booking requests for your conference rooms efficiently
-              </p>
-            </div>
 
             {/* Summary cards */}
             <BookingStatsCards stats={stats} userType={user?.userType} />
@@ -476,15 +453,6 @@ export default function BookingsPage() {
         {/* Client view */}
         {user?.userType === 'client' && (
           <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
-            {/* Page header */}
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                My Conference Room Bookings
-              </h1>
-              <p className="text-gray-600">
-                Manage and track your booking requests
-              </p>
-            </div>
 
             {/* Summary cards */}
             <BookingStatsCards stats={stats} userType={user?.userType} />
