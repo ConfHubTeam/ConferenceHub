@@ -4,15 +4,18 @@ import api from "../utils/api";
 
 export default function PhotoUploader({ addedPhotos, setAddedPhotos }) {
   const [uploadError, setUploadError] = useState("");
-  const MAX_PHOTOS = 4; // Set maximum number of photos to 4
+  const [isUploading, setIsUploading] = useState(false);
+  const MAX_PHOTOS = 6; // Set maximum number of photos to 4
 
   async function uploadPhoto(event) {
     setUploadError("");
+    setIsUploading(true);
     const files = event.target.files;
 
     // Check if maximum photos reached
     if (addedPhotos.length + files.length > MAX_PHOTOS) {
       setUploadError(`Maximum ${MAX_PHOTOS} photos allowed. You can add ${MAX_PHOTOS - addedPhotos.length} more.`);
+      setIsUploading(false);
       return;
     }
 
@@ -31,6 +34,8 @@ export default function PhotoUploader({ addedPhotos, setAddedPhotos }) {
       });
     } catch (error) {
       setUploadError("Upload failed, please try again later.");
+    } finally {
+      setIsUploading(false);
     }
   }
 
@@ -54,6 +59,7 @@ export default function PhotoUploader({ addedPhotos, setAddedPhotos }) {
       
       <div className="mt-2 mb-2 text-sm text-gray-600">
         <p>{addedPhotos.length}/{MAX_PHOTOS} photos uploaded. {MAX_PHOTOS - addedPhotos.length} remaining.</p>
+        {isUploading}
       </div>
 
       <div className="gap-2 mt-2 grid grid-cols-2 md:grid-cols-4">
@@ -127,29 +133,41 @@ export default function PhotoUploader({ addedPhotos, setAddedPhotos }) {
           ))}
         {/* Only show upload button if less than MAX_PHOTOS */}
         {addedPhotos.length < MAX_PHOTOS && (
-          <label className="h-32 flex items-center gap-1 justify-center border rounded-xl p-8 text-xl text-gray-700 cursor-pointer">
+          <label className={`h-32 flex items-center gap-1 justify-center border rounded-xl p-8 text-xl text-gray-700 ${
+            isUploading ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-gray-50'
+          }`}>
             <input
               type="file"
               multiple
               className="hidden"
               onChange={uploadPhoto}
               accept="image/*"
+              disabled={isUploading}
             />
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="w-6 h-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"
-              />
-            </svg>
-            <span>Upload</span>
+            {isUploading ? (
+              <>
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-600"></div>
+                <span>Uploading...</span>
+              </>
+            ) : (
+              <>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"
+                  />
+                </svg>
+                <span>Upload</span>
+              </>
+            )}
           </label>
         )}
       </div>
