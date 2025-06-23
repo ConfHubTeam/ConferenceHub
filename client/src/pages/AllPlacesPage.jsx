@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import AccountNav from "../components/AccountNav";
 import api from "../utils/api";
 import { UserContext } from "../components/UserContext";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate, Link } from "react-router-dom";
 import CloudinaryImage from "../components/CloudinaryImage";
 import PriceDisplay from "../components/PriceDisplay";
 import Pagination from "../components/Pagination";
@@ -220,6 +220,36 @@ export default function AllPlacesPage() {
     <div>
       <AccountNav />
       <div className="px-8">
+        
+        {/* Page header with Create Place button for agents */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between">
+            
+            {/* Create Place button for agents */}
+            {user && user.userType === 'agent' && (
+              <Link
+                className="inline-flex items-center gap-2 bg-primary text-white py-3 px-6 rounded-lg hover:bg-primary-dark transition-colors font-medium"
+                to={"/account/places/new"}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-5 h-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 4.5v15m7.5-7.5h-15"
+                  />
+                </svg>
+                Create Place
+              </Link>
+            )}
+          </div>
+        </div>
         
         {/* Filters and controls */}
         <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
