@@ -14,6 +14,7 @@ import { drawMarkerShape, drawPriceText } from "../utils/canvasUtils";
 import { MarkerClusterer } from "@googlemaps/markerclusterer";
 import { setMarkerClusterer, clearMarkerClusterer } from "../utils/markerClustererRef";
 import { getClusterOptions } from "../utils/clusterRenderer";
+import { useMapTouchHandler } from "../hooks/useMapTouchHandler";
 
 // Custom styles to hide the InfoWindow close button and arrow
 const infoWindowStyles = `
@@ -67,6 +68,9 @@ export default function MapView({ places, disableInfoWindow = false }) {
   const markersRef = useRef([]);
   const isUpdatingMarkersRef = useRef(false);
   const { selectedCurrency } = useCurrency();
+  
+  // Use the custom touch handler hook
+  const { mapContainerRef } = useMapTouchHandler();
   
   // Create a custom price marker icon with current currency
   const createPriceMarkerIcon = useCallback(async (price, currency, size = "medium") => {
@@ -443,7 +447,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
   }
 
   return (
-    <div className="h-full">
+    <div className="h-full map-container" ref={mapContainerRef}>
       <style>{infoWindowStyles}</style>
       <GoogleMap
         mapContainerStyle={containerStyle}
@@ -459,7 +463,23 @@ export default function MapView({ places, disableInfoWindow = false }) {
           fullscreenControl: false,
           mapTypeControl: false,
           streetViewControl: false,
-          zoomControl: false // Removed zoom control
+          zoomControl: false, // Removed zoom control
+          gestureHandling: 'greedy', // Allow one-finger panning and two-finger zooming
+          clickableIcons: false, // Prevent clicks on default POI icons
+          keyboardShortcuts: false, // Disable keyboard shortcuts
+          disableDoubleClickZoom: false, // Keep double-click zoom for desktop
+          scrollwheel: true, // Enable scroll wheel zoom on desktop
+          draggable: true, // Enable map dragging
+          panControl: false, // Disable pan control
+          rotateControl: false, // Disable rotate control
+          scaleControl: false, // Disable scale control
+          styles: [
+            {
+              featureType: "poi",
+              elementType: "labels",
+              stylers: [{ visibility: "off" }] // Hide POI labels to reduce clutter
+            }
+          ]
         }}
       >
         {/* Info Window for selected place - only show if not disabled */}

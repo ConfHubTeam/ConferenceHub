@@ -1,4 +1,5 @@
 import "./App.css";
+import "./styles/touch-actions.css";
 import "react-phone-number-input/style.css";
 import { Route, Routes } from "react-router-dom";
 import IndexPage from "./pages/IndexPage.jsx";
@@ -21,8 +22,18 @@ import HostBookingManagementPage from "./pages/HostBookingManagementPage";
 import TelegramAuth from "./components/TelegramAuth";
 import TelegramCallbackHandler from "./components/TelegramCallbackHandler";
 import LoginSuccessPage from "./pages/LoginSuccessPage";
+import { usePreventPageZoom } from "./hooks/useMapTouchHandler";
+import { useEffect } from "react";
+import { initIOSSafariFixes } from "./utils/iosUtils";
 
 function App() {
+  // Apply global page zoom prevention
+  usePreventPageZoom();
+
+  // Initialize iOS Safari fixes
+  useEffect(() => {
+    initIOSSafariFixes();
+  }, []);
 
   return (
     <UserContextProvider>

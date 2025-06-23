@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
+import { useMapTouchHandler } from "../hooks/useMapTouchHandler";
 
 // Get Google Maps API key from environment variables with fallback
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
@@ -25,6 +26,9 @@ export default function MapPicker({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
     libraries: libraries
   });
+
+  // Use the custom touch handler hook
+  const { mapContainerRef } = useMapTouchHandler();
 
   const [map, setMap] = useState(null);
   const [marker, setMarker] = useState(null);
@@ -570,11 +574,12 @@ export default function MapPicker({
 
   return (
     <div 
-      className={`${
+      className={`map-container ${
         isFullScreen 
           ? "fixed inset-0 z-50 bg-white" 
           : "rounded-lg overflow-hidden border border-gray-300"
       }`}
+      ref={mapContainerRef}
     >
       {isFullScreen && (
         <div className="absolute top-0 left-0 right-0 z-50 bg-white flex justify-between items-center p-4 shadow-md">
@@ -613,7 +618,16 @@ export default function MapPicker({
             mapTypeIds: ['roadmap', 'satellite']
           },
           streetViewControl: false, // Removed street view control (human icon)
-          zoomControl: false // Removed zoom control
+          zoomControl: false, // Removed zoom control
+          gestureHandling: 'greedy', // Allow one-finger panning and two-finger zooming
+          clickableIcons: false, // Prevent clicks on default POI icons
+          keyboardShortcuts: false, // Disable keyboard shortcuts
+          disableDoubleClickZoom: false, // Keep double-click zoom for desktop
+          scrollwheel: true, // Enable scroll wheel zoom on desktop
+          draggable: true, // Enable map dragging
+          panControl: false, // Disable pan control
+          rotateControl: false, // Disable rotate control
+          scaleControl: false // Disable scale control
         }}
       />
 
