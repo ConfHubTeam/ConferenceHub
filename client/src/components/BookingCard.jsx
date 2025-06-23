@@ -1,13 +1,31 @@
-import { differenceInCalendarDays } from "date-fns";
+import { differenceInCalendarDays, parseISO } from "date-fns";
 import DateDuration from "./DateDuration";
 import PriceDisplay from "./PriceDisplay";
 import { useContext, useState } from "react";
 import { UserContext } from "./UserContext";
 import { useNotification } from "./NotificationContext";
 import ConfirmationModal from "./ConfirmationModal";
+import PriorityIndicator from "./PriorityIndicator";
 import api from "../utils/api";
 
-export default function BookingCard({bookingDetail, onBookingUpdate}) {
+// Helper function to safely parse date strings without timezone issues
+const parseDateSafely = (dateString) => {
+  if (!dateString) return new Date();
+  
+  // If it's already a Date object, return as is
+  if (dateString instanceof Date) return dateString;
+  
+  // If it's a simple date string like "2024-12-25", parse it as local date
+  if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    const [year, month, day] = dateString.split('-').map(Number);
+    return new Date(year, month - 1, day); // month is 0-indexed
+  }
+  
+  // For ISO strings with time, use parseISO from date-fns
+  return parseISO(dateString);
+};
+
+export default function BookingCard({bookingDetail, onBookingUpdate, competingBookings = []}) {
   const { user } = useContext(UserContext);
   const { notify } = useNotification();
   const [isUpdating, setIsUpdating] = useState(false);
@@ -81,8 +99,14 @@ export default function BookingCard({bookingDetail, onBookingUpdate}) {
           {/* Status badge */}
           <div className="flex justify-between items-start mb-4">
             <h2 className="text-xl font-semibold">Booking Information</h2>
-            <div className={`px-3 py-1 rounded-full border ${getStatusColor(bookingDetail.status)}`}>
-              {bookingDetail.status.charAt(0).toUpperCase() + bookingDetail.status.slice(1)}
+            <div className="flex items-center gap-2">
+              <PriorityIndicator 
+                currentBooking={bookingDetail} 
+                competingBookings={competingBookings} 
+              />
+              <div className={`px-3 py-1 rounded-full border ${getStatusColor(bookingDetail.status)}`}>
+                {bookingDetail.status.charAt(0).toUpperCase() + bookingDetail.status.slice(1)}
+              </div>
             </div>
           </div>
 
@@ -111,8 +135,8 @@ export default function BookingCard({bookingDetail, onBookingUpdate}) {
                     />
                   </svg>
                   {differenceInCalendarDays(
-                    new Date(bookingDetail.checkOutDate),
-                    new Date(bookingDetail.checkInDate)
+                    parseDateSafely(bookingDetail.checkOutDate),
+                    parseDateSafely(bookingDetail.checkInDate)
                   )}{" "}
                   nights:
                 </div>

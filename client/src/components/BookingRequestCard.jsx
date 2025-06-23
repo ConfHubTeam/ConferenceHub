@@ -4,8 +4,10 @@ import { useNotification } from "./NotificationContext";
 import { UserContext } from "./UserContext";
 import PriceDisplay from "./PriceDisplay";
 import ConfirmationModal from "./ConfirmationModal";
+import PriorityIndicator from "./PriorityIndicator";
+import { formatBookingDates } from "../utils/dateFormatting";
 import api from "../utils/api";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 /**
  * BookingRequestCard Component
@@ -13,7 +15,7 @@ import { format } from "date-fns";
  * A compact, production-level booking request card for host and client management
  * Shows only essential information with request ID (not client details for hosts)
  */
-export default function BookingRequestCard({ booking, onBookingUpdate }) {
+export default function BookingRequestCard({ booking, onBookingUpdate, competingBookings = [] }) {
   const { user } = useContext(UserContext);
   const { notify } = useNotification();
   const [isUpdating, setIsUpdating] = useState(false);
@@ -53,12 +55,19 @@ export default function BookingRequestCard({ booking, onBookingUpdate }) {
     setIsUpdating(true);
     try {
       const { data } = await api.put(`/bookings/${booking.id}`, { status: modalConfig.status });
-      onBookingUpdate(data.booking);
       
-      const successMessage = user?.userType === 'client'
-        ? `Booking ${modalConfig.action}led successfully`
-        : `Booking ${modalConfig.action}d successfully`;
-      notify(successMessage, "success");
+      // Handle client cancellation (booking deletion)
+      if (data.deleted) {
+        notify("Booking cancelled successfully", "success");
+        onBookingUpdate(null, booking.id); // Pass null to indicate deletion
+      } else {
+        onBookingUpdate(data.booking);
+        const successMessage = user?.userType === 'client'
+          ? `Booking ${modalConfig.action}led successfully`
+          : `Booking ${modalConfig.action}d successfully`;
+        notify(successMessage, "success");
+      }
+      
       setShowModal(false);
     } catch (error) {
       notify(`Error: ${error.response?.data?.error || error.message}`, "error");
@@ -72,7 +81,7 @@ export default function BookingRequestCard({ booking, onBookingUpdate }) {
     if (!timeSlots || timeSlots.length === 0) return "Full day";
     
     return timeSlots.map(slot => {
-      const date = format(new Date(slot.date), "MMM d");
+      const date = format(parseDateSafely(slot.date), "MMM d");
       return `${date}: ${slot.startTime}-${slot.endTime}`;
     }).join(", ");
   };
@@ -91,6 +100,23 @@ export default function BookingRequestCard({ booking, onBookingUpdate }) {
     }
   };
 
+  // Helper function to safely parse date strings without timezone issues
+  const parseDateSafely = (dateString) => {
+    if (!dateString) return new Date();
+    
+    // If it's already a Date object, return as is
+    if (dateString instanceof Date) return dateString;
+    
+    // If it's a simple date string like "2024-12-25", parse it as local date
+    if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      const [year, month, day] = dateString.split('-').map(Number);
+      return new Date(year, month - 1, day); // month is 0-indexed
+    }
+    
+    // For ISO strings with time, use parseISO from date-fns
+    return parseISO(dateString);
+  };
+
   return (
     <>
       <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
@@ -100,9 +126,15 @@ export default function BookingRequestCard({ booking, onBookingUpdate }) {
           <span className="font-mono text-sm font-semibold text-gray-900">
             {booking.uniqueRequestId || `REQ-${booking.id}`}
           </span>
-          <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusBadge(booking.status)}`}>
-            {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-          </span>
+          <div className="flex items-center gap-2">
+            <PriorityIndicator 
+              currentBooking={booking} 
+              competingBookings={competingBookings} 
+            />
+            <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusBadge(booking.status)}`}>
+              {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+            </span>
+          </div>
         </div>
         <span className="text-xs text-gray-500">
           {format(new Date(booking.createdAt), "MMM d, yyyy")}
@@ -140,15 +172,17 @@ export default function BookingRequestCard({ booking, onBookingUpdate }) {
           </div>
         </div>
 
-        {/* Date range */}
-        <div className="flex items-center text-sm text-gray-600">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5a2.25 2.25 0 002.25-2.25m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5a2.25 2.25 0 012.25 2.25v7.5" />
-          </svg>
-          <span>
-            {format(new Date(booking.checkInDate), "MMM d")} - {format(new Date(booking.checkOutDate), "MMM d, yyyy")}
-          </span>
-        </div>
+        {/* Date range from time slots */}
+        {booking.timeSlots && booking.timeSlots.length > 0 && (
+          <div className="flex items-center text-sm text-gray-600 mb-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5a2.25 2.25 0 002.25-2.25m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5a2.25 2.25 0 012.25 2.25v7.5" />
+            </svg>
+            <span>
+              {formatBookingDates(booking.timeSlots)}
+            </span>
+          </div>
+        )}
 
         {/* Time slots - always visible */}
         {booking.timeSlots && booking.timeSlots.length > 0 && (
@@ -161,7 +195,7 @@ export default function BookingRequestCard({ booking, onBookingUpdate }) {
               <div className="mt-1 space-y-1">
                 {booking.timeSlots.map((slot, index) => (
                   <div key={index} className="text-xs bg-blue-50 border border-blue-200 rounded px-2 py-1 inline-block mr-1 mb-1">
-                    {format(new Date(slot.date), "MMM d")}: {slot.startTime}-{slot.endTime}
+                    {format(parseDateSafely(slot.date), "MMM d")}: {slot.startTime}-{slot.endTime}
                   </div>
                 ))}
               </div>
