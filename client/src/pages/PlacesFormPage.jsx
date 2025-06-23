@@ -9,6 +9,7 @@ import { validateFormWithScrolling, scrollToAndHighlightField } from "../utils/f
 import AddressSection from "../components/AddressSection";
 import AvailabilitySection from "../components/AvailabilitySection";
 import YouTubeSection, { extractYouTubeVideoId } from "../components/YouTubeSection";
+import HostSelector from "../components/HostSelector";
 
 export default function PlacesFormPage() {
   const { id } = useParams();
@@ -57,10 +58,13 @@ export default function PlacesFormPage() {
   const [squareMeters, setSquareMeters] = useState(null);
   const [isHotel, setIsHotel] = useState(false);
 
+  // Agent-specific state for selecting host
+  const [selectedHost, setSelectedHost] = useState(null);
+
   // Track the source of coordinate updates to prevent circular geocoding
   const coordinateUpdateSource = useRef('address'); // 'address' or 'map'
 
-  // Redirect if user is not a host
+  // Redirect if user is not a host or agent
   if (user && user.userType !== 'host' && user.userType !== 'agent') {
     return <Navigate to="/" />;
   }
@@ -328,6 +332,12 @@ export default function PlacesFormPage() {
 
     // Define validation rules with field IDs for scrolling
     const validations = [
+      // Agent must select a host
+      ...(user?.userType === 'agent' ? [{
+        isValid: selectedHost && selectedHost.id,
+        fieldId: "host-selector",
+        errorMessage: "Please select a host to create the place for"
+      }] : []),
       {
         isValid: title.trim(),
         fieldId: "place-title",
@@ -473,7 +483,9 @@ export default function PlacesFormPage() {
       blockedDates: blockedDates.filter(date => date !== ""), // Remove empty strings
       weekdayTimeSlots,
       squareMeters, // Include square meters
-      isHotel // Include is hotel flag
+      isHotel, // Include is hotel flag
+      // Include hostId for agents creating places on behalf of hosts
+      ...(user?.userType === 'agent' && selectedHost ? { hostId: selectedHost.id } : {})
     };
 
     try {
@@ -552,6 +564,20 @@ export default function PlacesFormPage() {
         {error && (
           <div className="bg-red-100 text-red-800 p-4 mb-4 rounded-lg">
             {error}
+          </div>
+        )}
+        
+        {/* Host Selection for Agents */}
+        {user?.userType === 'agent' && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-2">Select Host</h3>
+            <p className="text-gray-600 text-sm mb-3">
+              Choose which host you want to create this place for.
+            </p>
+            <HostSelector
+              selectedHost={selectedHost}
+              onHostSelect={setSelectedHost}
+            />
           </div>
         )}
         

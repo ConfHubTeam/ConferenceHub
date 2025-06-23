@@ -14,7 +14,7 @@ const createPlace = async (req, res) => {
     youtubeLink, lat, lng, currencyId, cooldown,
     fullDayHours, fullDayDiscountPrice, minimumHours,
     blockedWeekdays, blockedDates, weekdayTimeSlots,
-    squareMeters, isHotel
+    squareMeters, isHotel, hostId
   } = req.body;
 
   try {
@@ -28,9 +28,29 @@ const createPlace = async (req, res) => {
       return res.status(401).json({ error: "Authentication required" });
     }
     
-    // Check if user is a host
-    if (userData.userType !== 'host') {
-      return res.status(403).json({ error: "Only hosts can create conference rooms" });
+    let ownerId = userData.id;
+    
+    // Handle agent creating place for a host
+    if (userData.userType === 'agent') {
+      if (!hostId) {
+        return res.status(422).json({ error: "Agents must specify a host ID when creating places" });
+      }
+      
+      // Verify that the specified host exists and is actually a host
+      const hostUser = await User.findByPk(hostId);
+      if (!hostUser) {
+        return res.status(404).json({ error: "Specified host not found" });
+      }
+      if (hostUser.userType !== 'host') {
+        return res.status(422).json({ error: "Specified user is not a host" });
+      }
+      
+      ownerId = hostId; // Set the host as the owner
+    } else if (userData.userType === 'host') {
+      // Host creating their own place - use their ID
+      ownerId = userData.id;
+    } else {
+      return res.status(403).json({ error: "Only hosts and agents can create conference rooms" });
     }
     
     // Process photos to ensure they're stored correctly
@@ -80,7 +100,7 @@ const createPlace = async (req, res) => {
     };
     
     const processedData = {
-      ownerId: userData.id,
+      ownerId: ownerId, // Use the determined ownerId (host ID for agents, user ID for hosts)
       title, 
       address, 
       photos: processedPhotos,
