@@ -36,20 +36,21 @@ const hasTimeSlotConflict = (slot1, slot2, cooldownMinutes = 0) => {
 };
 
 /**
- * Validate booking time slots against existing bookings
+ * Validate booking time slots against existing CONFIRMED bookings only
+ * This allows multiple pending requests to compete for the same time slots
  */
 const validateBookingTimeSlots = async (timeSlots, placeId, cooldownMinutes = 0) => {
   try {
-    // Get all confirmed bookings for this place
+    // Get only CONFIRMED/PAID bookings for this place (not pending requests)
     const { Booking } = require("../models");
     const existingBookings = await Booking.findAll({
       where: {
         placeId: placeId,
-        status: 'approved'
+        status: ['approved'] // Only check against confirmed bookings, allow competing pending requests
       }
     });
     
-    // Check each proposed time slot against existing bookings
+    // Check each proposed time slot against existing CONFIRMED bookings only
     for (const proposedSlot of timeSlots) {
       for (const existingBooking of existingBookings) {
         if (!existingBooking.timeSlots) continue;
@@ -58,7 +59,7 @@ const validateBookingTimeSlots = async (timeSlots, placeId, cooldownMinutes = 0)
           if (hasTimeSlotConflict(proposedSlot, existingSlot, cooldownMinutes)) {
             return {
               isValid: false,
-              message: `Time slot ${proposedSlot.startTime}-${proposedSlot.endTime} on ${proposedSlot.date} conflicts with existing booking`,
+              message: `Time slot ${proposedSlot.startTime}-${proposedSlot.endTime} on ${proposedSlot.date} conflicts with confirmed booking`,
               conflictingSlot: proposedSlot
             };
           }
@@ -101,8 +102,57 @@ const findConflictingBookings = (approvedBooking, pendingBookings, cooldownMinut
   return conflictingBookings;
 };
 
+/**
+ * Find competing pending bookings for the same time slots
+ * Used by hosts to see competing requests for selection
+ */
+const findCompetingBookings = async (timeSlots, placeId, excludeBookingId = null) => {
+  try {
+    const { Booking } = require("../models");
+    
+    // Get all pending bookings for this place
+    const pendingBookings = await Booking.findAll({
+      where: {
+        placeId: placeId,
+        status: 'pending',
+        ...(excludeBookingId && { id: { [require("sequelize").Op.ne]: excludeBookingId } })
+      },
+      include: [
+        {
+          model: require("../models").User,
+          as: 'user',
+          attributes: ['id', 'name', 'email']
+        }
+      ]
+    });
+    
+    const competingBookings = [];
+    
+    // Find bookings that have overlapping time slots
+    for (const pendingBooking of pendingBookings) {
+      if (!pendingBooking.timeSlots) continue;
+      
+      const hasOverlap = timeSlots.some(targetSlot => 
+        pendingBooking.timeSlots.some(pendingSlot => 
+          hasTimeSlotConflict(targetSlot, pendingSlot, 0) // No cooldown for competition check
+        )
+      );
+      
+      if (hasOverlap) {
+        competingBookings.push(pendingBooking);
+      }
+    }
+    
+    return competingBookings;
+  } catch (error) {
+    console.error("Error finding competing bookings:", error);
+    return [];
+  }
+};
+
 module.exports = {
   hasTimeSlotConflict,
   validateBookingTimeSlots,
-  findConflictingBookings
+  findConflictingBookings,
+  findCompetingBookings
 };

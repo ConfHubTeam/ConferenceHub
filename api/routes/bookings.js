@@ -15,6 +15,9 @@ router.put("/:id", authenticateToken, bookingController.updateBookingStatus);
 // Get booking counts for hosts
 router.get("/counts", authenticateToken, bookingController.getBookingCounts);
 
+// Get competing bookings for the same time slots (for hosts to see competition)
+router.get("/competing", authenticateToken, bookingController.getCompetingBookings);
+
 // Check availability of time slots (no auth required)
 router.get("/availability", bookingController.checkAvailability);
 

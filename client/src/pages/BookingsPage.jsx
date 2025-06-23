@@ -13,6 +13,7 @@ import BookingStatsCards from "../components/BookingStatsCards";
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState([]);
+  const [competingBookingsMap, setCompetingBookingsMap] = useState({});
   const { user } = useContext(UserContext);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -22,9 +23,6 @@ export default function BookingsPage() {
   const navigate = useNavigate();
   const { notify } = useNotification();
   const { markAsViewed, markAllAsViewed, loadNotificationCounts } = useBookingNotifications();
-  
-  // Agent-specific state for user filtering
-  const [selectedUserId, setSelectedUserId] = useState("");
   
   // Track when user visits the page to dismiss notifications
   useEffect(() => {
@@ -51,10 +49,9 @@ export default function BookingsPage() {
     }
   }, [user, markAsViewed, statusFilter, filteredBookings]);
   
-  // Extract userId from query params if present (for agent filtering)
+  // Extract any query params if needed
   const params = new URLSearchParams(location.search);
-  const userId = params.get('userId');
-  
+
   // Shared state for pagination and sorting (used by all user types)
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
@@ -72,30 +69,23 @@ export default function BookingsPage() {
     setStatusFilter('pending');
   }, [user?.userType]);
 
-  // Set selected user ID from URL params
-  useEffect(() => {
-    if (userId && user?.userType === 'agent') {
-      setSelectedUserId(userId);
-    }
-  }, [userId, user]);
-
   // Fetch all bookings
   useEffect(() => {
     loadBookings();
-  }, [selectedUserId]);
+  }, []);
 
   // Load bookings from API
   async function loadBookings() {
     setLoading(true);
     try {
-      // Get endpoint based on if we're filtering by user
-      const endpoint = selectedUserId 
-        ? `/bookings?userId=${selectedUserId}` 
-        : "/bookings";
-        
-      const { data } = await api.get(endpoint);
+      const { data } = await api.get("/bookings");
       setBookings(data);
       setFilteredBookings(data);
+      
+      // Load competing bookings for pending requests (for hosts and agents)
+      if (user?.userType === 'host' || user?.userType === 'agent') {
+        await loadCompetingBookings(data);
+      }
       
       // Calculate stats for all user types
       calculateStats(data);
@@ -109,6 +99,31 @@ export default function BookingsPage() {
       setLoading(false);
     }
   }
+
+  // Load competing bookings for each pending booking
+  const loadCompetingBookings = async (bookingsList) => {
+    const competingData = {};
+    
+    for (const booking of bookingsList) {
+      if (booking.status === 'pending' && booking.timeSlots?.length > 0) {
+        try {
+          const response = await api.get('/bookings/competing', {
+            params: {
+              placeId: booking.placeId,
+              timeSlots: JSON.stringify(booking.timeSlots)
+            }
+          });
+          // Exclude the current booking from competitors
+          const competitors = response.data.filter(b => b.id !== booking.id);
+          competingData[booking.id] = competitors;
+        } catch (error) {
+          console.error('Error loading competing bookings:', error);
+        }
+      }
+    }
+    
+    setCompetingBookingsMap(competingData);
+  };
 
   // Calculate summary statistics for hosts
   function calculateStats(bookingData) {
@@ -208,10 +223,19 @@ export default function BookingsPage() {
   }, [searchTerm, statusFilter, bookings, user, sortBy, sortOrder]);
 
   // Handle booking updates
-  const handleBookingUpdate = (updatedBooking) => {
-    const updatedBookings = bookings.map(booking => 
-      booking.id === updatedBooking.id ? updatedBooking : booking
-    );
+  const handleBookingUpdate = (updatedBooking, deletedBookingId = null) => {
+    let updatedBookings;
+    
+    if (deletedBookingId && !updatedBooking) {
+      // Handle deletion - remove the booking from the list
+      updatedBookings = bookings.filter(booking => booking.id !== deletedBookingId);
+    } else {
+      // Handle update - replace the existing booking
+      updatedBookings = bookings.map(booking => 
+        booking.id === updatedBooking.id ? updatedBooking : booking
+      );
+    }
+    
     setBookings(updatedBookings);
     
     // Update stats for all user types
@@ -230,7 +254,6 @@ export default function BookingsPage() {
 
   // Helper function to clear all filters
   const clearAllFilters = () => {
-    setSelectedUserId("");
     setSearchTerm("");
     setStatusFilter("pending"); // Reset to default
   };
@@ -291,8 +314,6 @@ export default function BookingsPage() {
               sortOrder={sortOrder}
               setSortOrder={setSortOrder}
               stats={stats}
-              selectedUserId={selectedUserId}
-              setSelectedUserId={setSelectedUserId}
               onClearAllFilters={clearAllFilters}
             />
 
@@ -304,56 +325,40 @@ export default function BookingsPage() {
                 </svg>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No bookings found</h3>
                 <p className="text-gray-600 mb-4">
-                  {selectedUserId ? (
-                    `No bookings found for selected user.`
-                  ) : searchTerm || statusFilter !== "all" ? (
+                  {searchTerm || statusFilter !== "all" ? (
                     "Try adjusting your search or filter criteria."
                   ) : (
                     "There are no bookings in the system yet."
                   )}
                 </p>
-                {selectedUserId && (
-                  <button
-                    onClick={() => setSelectedUserId("")}
-                    className="text-primary hover:text-primary-dark underline text-sm"
-                  >
-                    View all users' bookings
-                  </button>
-                )}
               </div>
             ) : (
               <>
                 {/* Results header */}
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex flex-col">
-                    <h2 className="text-lg font-medium text-gray-900">
-                      {statusFilter === "all" ? "All" : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Bookings
-                      <span className="ml-2 text-sm text-gray-500">({filteredBookings.length})</span>
-                    </h2>
-                    {selectedUserId && (
-                      <p className="text-sm text-gray-500 mt-1">
-                        Filtered for user ID: {selectedUserId}
-                      </p>
-                    )}
+                  <h2 className="text-lg font-medium text-gray-900">
+                    {statusFilter === "all" ? "All" : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Bookings
+                    <span className="ml-2 text-sm text-gray-500">({filteredBookings.length})</span>
+                  </h2>
+                
+                {statusFilter === "pending" && stats.pending > 0 && (
+                  <div className="text-sm text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full">
+                    {stats.pending} booking{stats.pending > 1 ? "s" : ""} awaiting approval
                   </div>
-                  
-                  {statusFilter === "pending" && stats.pending > 0 && (
-                    <div className="text-sm text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full">
-                      {stats.pending} booking{stats.pending > 1 ? "s" : ""} awaiting approval
-                    </div>
-                  )}
-                </div>
+                )}
+              </div>
 
-                {/* Booking cards grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
-                  {getCurrentPageItems().map((booking) => (
-                    <BookingRequestCard
-                      key={booking.id}
-                      booking={booking}
-                      onBookingUpdate={handleBookingUpdate}
-                    />
-                  ))}
-                </div>
+              {/* Booking cards grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
+                {getCurrentPageItems().map((booking) => (
+                  <BookingRequestCard
+                    key={booking.id}
+                    booking={booking}
+                    onBookingUpdate={handleBookingUpdate}
+                    competingBookings={competingBookingsMap[booking.id] || []}
+                  />
+                ))}
+              </div>
 
                 {/* Pagination */}
                 <Pagination
@@ -389,8 +394,6 @@ export default function BookingsPage() {
               sortOrder={sortOrder}
               setSortOrder={setSortOrder}
               stats={stats}
-              selectedUserId={selectedUserId}
-              setSelectedUserId={setSelectedUserId}
               onClearAllFilters={clearAllFilters}
             />
 
@@ -431,6 +434,7 @@ export default function BookingsPage() {
                       key={booking.id}
                       booking={booking}
                       onBookingUpdate={handleBookingUpdate}
+                      competingBookings={competingBookingsMap[booking.id] || []}
                     />
                   ))}
                 </div>
@@ -469,8 +473,6 @@ export default function BookingsPage() {
               sortOrder={sortOrder}
               setSortOrder={setSortOrder}
               stats={stats}
-              selectedUserId={selectedUserId}
-              setSelectedUserId={setSelectedUserId}
               onClearAllFilters={clearAllFilters}
             />
 
@@ -516,6 +518,7 @@ export default function BookingsPage() {
                       key={booking.id}
                       booking={booking}
                       onBookingUpdate={handleBookingUpdate}
+                      competingBookings={competingBookingsMap[booking.id] || []}
                     />
                   ))}
                 </div>
