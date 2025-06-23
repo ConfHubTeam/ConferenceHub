@@ -165,7 +165,7 @@ export default function PlaceDetailPage() {
       )}
 
       {/* Booking card for existing bookings */}
-      <BookingCard bookingDetail={bookingDetail}/>
+      <BookingCard bookingDetail={bookingDetail} competingBookings={[]}/>
 
       {/* Main content layout - photos and sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">

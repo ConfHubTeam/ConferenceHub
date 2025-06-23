@@ -2,6 +2,16 @@
  * Time and date utility functions for availability calendar
  */
 
+// Helper function to safely format date to YYYY-MM-DD without timezone issues
+const formatDateSafely = (date) => {
+  if (typeof date === 'string') return date;
+  // Use local date methods to avoid timezone conversion
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 // Convert hour string to 24-hour format
 export const formatHourTo24 = (hour) => {
   if (!hour) return "09:00";
@@ -88,8 +98,8 @@ export const getAvailableTimeSlots = (dateString, weekdayTimeSlots, checkIn, che
 export const isTimeBlocked = (date, hour, blockedTimeSlots = [], minimumHours = 1, placeEndTime = "19:00", cooldownMinutes = 0) => {
   if (!date || !hour) return false;
   
-  // Format should match what is stored in blockedTimeSlots
-  const dateString = typeof date === 'string' ? date : date.toISOString().split('T')[0];
+  // Format should match what is stored in blockedTimeSlots - avoid timezone issues
+  const dateString = formatDateSafely(date);
   
   const checkHour = parseInt(hour.split(':')[0], 10);
   
@@ -134,7 +144,7 @@ export const hasConflictWithExistingBookings = (
 ) => {
   if (!date || !proposedStartTime || !proposedEndTime) return true;
   
-  const dateString = typeof date === 'string' ? date : date.toISOString().split('T')[0];
+  const dateString = formatDateSafely(date);
   const proposedStart = parseInt(proposedStartTime.split(':')[0], 10);
   const proposedEnd = parseInt(proposedEndTime.split(':')[0], 10);
   const cooldownHours = cooldownMinutes / 60;
@@ -351,7 +361,7 @@ export const getValidEndTimeOptions = (
 export const getBookedTimeSlots = (date, bookedTimeSlots = []) => {
   if (!date) return [];
   
-  const dateString = typeof date === 'string' ? date : date.toISOString().split('T')[0];
+  const dateString = formatDateSafely(date);
   
   return bookedTimeSlots.filter(slot => slot.date === dateString);
 };

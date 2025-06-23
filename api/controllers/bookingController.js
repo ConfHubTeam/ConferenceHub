@@ -272,6 +272,16 @@ const updateBookingStatus = async (req, res) => {
       return res.status(403).json({ error: "You are not authorized to update this booking" });
     }
     
+    // Handle client cancellation - delete the booking instead of marking as rejected
+    if (userData.userType === 'client' && booking.userId === userData.id && status === 'rejected') {
+      await booking.destroy();
+      return res.json({ 
+        message: "Booking cancelled successfully", 
+        booking: null, // Indicate the booking was deleted
+        deleted: true 
+      });
+    }
+    
     // Handle conflicts if approving a booking
     if (status === 'approved') {
       // Get place details for cooldown information
@@ -448,11 +458,55 @@ const checkAvailability = async (req, res) => {
   }
 };
 
+/**
+ * Get competing bookings for the same time slots
+ * Used by hosts to see competing requests
+ */
+const getCompetingBookings = async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+    const { placeId, timeSlots, excludeBookingId } = req.query;
+
+    if (!placeId || !timeSlots) {
+      return res.status(400).json({ error: "placeId and timeSlots are required" });
+    }
+
+    // Verify user has access to this place
+    const place = await Place.findByPk(placeId);
+    if (!place) {
+      return res.status(404).json({ error: "Place not found" });
+    }
+
+    // Only hosts and agents can view competing bookings for their places
+    if (userData.userType === 'host' && place.ownerId !== userData.id) {
+      return res.status(403).json({ error: "Access denied" });
+    }
+
+    if (userData.userType === 'client') {
+      return res.status(403).json({ error: "Clients cannot view competing bookings" });
+    }
+
+    const parsedTimeSlots = JSON.parse(timeSlots);
+    const { findCompetingBookings } = require("../utils/bookingUtils");
+    
+    const competingBookings = await findCompetingBookings(
+      parsedTimeSlots, 
+      placeId, 
+      excludeBookingId
+    );
+
+    res.json(competingBookings);
+  } catch (error) {
+    console.error("Error getting competing bookings:", error);
+    res.status(422).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createBooking,
   getBookings,
   updateBookingStatus,
   getBookingCounts,
   checkAvailability,
-  checkAvailability
+  getCompetingBookings
 };
