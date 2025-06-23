@@ -1,0 +1,200 @@
+/* Touch Action Rules for Mobile Interaction */
+
+/* Prevent page zoom globally while allowing scroll */
+html {
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+  -webkit-touch-callout: none;
+  /* Fix iOS Safari viewport height issues */
+  height: -webkit-fill-available;
+}
+
+body {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  /* Prevent iOS elastic scrolling */
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: auto;
+  /* Fix iOS Safari viewport height issues */
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
+
+/* Allow text selection in input fields and content areas */
+input, textarea, [contenteditable] {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+  /* Prevent iOS zoom on input focus */
+  font-size: 16px !important;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Map container specific rules */
+.map-container {
+  touch-action: none; /* Allow all gestures for map interaction */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  /* Prevent iOS elastic scrolling on map */
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: auto;
+}
+
+/* Google Maps specific overrides */
+.gm-fullscreen-control,
+.gm-bundled-control,
+.gmnoprint {
+  touch-action: manipulation;
+}
+
+/* Google Maps container styling */
+.gm-style {
+  /* Ensure proper touch handling in Google Maps */
+  touch-action: none;
+}
+
+.gm-style > div:first-child {
+  /* Allow all touch gestures on the map canvas */
+  touch-action: none !important;
+}
+
+/* Prevent double-tap zoom on buttons and interactive elements */
+button, 
+a, 
+[role="button"],
+.clickable {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  /* Prevent iOS callout menu */
+  -webkit-touch-callout: none;
+}
+
+/* Calendar and date picker touch handling */
+.calendar-container {
+  touch-action: pan-x pan-y; /* Allow horizontal and vertical panning */
+}
+
+/* Photo gallery and carousel touch handling */
+.photo-gallery,
+.carousel {
+  touch-action: pan-x; /* Allow only horizontal panning */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Scrollable content areas */
+.scrollable {
+  touch-action: pan-y; /* Allow only vertical scrolling */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Prevent zoom on form inputs */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+input[type="search"],
+select,
+textarea {
+  font-size: 16px !important; /* Prevents iOS zoom on focus */
+  touch-action: manipulation;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  /* Prevent iOS Safari input styling */
+  border-radius: 0;
+}
+
+/* Map info windows and overlays */
+.gm-style-iw,
+.gm-style-iw-c,
+.gm-style-iw-d {
+  touch-action: manipulation;
+}
+
+/* Ensure proper touch handling for mobile navigation */
+.mobile-nav,
+.drawer,
+.sidebar {
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+}
+
+/* Booking widget and interactive panels */
+.booking-widget,
+.interactive-panel {
+  touch-action: manipulation;
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  /* iOS-specific styles */
+  .full-height-ios {
+    height: calc(var(--vh, 1vh) * 100);
+  }
+  
+  /* Prevent iOS Safari elastic bouncing */
+  body {
+    position: fixed;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+  }
+  
+  #root {
+    overflow: auto;
+    height: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Prevent text selection on map markers and controls */
+.gm-style .gm-style-cc,
+.gm-style .gm-style-mt,
+.gm-bundled-control {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Better touch target sizes for mobile */
+@media (max-width: 768px) {
+  button,
+  .clickable,
+  [role="button"] {
+    min-height: 44px; /* iOS recommended touch target size */
+    min-width: 44px;
+  }
+  
+  /* Ensure map controls are properly sized for touch */
+  .gm-bundled-control {
+    min-height: 40px;
+    min-width: 40px;
+  }
+}
+
+/* Prevent zoom on specific gestures */
+.prevent-zoom {
+  touch-action: pan-x pan-y pinch-zoom;
+}
+
+/* Allow only panning (no zoom) */
+.pan-only {
+  touch-action: pan-x pan-y;
+}
+
+/* Allow all gestures (for maps) */
+.allow-all-gestures {
+  touch-action: none;
+}
