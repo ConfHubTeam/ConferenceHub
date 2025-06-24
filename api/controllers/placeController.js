@@ -171,10 +171,11 @@ const getUserPlaces = async (req, res) => {
 const getPlaceById = async (req, res) => {
   const {id} = req.params;
   try {
-    // Include currency relation to get currency details
+    // Include currency and owner relations to get full details
     const place = await Place.findByPk(id, {
       include: [
-        { model: Currency, as: 'currency' }
+        { model: Currency, as: 'currency' },
+        { model: User, as: 'owner' }
       ]
     });
     res.json(place);
