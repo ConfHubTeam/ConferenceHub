@@ -2,7 +2,7 @@
 export const SERVICE_FEE_CONFIG = {
   // Service fee rates per currency (base amounts)
   SERVICE_FEE_BY_CURRENCY: {
-    UZS: 100000,
+    UZS: parseInt(import.meta.env.VITE_FLAT_RATE_FEE_UZS) || 100000,
   },
   DEFAULT_CURRENCY: 'UZS',
   // You can add more service fee configurations here if needed
