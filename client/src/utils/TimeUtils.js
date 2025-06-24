@@ -512,6 +512,90 @@ export const validateTimeSlot = (timeSlot, bookedSlots = [], cooldownMinutes = 0
   });
 };
 
-// Backward compatibility exports (deprecated - use Enhanced versions)
-export const isTimeRangeAvailable = isTimeRangeAvailableEnhanced;
+// Import timezone utilities for Uzbekistan-aware validation
+import { getTimezoneAwareAvailability, generateTimezoneAwareTimeOptions } from './uzbekistanTimezoneUtils';
+
+/**
+ * Main availability check function - now timezone-aware by default
+ * This function checks if a time range is available considering:
+ * 1. Uzbekistan timezone constraints (past times are not available)
+ * 2. Existing bookings and conflicts
+ * 3. Cooldown periods
+ * 4. Working hours
+ */
+export const isTimeRangeAvailable = async (
+  date,
+  startTime,
+  endTime,
+  placeId,
+  blockedTimeSlots = [],
+  cooldownMinutes = 0
+) => {
+  if (!startTime || !endTime || !date || !placeId) {
+    return false;
+  }
+
+  try {
+    // Get timezone-aware availability from backend
+    const availability = await getTimezoneAwareAvailability(placeId, formatDateSafely(date));
+    
+    // Check if the date is available
+    if (!availability.availableDates.includes(formatDateSafely(date))) {
+      return false;
+    }
+    
+    // Check if start time is in available time slots
+    if (!availability.availableTimeSlots.includes(startTime)) {
+      return false;
+    }
+    
+    // Use existing enhanced validation for additional checks
+    return isTimeRangeAvailableEnhanced(
+      date,
+      startTime,
+      endTime,
+      blockedTimeSlots,
+      cooldownMinutes
+    );
+  } catch (error) {
+    console.error('Error checking timezone-aware availability:', error);
+    // Fallback to existing validation
+    return isTimeRangeAvailableEnhanced(
+      date,
+      startTime,
+      endTime,
+      blockedTimeSlots,
+      cooldownMinutes
+    );
+  }
+};
+
+/**
+ * Legacy local-time validation function - kept for backward compatibility
+ * NOTE: This should only be used for internal calculations, not for user-facing availability
+ */
+export const isTimeRangeAvailableLocal = isTimeRangeAvailableEnhanced;
+
+// Generate timezone-aware time options for a specific date
+export const generateTimezoneAwareStartTimeOptions = async (
+  date,
+  placeId,
+  minimumHours = 1,
+  cooldownMinutes = 0
+) => {
+  try {
+    const availability = await getTimezoneAwareAvailability(placeId, formatDateSafely(date));
+    
+    return generateTimezoneAwareTimeOptions(
+      availability.availableTimeSlots,
+      minimumHours,
+      cooldownMinutes
+    );
+  } catch (error) {
+    console.error('Error generating timezone-aware time options:', error);
+    return [];
+  }
+};
+
+// Maintain backward compatibility
 export const isValidStartTime = isValidStartTimeEnhanced;

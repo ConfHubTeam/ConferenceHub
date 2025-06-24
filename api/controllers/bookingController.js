@@ -2,6 +2,12 @@ const { Booking, Place, User, Currency } = require("../models");
 const { getUserDataFromToken } = require("../middleware/auth");
 const { Op } = require("sequelize");
 const { validateBookingTimeSlots, findConflictingBookings } = require("../utils/bookingUtils");
+const { 
+  getCurrentDateInUzbekistan,
+  getUzbekistanAwareAvailableSlots,
+  getAvailableDatesFromUzbekistan,
+  isDateInPastUzbekistan
+} = require("../utils/uzbekistanTimezoneUtils");
 
 /**
  * Create a new booking
@@ -459,6 +465,116 @@ const checkAvailability = async (req, res) => {
 };
 
 /**
+ * Get timezone-aware availability for Uzbekistan timezone
+ */
+const checkTimezoneAwareAvailability = async (req, res) => {
+  try {
+    const { placeId, date } = req.query;
+    
+    if (!placeId) {
+      return res.status(400).json({ error: "Place ID is required" });
+    }
+
+    // Get the place
+    const place = await Place.findByPk(placeId);
+    if (!place) {
+      return res.status(404).json({ error: "Place not found" });
+    }
+
+    const currentDateUzbekistan = getCurrentDateInUzbekistan();
+    
+    // Get bookings with approved status for this place
+    const approvedBookings = await Booking.findAll({ 
+      where: { 
+        placeId, 
+        status: 'approved' 
+      } 
+    });
+    
+    // Extract booked time slots
+    const bookedTimeSlots = [];
+    approvedBookings.forEach(booking => {
+      if (booking.timeSlots && booking.timeSlots.length > 0) {
+        booking.timeSlots.forEach(slot => {
+          // If no date specified or date matches
+          if (!date || slot.date === date) {
+            bookedTimeSlots.push(slot);
+          }
+        });
+      }
+    });
+
+    // Get available dates excluding past dates in Uzbekistan timezone
+    const startDate = place.startDate || currentDateUzbekistan;
+    const endDate = place.endDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 1 year from now
+    
+    const availableDates = getAvailableDatesFromUzbekistan(
+      startDate,
+      endDate,
+      place.blockedDates || [],
+      place.blockedWeekdays || []
+    );
+
+    // If specific date requested, get timezone-aware available time slots
+    let availableTimeSlots = [];
+    if (date) {
+      // Check if date is not in the past
+      if (!isDateInPastUzbekistan(date)) {
+        const targetDate = new Date(date);
+        const dayOfWeek = targetDate.getDay();
+        
+        // Get working hours for this day
+        const workingHours = place.weekdayTimeSlots && place.weekdayTimeSlots[dayOfWeek] 
+          ? place.weekdayTimeSlots[dayOfWeek]
+          : { start: place.checkIn || "09:00", end: place.checkOut || "17:00" };
+
+        // Get timezone-aware available slots
+        if (workingHours.start && workingHours.end) {
+          availableTimeSlots = getUzbekistanAwareAvailableSlots(
+            date,
+            workingHours,
+            place.minimumHours || 1,
+            place.cooldown || 30
+          );
+
+          // Filter out booked time slots
+          availableTimeSlots = availableTimeSlots.filter(timeSlot => {
+            return !bookedTimeSlots.some(bookedSlot => 
+              bookedSlot.date === date && bookedSlot.startTime === timeSlot
+            );
+          });
+        }
+      }
+    }
+    
+    // Build response
+    const response = {
+      placeId,
+      placeName: place.title,
+      currentDateUzbekistan,
+      availableDates,
+      availableTimeSlots: date ? availableTimeSlots : [],
+      bookedTimeSlots,
+      operatingHours: {
+        checkIn: place.checkIn || "09:00",
+        checkOut: place.checkOut || "17:00",
+        weekdayTimeSlots: place.weekdayTimeSlots || {},
+        minimumHours: place.minimumHours || 1,
+        cooldown: place.cooldown || 30
+      },
+      blockedDates: place.blockedDates || [],
+      blockedWeekdays: place.blockedWeekdays || [],
+      timezone: 'Asia/Tashkent'
+    };
+    
+    res.json(response);
+  } catch (error) {
+    console.error("Error checking timezone-aware availability:", error);
+    res.status(422).json({ error: error.message });
+  }
+};
+
+/**
  * Get competing bookings for the same time slots
  * Used by hosts to see competing requests
  */
@@ -508,5 +624,6 @@ module.exports = {
   updateBookingStatus,
   getBookingCounts,
   checkAvailability,
+  checkTimezoneAwareAvailability,
   getCompetingBookings
 };

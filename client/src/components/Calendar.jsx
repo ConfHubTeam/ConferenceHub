@@ -26,7 +26,9 @@ export default function Calendar({
   selectedIndividualDates = [], // New prop for individual date selection
   onIndividualDateClick = null, // New prop for individual date selection handler
   individualDateMode = false, // New prop to enable individual date selection mode
-  bookingPercentages = {} // New prop for booking percentages by date
+  bookingPercentages = {}, // New prop for booking percentages by date
+  availableDatesUzbekistan = [], // New prop for timezone-aware available dates
+  useTimezoneValidation = false // New prop to enable Uzbekistan timezone validation
 }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [hoverDate, setHoverDate] = useState(null);
@@ -207,12 +209,27 @@ export default function Calendar({
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate comparison
     
+    // Format the current day to string format for reliable comparison
+    const formattedDay = format(day, "yyyy-MM-dd");
+    
+    // If using timezone validation, check against Uzbekistan timezone availability
+    if (useTimezoneValidation && availableDatesUzbekistan.length > 0) {
+      // Date is disabled if it's not in the available dates from Uzbekistan timezone
+      if (!availableDatesUzbekistan.includes(formattedDay)) {
+        return true;
+      }
+    } else {
+      // Fallback to local time validation if timezone validation is not enabled
+      // Disable dates that are in the past (local time)
+      if (isBefore(day, today)) {
+        return true;
+      }
+    }
+    
     // Check if the date is blocked by weekday
     const isBlockedWeekday = blockedWeekdays.includes(day.getDay());
     
     // Check if the date is explicitly blocked
-    // Format the current day to string format for reliable comparison
-    const formattedDay = format(day, "yyyy-MM-dd");
     const isBlockedDate = blockedDates.some(blockedDate => {
       if (typeof blockedDate === "string") {
         return formattedDay === blockedDate;
@@ -224,15 +241,13 @@ export default function Calendar({
     // Special case for the date blocking calendar - don't disable blocked dates
     // Also allow selecting today when in date blocking mode
     if (onBlockedDateClick) {
-      return (isBefore(day, today) && !isSameDay(day, today)) || 
-             (min && isBefore(day, min)) || 
+      return (min && isBefore(day, min)) || 
              (max && isAfter(day, max)) ||
              isBlockedWeekday;
     }
     
-    // For regular calendar, disable blocked dates
-    return isBefore(day, today) || 
-           (min && isBefore(day, min)) || 
+    // For regular calendar, disable blocked dates and apply min/max constraints
+    return (min && isBefore(day, min)) || 
            (max && isAfter(day, max)) ||
            isBlockedWeekday || 
            isBlockedDate;

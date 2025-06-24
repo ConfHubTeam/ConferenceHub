@@ -1,6 +1,7 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { format, parseISO } from "date-fns";
-import { formatHourTo12, generateTimeOptions, generateStartTimeOptions, isTimeBlocked, isTimeRangeAvailableEnhanced, isValidStartTimeEnhanced } from "../utils/TimeUtils";
+import { generateTimeOptions, generateStartTimeOptions, isTimeBlocked, isTimeRangeAvailableEnhanced, isValidStartTimeEnhanced } from "../utils/TimeUtils";
+import { generateTimezoneAwareTimeOptions } from "../utils/uzbekistanTimezoneUtils";
 
 /**
  * TimeSlotModal Component
@@ -20,7 +21,8 @@ export default function TimeSlotModal({
   timeSlots,
   placeDetail,
   isEditMode,
-  bookedTimeSlots = [] // Array of existing bookings
+  bookedTimeSlots = [], // Array of existing bookings
+  timezoneAvailableTimeSlots = [] // New prop for timezone-aware available time slots
 }) {
   if (!isOpen || !currentEditingDate) return null;
 
@@ -29,11 +31,34 @@ export default function TimeSlotModal({
     const minimumHours = placeDetail.minimumHours || 1;
     const cooldownMinutes = placeDetail.cooldown || 0;
     
-    // Generate all time options (for visual display and end time selection)
-    const allOptions = generateTimeOptions(timeSlots.start, timeSlots.end, minimumHours, cooldownMinutes);
+    // Use timezone-aware available time slots if provided, otherwise fall back to regular generation
+    let availableOptions = [];
+    if (timezoneAvailableTimeSlots && timezoneAvailableTimeSlots.length > 0) {
+      // Use the working hours for the date to show all time slots
+      const workingHours = timeSlots; // This should contain start/end times
+      availableOptions = generateTimezoneAwareTimeOptions(
+        timezoneAvailableTimeSlots,
+        workingHours,
+        minimumHours,
+        cooldownMinutes
+      );
+    } else {
+      // Fallback to regular time generation
+      availableOptions = generateTimeOptions(timeSlots.start, timeSlots.end, minimumHours, cooldownMinutes)
+        .map(option => ({ ...option, isAvailable: true, isDisabled: false }));
+    }
     
-    // Add blocked status to each time option
-    return allOptions.map(option => {
+    // Add booking conflict status to each time option
+    return availableOptions.map(option => {
+      // If already disabled due to timezone, keep it disabled
+      if (option.isDisabled) {
+        return {
+          ...option,
+          isBlocked: true,
+          disabledReason: 'Past time (Uzbekistan timezone)'
+        };
+      }
+      
       const isHourBlocked = isTimeBlocked(
         currentEditingDate, 
         option.value, 
@@ -46,7 +71,8 @@ export default function TimeSlotModal({
       if (isHourBlocked) {
         return {
           ...option,
-          isBlocked: true
+          isBlocked: true,
+          disabledReason: 'Already booked or in cooldown period'
         };
       }
       
@@ -65,16 +91,54 @@ export default function TimeSlotModal({
       
       return {
         ...option,
-        isBlocked: !isRangeAvailable
+        isBlocked: !isRangeAvailable,
+        disabledReason: !isRangeAvailable ? 'Conflicts with existing booking' : null
       };
     });
-  }, [timeSlots, currentEditingDate, bookedTimeSlots, placeDetail.minimumHours, placeDetail.cooldown]);
+  }, [timeSlots, currentEditingDate, bookedTimeSlots, placeDetail.minimumHours, placeDetail.cooldown, timezoneAvailableTimeSlots]);
 
   // Generate start time options (limited by cooldown and minimum duration)
   const startTimeOptions = useMemo(() => {
     const minimumHours = placeDetail.minimumHours || 1;
     const cooldownMinutes = placeDetail.cooldown || 0;
     
+    // Use timezone-aware available time slots if provided
+    if (timezoneAvailableTimeSlots && timezoneAvailableTimeSlots.length > 0) {
+      const workingHours = timeSlots;
+      return generateTimezoneAwareTimeOptions(
+        timezoneAvailableTimeSlots,
+        workingHours,
+        minimumHours,
+        cooldownMinutes
+      ).map(option => {
+        // If disabled due to timezone, mark as blocked
+        if (option.isDisabled) {
+          return {
+            ...option,
+            isBlocked: true,
+            disabledReason: 'Past time (Uzbekistan timezone)'
+          };
+        }
+        
+        // Check for booking conflicts and timing constraints
+        const isValidStart = isValidStartTimeEnhanced(
+          currentEditingDate, 
+          option.value, 
+          bookedTimeSlots, 
+          minimumHours, 
+          timeSlots.end,
+          cooldownMinutes
+        );
+        
+        return {
+          ...option,
+          isBlocked: !isValidStart,
+          disabledReason: !isValidStart ? 'Cannot start booking at this time' : null
+        };
+      });
+    }
+    
+    // Fallback to regular generation
     const startOptions = generateStartTimeOptions(timeSlots.start, timeSlots.end, minimumHours, cooldownMinutes);
     
     return startOptions.map(option => {
@@ -90,10 +154,11 @@ export default function TimeSlotModal({
       
       return {
         ...option,
-        isBlocked: !isValidStart
+        isBlocked: !isValidStart,
+        disabledReason: !isValidStart ? 'Cannot start booking at this time' : null
       };
     });
-  }, [timeSlots, currentEditingDate, bookedTimeSlots, placeDetail.minimumHours, placeDetail.cooldown]);
+  }, [timeSlots, currentEditingDate, bookedTimeSlots, placeDetail.minimumHours, placeDetail.cooldown, timezoneAvailableTimeSlots]);
 
   // Handle start time change with validation
   const handleStartTimeChange = (value) => {
@@ -197,9 +262,11 @@ export default function TimeSlotModal({
                     key={option.value} 
                     value={option.value}
                     disabled={option.isBlocked}
-                    className={option.isBlocked ? "bg-red-100 text-red-800 line-through" : ""}
+                    title={option.disabledReason || ''}
+                    className={option.isBlocked ? "text-gray-400 bg-gray-100" : ""}
                   >
-                    {option.label}{option.isBlocked ? " (Unavailable)" : ""}
+                    {option.label}
+                    {option.isBlocked ? " (Unavailable)" : ""}
                   </option>
                 ))}
               </select>
@@ -317,30 +384,42 @@ export default function TimeSlotModal({
                 const workingEndHour = parseInt(timeSlots.end.split(':')[0], 10);
                 const isWorkingHoursEndTime = optionHour === workingEndHour;
                 
+                // Check if this time slot is disabled due to timezone (past time) - but NOT if it's day end
+                const isPastTimeInTimezone = !isWorkingHoursEndTime && option.isDisabled && option.disabledReason === 'Past time (Uzbekistan timezone)';
+                
                 return (
                   <div 
                     key={option.value} 
                     className={`
                       flex-shrink-0 text-xs text-center p-2 rounded-md mr-1 w-16
-                      ${isActuallyBlocked 
-                        ? isInCooldownPeriod
-                          ? 'bg-orange-100 text-orange-800' // Cooldown period
-                          : 'bg-red-100 text-red-800' // Booked
-                        : selectedStartTime === option.value
-                          ? 'bg-blue-500 text-white' // Start time
-                          : selectedEndTime === option.value
-                            ? 'bg-blue-700 text-white' // Selected end time
-                            : isWorkingHoursEndTime
-                              ? 'bg-gray-300 text-gray-600' // Working hours end time (grayed out)
-                              : isInSelectedRange
-                                ? 'bg-blue-200 text-blue-800 border border-blue-300' // In range
-                                : 'bg-green-100 text-green-800' // Available
+                      ${isPastTimeInTimezone
+                        ? 'bg-gray-300 text-gray-600' // Past time in timezone - same as day end grey
+                        : isActuallyBlocked 
+                          ? isInCooldownPeriod
+                            ? 'bg-orange-100 text-orange-800' // Cooldown period
+                            : 'bg-red-100 text-red-800' // Booked
+                          : selectedStartTime === option.value
+                            ? 'bg-blue-500 text-white' // Start time
+                            : selectedEndTime === option.value
+                              ? 'bg-blue-700 text-white' // Selected end time
+                              : isWorkingHoursEndTime
+                                ? 'bg-gray-300 text-gray-600' // Working hours end time (grayed out)
+                                : isInSelectedRange
+                                  ? 'bg-blue-200 text-blue-800 border border-blue-300' // In range
+                                  : 'bg-green-100 text-green-800' // Available
                       }
                     `}
                   >
                     <div>{displayHour}</div>
                     <div>{amPm}</div>
-                    {isActuallyBlocked && (
+                    {isPastTimeInTimezone && (
+                      <div className="mt-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </div>
+                    )}
+                    {isActuallyBlocked && !isPastTimeInTimezone && (
                       <div className="mt-1">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -376,7 +455,7 @@ export default function TimeSlotModal({
               </div>
               <div className="flex items-center">
                 <div className="h-3 w-3 bg-gray-300 rounded mr-1"></div>
-                <span>Day End</span>
+                <span>Unavailable</span>
               </div>
               <div className="flex items-center">
                 <div className="h-3 w-3 bg-green-100 rounded mr-1"></div>
