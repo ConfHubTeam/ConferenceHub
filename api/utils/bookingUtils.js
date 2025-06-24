@@ -2,6 +2,12 @@
  * Enhanced booking conflict detection utilities
  */
 
+const { 
+  validateBookingDateTimeUzbekistan, 
+  isDateInPastUzbekistan,
+  isTimeInPastUzbekistan
+} = require('./uzbekistanTimezoneUtils');
+
 /**
  * Check if two time slots have conflicts considering cooldown periods
  */
@@ -38,9 +44,57 @@ const hasTimeSlotConflict = (slot1, slot2, cooldownMinutes = 0) => {
 /**
  * Validate booking time slots against existing CONFIRMED bookings only
  * This allows multiple pending requests to compete for the same time slots
+ * Now includes Uzbekistan timezone-aware validation
  */
 const validateBookingTimeSlots = async (timeSlots, placeId, cooldownMinutes = 0) => {
   try {
+    // Get place details for working hours validation
+    const { Place } = require("../models");
+    const place = await Place.findByPk(placeId);
+    if (!place) {
+      return {
+        isValid: false,
+        message: "Place not found"
+      };
+    }
+
+    // Validate each time slot against Uzbekistan timezone
+    for (const timeSlot of timeSlots) {
+      const { date, startTime, endTime } = timeSlot;
+      
+      // Check if date is in the past in Uzbekistan
+      if (isDateInPastUzbekistan(date)) {
+        return {
+          isValid: false,
+          message: `Cannot book for past date: ${date} (based on Uzbekistan time)`,
+          conflictingSlot: timeSlot
+        };
+      }
+      
+      // Check if start time is in the past for today's bookings in Uzbekistan
+      if (isTimeInPastUzbekistan(date, startTime)) {
+        return {
+          isValid: false,
+          message: `Cannot book for past time: ${startTime} on ${date} (based on Uzbekistan time)`,
+          conflictingSlot: timeSlot
+        };
+      }
+
+      // Validate against working hours
+      const workingHours = place.weekdayTimeSlots ? 
+        place.weekdayTimeSlots[new Date(date).getDay()] : 
+        { start: place.checkIn || "09:00", end: place.checkOut || "17:00" };
+      
+      const validation = validateBookingDateTimeUzbekistan(date, startTime, workingHours);
+      if (!validation.isValid) {
+        return {
+          isValid: false,
+          message: validation.message,
+          conflictingSlot: timeSlot
+        };
+      }
+    }
+
     // Get only CONFIRMED/PAID bookings for this place (not pending requests)
     const { Booking } = require("../models");
     const existingBookings = await Booking.findAll({

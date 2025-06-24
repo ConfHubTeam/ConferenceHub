@@ -7,6 +7,7 @@ import SelectedDates from "./SelectedDates";
 import UserRoleNotification from "./UserRoleNotification";
 import DateAvailabilityDetails from "./DateAvailabilityDetails";
 import { getAvailableTimeSlots, formatHourTo12, calculateBookingPercentage } from "../utils/TimeUtils";
+import { getTimezoneAwareAvailability } from "../utils/uzbekistanTimezoneUtils";
 
 /**
  * PlaceAvailabilityCalendar Component
@@ -33,6 +34,12 @@ export default function PlaceAvailabilityCalendar({
   // State for tracking booked time slots from API
   const [bookedTimeSlots, setBookedTimeSlots] = useState([]);
   const [isLoadingAvailability, setIsLoadingAvailability] = useState(false);
+  
+  // State for timezone-aware availability
+  const [availableDatesUzbekistan, setAvailableDatesUzbekistan] = useState([]);
+  const [timezoneAvailability, setTimezoneAvailability] = useState(null);
+  const [currentDateAvailableSlots, setCurrentDateAvailableSlots] = useState([]);
+  const [timezoneAvailabilityData, setTimezoneAvailabilityData] = useState(null);
   
   // Calculate booking percentages for calendar days based on booked time slots
   const bookingPercentages = useMemo(() => {
@@ -88,17 +95,42 @@ export default function PlaceAvailabilityCalendar({
     if (placeDetail && placeDetail.id) {
       setIsLoadingAvailability(true);
       
-      // Import api dynamically to avoid circular dependencies
-      import("../utils/api").then(({ default: api }) => {
-        return api.get(`/bookings/availability?placeId=${placeDetail.id}`);
-      })
-      .then(response => {
-        if (response.data && response.data.bookedTimeSlots) {
-          setBookedTimeSlots(response.data.bookedTimeSlots);
+      // Fetch both regular availability and timezone-aware availability
+      Promise.all([
+        // Regular availability for existing functionality
+        import("../utils/api").then(({ default: api }) => 
+          api.get(`/bookings/availability?placeId=${placeDetail.id}`)
+        ),
+        // Timezone-aware availability for Uzbekistan
+        getTimezoneAwareAvailability(placeDetail.id)
+      ])
+      .then(([regularResponse, timezoneResponse]) => {
+        // Set regular booked time slots
+        if (regularResponse.data && regularResponse.data.bookedTimeSlots) {
+          setBookedTimeSlots(regularResponse.data.bookedTimeSlots);
+        }
+        
+        // Set timezone-aware data
+        if (timezoneResponse) {
+          setTimezoneAvailability(timezoneResponse);
+          setAvailableDatesUzbekistan(timezoneResponse.availableDates || []);
         }
       })
       .catch(err => {
         console.error("Failed to fetch availability:", err);
+        
+        // Fallback to regular availability only
+        import("../utils/api").then(({ default: api }) => {
+          return api.get(`/bookings/availability?placeId=${placeDetail.id}`);
+        })
+        .then(response => {
+          if (response.data && response.data.bookedTimeSlots) {
+            setBookedTimeSlots(response.data.bookedTimeSlots);
+          }
+        })
+        .catch(fallbackErr => {
+          console.error("Fallback availability fetch also failed:", fallbackErr);
+        });
       })
       .finally(() => {
         setIsLoadingAvailability(false);
@@ -107,7 +139,7 @@ export default function PlaceAvailabilityCalendar({
   }, [placeDetail]);
 
   // Handle individual date selection
-  const handleDateClick = (dateString) => {
+  const handleDateClick = async (dateString) => {
     // Check if date is already selected
     const existingDateIndex = selectedDates.findIndex(d => d.date === dateString);
     
@@ -117,15 +149,52 @@ export default function PlaceAvailabilityCalendar({
       setCurrentEditingDate(dateString);
       setSelectedStartTime(existingDate.startTime);
       setSelectedEndTime(existingDate.endTime);
+      
+      // Fetch timezone-aware available time slots for this specific date
+      try {
+        const availability = await getTimezoneAwareAvailability(placeDetail.id, dateString);
+        setCurrentDateAvailableSlots(availability.availableTimeSlots || []);
+      } catch (error) {
+        console.error('Failed to fetch timezone-aware availability for date:', error);
+        setCurrentDateAvailableSlots([]);
+      }
+      
       setShowTimeSlotModal(true);
     } else {
-      // If new date, add it and open time slot modal
+      // If new date, fetch timezone-aware availability for this specific date
       setCurrentEditingDate(dateString);
-      const timeSlots = getAvailableTimeSlots(dateString, weekdayTimeSlots, checkIn, checkOut);
-      setSelectedStartTime(timeSlots.start);
-      setSelectedEndTime("");
-      setShowTimeSlotModal(true);
+      
+      try {
+        // Fetch timezone-aware availability for this specific date
+        const dateAvailability = await getTimezoneAwareAvailability(placeDetail.id, dateString);
+        
+        // Update the timezone availability data for this date
+        setTimezoneAvailability(dateAvailability);
+        setCurrentDateAvailableSlots(dateAvailability.availableTimeSlots || []);
+        
+        const timeSlots = getAvailableTimeSlots(dateString, weekdayTimeSlots, checkIn, checkOut);
+        setSelectedStartTime(timeSlots.start);
+        setSelectedEndTime("");
+        setShowTimeSlotModal(true);
+      } catch (error) {
+        console.error('Error fetching date-specific availability:', error);
+        
+        // Fallback to regular time slot generation
+        const timeSlots = getAvailableTimeSlots(dateString, weekdayTimeSlots, checkIn, checkOut);
+        setSelectedStartTime(timeSlots.start);
+        setSelectedEndTime("");
+        setShowTimeSlotModal(true);
+      }
     }
+  };
+
+  // Get timezone-aware available time slots for current editing date
+  const getCurrentDateTimezoneSlots = () => {
+    if (!currentDateAvailableSlots || currentDateAvailableSlots.length === 0) {
+      return [];
+    }
+    
+    return currentDateAvailableSlots;
   };
 
   // Custom date change handler for individual date selection
@@ -255,6 +324,8 @@ export default function PlaceAvailabilityCalendar({
             onIndividualDateClick={handleDetailDateClick} // Show details on date click
             individualDateMode={true} // Enable individual date selection mode
             bookingPercentages={bookingPercentages} // Pass booking percentages
+            availableDatesUzbekistan={availableDatesUzbekistan} // Timezone-aware available dates
+            useTimezoneValidation={true} // Enable Uzbekistan timezone validation
           />
         </div>
         
@@ -310,6 +381,8 @@ export default function PlaceAvailabilityCalendar({
           onIndividualDateClick={handleDateClick} // Both authenticated and unauthenticated users can select dates
           individualDateMode={true} // Enable individual date selection mode
           bookingPercentages={bookingPercentages} // Pass booking percentages
+          availableDatesUzbekistan={availableDatesUzbekistan} // Timezone-aware available dates
+          useTimezoneValidation={true} // Enable Uzbekistan timezone validation
         />
       </div>
       
@@ -349,6 +422,7 @@ export default function PlaceAvailabilityCalendar({
         placeDetail={placeDetail}
         isEditMode={selectedDates.some(d => d.date === currentEditingDate)}
         bookedTimeSlots={bookedTimeSlots} // Use fetched booked time slots from API
+        timezoneAvailableTimeSlots={getCurrentDateTimezoneSlots()} // Timezone-aware available time slots
       />
     </div>
   );

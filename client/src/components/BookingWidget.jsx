@@ -8,7 +8,7 @@ import { validateForm } from "../utils/formUtils";
 import PriceDisplay from "./PriceDisplay";
 import SelectedTimeSlots from "./SelectedTimeSlots";
 import PricingBreakdown from "./PricingBreakdown";
-import { isTimeRangeAvailableEnhanced } from "../utils/TimeUtils";
+import { isTimeRangeAvailable } from "../utils/TimeUtils";
 import { calculateBookingPricing } from "../utils/pricingCalculator";
 
 export default function BookingWidget({ placeDetail, buttonDisabled, selectedCalendarDates = [] }) {
@@ -75,25 +75,26 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
   };
 
   // Function to check if selected time slots are available
-  const validateTimeSlotAvailability = () => {
+  const validateTimeSlotAvailability = async () => {
     if (!selectedCalendarDates || selectedCalendarDates.length === 0) {
       return true; // No slots selected, so no conflicts
     }
 
     const cooldownMinutes = placeDetail.cooldown || 0;
 
-    // Check each selected time slot for conflicts using enhanced detection
+    // Check each selected time slot for conflicts using timezone-aware validation
     for (const selectedSlot of selectedCalendarDates) {
-      const isAvailable = isTimeRangeAvailableEnhanced(
+      const isAvailable = await isTimeRangeAvailable(
         selectedSlot.date,
         selectedSlot.startTime,
         selectedSlot.endTime,
+        placeDetail.id,
         bookedTimeSlots,
         cooldownMinutes
       );
       
       if (!isAvailable) {
-        return false; // Found a conflict using enhanced detection
+        return false; // Found a conflict using timezone-aware validation
       }
     }
     
@@ -147,7 +148,8 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
     }
 
     // Check if selected time slots are available
-    if (!validateTimeSlotAvailability()) {
+    const isAvailable = await validateTimeSlotAvailability();
+    if (!isAvailable) {
       setError("Selected time slots are not available. Please choose different times.");
       return;
     }

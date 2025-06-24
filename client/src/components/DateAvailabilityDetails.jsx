@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { format, parseISO } from "date-fns";
 import { 
   formatHourTo12, 
   getBookedTimeSlots, 
   getAvailableTimeSlots, 
   isTimeBlocked,
-  hasConflictWithExistingBookings,
-  isValidStartTimeEnhanced 
 } from "../utils/TimeUtils";
 
 /**
