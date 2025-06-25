@@ -74,8 +74,8 @@ function SpecificDateBlocker({
           <Calendar 
             blockedDates={blockedDates}
             minDate={getMinimumBookingDate()} // Use Uzbekistan timezone for minimum date
-            useTimezoneValidation={true} // Enable Uzbekistan timezone validation
-            // Don't pass availableDatesUzbekistan to use default timezone-aware validation
+            // For date blocking, don't use strict timezone validation
+            // This allows hosts to block dates starting from today
             onBlockedDateClick={toggleBlockedDate} // Use the specific handler for date blocking
           />
           {blockedDates.length > 0 && (

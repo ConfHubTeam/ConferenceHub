@@ -13,7 +13,7 @@ import {
   addMonths,
   parseISO
 } from "date-fns";
-import { getCurrentDateInUzbekistan, isDateInPastUzbekistan } from "../utils/uzbekistanTimezoneUtils";
+import { getCurrentDateInUzbekistan, getCurrentDateObjectInUzbekistan, isDateInPastUzbekistan } from "../utils/uzbekistanTimezoneUtils";
 
 export default function Calendar({ 
   startDate, 
@@ -32,7 +32,13 @@ export default function Calendar({
   availableDatesUzbekistan = [], // New prop for timezone-aware available dates
   useTimezoneValidation = false // New prop to enable Uzbekistan timezone validation
 }) {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    // Initialize current month based on Uzbekistan timezone when timezone validation is enabled
+    if (useTimezoneValidation) {
+      return getCurrentDateObjectInUzbekistan();
+    }
+    return new Date();
+  });
   const [hoverDate, setHoverDate] = useState(null);
   const [selectingStart, setSelectingStart] = useState(!startDate);
   
@@ -224,7 +230,7 @@ export default function Calendar({
       }
     } else {
       // Fallback to local time validation if timezone validation is not enabled
-      const today = new Date();
+      const today = getCurrentDateObjectInUzbekistan(); // Use Uzbekistan time as default
       today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate comparison
       if (isBefore(day, today)) {
         return true;
@@ -269,7 +275,7 @@ export default function Calendar({
       isToday = formattedDay === currentDateUzbekistan;
       isPastDate = isDateInPastUzbekistan(formattedDay);
     } else {
-      const today = new Date();
+      const today = getCurrentDateObjectInUzbekistan(); // Use Uzbekistan time as default
       isToday = isSameDay(day, today);
       isPastDate = isBefore(day, today) && day.getDate() !== today.getDate();
     }
@@ -449,7 +455,7 @@ export default function Calendar({
             const currentDateUzbekistan = getCurrentDateInUzbekistan();
             isToday = formattedDay === currentDateUzbekistan;
           } else {
-            isToday = isSameDay(day, new Date());
+            isToday = isSameDay(day, getCurrentDateObjectInUzbekistan()); // Use Uzbekistan time as default
           }
           
           return (

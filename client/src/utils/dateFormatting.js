@@ -1,10 +1,11 @@
 import { format, parseISO } from "date-fns";
+import { getCurrentDateObjectInUzbekistan } from "./uzbekistanTimezoneUtils";
 
 /**
  * Parse date safely - handles both Date objects and string dates
  */
 const parseDateSafely = (dateString) => {
-  if (!dateString) return new Date();
+  if (!dateString) return getCurrentDateObjectInUzbekistan(); // Use Uzbekistan time as default
   if (dateString instanceof Date) return dateString;
   
   // If it's a simple date string like "2024-12-25", parse it as local date
