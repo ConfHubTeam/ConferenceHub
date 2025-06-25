@@ -506,7 +506,10 @@ const checkTimezoneAwareAvailability = async (req, res) => {
 
     // Get available dates excluding past dates in Uzbekistan timezone
     const startDate = place.startDate || currentDateUzbekistan;
-    const endDate = place.endDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 1 year from now
+    // Use Uzbekistan timezone for consistent date calculation (1 year from current Uzbekistan date)
+    const uzbekistanDate = new Date(currentDateUzbekistan);
+    uzbekistanDate.setFullYear(uzbekistanDate.getFullYear() + 1);
+    const endDate = place.endDate || uzbekistanDate.toISOString().split('T')[0]; // 1 year from current Uzbekistan date
     
     const availableDates = getAvailableDatesFromUzbekistan(
       startDate,
