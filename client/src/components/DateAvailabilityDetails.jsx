@@ -5,7 +5,9 @@ import {
   getBookedTimeSlots, 
   getAvailableTimeSlots, 
   isTimeBlocked,
+  isValidStartTimeEnhanced,
 } from "../utils/TimeUtils";
+import { getCurrentDateObjectInUzbekistan } from "../utils/uzbekistanTimezoneUtils";
 
 /**
  * DateAvailabilityDetails Component
@@ -51,9 +53,8 @@ export default function DateAvailabilityDetails({
       return;
     }
     
-    // Get current time in Uzbekistan timezone using reliable method
-    const now = new Date();
-    const uzbekistanNow = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Tashkent" }));
+    // Get current time in Uzbekistan timezone using utility function
+    const uzbekistanNow = getCurrentDateObjectInUzbekistan();
     
     // Get the selected date as a proper date string (YYYY-MM-DD format)
     let selectedDateString;
@@ -73,10 +74,12 @@ export default function DateAvailabilityDetails({
     const uzbekistanDateString = format(uzbekistanNow, 'yyyy-MM-dd');
     const isToday = selectedDateString === uzbekistanDateString;
     
-    // For time filtering, use current hour + 1 if we're past 30 minutes
+    // For agent/host view, hide the current hour completely if any part has passed
+    // If it's 3:25 PM, hide 3:00 PM and only show 4:00 PM onwards
+    // This is different from client booking view which may allow current hour bookings
     const currentHour = isToday ? uzbekistanNow.getHours() : -1;
     const currentMinutes = isToday ? uzbekistanNow.getMinutes() : 0;
-    const effectiveCurrentHour = isToday ? (currentMinutes >= 30 ? currentHour + 1 : currentHour) : -1;
+    const effectiveCurrentHour = isToday ? currentHour + 1 : -1; // Always use next hour for agent/host view
     
     const slots = [];
     // Generate slots within the working hours range + end hour as "Day End"
@@ -126,22 +129,36 @@ export default function DateAvailabilityDetails({
         return hour >= bookedEndHour && hour < cooldownEndHour;
       });
       
-      // Only check for booking conflicts if this slot is not already booked or in cooldown
+      // Check for conflicts - both booking conflicts AND end-of-day constraints
       let hasActualConflict = false;
       
-      if (!booking && !isInCooldownPeriod && !timeSlot.isWorkingHoursEnd && slotsForDate.length > 0) {
-        const minEndHour = hour + (placeDetail.minimumHours || 1);
-        const cooldownEndHour = minEndHour + (cooldownMinutes / 60);
-        
-        // Only check for actual booking conflicts, not time constraints
-        hasActualConflict = slotsForDate.some(existingSlot => {
-          const existingStart = parseInt(existingSlot.startTime.split(':')[0], 10);
-          const existingEnd = parseInt(existingSlot.endTime.split(':')[0], 10);
+      if (!booking && !isInCooldownPeriod && !timeSlot.isWorkingHoursEnd) {
+        if (slotsForDate.length > 0) {
+          // If there are existing bookings, check for conflicts including cooldown
+          const isValidStart = isValidStartTimeEnhanced(
+            date,
+            timeSlot.time24,
+            slotsForDate,
+            placeDetail.minimumHours || 1,
+            availableTimeSlots.end,
+            cooldownMinutes
+          );
           
-          // Would the proposed booking + cooldown overlap with existing booking?
-          return (minEndHour > existingStart && hour < existingEnd) || 
-                 (cooldownEndHour > existingStart && minEndHour <= existingStart);
-        });
+          if (!isValidStart) {
+            hasActualConflict = true;
+          }
+        } else {
+          // If no existing bookings, only check end-of-day constraints without cooldown
+          const startHour = parseInt(timeSlot.time24.split(':')[0], 10);
+          const placeEndHour = parseInt(availableTimeSlots.end.split(':')[0], 10);
+          const minimumHours = placeDetail.minimumHours || 1;
+          
+          // Check if there's enough time for minimum booking (without cooldown)
+          const availableTimeBeforeClose = placeEndHour - startHour;
+          if (availableTimeBeforeClose < minimumHours) {
+            hasActualConflict = true;
+          }
+        }
       }
       
       if (booking) {

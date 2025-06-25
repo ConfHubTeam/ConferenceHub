@@ -526,7 +526,7 @@ export const validateTimeSlot = (timeSlot, bookedSlots = [], cooldownMinutes = 0
 };
 
 // Import timezone utilities for Uzbekistan-aware validation
-import { getTimezoneAwareAvailability, generateTimezoneAwareTimeOptions } from './uzbekistanTimezoneUtils';
+import { getTimezoneAwareAvailability, generateTimezoneAwareTimeOptions, getCurrentDateObjectInUzbekistan } from './uzbekistanTimezoneUtils';
 
 /**
  * Main availability check function - now timezone-aware by default
@@ -612,3 +612,83 @@ export const generateTimezoneAwareStartTimeOptions = async (
 
 // Maintain backward compatibility
 export const isValidStartTime = isValidStartTimeEnhanced;
+
+/**
+ * Determines if a date is completely unbookable (no valid start times available)
+ * This is used to show dates as red instead of orange when they have no available slots
+ * due to minimum booking requirements, day end constraints, cooldown periods, conflicts, or past times
+ */
+export const isDateCompletelyUnbookable = (date, bookedTimeSlots = [], weekdayTimeSlots, checkIn, checkOut, cooldownMinutes = 0, minimumHours = 1) => {
+  if (!date) return true;
+  
+  // Get the available time slots for this date
+  const availableTimeRange = getAvailableTimeSlots(date, weekdayTimeSlots, checkIn, checkOut);
+  const startHour = parseInt(availableTimeRange.start.split(':')[0], 10);
+  const endHour = parseInt(availableTimeRange.end.split(':')[0], 10);
+  
+  // If no working hours defined, date is unbookable
+  if (startHour >= endHour) return true;
+  
+  // Get current time in Uzbekistan timezone
+  const uzbekistanNow = getCurrentDateObjectInUzbekistan();
+  
+  // Get the selected date as a proper date string (YYYY-MM-DD format)
+  let selectedDateString;
+  if (typeof date === "string") {
+    // If it's already a string, check if it's in YYYY-MM-DD format
+    if (date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      selectedDateString = date;
+    } else {
+      // Parse and reformat to ensure YYYY-MM-DD
+      const tempDate = new Date(date);
+      selectedDateString = `${tempDate.getFullYear()}-${String(tempDate.getMonth() + 1).padStart(2, '0')}-${String(tempDate.getDate()).padStart(2, '0')}`;
+    }
+  } else {
+    // If it's a Date object, format it to YYYY-MM-DD
+    selectedDateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+  
+  const uzbekistanDateString = `${uzbekistanNow.getFullYear()}-${String(uzbekistanNow.getMonth() + 1).padStart(2, '0')}-${String(uzbekistanNow.getDate()).padStart(2, '0')}`;
+  const isToday = selectedDateString === uzbekistanDateString;
+  const currentHourUzbekistan = isToday ? uzbekistanNow.getHours() : -1;
+  
+  // Get all bookings for this date
+  const bookingsForDate = getBookedTimeSlots(date, bookedTimeSlots);
+  
+  // Count total hours in the working day
+  const totalWorkingHours = endHour - startHour;
+  let unbookableHours = 0;
+  
+  // Check each hour within working hours
+  for (let hour = startHour; hour < endHour; hour++) {
+    const timeSlot = `${hour.toString().padStart(2, '0')}:00`;
+    let isHourUnbookable = false;
+    
+    // Check if this hour is in the past (in Uzbekistan timezone)
+    if (isToday && hour <= currentHourUzbekistan) {
+      isHourUnbookable = true; // Past hours are unbookable
+    } else {
+      // Check if this hour can be a valid start time for future hours
+      const isValidStart = isValidStartTimeEnhanced(
+        date,
+        timeSlot,
+        bookingsForDate,
+        minimumHours,
+        availableTimeRange.end,
+        cooldownMinutes
+      );
+      
+      // If it's not a valid start time, it's unbookable
+      if (!isValidStart) {
+        isHourUnbookable = true;
+      }
+    }
+    
+    if (isHourUnbookable) {
+      unbookableHours++;
+    }
+  }
+  
+  // If ALL hours in the working day are unbookable, the date is completely unbookable
+  return unbookableHours >= totalWorkingHours;
+};
