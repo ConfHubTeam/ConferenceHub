@@ -217,17 +217,14 @@ export default function Calendar({
     // Format the current day to string format for reliable comparison
     const formattedDay = format(day, "yyyy-MM-dd");
     
-    // If using timezone validation, check against Uzbekistan timezone availability
-    if (useTimezoneValidation && availableDatesUzbekistan && availableDatesUzbekistan.length > 0) {
-      // Date is disabled if it's not in the available dates from Uzbekistan timezone
-      if (!availableDatesUzbekistan.includes(formattedDay)) {
-        return true;
-      }
-    } else if (useTimezoneValidation) {
-      // Use Uzbekistan timezone for past date validation when timezone validation is enabled
+    // Always use Uzbekistan timezone for past date validation when timezone validation is enabled
+    if (useTimezoneValidation) {
+      // Use Uzbekistan timezone for past date validation
       if (isDateInPastUzbekistan(formattedDay)) {
         return true;
       }
+      // Note: We removed the restriction based on availableDatesUzbekistan array
+      // as it was too restrictive. The timezone-aware past date check is sufficient.
     } else {
       // Fallback to local time validation if timezone validation is not enabled
       const today = getCurrentDateObjectInUzbekistan(); // Use Uzbekistan time as default
