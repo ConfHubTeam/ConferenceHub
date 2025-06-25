@@ -1,11 +1,12 @@
-import React from "react";
 import Calendar from "./Calendar";
+import { getMinimumBookingDate } from "../utils/uzbekistanTimezoneUtils";
 
 /**
  * SpecificDateBlocker Component
  * 
  * This component handles blocking specific dates in the calendar.
  * It includes the toggle, calendar for date selection, and date management.
+ * Updated to use Uzbekistan timezone for consistent date validation.
  */
 function SpecificDateBlocker({
   blockedDates,
@@ -72,7 +73,9 @@ function SpecificDateBlocker({
           </div>
           <Calendar 
             blockedDates={blockedDates}
-            minDate={new Date(new Date().setHours(0, 0, 0, 0))} // Allow blocking from today
+            minDate={getMinimumBookingDate()} // Use Uzbekistan timezone for minimum date
+            useTimezoneValidation={true} // Enable Uzbekistan timezone validation
+            // Don't pass availableDatesUzbekistan to use default timezone-aware validation
             onBlockedDateClick={toggleBlockedDate} // Use the specific handler for date blocking
           />
           {blockedDates.length > 0 && (

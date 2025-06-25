@@ -1,12 +1,14 @@
 import React from "react";
 import Calendar from "./Calendar";
 import { format, parseISO } from "date-fns";
+import { getMinimumBookingDate, getCurrentDateInUzbekistan } from "../utils/uzbekistanTimezoneUtils";
 
 /**
  * DateAvailability Component
  * 
  * This component handles date selection and displays the main calendar
  * with blocked dates and selected date range.
+ * Updated to use Uzbekistan timezone for consistent date validation.
  */
 const DateAvailability = ({ 
   startDate, 
@@ -31,6 +33,9 @@ const DateAvailability = ({
         }}
         blockedDates={blockedDates}
         blockedWeekdays={blockedWeekdays}
+        minDate={getMinimumBookingDate(startDate)} // Use Uzbekistan timezone for minimum date
+        useTimezoneValidation={true} // Enable Uzbekistan timezone validation
+        // Don't pass availableDatesUzbekistan to use default timezone-aware validation
         // No onBlockedDateClick prop here - this is the main calendar for selecting available dates
       />
       {/* Display formatted date range with improved styling */}
