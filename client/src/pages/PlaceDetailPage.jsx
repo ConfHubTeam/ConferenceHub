@@ -12,7 +12,6 @@ import PlaceDetailsInfo from "../components/PlaceDetailsInfo";
 import WeeklyAvailabilityDisplay from "../components/WeeklyAvailabilityDisplay";
 import PlaceAvailabilityCalendar from "../components/PlaceAvailabilityCalendar";
 import PlacePerks from "../components/PlacePerks";
-import TimezoneDebugger from "../components/TimezoneDebugger";
 
 export default function PlaceDetailPage() {
   const { placeId, bookingId } = useParams();
@@ -118,9 +117,6 @@ export default function PlaceDetailPage() {
 
   return (
     <div className="mx-3 md:mx-8 lg:mx-14 -mt-4">
-      {/* Temporary debug component - remove in production */}
-      <TimezoneDebugger placeId={placeDetail?.id} />
-      
       <div className="mb-4">
         <h1 className="text-xl md:text-2xl mb-2 font-bold">{placeDetail.title}</h1>
         <a

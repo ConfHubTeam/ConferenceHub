@@ -471,8 +471,6 @@ const checkTimezoneAwareAvailability = async (req, res) => {
   try {
     const { placeId, date } = req.query;
     
-    console.log(`🐛 AVAILABILITY DEBUG - Request for placeId: ${placeId}, date: ${date}`);
-    
     if (!placeId) {
       return res.status(400).json({ error: "Place ID is required" });
     }
@@ -484,9 +482,6 @@ const checkTimezoneAwareAvailability = async (req, res) => {
     }
 
     const currentDateUzbekistan = getCurrentDateInUzbekistan();
-    console.log(`🐛 AVAILABILITY DEBUG - Current Uzbekistan date: ${currentDateUzbekistan}`);
-    console.log(`🐛 AVAILABILITY DEBUG - Server timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`);
-    console.log(`🐛 AVAILABILITY DEBUG - Server time: ${new Date().toISOString()}`);
     
     // Get bookings with approved status for this place
     const approvedBookings = await Booking.findAll({ 
@@ -495,8 +490,6 @@ const checkTimezoneAwareAvailability = async (req, res) => {
         status: 'approved' 
       } 
     });
-    
-    console.log(`🐛 AVAILABILITY DEBUG - Found ${approvedBookings.length} approved bookings`);
     
     // Extract booked time slots
     const bookedTimeSlots = [];
@@ -511,18 +504,13 @@ const checkTimezoneAwareAvailability = async (req, res) => {
       }
     });
 
-    console.log(`🐛 AVAILABILITY DEBUG - Booked time slots: ${bookedTimeSlots.length}`);
-
     // Get available dates excluding past dates in Uzbekistan timezone
     const startDate = place.startDate || currentDateUzbekistan;
-    console.log(`🐛 AVAILABILITY DEBUG - Place start date: ${startDate}`);
     
     // Use Uzbekistan timezone for consistent date calculation (1 year from current Uzbekistan date)
     const uzbekistanDate = new Date(currentDateUzbekistan);
     uzbekistanDate.setFullYear(uzbekistanDate.getFullYear() + 1);
     const endDate = place.endDate || uzbekistanDate.toISOString().split('T')[0]; // 1 year from current Uzbekistan date
-    
-    console.log(`🐛 AVAILABILITY DEBUG - Date range: ${startDate} to ${endDate}`);
     
     const availableDates = getAvailableDatesFromUzbekistan(
       startDate,
@@ -531,36 +519,20 @@ const checkTimezoneAwareAvailability = async (req, res) => {
       place.blockedWeekdays || []
     );
 
-    console.log(`🐛 AVAILABILITY DEBUG - Available dates count: ${availableDates.length}`);
-    console.log(`🐛 AVAILABILITY DEBUG - First few available dates: ${availableDates.slice(0, 5).join(', ')}`);
-    
-    // Check if current date (June 25 or 26) is in available dates
-    const june25 = '2025-06-25';
-    const june26 = '2025-06-26';
-    console.log(`🐛 AVAILABILITY DEBUG - Is ${june25} in available dates? ${availableDates.includes(june25)}`);
-    console.log(`🐛 AVAILABILITY DEBUG - Is ${june26} in available dates? ${availableDates.includes(june26)}`);
-
     // If specific date requested, get timezone-aware available time slots
     let availableTimeSlots = [];
     if (date) {
-      console.log(`🐛 AVAILABILITY DEBUG - Checking time slots for specific date: ${date}`);
-      
       // Check if date is not in the past
       const dateIsInPast = isDateInPastUzbekistan(date);
-      console.log(`🐛 AVAILABILITY DEBUG - Is ${date} in past? ${dateIsInPast}`);
       
       if (!dateIsInPast) {
         const targetDate = new Date(date);
         const dayOfWeek = targetDate.getDay();
         
-        console.log(`🐛 AVAILABILITY DEBUG - Day of week for ${date}: ${dayOfWeek}`);
-        
         // Get working hours for this day
         const workingHours = place.weekdayTimeSlots && place.weekdayTimeSlots[dayOfWeek] 
           ? place.weekdayTimeSlots[dayOfWeek]
           : { start: place.checkIn || "09:00", end: place.checkOut || "17:00" };
-
-        console.log(`🐛 AVAILABILITY DEBUG - Working hours for ${date}:`, workingHours);
 
         // Get timezone-aware available slots
         if (workingHours.start && workingHours.end) {

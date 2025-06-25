@@ -149,11 +149,6 @@ export default function PlaceAvailabilityCalendar({
         if (timezoneResponse) {
           setTimezoneAvailability(timezoneResponse);
           setAvailableDatesUzbekistan(timezoneResponse.availableDates || []);
-          
-          // Debug: Log available dates to see what the API is returning
-          console.log('🐛 FRONTEND: Timezone-aware available dates:', timezoneResponse.availableDates);
-          console.log('🐛 FRONTEND: Current date (Uzbekistan):', getCurrentDateInUzbekistan());
-          console.log('🐛 FRONTEND: Is June 25 in available dates?', (timezoneResponse.availableDates || []).includes('2025-06-25'));
         }
       })
       .catch(err => {
@@ -351,7 +346,8 @@ export default function PlaceAvailabilityCalendar({
         </div>
 
         {/* Calendar with click functionality */}
-        <div className="max-w-lg mx-auto">        <Calendar 
+        <div className="max-w-lg mx-auto">
+        <Calendar 
           startDate=""
           endDate=""
           onDateChange={() => {}} // We handle clicks separately
