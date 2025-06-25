@@ -7,7 +7,7 @@ import SelectedDates from "./SelectedDates";
 import UserRoleNotification from "./UserRoleNotification";
 import DateAvailabilityDetails from "./DateAvailabilityDetails";
 import { getAvailableTimeSlots, formatHourTo12, calculateBookingPercentage, isDateCompletelyUnbookable } from "../utils/TimeUtils";
-import { getTimezoneAwareAvailability, getMinimumBookingDate } from "../utils/uzbekistanTimezoneUtils";
+import { getTimezoneAwareAvailability, getMinimumBookingDate, getCurrentDateObjectInUzbekistan } from "../utils/uzbekistanTimezoneUtils";
 
 /**
  * PlaceAvailabilityCalendar Component
@@ -47,8 +47,8 @@ export default function PlaceAvailabilityCalendar({
       return {};
     }
     
-    // Generate dates for current month and next month
-    const today = new Date();
+    // Generate dates for current month and next month using Uzbekistan timezone
+    const today = getCurrentDateObjectInUzbekistan();
     const startOfCurrentMonth = startOfMonth(today);
     const endOfNextMonth = endOfMonth(addDays(endOfMonth(today), 31)); // End of next month
     
@@ -79,8 +79,8 @@ export default function PlaceAvailabilityCalendar({
       return {};
     }
     
-    // Generate dates for current month and next month
-    const today = new Date();
+    // Generate dates for current month and next month using Uzbekistan timezone
+    const today = getCurrentDateObjectInUzbekistan();
     const startOfCurrentMonth = startOfMonth(today);
     const endOfNextMonth = endOfMonth(addDays(endOfMonth(today), 31)); // End of next month
     

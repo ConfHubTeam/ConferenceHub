@@ -27,10 +27,12 @@ export const getCurrentDateObjectInUzbekistan = () => {
 
 /**
  * Check if a date is in the past according to Uzbekistan timezone
+ * Returns true only if the date is BEFORE today (not including today)
  */
 export const isDateInPastUzbekistan = (dateString) => {
   const targetDate = parseISO(dateString);
   const currentDateUzbekistan = getCurrentDateObjectInUzbekistan();
+  // Use strict less than comparison - today should NOT be considered past
   return isBefore(startOfDay(targetDate), startOfDay(currentDateUzbekistan));
 };
 
@@ -87,35 +89,69 @@ export const getFirstAvailableHour = (dateString, workingHours = { start: "09:00
  * Check if a specific time on a specific date is in the past according to Uzbekistan timezone
  */
 export const isTimeInPastUzbekistan = (dateString, timeString) => {
-  const now = new Date();
-  const uzbekistanNow = new Date(now.toLocaleString("en-US", { timeZone: UZBEKISTAN_TIMEZONE }));
-  
-  const targetDate = parseISO(dateString);
-  const [hours, minutes] = timeString.split(':').map(Number);
-  
-  // Set target time
-  const targetDateTime = new Date(targetDate);
-  targetDateTime.setHours(hours, minutes || 0, 0, 0);
-  
-  // Check if target date is today in Uzbekistan
-  const uzbekistanToday = format(uzbekistanNow, 'yyyy-MM-dd');
-  const targetDateString = format(targetDate, 'yyyy-MM-dd');
-  
-  if (targetDateString !== uzbekistanToday) {
-    return false; // Not today, so time is not in past
+  // Validate input parameters
+  if (!dateString || !timeString) {
+    console.warn('isTimeInPastUzbekistan: Invalid parameters', { dateString, timeString });
+    return false;
   }
   
-  // For today, check if the time has passed
-  const currentHour = uzbekistanNow.getHours();
-  const currentMinute = uzbekistanNow.getMinutes();
-  
-  if (hours < currentHour) {
-    return true;
-  } else if (hours === currentHour && (minutes || 0) <= currentMinute) {
-    return true;
+  // Validate time string format
+  if (typeof timeString !== 'string' || !timeString.includes(':')) {
+    console.warn('isTimeInPastUzbekistan: Invalid time format', { timeString });
+    return false;
   }
   
-  return false;
+  try {
+    const now = new Date();
+    const uzbekistanNow = new Date(now.toLocaleString("en-US", { timeZone: UZBEKISTAN_TIMEZONE }));
+    
+    const targetDate = parseISO(dateString);
+    
+    // Validate the parsed date
+    if (isNaN(targetDate.getTime())) {
+      console.warn('isTimeInPastUzbekistan: Invalid date string', { dateString });
+      return false;
+    }
+    
+    const [hours, minutes] = timeString.split(':').map(Number);
+    
+    // Validate hour and minute values
+    if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+      console.warn('isTimeInPastUzbekistan: Invalid time values', { hours, minutes, timeString });
+      return false;
+    }
+    
+    // Set target time
+    const targetDateTime = new Date(targetDate);
+    targetDateTime.setHours(hours, minutes || 0, 0, 0);
+    
+    // Check if target date is today in Uzbekistan
+    const uzbekistanToday = format(uzbekistanNow, 'yyyy-MM-dd');
+    const targetDateString = format(targetDate, 'yyyy-MM-dd');
+    
+    if (targetDateString !== uzbekistanToday) {
+      return false; // Not today, so time is not in past
+    }
+    
+    // For today, check if the time has passed
+    const currentHour = uzbekistanNow.getHours();
+    const currentMinute = uzbekistanNow.getMinutes();
+    
+    if (hours < currentHour) {
+      return true;
+    } else if (hours === currentHour && (minutes || 0) <= currentMinute) {
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('isTimeInPastUzbekistan: Error processing time validation', { 
+      dateString, 
+      timeString, 
+      error: error.message 
+    });
+    return false; // Default to not past if there's an error
+  }
 };
 
 /**

@@ -1,6 +1,6 @@
 import React from "react";
 import Calendar from "./Calendar";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, differenceInDays } from "date-fns";
 import { getMinimumBookingDate, getCurrentDateInUzbekistan } from "../utils/uzbekistanTimezoneUtils";
 
 /**
@@ -34,8 +34,8 @@ const DateAvailability = ({
         blockedDates={blockedDates}
         blockedWeekdays={blockedWeekdays}
         minDate={getMinimumBookingDate(startDate)} // Use Uzbekistan timezone for minimum date
-        useTimezoneValidation={true} // Enable Uzbekistan timezone validation
-        // Don't pass availableDatesUzbekistan to use default timezone-aware validation
+        // For place editing/creation, don't use strict timezone validation
+        // This allows hosts to set availability starting from today
         // No onBlockedDateClick prop here - this is the main calendar for selecting available dates
       />
       {/* Display formatted date range with improved styling */}
@@ -53,7 +53,7 @@ const DateAvailability = ({
           </p>
           {endDate && (
             <p className="text-blue-600 text-sm mt-1 font-medium">
-              {Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1} days selected
+              {differenceInDays(parseISO(endDate), parseISO(startDate)) + 1} days selected
             </p>
           )}
         </div>

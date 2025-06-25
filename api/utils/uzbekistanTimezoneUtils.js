@@ -152,7 +152,7 @@ const getAvailableDatesFromUzbekistan = (startDate, endDate, blockedDates = [], 
     const dateString = currentDateIterator.format('YYYY-MM-DD');
     const dayOfWeek = currentDateIterator.day();
     
-    // Skip past dates
+    // Skip past dates (but include today)
     if (currentDateIterator.isBefore(moment.tz(currentDate, UZBEKISTAN_TIMEZONE), 'day')) {
       currentDateIterator.add(1, 'day');
       continue;
