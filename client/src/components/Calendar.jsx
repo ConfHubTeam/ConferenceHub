@@ -27,6 +27,7 @@ export default function Calendar({
   onIndividualDateClick = null, // New prop for individual date selection handler
   individualDateMode = false, // New prop to enable individual date selection mode
   bookingPercentages = {}, // New prop for booking percentages by date
+  completelyUnbookableDates = {}, // New prop for dates that are completely unbookable
   availableDatesUzbekistan = [], // New prop for timezone-aware available dates
   useTimezoneValidation = false // New prop to enable Uzbekistan timezone validation
 }) {
@@ -276,6 +277,7 @@ export default function Calendar({
     
     // Check booking percentage for this date
     const bookingPercentage = bookingPercentages[formattedDay] || 0;
+    const isCompletelyUnbookable = completelyUnbookableDates[formattedDay] || false;
     
     let classNames = "h-10 w-10 relative flex items-center justify-center transition-all duration-200 ";
     
@@ -299,16 +301,16 @@ export default function Calendar({
       } else if (isWithinRange && !individualDateMode) {
         classNames += "bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 ";
       } else {
-        // Apply color coding based on booking percentage
+        // Apply color coding based on booking percentage and unbookability
         if (!onBlockedDateClick && isCurrentMonth) {
-          if (bookingPercentage === 0) {
-            // Green: 0% booked
-            classNames += "bg-green-100 text-green-800 hover:bg-green-200 border border-green-200 ";
-          } else if (bookingPercentage === 100) {
-            // Red: 100% booked
+          if (isCompletelyUnbookable || bookingPercentage === 100) {
+            // Red: completely unbookable due to constraints OR 100% booked
             classNames += "bg-red-100 text-red-800 hover:bg-red-200 border border-red-200 ";
+          } else if (bookingPercentage === 0) {
+            // Green: 0% booked and has available slots
+            classNames += "bg-green-100 text-green-800 hover:bg-green-200 border border-green-200 ";
           } else if (bookingPercentage > 0) {
-            // Orange: partially booked
+            // Orange: partially booked but still has available slots
             classNames += "bg-orange-100 text-orange-800 hover:bg-orange-200 border border-orange-200 ";
           } else {
             classNames += "hover:bg-blue-50 hover:border hover:border-blue-200 ";
@@ -496,7 +498,7 @@ export default function Calendar({
       </div>
 
       {/* Color coding legend */}
-      {!onBlockedDateClick && Object.keys(bookingPercentages).length > 0 && (
+      {!onBlockedDateClick && (Object.keys(bookingPercentages).length > 0 || Object.keys(completelyUnbookableDates).length > 0) && (
         <div className="mt-3 px-3 py-2 bg-gray-50 rounded-lg border border-gray-100">
           <p className="text-xs text-gray-600 mb-2 font-medium">Availability Legend:</p>
           <div className="flex flex-wrap gap-2 justify-center">
@@ -510,7 +512,7 @@ export default function Calendar({
             </div>
             <div className="flex items-center">
               <div className="h-3 w-3 bg-red-100 border border-red-200 rounded mr-1"></div>
-              <span className="text-xs text-gray-600">Fully Booked</span>
+              <span className="text-xs text-gray-600">Fully Booked / Unavailable</span>
             </div>
           </div>
         </div>

@@ -1,7 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { format, parseISO } from "date-fns";
 import { generateTimeOptions, generateStartTimeOptions, isTimeBlocked, isTimeRangeAvailableEnhanced, isValidStartTimeEnhanced } from "../utils/TimeUtils";
-import { generateTimezoneAwareTimeOptions } from "../utils/uzbekistanTimezoneUtils";
+import { generateTimezoneAwareTimeOptions, isTimeInPastUzbekistan, getFirstAvailableHour } from "../utils/uzbekistanTimezoneUtils";
 
 /**
  * TimeSlotModal Component
@@ -40,12 +40,22 @@ export default function TimeSlotModal({
         timezoneAvailableTimeSlots,
         workingHours,
         minimumHours,
-        cooldownMinutes
+        cooldownMinutes,
+        currentEditingDate // Pass the current editing date for timezone checking
       );
     } else {
       // Fallback to regular time generation
       availableOptions = generateTimeOptions(timeSlots.start, timeSlots.end, minimumHours, cooldownMinutes)
-        .map(option => ({ ...option, isAvailable: true, isDisabled: false }));
+        .map(option => {
+          // Check if this time is in the past for the editing date
+          const isPastTime = isTimeInPastUzbekistan(currentEditingDate, option.value);
+          return {
+            ...option, 
+            isAvailable: !isPastTime, 
+            isDisabled: isPastTime,
+            disabledReason: isPastTime ? 'Past time (Uzbekistan timezone)' : null
+          };
+        });
     }
     
     // Add booking conflict status to each time option
@@ -109,14 +119,15 @@ export default function TimeSlotModal({
         timezoneAvailableTimeSlots,
         workingHours,
         minimumHours,
-        cooldownMinutes
+        cooldownMinutes,
+        currentEditingDate // Pass the current editing date for timezone checking
       ).map(option => {
         // If disabled due to timezone, mark as blocked
         if (option.isDisabled) {
           return {
             ...option,
             isBlocked: true,
-            disabledReason: 'Past time (Uzbekistan timezone)'
+            disabledReason: option.disabledReason || 'Past time (Uzbekistan timezone)'
           };
         }
         
@@ -142,6 +153,17 @@ export default function TimeSlotModal({
     const startOptions = generateStartTimeOptions(timeSlots.start, timeSlots.end, minimumHours, cooldownMinutes);
     
     return startOptions.map(option => {
+      // Check if this time is in the past for the editing date
+      const isPastTime = isTimeInPastUzbekistan(currentEditingDate, option.value);
+      
+      if (isPastTime) {
+        return {
+          ...option,
+          isBlocked: true,
+          disabledReason: 'Past time (Uzbekistan timezone)'
+        };
+      }
+      
       // Use isValidStartTimeEnhanced to check if this can be a start time (includes end-of-day restrictions)
       const isValidStart = isValidStartTimeEnhanced(
         currentEditingDate, 
@@ -160,6 +182,29 @@ export default function TimeSlotModal({
     });
   }, [timeSlots, currentEditingDate, bookedTimeSlots, placeDetail.minimumHours, placeDetail.cooldown, timezoneAvailableTimeSlots]);
 
+  // Set default start time to first available hour when modal opens or date changes
+  useEffect(() => {
+    if (isOpen && currentEditingDate && !selectedStartTime) {
+      // Get the first available hour for this date
+      const firstAvailableHour = getFirstAvailableHour(currentEditingDate, timeSlots);
+      
+      // Check if this hour is actually available (not blocked by bookings)
+      const isFirstHourAvailable = startTimeOptions.find(option => 
+        option.value === firstAvailableHour && !option.isBlocked
+      );
+      
+      if (isFirstHourAvailable) {
+        onStartTimeChange(firstAvailableHour);
+      } else {
+        // Find the first non-blocked option from startTimeOptions
+        const firstAvailableOption = startTimeOptions.find(option => !option.isBlocked);
+        if (firstAvailableOption) {
+          onStartTimeChange(firstAvailableOption.value);
+        }
+      }
+    }
+  }, [isOpen, currentEditingDate, selectedStartTime, timeSlots, startTimeOptions, onStartTimeChange]);
+
   // Handle start time change with validation
   const handleStartTimeChange = (value) => {
     onStartTimeChange(value);
@@ -169,6 +214,7 @@ export default function TimeSlotModal({
       const startHour = parseInt(value.split(':')[0], 10);
       const endHour = parseInt(selectedEndTime.split(':')[0], 10);
       const minimumHours = placeDetail.minimumHours || 1;
+      const cooldownMinutes = placeDetail.cooldown || 0;
       
       // Clear end time if it's less than start time + minimum hours
       if (endHour < startHour + minimumHours) {

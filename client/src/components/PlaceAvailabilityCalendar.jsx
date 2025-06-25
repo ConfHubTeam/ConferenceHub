@@ -6,8 +6,8 @@ import TimeSlotModal from "./TimeSlotModal";
 import SelectedDates from "./SelectedDates";
 import UserRoleNotification from "./UserRoleNotification";
 import DateAvailabilityDetails from "./DateAvailabilityDetails";
-import { getAvailableTimeSlots, formatHourTo12, calculateBookingPercentage } from "../utils/TimeUtils";
-import { getTimezoneAwareAvailability } from "../utils/uzbekistanTimezoneUtils";
+import { getAvailableTimeSlots, formatHourTo12, calculateBookingPercentage, isDateCompletelyUnbookable } from "../utils/TimeUtils";
+import { getTimezoneAwareAvailability, getMinimumBookingDate } from "../utils/uzbekistanTimezoneUtils";
 
 /**
  * PlaceAvailabilityCalendar Component
@@ -71,6 +71,41 @@ export default function PlaceAvailabilityCalendar({
     }
     
     return percentages;
+  }, [bookedTimeSlots, placeDetail]); // Update dependencies
+  
+  // Calculate completely unbookable dates (should be shown as red even if not 100% booked)
+  const completelyUnbookableDates = useMemo(() => {
+    if (!bookedTimeSlots || bookedTimeSlots.length === 0) {
+      return {};
+    }
+    
+    // Generate dates for current month and next month
+    const today = new Date();
+    const startOfCurrentMonth = startOfMonth(today);
+    const endOfNextMonth = endOfMonth(addDays(endOfMonth(today), 31)); // End of next month
+    
+    const unbookable = {};
+    let currentDate = startOfCurrentMonth;
+    
+    while (currentDate <= endOfNextMonth) {
+      const dateStr = format(currentDate, "yyyy-MM-dd");
+      
+      // Check if this date is completely unbookable due to constraints
+      const isUnbookable = isDateCompletelyUnbookable(
+        dateStr,
+        bookedTimeSlots,
+        placeDetail.weekdayTimeSlots,
+        placeDetail.checkIn,
+        placeDetail.checkOut,
+        placeDetail.cooldown || 0,
+        placeDetail.minimumHours || 1
+      );
+      
+      unbookable[dateStr] = isUnbookable;
+      currentDate = addDays(currentDate, 1);
+    }
+    
+    return unbookable;
   }, [bookedTimeSlots, placeDetail]); // Update dependencies
   
   const {
@@ -173,7 +208,7 @@ export default function PlaceAvailabilityCalendar({
         setCurrentDateAvailableSlots(dateAvailability.availableTimeSlots || []);
         
         const timeSlots = getAvailableTimeSlots(dateString, weekdayTimeSlots, checkIn, checkOut);
-        setSelectedStartTime(timeSlots.start);
+        setSelectedStartTime(""); // Let TimeSlotModal set intelligent default
         setSelectedEndTime("");
         setShowTimeSlotModal(true);
       } catch (error) {
@@ -181,7 +216,7 @@ export default function PlaceAvailabilityCalendar({
         
         // Fallback to regular time slot generation
         const timeSlots = getAvailableTimeSlots(dateString, weekdayTimeSlots, checkIn, checkOut);
-        setSelectedStartTime(timeSlots.start);
+        setSelectedStartTime(""); // Let TimeSlotModal set intelligent default
         setSelectedEndTime("");
         setShowTimeSlotModal(true);
       }
@@ -311,19 +346,19 @@ export default function PlaceAvailabilityCalendar({
         </div>
 
         {/* Calendar with click functionality */}
-        <div className="max-w-lg mx-auto">
-          <Calendar 
-            startDate=""
-            endDate=""
-            onDateChange={() => {}} // We handle clicks separately
-            minDate={startDate ? new Date(startDate) : new Date()}
-            maxDate={endDate ? new Date(endDate) : null}
+        <div className="max-w-lg mx-auto">        <Calendar 
+          startDate=""
+          endDate=""
+          onDateChange={() => {}} // We handle clicks separately
+          minDate={getMinimumBookingDate(startDate)}
+          maxDate={endDate ? new Date(endDate) : null}
             blockedDates={blockedDates || []}
             blockedWeekdays={blockedWeekdays || []}
             selectedIndividualDates={[]} // No selection mode
             onIndividualDateClick={handleDetailDateClick} // Show details on date click
             individualDateMode={true} // Enable individual date selection mode
             bookingPercentages={bookingPercentages} // Pass booking percentages
+            completelyUnbookableDates={completelyUnbookableDates} // Pass completely unbookable dates
             availableDatesUzbekistan={availableDatesUzbekistan} // Timezone-aware available dates
             useTimezoneValidation={true} // Enable Uzbekistan timezone validation
           />
@@ -373,7 +408,7 @@ export default function PlaceAvailabilityCalendar({
           startDate="" // Clear range selection
           endDate=""
           onDateChange={handleDateChange}
-          minDate={startDate ? new Date(startDate) : new Date()}
+          minDate={getMinimumBookingDate(startDate)}
           maxDate={endDate ? new Date(endDate) : null}
           blockedDates={blockedDates || []}
           blockedWeekdays={blockedWeekdays || []}
@@ -381,6 +416,7 @@ export default function PlaceAvailabilityCalendar({
           onIndividualDateClick={handleDateClick} // Both authenticated and unauthenticated users can select dates
           individualDateMode={true} // Enable individual date selection mode
           bookingPercentages={bookingPercentages} // Pass booking percentages
+          completelyUnbookableDates={completelyUnbookableDates} // Pass completely unbookable dates
           availableDatesUzbekistan={availableDatesUzbekistan} // Timezone-aware available dates
           useTimezoneValidation={true} // Enable Uzbekistan timezone validation
         />
