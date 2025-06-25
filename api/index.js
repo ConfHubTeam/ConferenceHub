@@ -154,10 +154,6 @@ app.use('/api/places', placeRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/currency', currencyRoutes);
 
-// Debug routes for timezone troubleshooting
-const debugRoutes = require('./routes/debug');
-app.use('/api/debug', debugRoutes);
-
 // For production: Serve static files from the client build folder
 if (process.env.NODE_ENV === 'production') {
   const clientBuildPath = path.join(__dirname, '../client/dist');

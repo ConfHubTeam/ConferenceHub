@@ -1,7 +1,3 @@
-/**
- * Uzbekistan timezone-aware time validation utilities
- * All hosts are in Uzbekistan (Asia/Tashkent timezone)
- */
 
 const moment = require('moment-timezone');
 
@@ -19,9 +15,6 @@ const getCurrentTimeInUzbekistan = () => {
  */
 const getCurrentDateInUzbekistan = () => {
   const result = moment().tz(UZBEKISTAN_TIMEZONE).format('YYYY-MM-DD');
-  console.log(`🐛 TIMEZONE DEBUG - getCurrentDateInUzbekistan() returning: ${result}`);
-  console.log(`🐛 TIMEZONE DEBUG - Server time: ${new Date().toISOString()}`);
-  console.log(`🐛 TIMEZONE DEBUG - Uzbekistan time: ${moment().tz(UZBEKISTAN_TIMEZONE).format()}`);
   return result;
 };
 
@@ -31,7 +24,6 @@ const getCurrentDateInUzbekistan = () => {
 const getCurrentDateObjectInUzbekistan = () => {
   const uzbekTime = moment().tz(UZBEKISTAN_TIMEZONE);
   const result = uzbekTime.toDate();
-  console.log(`🐛 TIMEZONE DEBUG - getCurrentDateObjectInUzbekistan() returning: ${result.toISOString()}`);
   return result;
 };
 
@@ -42,13 +34,6 @@ const isDateInPastUzbekistan = (dateString) => {
   const targetDate = moment.tz(dateString, UZBEKISTAN_TIMEZONE).startOf('day');
   const currentDate = moment().tz(UZBEKISTAN_TIMEZONE).startOf('day');
   const result = targetDate.isBefore(currentDate);
-  
-  console.log(`🐛 TIMEZONE DEBUG - isDateInPastUzbekistan('${dateString}'):`);
-  console.log(`🐛 TIMEZONE DEBUG - Target date: ${targetDate.format()}`);
-  console.log(`🐛 TIMEZONE DEBUG - Current date: ${currentDate.format()}`);
-  console.log(`🐛 TIMEZONE DEBUG - Is past? ${result}`);
-  console.log(`🐛 TIMEZONE DEBUG - Target timestamp: ${targetDate.valueOf()}`);
-  console.log(`🐛 TIMEZONE DEBUG - Current timestamp: ${currentDate.valueOf()}`);
   
   return result;
 };
