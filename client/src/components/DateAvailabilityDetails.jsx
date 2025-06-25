@@ -47,7 +47,6 @@ export default function DateAvailabilityDetails({
     
     // Safety check for NaN values
     if (isNaN(startHour) || isNaN(endHour) || startHour >= endHour) {
-      console.error('Invalid time range detected:', { availableTimeSlots, startHour, endHour });
       setAllTimeSlots([]);
       return;
     }
@@ -78,17 +77,6 @@ export default function DateAvailabilityDetails({
     const currentHour = isToday ? uzbekistanNow.getHours() : -1;
     const currentMinutes = isToday ? uzbekistanNow.getMinutes() : 0;
     const effectiveCurrentHour = isToday ? (currentMinutes >= 30 ? currentHour + 1 : currentHour) : -1;
-    
-    console.log('Timezone debug:', {
-      originalDate: date,
-      selectedDateString,
-      uzbekistanNow: uzbekistanNow.toISOString(),
-      uzbekistanDateString,
-      isToday,
-      currentHour,
-      currentMinutes,
-      effectiveCurrentHour
-    });
     
     const slots = [];
     // Generate slots within the working hours range + end hour as "Day End"
