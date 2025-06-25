@@ -93,6 +93,9 @@ async function createAdminAccountIfNotExists() {
   }
 }
 
+// Import Uzbekistan timezone utilities
+const { getCurrentDateInUzbekistan } = require('./utils/uzbekistanTimezoneUtils');
+
 // Create API router for all API endpoints
 const apiRouter = express.Router();
 
@@ -114,7 +117,7 @@ app.get('/api/health', (req, res) => {
   
   const healthStatus = {
     status: 'OK',
-    timestamp: new Date().toISOString(),
+    timestamp: getCurrentDateInUzbekistan() + 'T' + new Date().toLocaleTimeString('en-US', {timeZone: 'Asia/Tashkent', hour12: false}),
     environment: process.env.NODE_ENV,
     buildPath: clientBuildPath,
     buildExists: fs.existsSync(clientBuildPath)

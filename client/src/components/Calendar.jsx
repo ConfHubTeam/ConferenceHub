@@ -13,6 +13,7 @@ import {
   addMonths,
   parseISO
 } from "date-fns";
+import { getCurrentDateInUzbekistan, isDateInPastUzbekistan } from "../utils/uzbekistanTimezoneUtils";
 
 export default function Calendar({ 
   startDate, 
@@ -207,21 +208,24 @@ export default function Calendar({
   
   // Check if a date is disabled (past dates, outside min/max range, blocked dates or weekdays)
   const isDisabled = (day) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate comparison
-    
     // Format the current day to string format for reliable comparison
     const formattedDay = format(day, "yyyy-MM-dd");
     
     // If using timezone validation, check against Uzbekistan timezone availability
-    if (useTimezoneValidation && availableDatesUzbekistan.length > 0) {
+    if (useTimezoneValidation && availableDatesUzbekistan && availableDatesUzbekistan.length > 0) {
       // Date is disabled if it's not in the available dates from Uzbekistan timezone
       if (!availableDatesUzbekistan.includes(formattedDay)) {
         return true;
       }
+    } else if (useTimezoneValidation) {
+      // Use Uzbekistan timezone for past date validation when timezone validation is enabled
+      if (isDateInPastUzbekistan(formattedDay)) {
+        return true;
+      }
     } else {
       // Fallback to local time validation if timezone validation is not enabled
-      // Disable dates that are in the past (local time)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate comparison
       if (isBefore(day, today)) {
         return true;
       }
@@ -256,17 +260,29 @@ export default function Calendar({
 
   // Get class names for a calendar day
   const getDayClass = (day) => {
-    const isToday = isSameDay(day, new Date());
+    const formattedDay = format(day, "yyyy-MM-dd");
+    
+    // Determine if today based on timezone validation setting
+    let isToday, isPastDate;
+    if (useTimezoneValidation) {
+      const currentDateUzbekistan = getCurrentDateInUzbekistan();
+      isToday = formattedDay === currentDateUzbekistan;
+      isPastDate = isDateInPastUzbekistan(formattedDay);
+    } else {
+      const today = new Date();
+      isToday = isSameDay(day, today);
+      isPastDate = isBefore(day, today) && day.getDate() !== today.getDate();
+    }
+    
     const isStartDate = start && isSameDay(day, start);
     const isEndDate = end && isSameDay(day, end);
     const isWithinRange = isInRange(day);
     const isDisabledDate = isDisabled(day);
     const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
-    const isPastDate = isBefore(day, new Date()) && day.getDate() !== new Date().getDate();
     const isIndividualSelected = isIndividuallySelected(day);
     
     // Check if this date is blocked (for visual indication in blocking calendar)
-    const formattedDay = format(day, "yyyy-MM-dd");
+    // formattedDay is already declared above
     const isDateBlocked = blockedDates.some(blockedDate => {
       if (typeof blockedDate === "string") {
         return formattedDay === blockedDate;
@@ -425,7 +441,16 @@ export default function Calendar({
               return isSameDay(day, blockedDate);
             }
           });
-          const isToday = isSameDay(day, new Date());
+          
+          // Determine isToday based on timezone validation setting
+          let isToday;
+          if (useTimezoneValidation) {
+            const formattedDay = format(day, "yyyy-MM-dd");
+            const currentDateUzbekistan = getCurrentDateInUzbekistan();
+            isToday = formattedDay === currentDateUzbekistan;
+          } else {
+            isToday = isSameDay(day, new Date());
+          }
           
           return (
             <div
