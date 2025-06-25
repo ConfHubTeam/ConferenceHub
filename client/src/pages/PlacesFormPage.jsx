@@ -213,9 +213,14 @@ export default function PlacesFormPage() {
         // Load room property data
         setSquareMeters(data.squareMeters || null);
         setIsHotel(data.isHotel || false);
+        
+        // Set the selected host for agents when editing a place
+        if (user?.userType === 'agent' && data.owner) {
+          setSelectedHost(data.owner);
+        }
       });
     }
-  }, [id]); // reactive values referenced inside of the above setup code
+  }, [id, user?.userType]); // reactive values referenced inside of the above setup code
 
   // Geocode address when it changes (with debounce) - but only for new places
   useEffect(() => {

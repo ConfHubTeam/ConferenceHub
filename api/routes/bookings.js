@@ -21,4 +21,7 @@ router.get("/competing", authenticateToken, bookingController.getCompetingBookin
 // Check availability of time slots (no auth required)
 router.get("/availability", bookingController.checkAvailability);
 
+// Check timezone-aware availability for Uzbekistan (no auth required)
+router.get("/availability/uzbekistan", bookingController.checkTimezoneAwareAvailability);
+
 module.exports = router;

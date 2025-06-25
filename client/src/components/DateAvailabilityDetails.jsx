@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { format, parseISO } from "date-fns";
 import { 
   formatHourTo12, 
   getBookedTimeSlots, 
   getAvailableTimeSlots, 
   isTimeBlocked,
-  hasConflictWithExistingBookings,
-  isValidStartTimeEnhanced 
 } from "../utils/TimeUtils";
 
 /**
@@ -42,23 +40,66 @@ export default function DateAvailabilityDetails({
     const availableTimeSlots = getAvailableTimeSlots(date, weekdayTimeSlots, checkIn, checkOut);
     setTimeRange(availableTimeSlots);
   
-    // Generate all possible time slots for the day using the correct time range
+    // Generate time slots for the day based on working hours, then filter out empty past hours in Uzbekistan timezone
     const startHour = parseInt(availableTimeSlots.start.split(":")[0], 10);
     const endHour = parseInt(availableTimeSlots.end.split(":")[0], 10);
     const cooldownMinutes = placeDetail.cooldown || 0;
     
+    // Safety check for NaN values
+    if (isNaN(startHour) || isNaN(endHour) || startHour >= endHour) {
+      setAllTimeSlots([]);
+      return;
+    }
+    
+    // Get current time in Uzbekistan timezone using reliable method
+    const now = new Date();
+    const uzbekistanNow = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Tashkent" }));
+    
+    // Get the selected date as a proper date string (YYYY-MM-DD format)
+    let selectedDateString;
+    if (typeof date === "string") {
+      // If it's already a string, check if it's in YYYY-MM-DD format
+      if (date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        selectedDateString = date;
+      } else {
+        // Parse and reformat to ensure YYYY-MM-DD
+        selectedDateString = format(parseISO(date), 'yyyy-MM-dd');
+      }
+    } else {
+      // If it's a Date object, format it to YYYY-MM-DD
+      selectedDateString = format(date, 'yyyy-MM-dd');
+    }
+    
+    const uzbekistanDateString = format(uzbekistanNow, 'yyyy-MM-dd');
+    const isToday = selectedDateString === uzbekistanDateString;
+    
+    // For time filtering, use current hour + 1 if we're past 30 minutes
+    const currentHour = isToday ? uzbekistanNow.getHours() : -1;
+    const currentMinutes = isToday ? uzbekistanNow.getMinutes() : 0;
+    const effectiveCurrentHour = isToday ? (currentMinutes >= 30 ? currentHour + 1 : currentHour) : -1;
+    
     const slots = [];
-    for (let hour = startHour; hour <= endHour; hour++) {
+    // Generate slots within the working hours range + end hour as "Day End"
+    for (let hour = startHour; hour <= endHour; hour++) { // Include end hour as "Day End" slot
+      const isPastHour = isToday && hour < effectiveCurrentHour;
+      const isEndHour = hour === endHour;
       const timeSlot = {
         hour: hour,
         time24: `${hour.toString().padStart(2, "0")}:00`,
         display: formatHourTo12(`${hour.toString().padStart(2, "0")}:00`),
         isBooked: false,
         isInCooldown: false,
-        isConflicted: false, // New field for enhanced conflict detection
-        isWorkingHoursEnd: hour === endHour,
+        isConflicted: false,
+        isWorkingHoursEnd: isEndHour,
+        isPast: isPastHour,
         booking: null
       };
+      
+      // Skip business logic for "Day End" slot - it's just for display
+      if (isEndHour) {
+        slots.push(timeSlot);
+        continue;
+      }
       
       // Check if this time slot is blocked by actual bookings or cooldown (legacy check)
       const isBlocked = isTimeBlocked(
@@ -116,7 +157,27 @@ export default function DateAvailabilityDetails({
       slots.push(timeSlot);
     }
     
-    setAllTimeSlots(slots);
+    // Filter out past hours that are empty (not booked, not in cooldown, not conflicted)
+    // Keep past hours only if they have important status information
+    // Always show "Day End" slot
+    const filteredSlots = slots.filter(slot => {
+      // Always show "Day End" slot
+      if (slot.isWorkingHoursEnd) {
+        return true;
+      }
+      
+      const isPastHour = isToday && slot.hour < effectiveCurrentHour;
+      
+      if (!isPastHour) {
+        // Not a past hour, always show
+        return true;
+      }
+      
+      // Past hour - only show if it has important status (hide empty available past slots)
+      return slot.isBooked || slot.isInCooldown || slot.isConflicted;
+    });
+    
+    setAllTimeSlots(filteredSlots);
     
   }, [date, bookedTimeSlots, placeDetail]);
 
@@ -170,7 +231,8 @@ export default function DateAvailabilityDetails({
                 <div 
                   key={slot.time24} 
                   className={`
-                    p-3 rounded-lg flex items-center
+                    p-3 rounded-lg flex items-center relative
+                    ${slot.isPast ? 'opacity-60' : ''}
                     ${slot.isBooked 
                       ? 'bg-red-50 border border-red-200' 
                       : slot.isInCooldown
@@ -183,6 +245,15 @@ export default function DateAvailabilityDetails({
                     }
                   `}
                 >
+                  {/* X icon for past slots */}
+                  {slot.isPast && (
+                    <div className="absolute top-1 right-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3 text-gray-500">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </div>
+                  )}
+                  
                   <div className={`w-2 h-8 rounded-full mr-3 ${
                     slot.isBooked 
                       ? 'bg-red-500' 
@@ -195,14 +266,22 @@ export default function DateAvailabilityDetails({
                             : 'bg-green-500'
                   }`}></div>
                   <div>
-                    <div className="font-medium">{slot.display}</div>
+                    <div className={`font-medium ${slot.isPast ? 'text-gray-500 line-through' : ''}`}>
+                      {slot.display}
+                    </div>
                     <div className="text-xs mt-0.5">
                       {slot.isBooked ? (
-                        <span className="text-red-700">Booked</span>
+                        <span className={slot.isPast ? 'text-gray-500' : 'text-red-700'}>
+                          Booked{slot.isPast ? ' (Past)' : ''}
+                        </span>
                       ) : slot.isInCooldown ? (
-                        <span className="text-orange-700">Cooldown</span>
+                        <span className={slot.isPast ? 'text-gray-500' : 'text-orange-700'}>
+                          Cooldown{slot.isPast ? ' (Past)' : ''}
+                        </span>
                       ) : slot.isConflicted ? (
-                        <span className="text-purple-700">Conflicts</span>
+                        <span className={slot.isPast ? 'text-gray-500' : 'text-purple-700'}>
+                          Conflicts{slot.isPast ? ' (Past)' : ''}
+                        </span>
                       ) : slot.isWorkingHoursEnd ? (
                         <span className="text-gray-700">Day End</span>
                       ) : (
