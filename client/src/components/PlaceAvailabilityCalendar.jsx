@@ -351,7 +351,7 @@ export default function PlaceAvailabilityCalendar({
           startDate=""
           endDate=""
           onDateChange={() => {}} // We handle clicks separately
-          minDate={getMinimumBookingDate(startDate)}
+          // minDate removed when using timezone validation - let timezone logic handle past dates
           maxDate={endDate ? new Date(endDate) : null}
             blockedDates={blockedDates || []}
             blockedWeekdays={blockedWeekdays || []}
@@ -409,7 +409,7 @@ export default function PlaceAvailabilityCalendar({
           startDate="" // Clear range selection
           endDate=""
           onDateChange={handleDateChange}
-          minDate={getMinimumBookingDate(startDate)}
+          // minDate removed when using timezone validation - let timezone logic handle past dates
           maxDate={endDate ? new Date(endDate) : null}
           blockedDates={blockedDates || []}
           blockedWeekdays={blockedWeekdays || []}
