@@ -30,7 +30,15 @@ export default function TimezoneDebugger({ placeId = null }) {
         api.get('/debug/test-calendar-min-date').catch(err => ({ error: `Calendar min date: ${err.message}` }))
       ];
       
-      const [timezoneResponse, testResponse, juneTestResponse, minDateResponse] = await Promise.all(requests);
+      // Add availability check if placeId is provided
+      if (placeId) {
+        requests.push(
+          api.get(`/bookings/availability/uzbekistan?placeId=${placeId}`).catch(err => ({ error: `Availability: ${err.message}` }))
+        );
+      }
+      
+      const responses = await Promise.all(requests);
+      const [timezoneResponse, testResponse, juneTestResponse, minDateResponse, availabilityResponse] = responses;
 
       const clientDebug = {
         clientTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -56,7 +64,8 @@ export default function TimezoneDebugger({ placeId = null }) {
         client: clientDebug,
         testAvailability: testResponse.data || testResponse,
         juneTest: juneTestResponse.data || juneTestResponse,
-        minDateTest: minDateResponse.data || minDateResponse
+        minDateTest: minDateResponse.data || minDateResponse,
+        bookingAvailability: availabilityResponse?.data || availabilityResponse || null
       });
     } catch (error) {
       console.error('🐛 FRONTEND DEBUG ERROR:', error);
@@ -213,6 +222,33 @@ export default function TimezoneDebugger({ placeId = null }) {
               </div>
             </div>
           </div>
+
+          {/* Booking Availability */}
+          {debugInfo.bookingAvailability && (
+            <div className="bg-white p-3 rounded border">
+              <h4 className="font-semibold text-gray-800 mb-2">📊 Calendar Availability Data</h4>
+              <div className="space-y-2 text-xs">
+                <div>
+                  <strong>Available Dates Array:</strong> 
+                  <div className="mt-1 p-2 bg-gray-100 rounded">
+                    {debugInfo.bookingAvailability.availableDates ? 
+                      `[${debugInfo.bookingAvailability.availableDates.join(', ')}]` : 
+                      'None'
+                    }
+                  </div>
+                </div>
+                <div>
+                  <strong>Is June 25 in available dates?</strong>
+                  <span className={debugInfo.bookingAvailability.availableDates?.includes('2025-06-25') ? 'text-green-600 ml-2' : 'text-red-600 ml-2'}>
+                    {debugInfo.bookingAvailability.availableDates?.includes('2025-06-25') ? '✅ Yes' : '❌ No'}
+                  </span>
+                </div>
+                <div>
+                  <strong>Total Available Dates:</strong> {debugInfo.bookingAvailability.availableDates?.length || 0}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Test Controls */}
           <div className="bg-blue-50 border border-blue-200 p-3 rounded">

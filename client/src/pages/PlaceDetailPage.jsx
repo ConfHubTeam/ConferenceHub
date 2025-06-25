@@ -293,9 +293,6 @@ export default function PlaceDetailPage() {
         ]}
         deleteInProgress={deleteInProgress}
       />
-
-      {/* Debugging - Timezone Information */}
-      <TimezoneDebugger />
     </div>
   );
 }

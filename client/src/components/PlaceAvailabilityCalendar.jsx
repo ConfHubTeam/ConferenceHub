@@ -7,7 +7,7 @@ import SelectedDates from "./SelectedDates";
 import UserRoleNotification from "./UserRoleNotification";
 import DateAvailabilityDetails from "./DateAvailabilityDetails";
 import { getAvailableTimeSlots, formatHourTo12, calculateBookingPercentage, isDateCompletelyUnbookable } from "../utils/TimeUtils";
-import { getTimezoneAwareAvailability, getMinimumBookingDate, getCurrentDateObjectInUzbekistan } from "../utils/uzbekistanTimezoneUtils";
+import { getTimezoneAwareAvailability, getMinimumBookingDate, getCurrentDateObjectInUzbekistan, getCurrentDateInUzbekistan } from "../utils/uzbekistanTimezoneUtils";
 
 /**
  * PlaceAvailabilityCalendar Component
@@ -149,6 +149,11 @@ export default function PlaceAvailabilityCalendar({
         if (timezoneResponse) {
           setTimezoneAvailability(timezoneResponse);
           setAvailableDatesUzbekistan(timezoneResponse.availableDates || []);
+          
+          // Debug: Log available dates to see what the API is returning
+          console.log('🐛 FRONTEND: Timezone-aware available dates:', timezoneResponse.availableDates);
+          console.log('🐛 FRONTEND: Current date (Uzbekistan):', getCurrentDateInUzbekistan());
+          console.log('🐛 FRONTEND: Is June 25 in available dates?', (timezoneResponse.availableDates || []).includes('2025-06-25'));
         }
       })
       .catch(err => {
