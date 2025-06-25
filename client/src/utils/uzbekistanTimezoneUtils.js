@@ -38,12 +38,17 @@ export const isDateInPastUzbekistan = (dateString) => {
 
 /**
  * Get minimum date for calendar (today in Uzbekistan timezone)
+ * Returns a Date object set to start of day to avoid time-based issues
  */
 export const getMinimumBookingDate = (providedStartDate = null) => {
   if (providedStartDate) {
-    return new Date(providedStartDate);
+    const date = new Date(providedStartDate);
+    date.setHours(0, 0, 0, 0); // Set to start of day
+    return date;
   }
-  return getCurrentDateObjectInUzbekistan();
+  const uzbekistanToday = getCurrentDateObjectInUzbekistan();
+  uzbekistanToday.setHours(0, 0, 0, 0); // Set to start of day to avoid time comparison issues
+  return uzbekistanToday;
 };
 
 /**
