@@ -14,8 +14,18 @@ const formatDateSafely = (date) => {
 
 // Convert hour string to 24-hour format
 export const formatHourTo24 = (hour) => {
-  if (!hour) return "09:00";
-  return hour.padStart(2, "0") + ":00";
+  if (!hour || hour === "") return "09:00";
+  
+  // If it's already in HH:MM format, return as is
+  if (hour.includes(":")) {
+    return hour;
+  }
+  
+  // If it's just a number, pad it and add :00
+  const hourNum = parseInt(hour, 10);
+  if (isNaN(hourNum)) return "09:00";
+  
+  return hourNum.toString().padStart(2, "0") + ":00";
 };
 
 // Convert 24-hour format to 12-hour format for display
@@ -72,7 +82,9 @@ export const generateStartTimeOptions = (startHour, endHour, minimumHours = 1, c
 
 // Get available time slots for a specific day
 export const getAvailableTimeSlots = (dateString, weekdayTimeSlots, checkIn, checkOut) => {
-  if (!dateString) return { start: checkIn || "09:00", end: checkOut || "17:00" };
+  if (!dateString) {
+    return { start: checkIn || "09:00", end: checkOut || "17:00" };
+  }
   
   // Ensure date is properly parsed
   const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
@@ -81,7 +93,7 @@ export const getAvailableTimeSlots = (dateString, weekdayTimeSlots, checkIn, che
   // Check if there are specific time slots for this weekday
   if (weekdayTimeSlots && weekdayTimeSlots[dayOfWeek]) {
     const timeSlot = weekdayTimeSlots[dayOfWeek];
-    if (timeSlot.start && timeSlot.end) {
+    if (timeSlot.start && timeSlot.end && timeSlot.start !== "" && timeSlot.end !== "") {
       const result = {
         start: formatHourTo24(timeSlot.start),
         end: formatHourTo24(timeSlot.end)
@@ -91,7 +103,8 @@ export const getAvailableTimeSlots = (dateString, weekdayTimeSlots, checkIn, che
   }
   
   // Fallback to general check-in/check-out times
- return { start: checkIn || "09:00", end: checkOut || "17:00" };
+  const fallback = { start: checkIn || "09:00", end: checkOut || "17:00" };
+  return fallback;
 };
 
 // Check if a specific time is blocked based on existing bookings and cooldown constraints
