@@ -1,8 +1,9 @@
 import { format, parseISO } from "date-fns";
+import { getCurrentDateObjectInUzbekistan } from "../utils/uzbekistanTimezoneUtils";
 
 // Helper function to safely parse date strings without timezone issues
 const parseDateSafely = (dateString) => {
-  if (!dateString) return new Date();
+  if (!dateString) return getCurrentDateObjectInUzbekistan(); // Use Uzbekistan time as default
   
   // If it's already a Date object, return as is
   if (dateString instanceof Date) return dateString;

@@ -24,8 +24,6 @@ export default function TimeSlotModal({
   bookedTimeSlots = [], // Array of existing bookings
   timezoneAvailableTimeSlots = [] // New prop for timezone-aware available time slots
 }) {
-  if (!isOpen || !currentEditingDate) return null;
-
   // Generate time options and mark blocked times
   const timeOptions = useMemo(() => {
     const minimumHours = placeDetail.minimumHours || 1;
@@ -48,7 +46,17 @@ export default function TimeSlotModal({
       availableOptions = generateTimeOptions(timeSlots.start, timeSlots.end, minimumHours, cooldownMinutes)
         .map(option => {
           // Check if this time is in the past for the editing date
-          const isPastTime = isTimeInPastUzbekistan(currentEditingDate, option.value);
+          // Add validation to prevent invalid time value errors
+          let isPastTime = false;
+          if (currentEditingDate && option && option.value) {
+            try {
+              isPastTime = isTimeInPastUzbekistan(currentEditingDate, option.value);
+            } catch (error) {
+              console.warn('Error checking past time:', { currentEditingDate, optionValue: option.value, error });
+              isPastTime = false; // Default to not past if there's an error
+            }
+          }
+          
           return {
             ...option, 
             isAvailable: !isPastTime, 
@@ -154,7 +162,16 @@ export default function TimeSlotModal({
     
     return startOptions.map(option => {
       // Check if this time is in the past for the editing date
-      const isPastTime = isTimeInPastUzbekistan(currentEditingDate, option.value);
+      // Add validation to prevent invalid time value errors
+      let isPastTime = false;
+      if (currentEditingDate && option && option.value) {
+        try {
+          isPastTime = isTimeInPastUzbekistan(currentEditingDate, option.value);
+        } catch (error) {
+          console.warn('Error checking past time for start options:', { currentEditingDate, optionValue: option.value, error });
+          isPastTime = false; // Default to not past if there's an error
+        }
+      }
       
       if (isPastTime) {
         return {
@@ -236,6 +253,9 @@ export default function TimeSlotModal({
       }
     }
   };
+  
+  // Conditional return moved after hooks to follow React rules of hooks
+  if (!isOpen || !currentEditingDate) return null;
   
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
