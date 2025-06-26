@@ -77,11 +77,11 @@ export default function LandingPage() {
       </header>
 
       {/* Main Content */}
-      <div className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-12 py-1 sm:py-2 md:py-3 min-h-0 overflow-hidden">
+      <div className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-12 py-0 sm:py-1 md:py-2 min-h-0 overflow-hidden">
         <div className="max-w-7xl mx-auto w-full h-full flex items-center justify-center">
-          <div className="text-center w-full">
+          <div className="text-center w-full space-y-6 sm:space-y-8 md:space-y-10 lg:space-y-12">
             {/* Main Heading */}
-            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-bold text-white mb-3 sm:mb-4 md:mb-5 lg:mb-6 leading-tight">
+            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-bold text-white leading-tight">
               Find Your Perfect
               <span className="block bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
                 Conference Space
@@ -89,12 +89,12 @@ export default function LandingPage() {
             </h1>
             
             {/* Subtitle */}
-            <p className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-white/90 mb-3 sm:mb-4 md:mb-5 lg:mb-6 max-w-4xl mx-auto leading-relaxed px-2 sm:px-4">
+            <p className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-white/90 max-w-4xl mx-auto leading-relaxed px-2 sm:px-4">
               Book professional conference rooms and meeting spaces for your next event or business gathering
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-row gap-2 sm:gap-3 md:gap-4 justify-center items-center mb-4 sm:mb-5 md:mb-6 lg:mb-7 max-w-lg mx-auto">
+            <div className="flex flex-row gap-2 sm:gap-3 md:gap-4 justify-center items-center max-w-lg mx-auto">
               <Link
                 to="/places"
                 className="group relative overflow-hidden backdrop-blur-md border border-white/30 text-white px-3 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-3 md:py-3.5 rounded-lg sm:rounded-xl md:rounded-2xl font-semibold text-xs sm:text-sm md:text-base lg:text-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-xl hover:shadow-2xl hover:scale-105 bg-gradient-to-r from-white/20 via-white/30 to-white/20 hover:from-white/30 hover:via-white/40 hover:to-white/30 w-full sm:w-auto min-w-[120px] sm:min-w-[140px] flex-1 sm:flex-initial"
@@ -115,39 +115,39 @@ export default function LandingPage() {
 
             {/* Feature Cards - Mobile: 2 columns, Larger screens: 3 columns */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-1 sm:gap-2 md:gap-3 lg:gap-4 max-w-5xl mx-auto">
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-md sm:rounded-lg md:rounded-xl p-3 sm:p-2 md:p-3 lg:p-4 hover:bg-white/15 transition-all duration-300 shadow-xl hover:scale-105">
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-md sm:rounded-lg md:rounded-xl p-2.5 sm:p-2 md:p-3 lg:p-4 hover:bg-white/15 transition-all duration-300 shadow-xl hover:scale-105">
                 <PresentationChartBarIcon className="w-4 sm:w-4 md:w-5 lg:w-6 h-4 sm:h-4 md:h-5 lg:h-6 text-white mb-1 sm:mb-1 md:mb-2 mx-auto" />
-                <h3 className="text-white font-semibold text-[10px] sm:text-[10px] md:text-xs lg:text-sm mb-1 sm:mb-1">Premium Venues</h3>
+                <h3 className="text-white font-semibold text-[10px] sm:text-[10px] md:text-xs lg:text-sm mb-0.5 sm:mb-1">Premium Venues</h3>
                 <p className="text-white/80 text-[8px] sm:text-[8px] md:text-xs leading-tight">Professional conference spaces</p>
               </div>
               
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-md sm:rounded-lg md:rounded-xl p-3 sm:p-2 md:p-3 lg:p-4 hover:bg-white/15 transition-all duration-300 shadow-xl hover:scale-105">
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-md sm:rounded-lg md:rounded-xl p-2.5 sm:p-2 md:p-3 lg:p-4 hover:bg-white/15 transition-all duration-300 shadow-xl hover:scale-105">
                 <UserGroupIcon className="w-4 sm:w-4 md:w-5 lg:w-6 h-4 sm:h-4 md:h-5 lg:h-6 text-white mb-1 sm:mb-1 md:mb-2 mx-auto" />
-                <h3 className="text-white font-semibold text-[10px] sm:text-[10px] md:text-xs lg:text-sm mb-1 sm:mb-1">Expert Support</h3>
+                <h3 className="text-white font-semibold text-[10px] sm:text-[10px] md:text-xs lg:text-sm mb-0.5 sm:mb-1">Expert Support</h3>
                 <p className="text-white/80 text-[8px] sm:text-[8px] md:text-xs leading-tight">Dedicated host support</p>
               </div>
               
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-md sm:rounded-lg md:rounded-xl p-3 sm:p-2 md:p-3 lg:p-4 hover:bg-white/15 transition-all duration-300 shadow-xl hover:scale-105">
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-md sm:rounded-lg md:rounded-xl p-2.5 sm:p-2 md:p-3 lg:p-4 hover:bg-white/15 transition-all duration-300 shadow-xl hover:scale-105">
                 <CalendarIcon className="w-4 sm:w-4 md:w-5 lg:w-6 h-4 sm:h-4 md:h-5 lg:h-6 text-white mb-1 sm:mb-1 md:mb-2 mx-auto" />
-                <h3 className="text-white font-semibold text-[10px] sm:text-[10px] md:text-xs lg:text-sm mb-1 sm:mb-1">Flexible Booking</h3>
+                <h3 className="text-white font-semibold text-[10px] sm:text-[10px] md:text-xs lg:text-sm mb-0.5 sm:mb-1">Flexible Booking</h3>
                 <p className="text-white/80 text-[8px] sm:text-[8px] md:text-xs leading-tight">Book by hour or day</p>
               </div>
               
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-md sm:rounded-lg md:rounded-xl p-3 sm:p-2 md:p-3 lg:p-4 hover:bg-white/15 transition-all duration-300 shadow-xl hover:scale-105">
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-md sm:rounded-lg md:rounded-xl p-2.5 sm:p-2 md:p-3 lg:p-4 hover:bg-white/15 transition-all duration-300 shadow-xl hover:scale-105">
                 <WifiIcon className="w-4 sm:w-4 md:w-5 lg:w-6 h-4 sm:h-4 md:h-5 lg:h-6 text-white mb-1 sm:mb-1 md:mb-2 mx-auto" />
-                <h3 className="text-white font-semibold text-[10px] sm:text-[10px] md:text-xs lg:text-sm mb-1 sm:mb-1">High-Speed WiFi</h3>
+                <h3 className="text-white font-semibold text-[10px] sm:text-[10px] md:text-xs lg:text-sm mb-0.5 sm:mb-1">High-Speed WiFi</h3>
                 <p className="text-white/80 text-[8px] sm:text-[8px] md:text-xs leading-tight">Reliable internet</p>
               </div>
               
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-md sm:rounded-lg md:rounded-xl p-3 sm:p-2 md:p-3 lg:p-4 hover:bg-white/15 transition-all duration-300 shadow-xl hover:scale-105">
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-md sm:rounded-lg md:rounded-xl p-2.5 sm:p-2 md:p-3 lg:p-4 hover:bg-white/15 transition-all duration-300 shadow-xl hover:scale-105">
                 <CameraIcon className="w-4 sm:w-4 md:w-5 lg:w-6 h-4 sm:h-4 md:h-5 lg:h-6 text-white mb-1 sm:mb-1 md:mb-2 mx-auto" />
-                <h3 className="text-white font-semibold text-[10px] sm:text-[10px] md:text-xs lg:text-sm mb-1 sm:mb-1">AV Equipment</h3>
+                <h3 className="text-white font-semibold text-[10px] sm:text-[10px] md:text-xs lg:text-sm mb-0.5 sm:mb-1">AV Equipment</h3>
                 <p className="text-white/80 text-[8px] sm:text-[8px] md:text-xs leading-tight">Professional audio-visual</p>
               </div>
               
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-md sm:rounded-lg md:rounded-xl p-3 sm:p-2 md:p-3 lg:p-4 hover:bg-white/15 transition-all duration-300 shadow-xl hover:scale-105">
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-md sm:rounded-lg md:rounded-xl p-2.5 sm:p-2 md:p-3 lg:p-4 hover:bg-white/15 transition-all duration-300 shadow-xl hover:scale-105">
                 <StarIcon className="w-4 sm:w-4 md:w-5 lg:w-6 h-4 sm:h-4 md:h-5 lg:h-6 text-white mb-1 sm:mb-1 md:mb-2 mx-auto" />
-                <h3 className="text-white font-semibold text-[10px] sm:text-[10px] md:text-xs lg:text-sm mb-1 sm:mb-1">5-Star Service</h3>
+                <h3 className="text-white font-semibold text-[10px] sm:text-[10px] md:text-xs lg:text-sm mb-0.5 sm:mb-1">5-Star Service</h3>
                 <p className="text-white/80 text-[8px] sm:text-[8px] md:text-xs leading-tight">Exceptional service</p>
               </div>
             </div>
