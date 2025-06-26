@@ -9,6 +9,9 @@ export default {
       colors: {
         primary: "#ff385cff",
         normal: "#717171ff",
+        // Brand colors from the design
+        "brand-orange": "#f38129",
+        "brand-purple": "#3b2881",
       },
       keyframes: {
         shake: {

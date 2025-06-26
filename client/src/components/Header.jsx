@@ -51,19 +51,6 @@ export default function Header() {
     }
     return "";
   };
-
-  // Easter egg for admin login - show admin link when logo is clicked 5 times
-  const handleLogoClick = () => {
-    // Create a counter in sessionStorage
-    const currentCount = parseInt(sessionStorage.getItem('logoClickCount') || '0');
-    const newCount = currentCount + 1;
-    sessionStorage.setItem('logoClickCount', newCount.toString());
-    
-    // Show admin link after 5 clicks
-    if (newCount >= 5) {
-      setAdminLinkVisible(true);
-    }
-  };
   
   // Function to handle menu link clicks
   const handleMenuLinkClick = () => {
@@ -73,7 +60,7 @@ export default function Header() {
   return (
     <header className="flex justify-between items-center px-4 md:px-14 relative z-50">
       <div className="flex flex-col">
-        <Link to={"/"} className="logo flex items-center gap-1" onClick={handleLogoClick}>
+        <Link to={"/"} className="logo flex items-center gap-1">
           <img 
             src="/getSpace_logo.png" 
             alt="GetSpace" 
