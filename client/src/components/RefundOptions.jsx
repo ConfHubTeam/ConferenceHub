@@ -1,9 +1,14 @@
 import { useState, useEffect } from "react";
-import { getProtectionPlanPercentage } from "../utils/refundPolicyUtils";
+import { 
+  getProtectionPlanPercentage, 
+  getRefundOptionsMetadata,
+  CONFLICTING_OPTIONS
+} from "../utils/refundPolicyConfig";
 
 /**
  * RefundOptions Component
  * Handles the selection of refund options for places
+ * Uses centralized configuration for consistency
  */
 export default function RefundOptions({ 
   selectedOptions = [], 
@@ -13,58 +18,18 @@ export default function RefundOptions({
 }) {
   const [refundOptions, setRefundOptions] = useState(selectedOptions);
   
-  // Get configurable protection percentage for display
+  // Get configurable protection percentage and metadata from centralized config
   const protectionPercentage = getProtectionPlanPercentage();
-
-  const refundOptionsMetadata = [
-    {
-      value: 'flexible_14_day',
-      label: 'Flexible 14-Day',
-      description: 'Full refund if canceled before 14+ days'
-    },
-    {
-      value: 'moderate_7_day',
-      label: 'Moderate 7-Day',
-      description: '50% refund if canceled before 7+ days'
-    },
-    {
-      value: 'strict',
-      label: 'Strict',
-      description: 'No refund if canceled less than <6 days'
-    },
-    {
-      value: 'non_refundable',
-      label: 'Non-refundable',
-      description: 'No refunds under any condition'
-    },
-    {
-      value: 'reschedule_only',
-      label: 'Reschedule Only',
-      description: 'No refund, but reschedule allowed if 3+ days notice'
-    },
-    {
-      value: 'client_protection_plan',
-      label: 'Enable Client Protection Plan',
-      description: `Add ${protectionPercentage}% paid option for anytime cancellation`
-    }
-  ];
+  const refundOptionsMetadata = getRefundOptionsMetadata();
 
   // Update local state when selectedOptions prop changes
   useEffect(() => {
     setRefundOptions(selectedOptions);
   }, [selectedOptions]);
 
-  // Define mutual exclusivity rules
+  // Get conflicting options using centralized config
   const getConflictingOptions = (selectedOption) => {
-    const conflicts = {
-      'non_refundable': ['flexible_14_day', 'moderate_7_day', 'reschedule_only', 'client_protection_plan'],
-      'flexible_14_day': ['non_refundable', 'reschedule_only'],
-      'moderate_7_day': ['non_refundable', 'reschedule_only'],
-      'reschedule_only': ['flexible_14_day', 'moderate_7_day', 'strict', 'non_refundable'],
-      'strict': ['reschedule_only'],
-      'client_protection_plan': [] // Independent but can show warning with non_refundable
-    };
-    return conflicts[selectedOption] || [];
+    return CONFLICTING_OPTIONS[selectedOption] || [];
   };
 
   const handleOptionToggle = (optionValue) => {

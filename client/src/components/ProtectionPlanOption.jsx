@@ -84,7 +84,6 @@ export default function ProtectionPlanOption({
               <h5 className="font-medium text-gray-800 text-xs mb-1">What's covered:</h5>
               <ul className="text-xs text-gray-600 space-y-0.5">
                 <li>✓ 100% refund of booking price</li>
-                <li>✓ Cancel up to 1 hour before start time</li>
                 <li>✓ No questions asked cancellation</li>
                 <li className="text-red-600">✗ Protection fee is non-refundable</li>
               </ul>

@@ -1,11 +1,13 @@
 /**
  * Refund Options Service
  * Handles validation and processing of refund options for places
+ * Uses centralized configuration for consistency with frontend
  */
 
 // Get protection plan configuration from environment
 const PROTECTION_PLAN_PERCENTAGE = parseInt(process.env.PROTECTION_PLAN_PERCENTAGE) || 20;
 
+// Valid refund options - must match frontend configuration
 const VALID_REFUND_OPTIONS = [
   'flexible_14_day',
   'moderate_7_day', 
@@ -15,14 +17,71 @@ const VALID_REFUND_OPTIONS = [
   'client_protection_plan'
 ];
 
-// Define mutual exclusivity rules
+// Define mutual exclusivity rules - must match frontend configuration
 const CONFLICTING_OPTIONS = {
-  'non_refundable': ['flexible_14_day', 'moderate_7_day', 'reschedule_only', 'client_protection_plan'],
+  'non_refundable': ['flexible_14_day', 'moderate_7_day', 'strict', 'reschedule_only', 'client_protection_plan'],
   'flexible_14_day': ['non_refundable', 'reschedule_only'],
   'moderate_7_day': ['non_refundable', 'reschedule_only'],
-  'reschedule_only': ['flexible_14_day', 'moderate_7_day', 'strict', 'non_refundable'],
-  'strict': ['reschedule_only'],
-  'client_protection_plan': [] // Independent but can show warning with non_refundable
+  'strict': ['non_refundable', 'reschedule_only'],
+  'reschedule_only': ['non_refundable', 'flexible_14_day', 'moderate_7_day', 'strict'],
+  'client_protection_plan': ['non_refundable'] // Protection plan can work with reschedule_only but not with non_refundable
+};
+
+// Centralized refund policy metadata for backend use
+const REFUND_POLICY_METADATA = {
+  'flexible_14_day': {
+    value: 'flexible_14_day',
+    displayName: 'Flexible 14-Day',
+    description: 'Full refund if canceled 14+ days before check-in',
+    refundRules: [
+      { minHours: 336, refundPercent: 100 }, // 14 days
+      { minHours: 0, refundPercent: 0 }
+    ]
+  },
+  'moderate_7_day': {
+    value: 'moderate_7_day',
+    displayName: 'Moderate 7-Day',
+    description: '50% refund if canceled 7+ days before check-in',
+    refundRules: [
+      { minHours: 168, refundPercent: 50 }, // 7 days
+      { minHours: 0, refundPercent: 0 }
+    ]
+  },
+  'strict': {
+    value: 'strict',
+    displayName: 'Strict',
+    description: 'Limited refund with significant advance notice',
+    refundRules: [
+      { minHours: 144, refundPercent: 50 }, // 6 days for partial
+      { minHours: 48, refundPercent: 25 }, // 2 days for minimal
+      { minHours: 0, refundPercent: 0 }
+    ]
+  },
+  'non_refundable': {
+    value: 'non_refundable',
+    displayName: 'Non-refundable',
+    description: 'No refunds under any condition',
+    refundRules: [
+      { minHours: 0, refundPercent: 0 }
+    ]
+  },
+  'reschedule_only': {
+    value: 'reschedule_only',
+    displayName: 'Reschedule',
+    description: 'No refund, but reschedule allowed with 3+ days notice',
+    refundRules: [
+      { minHours: 0, refundPercent: 0 }
+    ],
+    rescheduleRules: [
+      { minHours: 72, allowed: true }, // 3 days
+      { minHours: 0, allowed: false }
+    ]
+  },
+  'client_protection_plan': {
+    value: 'client_protection_plan',
+    displayName: 'Protection Plan Available',
+    description: `Add ${PROTECTION_PLAN_PERCENTAGE}% fee for enhanced cancellation coverage`
+  }
 };
 
 /**
@@ -104,48 +163,35 @@ const processRefundOptions = (refundOptions) => {
 };
 
 /**
- * Gets all valid refund options with descriptions
- * @returns {Array} - Array of refund option objects with value and description
+ * Gets all valid refund options with descriptions for API responses
+ * @returns {Array} - Array of refund option objects with value, label and description
  */
 const getRefundOptionsMetadata = () => {
-  return [
-    {
-      value: 'flexible_14_day',
-      label: 'Flexible 14-Day',
-      description: 'Full refund if canceled 14+ days before'
-    },
-    {
-      value: 'moderate_7_day',
-      label: 'Moderate 7-Day',
-      description: '50% refund if canceled 7+ days before'
-    },
-    {
-      value: 'strict',
-      label: 'Strict',
-      description: 'No refund if canceled <6 days before'
-    },
-    {
-      value: 'non_refundable',
-      label: 'Non-refundable',
-      description: 'No refunds under any condition'
-    },
-    {
-      value: 'reschedule_only',
-      label: 'Reschedule Only',
-      description: 'No refund, but reschedule allowed if 3+ days notice'
-    },
-    {
-      value: 'client_protection_plan',
-      label: 'Enable Client Protection Plan',
-      description: `Add ${PROTECTION_PLAN_PERCENTAGE}% paid option for anytime cancellation`
-    }
-  ];
+  return Object.values(REFUND_POLICY_METADATA).map(policy => ({
+    value: policy.value,
+    label: policy.displayName,
+    description: policy.description
+  }));
+};
+
+/**
+ * Get refund policy display info for a specific policy
+ * @param {string} policyKey - The refund policy key
+ * @returns {Object} - Policy display information
+ */
+const getRefundPolicyDisplayInfo = (policyKey) => {
+  return REFUND_POLICY_METADATA[policyKey] || {
+    displayName: 'Unknown Policy',
+    description: 'Policy information not available'
+  };
 };
 
 module.exports = {
   validateRefundOptions,
   processRefundOptions,
   getRefundOptionsMetadata,
+  getRefundPolicyDisplayInfo,
   VALID_REFUND_OPTIONS,
-  CONFLICTING_OPTIONS
+  CONFLICTING_OPTIONS,
+  REFUND_POLICY_METADATA
 };
