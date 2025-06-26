@@ -26,28 +26,28 @@ export default function BookingsPage() {
   
   // Track when user visits the page to dismiss notifications
   useEffect(() => {
-    if (!user) return;
+    if (!user || user.userType !== 'client' || !bookings.length) return;
     
-    // For hosts/agents, DON'T automatically mark as viewed - let them dismiss the banner
-    // For clients, mark notifications as viewed when they see the filtered bookings
-    if (user.userType === 'client') {
-      const currentBookings = getCurrentPageItems();
-      const approvedBookings = currentBookings.filter(b => b.status === 'approved');
-      const rejectedBookings = currentBookings.filter(b => b.status === 'rejected');
-      
-      if (approvedBookings.length > 0 && statusFilter === 'approved') {
+    // For clients, mark notifications as viewed when they switch to viewing those statuses
+    // Add a small delay to prevent race conditions
+    const timeoutId = setTimeout(() => {
+      if (statusFilter === 'approved') {
         markAsViewed('approved');
-      }
-      if (rejectedBookings.length > 0 && statusFilter === 'rejected') {
+      } else if (statusFilter === 'rejected') {
         markAsViewed('rejected');
+      } else if (statusFilter === 'all') {
+        // When viewing all, mark both as viewed if there are any bookings
+        if (bookings.some(b => b.status === 'approved')) {
+          markAsViewed('approved');
+        }
+        if (bookings.some(b => b.status === 'rejected')) {
+          markAsViewed('rejected');
+        }
       }
-      // If showing all bookings, mark both as viewed if they exist
-      if (statusFilter === 'all') {
-        if (approvedBookings.length > 0) markAsViewed('approved');
-        if (rejectedBookings.length > 0) markAsViewed('rejected');
-      }
-    }
-  }, [user, markAsViewed, statusFilter, filteredBookings]);
+    }, 100); // Small delay to prevent race conditions
+
+    return () => clearTimeout(timeoutId);
+  }, [user?.userType, statusFilter, bookings.length]); // Use bookings.length instead of filteredBookings
   
   // Extract any query params if needed
   const params = new URLSearchParams(location.search);

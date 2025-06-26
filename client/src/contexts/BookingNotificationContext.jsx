@@ -32,6 +32,12 @@ export function BookingNotificationProvider({ children }) {
   // Use ref to store the latest loadNotificationCounts function
   const loadNotificationCountsRef = useRef();
 
+  // Get last viewed times from localStorage (memoized to prevent recreations)
+  const getLastViewedTimes = useCallback(() => {
+    const stored = localStorage.getItem(`booking_notifications_${user?.id}`);
+    return stored ? JSON.parse(stored) : { pending: null, approved: null, rejected: null };
+  }, [user?.id]);
+
   // Load notification counts based on user type (memoized to prevent unnecessary re-runs)
   const loadNotificationCounts = useCallback(async () => {
     if (!user) return;
@@ -85,21 +91,15 @@ export function BookingNotificationProvider({ children }) {
     } catch (error) {
       console.error("Error loading notification counts:", error);
     }
-  }, [user]); // Only recreate when user changes
+  }, [user, getLastViewedTimes]); // Include getLastViewedTimes dependency
 
   // Update the ref whenever the function changes
   useEffect(() => {
     loadNotificationCountsRef.current = loadNotificationCounts;
   }, [loadNotificationCounts]);
 
-  // Get last viewed times from localStorage
-  const getLastViewedTimes = () => {
-    const stored = localStorage.getItem(`booking_notifications_${user?.id}`);
-    return stored ? JSON.parse(stored) : { pending: null, approved: null, rejected: null };
-  };
-
   // Update last viewed time for a specific status
-  const markAsViewed = (status) => {
+  const markAsViewed = useCallback((status) => {
     const now = new Date().toISOString();
     const updated = {
       ...getLastViewedTimes(),
@@ -114,10 +114,10 @@ export function BookingNotificationProvider({ children }) {
       ...prev,
       [status]: 0
     }));
-  };
+  }, [user?.id, getLastViewedTimes]);
 
   // Mark all notifications as viewed
-  const markAllAsViewed = () => {
+  const markAllAsViewed = useCallback(() => {
     const now = new Date().toISOString();
     const updated = {
       pending: now,
@@ -128,7 +128,7 @@ export function BookingNotificationProvider({ children }) {
     localStorage.setItem(`booking_notifications_${user?.id}`, JSON.stringify(updated));
     setLastViewed(updated);
     setNotifications({ pending: 0, approved: 0, rejected: 0 });
-  };
+  }, [user?.id]);
 
   // Get total unread count
   const getTotalUnread = () => {
@@ -156,7 +156,7 @@ export function BookingNotificationProvider({ children }) {
       loadNotificationCounts();
       setLastViewed(getLastViewedTimes());
     }
-  }, [user]);
+  }, [user, loadNotificationCounts, getLastViewedTimes]);
 
   // Refresh notifications periodically (every 30 seconds) without affecting other components
   useEffect(() => {
