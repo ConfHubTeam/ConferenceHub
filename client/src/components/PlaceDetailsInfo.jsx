@@ -49,7 +49,7 @@ export default function PlaceDetailsInfo({ placeDetail }) {
                   currency={currency} 
                   bold={true}
                   className="inline-block"
-                />/hour
+                />
               </span>
             </div>
             {fullDayDiscountPrice > 0 && (
@@ -94,7 +94,7 @@ export default function PlaceDetailsInfo({ placeDetail }) {
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m0-18H21l-1.5 6L21 15H3.75M6.75 6.75h.75a.75.75 0 01.75.75v4.5a.75.75 0 01-.75.75h-.75a.75.75 0 01-.75-.75V7.5a.75.75 0 01.75-.75zM12.75 6.75h.75a.75.75 0 01.75.75v4.5a.75.75 0 01-.75.75h-.75a.75.75 0 01-.75-.75V7.5a.75.75 0 01.75-.75z" />
                   </svg>
-                  Hotel Room
+                  Hotel
                 </span>
               </div>
             )}
