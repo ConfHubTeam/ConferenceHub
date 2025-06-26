@@ -1,6 +1,7 @@
 const { Place, Booking, User } = require('../models');
 const { getUserDataFromToken } = require('../middleware/auth');
 const Currency = require('../models/currency');
+const { validateRefundOptions, processRefundOptions } = require('../services/refundOptionsService');
 
 /**
  * Create a new place
@@ -14,13 +15,19 @@ const createPlace = async (req, res) => {
     youtubeLink, lat, lng, currencyId, cooldown,
     fullDayHours, fullDayDiscountPrice, minimumHours,
     blockedWeekdays, blockedDates, weekdayTimeSlots,
-    squareMeters, isHotel, hostId
+    squareMeters, isHotel, hostId, refundOptions
   } = req.body;
 
   try {
     // Validate required fields
     if (!title || !address) {
       return res.status(422).json({ error: "Title and address are required fields" });
+    }
+
+    // Validate refund options using service
+    const refundValidation = validateRefundOptions(refundOptions);
+    if (!refundValidation.isValid) {
+      return res.status(422).json({ error: refundValidation.error });
     }
 
     const userData = await getUserDataFromToken(req);
@@ -98,6 +105,9 @@ const createPlace = async (req, res) => {
       5: { start: "", end: "" }, // Friday
       6: { start: "", end: "" }  // Saturday
     };
+
+    // Process refund options using service
+    const processedRefundOptions = processRefundOptions(refundOptions);
     
     const processedData = {
       ownerId: ownerId, // Use the determined ownerId (host ID for agents, user ID for hosts)
@@ -126,6 +136,7 @@ const createPlace = async (req, res) => {
       weekdayTimeSlots: processedWeekdayTimeSlots,
       squareMeters: squareMeters ? parseFloat(squareMeters) : null,
       isHotel: Boolean(isHotel),
+      refundOptions: processedRefundOptions,
       blockedWeekdays: processedBlockedWeekdays,
       blockedDates: processedBlockedDates,
       weekdayTimeSlots: processedWeekdayTimeSlots
@@ -208,10 +219,18 @@ const updatePlace = async (req, res) => {
     price, startDate, endDate, youtubeLink, lat, lng,
     currencyId, cooldown, fullDayHours, fullDayDiscountPrice,
     minimumHours, blockedWeekdays, blockedDates, weekdayTimeSlots,
-    squareMeters, isHotel
+    squareMeters, isHotel, refundOptions
   } = req.body;
   
   try {
+    // Validate refund options if provided
+    if (refundOptions) {
+      const refundValidation = validateRefundOptions(refundOptions);
+      if (!refundValidation.isValid) {
+        return res.status(422).json({ error: refundValidation.error });
+      }
+    }
+
     const userData = await getUserDataFromToken(req);
     
     // Check if user is a host or agent
@@ -292,6 +311,21 @@ const updatePlace = async (req, res) => {
     place.minimumHours = minimumHours ? parseInt(minimumHours, 10) : 1;
     place.squareMeters = squareMeters ? parseFloat(squareMeters) : null;
     place.isHotel = Boolean(isHotel);
+    
+    // Update refund options if provided
+    if (refundOptions) {
+      const processedRefundOptions = processRefundOptions(refundOptions);
+      place.refundOptions = processedRefundOptions;
+    }
+    
+    // Update refund options if provided
+    if (refundOptions) {
+      const refundValidation = validateRefundOptions(refundOptions);
+      if (!refundValidation.isValid) {
+        return res.status(422).json({ error: refundValidation.error });
+      }
+      place.refundOptions = processRefundOptions(refundOptions);
+    }
     
     // Validate currencyId exists in the database before updating
     if (currencyId) {
