@@ -23,7 +23,11 @@ const createBooking = async (req, res) => {
       numOfGuests, 
       guestName, 
       guestPhone, 
-      totalPrice
+      totalPrice,
+      serviceFee,
+      protectionPlanSelected = false,
+      protectionPlanFee = 0,
+      finalTotal
     } = req.body;
 
     // Only clients can create bookings
@@ -71,7 +75,10 @@ const createBooking = async (req, res) => {
       finalCheckOutDate = sortedDates[sortedDates.length - 1].date;
     }
 
-    // Create booking with Sequelize
+    // Capture refund policy snapshot from place at time of booking
+    const refundPolicySnapshot = placeDetails.refundOptions || [];
+
+    // Create booking with Sequelize including all pricing details
     const booking = await Booking.create({
       userId: userData.id,
       placeId: place, 
@@ -81,6 +88,11 @@ const createBooking = async (req, res) => {
       guestName, 
       guestPhone, 
       totalPrice,
+      serviceFee: serviceFee || 0,
+      protectionPlanSelected,
+      protectionPlanFee,
+      finalTotal: finalTotal || totalPrice,
+      refundPolicySnapshot, // Store the refund options that were active when booking was made
       status: 'pending',
       timeSlots: selectedTimeSlots || [], // Store the selected time slots
       uniqueRequestId // Add the unique request ID
