@@ -8,6 +8,7 @@ export default function PricingBreakdown({
   breakdown = [], 
   placeDetail,
   serviceFee,
+  protectionPlanFee = 0,
   finalTotal
 }) {
   // Only show pricing breakdown if there are selected calendar dates and hours
@@ -19,7 +20,7 @@ export default function PricingBreakdown({
   const displayServiceFee = serviceFee !== undefined ? serviceFee : calculateServiceFee(totalPrice, placeDetail);
   
   // Use finalTotal from calculator if provided, otherwise calculate it
-  const displayTotal = finalTotal !== undefined ? finalTotal : totalPrice + displayServiceFee;
+  const displayTotal = finalTotal !== undefined ? finalTotal : totalPrice + displayServiceFee + protectionPlanFee;
 
   return (
     <div className="border-t">
@@ -65,6 +66,22 @@ export default function PricingBreakdown({
             />
           </p>
         </div>
+        
+        {protectionPlanFee > 0 && (
+          <div className="flex px-3 pb-4 justify-between items-center text-blue-600">
+            <p className="underline flex items-center">
+              <span className="mr-2">🛡️</span>
+              Protection Plan
+            </p>
+            <p className="">
+              <PriceDisplay 
+                price={protectionPlanFee} 
+                currency={placeDetail.currency} 
+                bold={false}
+              />
+            </p>
+          </div>
+        )}
       </div>
       <div>
         <div className="flex px-3 py-4 justify-between items-center">

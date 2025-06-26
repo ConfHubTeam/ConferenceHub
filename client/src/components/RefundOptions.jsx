@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { getProtectionPlanPercentage } from "../utils/refundPolicyUtils";
 
 /**
  * RefundOptions Component
@@ -11,6 +12,9 @@ export default function RefundOptions({
   className = "" 
 }) {
   const [refundOptions, setRefundOptions] = useState(selectedOptions);
+  
+  // Get configurable protection percentage for display
+  const protectionPercentage = getProtectionPlanPercentage();
 
   const refundOptionsMetadata = [
     {
@@ -41,7 +45,7 @@ export default function RefundOptions({
     {
       value: 'client_protection_plan',
       label: 'Enable Client Protection Plan',
-      description: 'Add 20% paid option for anytime cancellation'
+      description: `Add ${protectionPercentage}% paid option for anytime cancellation`
     }
   ];
 
@@ -163,7 +167,7 @@ export default function RefundOptions({
               <h4 className="font-medium text-yellow-800">Pricing Consideration</h4>
               <p className="text-sm text-yellow-700 mt-1">
                 Client Protection Plan with Non-refundable policy requires careful price validation. 
-                The 20% protection fee should be clearly communicated to clients.
+                The {protectionPercentage}% protection fee should be clearly communicated to clients.
               </p>
             </div>
           </div>

@@ -10,6 +10,16 @@ export const SERVICE_FEE_CONFIG = {
   // PERCENTAGE_RATE: 0.05,
 };
 
+// Protection Plan Configuration
+export const PROTECTION_PLAN_CONFIG = {
+  // Get protection percentage from environment variable, default to 20%
+  PROTECTION_PERCENTAGE: parseInt(import.meta.env.VITE_PROTECTION_PLAN_PERCENTAGE) || 20,
+  // Calculate protection rate for calculations automatically from percentage
+  get PROTECTION_RATE() {
+    return this.PROTECTION_PERCENTAGE / 100;
+  },
+};
+
 // Helper function to format hour to 12-hour format
 const formatHourTo12 = (hour24) => {
   if (!hour24) return "";
@@ -43,7 +53,7 @@ export const calculateServiceFee = (totalPrice, placeDetail, customServiceFee = 
 };
 
 // Calculate total hours and pricing from selected calendar dates
-export const calculateBookingPricing = (selectedCalendarDates, placeDetail, customServiceFee = null) => {
+export const calculateBookingPricing = (selectedCalendarDates, placeDetail, customServiceFee = null, protectionPlanSelected = false) => {
   if (!selectedCalendarDates || selectedCalendarDates.length === 0) {
     const serviceFee = calculateServiceFee(0, placeDetail, customServiceFee);
     return {
@@ -54,6 +64,7 @@ export const calculateBookingPricing = (selectedCalendarDates, placeDetail, cust
       fullDayPrice: 0,
       totalPrice: 0,
       serviceFee,
+      protectionPlanFee: 0,
       finalTotal: serviceFee,
       breakdown: []
     };
@@ -111,13 +122,17 @@ export const calculateBookingPricing = (selectedCalendarDates, placeDetail, cust
   // Calculate service fee using the centralized function with currency awareness
   const serviceFee = calculateServiceFee(totalPrice, placeDetail, customServiceFee);
   
-  // Calculate final total with service fee
-  const finalTotal = totalPrice + serviceFee;
+  // Calculate protection plan fee using configurable rate
+  const protectionPlanFee = protectionPlanSelected ? Math.round(totalPrice * PROTECTION_PLAN_CONFIG.PROTECTION_RATE) : 0;
+  
+  // Calculate final total with service fee and protection plan
+  const finalTotal = totalPrice + serviceFee + protectionPlanFee;
 
   return {
     totalHours,
     totalPrice,
     serviceFee,
+    protectionPlanFee,
     finalTotal,
     breakdown
   };
