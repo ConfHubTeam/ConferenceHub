@@ -32,44 +32,44 @@ export default function LandingPage() {
     <div className="h-screen relative flex flex-col overflow-hidden">
       {/* Background Image with Overlay */}
       <div 
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat z-0"
         style={{
           backgroundImage: `url('https://images.unsplash.com/photo-1626107095942-6f05cfbb97ab?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`
         }}
       >
         {/* Dark overlay for better text readability */}
-        <div className="absolute inset-0 bg-black/30"></div>
+        <div className="fixed inset-0 bg-black/30"></div>
         
         {/* Gradient overlay to blend with your brand colors */}
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-orange/20 via-orange-400/15 to-brand-purple/20"></div>
+        <div className="fixed inset-0 bg-gradient-to-br from-brand-orange/20 via-orange-400/15 to-brand-purple/20"></div>
         
         {/* Additional glassmorphism overlay */}
-        <div className="absolute inset-0 backdrop-blur-[0.5px]"></div>
+        <div className="fixed inset-0 backdrop-blur-[0.5px]"></div>
       </div>
 
       {/* Background decorative elements */}
-      <div className="absolute inset-0 z-5">
-        <div className="absolute top-10 left-10 w-72 h-72 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute top-40 right-20 w-96 h-96 bg-brand-purple/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-brand-orange/30 rounded-full blur-3xl"></div>
+      <div className="fixed inset-0 z-5">
+        <div className="fixed top-10 left-10 w-72 h-72 bg-white/10 rounded-full blur-3xl"></div>
+        <div className="fixed top-40 right-20 w-96 h-96 bg-brand-purple/20 rounded-full blur-3xl"></div>
+        <div className="fixed bottom-20 left-1/3 w-80 h-80 bg-brand-orange/30 rounded-full blur-3xl"></div>
       </div>
 
-      {/* Header with Logo */}
-      <header className="relative z-20 p-1 sm:p-2 md:p-3 lg:p-4 flex-shrink-0">
-        <div className="flex justify-center">
+      {/* Professional Header with Logo */}
+      <header className="relative z-20 w-full">
+        <div className="flex justify-center pt-6 sm:pt-8 md:pt-10 lg:pt-12">
           <div className="relative group">
-            {/* Glow effect behind logo */}
-            <div className="absolute -inset-2 bg-gradient-to-r from-orange-400/20 via-white/30 to-purple-400/20 rounded-2xl blur-xl opacity-75 group-hover:opacity-100 transition-opacity duration-500"></div>
+            {/* Subtle glow effect */}
+            <div className="absolute -inset-3 bg-gradient-to-r from-white/10 via-white/20 to-white/10 rounded-3xl blur-xl opacity-60 group-hover:opacity-80 transition-opacity duration-500"></div>
             
-            {/* Main logo container */}
-            <div className="relative bg-gradient-to-br from-white/15 via-white/20 to-white/10 backdrop-blur-lg rounded-2xl p-1.5 sm:p-2 md:p-2.5 lg:p-3 shadow-2xl border border-white/30 hover:border-white/50 transition-all duration-300 hover:scale-105">
-              {/* Inner glow */}
-              <div className="absolute inset-0 bg-gradient-to-br from-orange-300/10 via-transparent to-purple-300/10 rounded-2xl"></div>
+            {/* Logo container with professional glassmorphism */}
+            <div className="relative bg-white/25 backdrop-blur-xl rounded-2xl px-4 py-2.5 sm:px-5 sm:py-3 md:px-6 md:py-3.5 shadow-2xl border border-white/40 hover:border-white/50 transition-all duration-300 hover:scale-[1.02]">
+              {/* Inner subtle gradient */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/10 rounded-2xl"></div>
               
               <img 
                 src="/getSpace_logo.png" 
                 alt="GetSpace" 
-                className="relative z-10 h-6 sm:h-8 md:h-10 lg:h-12 w-auto object-contain filter drop-shadow-lg"
+                className="relative z-10 h-6 sm:h-7 md:h-8 lg:h-9 w-auto object-contain filter drop-shadow-md"
               />
             </div>
           </div>
@@ -77,9 +77,9 @@ export default function LandingPage() {
       </header>
 
       {/* Main Content */}
-      <div className="relative z-10 flex-1 flex items-center justify-center px-2 sm:px-4 lg:px-6 xl:px-8 py-0 min-h-0 overflow-hidden">
+      <div className="relative z-10 flex-1 flex items-center justify-center px-2 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 md:py-8 min-h-0 overflow-hidden">
         <div className="max-w-7xl mx-auto w-full h-full flex items-center justify-center">
-          <div className="text-center w-full space-y-3 sm:space-y-4 md:space-y-6 lg:space-y-8">
+          <div className="text-center w-full space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-6">
             {/* Main Heading */}
             <h1 className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-bold text-white leading-tight">
               Find Your Perfect
