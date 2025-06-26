@@ -9,8 +9,83 @@ export default function PricingBreakdown({
   placeDetail,
   serviceFee,
   protectionPlanFee = 0,
-  finalTotal
+  finalTotal,
+  // New props for booking details display
+  basePrice,
+  currency,
+  numOfGuests,
+  protectionPlanIncluded = false,
+  title = "Pricing Breakdown",
+  isBookingDetails = false // Flag to indicate this is showing saved booking data
 }) {
+  // Handle booking details display (showing saved data from database)
+  if (isBookingDetails) {
+    const displayCurrency = currency || placeDetail?.currency;
+    const displayTotal = finalTotal || totalPrice;
+    
+    return (
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <h3 className="font-semibold text-gray-900 mb-4">{title}</h3>
+        
+        <div className="space-y-3">
+          {/* Base Price */}
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Base price</span>
+            <PriceDisplay 
+              price={basePrice || totalPrice} 
+              currency={displayCurrency} 
+              bold={false}
+            />
+          </div>
+          
+          {/* Service Fee */}
+          {serviceFee > 0 && (
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Service fee</span>
+              <PriceDisplay 
+                price={serviceFee} 
+                currency={displayCurrency} 
+                bold={false}
+              />
+            </div>
+          )}
+          
+          {/* Protection Plan Fee */}
+          {protectionPlanIncluded && protectionPlanFee > 0 && (
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Protection plan</span>
+              <PriceDisplay 
+                price={protectionPlanFee} 
+                currency={displayCurrency} 
+                bold={false}
+              />
+            </div>
+          )}
+          
+          {/* Total */}
+          <div className="border-t pt-3">
+            <div className="flex justify-between items-center">
+              <span className="font-semibold text-gray-900">Total</span>
+              <PriceDisplay 
+                price={displayTotal} 
+                currency={displayCurrency} 
+                bold={true}
+                className="text-lg font-semibold"
+              />
+            </div>
+          </div>
+          
+          {/* Additional Info */}
+          {numOfGuests && (
+            <div className="text-sm text-gray-500 pt-2">
+              For {numOfGuests} {numOfGuests === 1 ? 'guest' : 'guests'}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   // Only show pricing breakdown if there are selected calendar dates and hours
   if (!selectedCalendarDates || selectedCalendarDates.length === 0 || totalHours <= 0) {
     return null;

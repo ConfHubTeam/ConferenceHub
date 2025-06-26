@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { UserContext } from "../components/UserContext";
 import api from "../utils/api";
 
@@ -28,6 +28,9 @@ export function BookingNotificationProvider({ children }) {
     approved: null,
     rejected: null
   });
+
+  // Use ref to store the latest loadNotificationCounts function
+  const loadNotificationCountsRef = useRef();
 
   // Load notification counts based on user type (memoized to prevent unnecessary re-runs)
   const loadNotificationCounts = useCallback(async () => {
@@ -83,6 +86,11 @@ export function BookingNotificationProvider({ children }) {
       console.error("Error loading notification counts:", error);
     }
   }, [user]); // Only recreate when user changes
+
+  // Update the ref whenever the function changes
+  useEffect(() => {
+    loadNotificationCountsRef.current = loadNotificationCounts;
+  }, [loadNotificationCounts]);
 
   // Get last viewed times from localStorage
   const getLastViewedTimes = () => {
@@ -157,16 +165,16 @@ export function BookingNotificationProvider({ children }) {
     // Start the interval for periodic refresh
     const interval = setInterval(() => {
       // Only refresh if the document is visible (tab is active)
-      if (!document.hidden) {
-        loadNotificationCounts();
+      if (!document.hidden && loadNotificationCountsRef.current) {
+        loadNotificationCountsRef.current();
       }
     }, 30000); // 30 seconds
 
     // Add visibility change listener to refresh when tab becomes active
     const handleVisibilityChange = () => {
-      if (!document.hidden) {
+      if (!document.hidden && loadNotificationCountsRef.current) {
         // Tab became active, refresh notifications immediately
-        loadNotificationCounts();
+        loadNotificationCountsRef.current();
       }
     };
 
@@ -177,7 +185,7 @@ export function BookingNotificationProvider({ children }) {
       clearInterval(interval);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [user, loadNotificationCounts]); // Include loadNotificationCounts in dependency array
+  }, [user]); // Only depend on user, not on loadNotificationCounts
 
   const value = {
     notifications,
