@@ -4,7 +4,7 @@ import api from "../utils/api";
 import { UserContext } from "../components/UserContext";
 import BookingRequestCard from "../components/BookingRequestCard";
 import Pagination from "../components/Pagination";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useNotification } from "../components/NotificationContext";
 import { useBookingNotifications } from "../contexts/BookingNotificationContext";
 import BookingNotificationBanner from "../components/BookingNotificationBanner";
@@ -490,9 +490,9 @@ export default function BookingsPage() {
                   }
                 </p>
                 {!searchTerm && statusFilter === "all" && (
-                  <a href="/" className="bg-primary text-white py-2 px-4 rounded-lg inline-block hover:bg-primary-dark transition-colors">
+                  <Link to="/" className="bg-primary text-white py-2 px-4 rounded-lg inline-block hover:bg-primary-dark transition-colors">
                     Find Conference Rooms
-                  </a>
+                  </Link>
                 )}
               </div>
             ) : (
