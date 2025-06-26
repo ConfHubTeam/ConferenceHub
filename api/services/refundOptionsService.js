@@ -3,6 +3,9 @@
  * Handles validation and processing of refund options for places
  */
 
+// Get protection plan configuration from environment
+const PROTECTION_PLAN_PERCENTAGE = parseInt(process.env.PROTECTION_PLAN_PERCENTAGE) || 20;
+
 const VALID_REFUND_OPTIONS = [
   'flexible_14_day',
   'moderate_7_day', 
@@ -134,7 +137,7 @@ const getRefundOptionsMetadata = () => {
     {
       value: 'client_protection_plan',
       label: 'Enable Client Protection Plan',
-      description: 'Add 20% paid option for anytime cancellation'
+      description: `Add ${PROTECTION_PLAN_PERCENTAGE}% paid option for anytime cancellation`
     }
   ];
 };
