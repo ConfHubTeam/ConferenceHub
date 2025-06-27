@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ActiveFilters, { FilterCreators } from "./ActiveFilters";
+import StatusFilter from "./StatusFilter";
 
 export default function BookingFilters({
   user,
@@ -57,8 +58,8 @@ export default function BookingFilters({
           />
         </div>
 
-        {/* Desktop: Search, Status, and Sort in Row | Mobile: Status and Sort in Row */}
-        <div className="order-2 lg:order-1 grid grid-cols-2 gap-2 sm:gap-3 lg:flex lg:gap-4">
+        {/* Desktop: Search and Sort in Row | Mobile: Search and Sort in Row */}
+        <div className="order-2 lg:order-1 grid grid-cols-1 gap-2 sm:gap-3 lg:flex lg:gap-4">
           {/* Search - Hidden on mobile, shown on desktop */}
           <div className="hidden lg:block lg:flex-1">
             <label htmlFor="search-desktop" className="block text-sm font-medium text-gray-700 mb-2">
@@ -80,31 +81,7 @@ export default function BookingFilters({
             />
           </div>
 
-          {/* Status Filter */}
-          <div className="lg:w-48">
-            <label htmlFor="status" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
-              Status
-            </label>
-            <select
-              id="status"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-2 sm:px-3 lg:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 bg-white cursor-pointer text-xs sm:text-sm appearance-none"
-              style={{
-                backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "right 8px center",
-                backgroundSize: "12px"
-              }}
-            >
-              <option value="pending">Pending ({stats.pending})</option>
-              <option value="all">All ({stats.total})</option>
-              <option value="approved">
-                {user?.userType === "client" ? "Confirmed" : "Approved"} ({stats.approved})
-              </option>
-              <option value="rejected">Rejected ({stats.rejected})</option>
-            </select>
-          </div>
+          {/* Status Filter - Removed dropdown, will be added as separate section */}
 
           {/* Sort Options */}
           <div className="lg:w-48">
@@ -135,6 +112,21 @@ export default function BookingFilters({
               <option value="place-asc">Property name</option>
             </select>
           </div>
+        </div>
+
+        {/* Status Filter - Clickable buttons instead of dropdown */}
+        <div className="order-3 lg:order-2">
+          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3">
+            Filter by Status
+          </label>
+          <StatusFilter
+            userType={user?.userType}
+            currentStatus={statusFilter}
+            onStatusChange={setStatusFilter}
+            stats={stats}
+            className="w-full"
+            size="default"
+          />
         </div>
       </div>
       
