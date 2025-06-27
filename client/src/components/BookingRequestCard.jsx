@@ -1,12 +1,9 @@
-import { useState, useContext } from "react";
+import { useContext } from "react";
 import { Link } from "react-router-dom";
-import { useNotification } from "./NotificationContext";
 import { UserContext } from "./UserContext";
 import PriceDisplay from "./PriceDisplay";
-import ConfirmationModal from "./ConfirmationModal";
 import PriorityIndicator from "./PriorityIndicator";
 import { formatBookingDates } from "../utils/dateFormatting";
-import api from "../utils/api";
 import { format, parseISO } from "date-fns";
 import { getCurrentDateObjectInUzbekistan } from "../utils/uzbekistanTimezoneUtils";
 
@@ -14,84 +11,18 @@ import { getCurrentDateObjectInUzbekistan } from "../utils/uzbekistanTimezoneUti
  * BookingRequestCard Component
  * 
  * A compact, production-level booking request card for host and client management
- * Shows only essential information with request ID (not client details for hosts)
+ * Shows only essential information with request ID and navigation to details page
  */
-export default function BookingRequestCard({ booking, onBookingUpdate, competingBookings = [] }) {
+export default function BookingRequestCard({ booking, competingBookings = [] }) {
   const { user } = useContext(UserContext);
-  const { notify } = useNotification();
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [modalConfig, setModalConfig] = useState({
-    title: "",
-    message: "",
-    action: "",
-    status: ""
-  });
-
-  // Show confirmation modal
-  const showConfirmationModal = (status) => {
-    const action = user?.userType === 'client' 
-      ? (status === "rejected" ? "cancel" : status)
-      : (status === "approved" ? "approve" : "reject");
-    
-    const title = user?.userType === 'client' 
-      ? `${action.charAt(0).toUpperCase() + action.slice(1)} Booking`
-      : `${action.charAt(0).toUpperCase() + action.slice(1)} Booking Request`;
-    
-    const message = user?.userType === 'client' 
-      ? `Are you sure you want to ${action} this booking?`
-      : `Are you sure you want to ${action} this booking request?`;
-    
-    setModalConfig({
-      title,
-      message,
-      action,
-      status
-    });
-    setShowModal(true);
-  };
-
-  // Update booking status
-  const updateBookingStatus = async () => {
-    setIsUpdating(true);
-    try {
-      const { data } = await api.put(`/bookings/${booking.id}`, { status: modalConfig.status });
-      
-      // Handle client cancellation (booking deletion)
-      if (data.deleted) {
-        notify("Booking cancelled successfully", "success");
-        onBookingUpdate(null, booking.id); // Pass null to indicate deletion
-      } else {
-        onBookingUpdate(data.booking);
-        const successMessage = user?.userType === 'client'
-          ? `Booking ${modalConfig.action}led successfully`
-          : `Booking ${modalConfig.action}d successfully`;
-        notify(successMessage, "success");
-      }
-      
-      setShowModal(false);
-    } catch (error) {
-      notify(`Error: ${error.response?.data?.error || error.message}`, "error");
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  // Format time slots for display
-  const formatTimeSlots = (timeSlots) => {
-    if (!timeSlots || timeSlots.length === 0) return "Full day";
-    
-    return timeSlots.map(slot => {
-      const date = format(parseDateSafely(slot.date), "MMM d");
-      return `${date}: ${slot.startTime}-${slot.endTime}`;
-    }).join(", ");
-  };
 
   // Get status badge styling
   const getStatusBadge = (status) => {
     switch (status) {
       case "pending":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "selected":
+        return "bg-blue-100 text-blue-800 border-blue-200";
       case "approved":
         return "bg-green-100 text-green-800 border-green-200";
       case "rejected":
@@ -119,14 +50,16 @@ export default function BookingRequestCard({ booking, onBookingUpdate, competing
   };
 
   return (
-    <>
       <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
       {/* Header with Request ID and Status */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          <span className="font-mono text-sm font-semibold text-gray-900">
+          <Link 
+            to={`/account/bookings/${booking.id}`}
+            className="font-mono text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+          >
             {booking.uniqueRequestId || `REQ-${booking.id}`}
-          </span>
+          </Link>
           <div className="flex items-center gap-2">
             <PriorityIndicator 
               currentBooking={booking} 
@@ -232,56 +165,15 @@ export default function BookingRequestCard({ booking, onBookingUpdate, competing
         )}
       </div>
 
-      {/* Action buttons for pending requests */}
-      {booking.status === "pending" && (
-        <div className="flex gap-2">
-          {user?.userType === 'host' && (
-            <>
-              <button
-                onClick={() => showConfirmationModal("approved")}
-                disabled={isUpdating}
-                className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
-              >
-                {isUpdating ? "Processing..." : "Approve"}
-              </button>
-              <button
-                onClick={() => showConfirmationModal("rejected")}
-                disabled={isUpdating}
-                className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
-              >
-                {isUpdating ? "Processing..." : "Reject"}
-              </button>
-            </>
-          )}
-          {user?.userType === 'client' && (
-            <button
-              onClick={() => showConfirmationModal("rejected")}
-              disabled={isUpdating}
-              className="w-full bg-red-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
-            >
-              {isUpdating ? "Cancelling..." : "Cancel Booking"}
-            </button>
-          )}
-          {user?.userType === 'agent' && (
-            <>
-              <button
-                onClick={() => showConfirmationModal("approved")}
-                disabled={isUpdating}
-                className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
-              >
-                {isUpdating ? "Processing..." : "Approve"}
-              </button>
-              <button
-                onClick={() => showConfirmationModal("rejected")}
-                disabled={isUpdating}
-                className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
-              >
-                {isUpdating ? "Processing..." : "Reject"}
-              </button>
-            </>
-          )}
-        </div>
-      )}
+      {/* View Details button */}
+      <div className="flex gap-2">
+        <Link
+          to={`/account/bookings/${booking.id}`}
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors text-center"
+        >
+          View Details
+        </Link>
+      </div>
 
       {/* Show status for non-pending requests */}
       {booking.status !== "pending" && (
@@ -293,19 +185,5 @@ export default function BookingRequestCard({ booking, onBookingUpdate, competing
         </div>
       )}
       </div>
-
-      {/* Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        onConfirm={updateBookingStatus}
-        title={modalConfig.title}
-        message={modalConfig.message}
-        confirmText="OK"
-        cancelText="Cancel"
-        confirmButtonClass={modalConfig.status === "approved" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
-        isLoading={isUpdating}
-      />
-    </>
   );
 }

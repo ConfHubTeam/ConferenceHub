@@ -253,11 +253,11 @@ const getBookings = async (req, res) => {
 const updateBookingStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status, paymentConfirmed = false } = req.body;
     const userData = await getUserDataFromToken(req);
     
     // Verify status is valid
-    if (!['pending', 'approved', 'rejected'].includes(status)) {
+    if (!['pending', 'selected', 'approved', 'rejected'].includes(status)) {
       return res.status(400).json({ error: "Invalid status value" });
     }
     
@@ -279,15 +279,53 @@ const updateBookingStatus = async (req, res) => {
       return res.status(404).json({ error: "Booking not found" });
     }
     
-    // Check authorization
-    const isAuthorized = (
-      (userData.userType === 'host' && booking.place.ownerId === userData.id) ||
-      (userData.userType === 'agent') ||
-      (userData.userType === 'client' && booking.userId === userData.id && status === 'rejected')
-    );
+    // Validate status transitions
+    const validTransitions = {
+      "pending": ["selected", "approved", "rejected"],
+      "selected": ["approved", "rejected"],
+      "approved": [], // Final status
+      "rejected": [], // Final status
+      "cancelled": [] // Final status
+    };
+    
+    const allowedTransitions = validTransitions[booking.status] || [];
+    if (!allowedTransitions.includes(status)) {
+      return res.status(400).json({ 
+        error: `Cannot transition from ${booking.status} to ${status}` 
+      });
+    }
+    
+    // Check authorization based on action
+    let isAuthorized = false;
+    
+    if (status === 'selected') {
+      // Only hosts/agents can select bookings
+      isAuthorized = (
+        (userData.userType === 'host' && booking.place.ownerId === userData.id) ||
+        (userData.userType === 'agent')
+      );
+    } else if (status === 'approved' || status === 'rejected') {
+      // Hosts/agents can approve/reject, clients can cancel (reject their own)
+      isAuthorized = (
+        (userData.userType === 'host' && booking.place.ownerId === userData.id) ||
+        (userData.userType === 'agent') ||
+        (userData.userType === 'client' && booking.userId === userData.id && status === 'rejected')
+      );
+    }
     
     if (!isAuthorized) {
       return res.status(403).json({ error: "You are not authorized to update this booking" });
+    }
+    
+    // Special handling for approving selected bookings (payment check)
+    if (status === 'approved' && booking.status === 'selected') {
+      if (!paymentConfirmed) {
+        return res.status(400).json({ 
+          error: "Payment confirmation required for selected bookings",
+          requiresPaymentCheck: true,
+          message: "This booking was selected but payment may not be complete. Do you want to approve anyway?"
+        });
+      }
     }
     
     // Handle client cancellation - delete the booking instead of marking as rejected
@@ -295,10 +333,13 @@ const updateBookingStatus = async (req, res) => {
       await booking.destroy();
       return res.json({ 
         message: "Booking cancelled successfully", 
-        booking: null, // Indicate the booking was deleted
+        booking: null,
         deleted: true 
       });
     }
+    
+    // Handle selecting a booking - just update status, don't reject competitors
+    // Selected bookings remain in pending state for payment, competitors stay pending
     
     // Handle conflicts if approving a booking
     if (status === 'approved') {
@@ -306,11 +347,11 @@ const updateBookingStatus = async (req, res) => {
       const placeDetails = await Place.findByPk(booking.placeId);
       const cooldownMinutes = placeDetails ? placeDetails.cooldown || 0 : 0;
       
-      // Find pending bookings for the same place
-      const pendingBookings = await Booking.findAll({
+      // Find pending and selected bookings for the same place
+      const competingBookings = await Booking.findAll({
         where: {
           placeId: booking.placeId,
-          status: 'pending',
+          status: { [Op.in]: ['pending', 'selected'] },
           id: { [Op.ne]: booking.id }
         }
       });
@@ -318,7 +359,7 @@ const updateBookingStatus = async (req, res) => {
       // Use enhanced conflict detection to find conflicting bookings
       const conflictingBookings = findConflictingBookings(
         booking,
-        pendingBookings,
+        competingBookings,
         cooldownMinutes
       );
       
@@ -357,12 +398,28 @@ const updateBookingStatus = async (req, res) => {
       ]
     });
 
+    // Generate appropriate success message based on status
+    let message;
+    switch (status) {
+      case 'selected':
+        message = 'Booking selected successfully. Client can now proceed with payment.';
+        break;
+      case 'approved':
+        message = booking.status === 'selected' 
+          ? 'Booking approved after payment confirmation. Any remaining conflicting bookings have been rejected.' 
+          : 'Booking approved. Any conflicting bookings have been automatically rejected.';
+        break;
+      case 'rejected':
+        message = 'Booking rejected successfully.';
+        break;
+      default:
+        message = `Booking ${status} successfully.`;
+    }
+
     return res.json({ 
       success: true, 
       booking: updatedBooking,
-      message: status === 'approved' ? 
-        'Booking approved. Any conflicting bookings have been automatically rejected.' : 
-        `Booking ${status} successfully.`
+      message
     });
   } catch (error) {
     console.error("Error updating booking:", error);
@@ -384,12 +441,12 @@ const getBookingCounts = async (req, res) => {
     let pendingCount;
     
     if (userData.userType === 'agent') {
-      // Agents can see all pending bookings
+      // Agents can see all pending and selected bookings
       pendingCount = await Booking.count({
-        where: { status: 'pending' }
+        where: { status: { [Op.in]: ['pending', 'selected'] } }
       });
     } else {
-      // Hosts see only their pending bookings
+      // Hosts see only their pending and selected bookings
       pendingCount = await Booking.count({
         include: [
           {
@@ -400,7 +457,7 @@ const getBookingCounts = async (req, res) => {
           }
         ],
         where: {
-          status: 'pending'
+          status: { [Op.in]: ['pending', 'selected'] }
         }
       });
     }
@@ -598,29 +655,47 @@ const checkTimezoneAwareAvailability = async (req, res) => {
  */
 const getCompetingBookings = async (req, res) => {
   try {
+    console.log("Getting competing bookings, query params:", req.query);
+    
     const userData = await getUserDataFromToken(req);
     const { placeId, timeSlots, excludeBookingId } = req.query;
 
     if (!placeId || !timeSlots) {
+      console.log("Missing required parameters:", { placeId, timeSlots });
       return res.status(400).json({ error: "placeId and timeSlots are required" });
     }
 
     // Verify user has access to this place
     const place = await Place.findByPk(placeId);
     if (!place) {
+      console.log("Place not found:", placeId);
       return res.status(404).json({ error: "Place not found" });
     }
 
     // Only hosts and agents can view competing bookings for their places
     if (userData.userType === 'host' && place.ownerId !== userData.id) {
+      console.log("Access denied for host:", userData.id, "place owner:", place.ownerId);
       return res.status(403).json({ error: "Access denied" });
     }
 
     if (userData.userType === 'client') {
+      console.log("Client cannot view competing bookings:", userData.id);
       return res.status(403).json({ error: "Clients cannot view competing bookings" });
     }
 
-    const parsedTimeSlots = JSON.parse(timeSlots);
+    let parsedTimeSlots;
+    try {
+      // Handle URL-encoded JSON by decoding first
+      console.log("Raw timeSlots parameter:", timeSlots);
+      const decodedTimeSlots = decodeURIComponent(timeSlots);
+      console.log("Decoded timeSlots:", decodedTimeSlots);
+      parsedTimeSlots = JSON.parse(decodedTimeSlots);
+      console.log("Parsed timeSlots:", parsedTimeSlots);
+    } catch (parseError) {
+      console.error("Error parsing timeSlots:", parseError);
+      return res.status(400).json({ error: "Invalid timeSlots format" });
+    }
+
     const { findCompetingBookings } = require("../utils/bookingUtils");
     
     const competingBookings = await findCompetingBookings(
@@ -629,10 +704,72 @@ const getCompetingBookings = async (req, res) => {
       excludeBookingId
     );
 
+    console.log("Found competing bookings:", competingBookings.length);
     res.json(competingBookings);
   } catch (error) {
     console.error("Error getting competing bookings:", error);
-    res.status(422).json({ error: error.message });
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/**
+ * Get a single booking by ID with all related information
+ */
+const getBookingById = async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+    const { id } = req.params;
+    
+    const booking = await Booking.findOne({
+      where: { id },
+      include: [
+        {
+          model: Place,
+          as: 'place',
+          include: [
+            {
+              model: User,
+              as: 'owner',
+              attributes: ['id', 'name', 'email', 'phoneNumber']
+            },
+            {
+              model: Currency,
+              as: 'currency',
+              attributes: ['id', 'name', 'code', 'charCode']
+            }
+          ],
+          attributes: [
+            'id', 'title', 'address', 'description', 'photos', 'price', 
+            'checkIn', 'checkOut', 'maxGuests', 'ownerId', 'currencyId',
+            'squareMeters', 'isHotel', 'minimumHours', 'lat', 'lng'
+          ]
+        },
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'name', 'email', 'phoneNumber']
+        }
+      ]
+    });
+
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+
+    // Check authorization - users can only see their own bookings, hosts can see bookings for their places, agents can see all
+    const canAccess = 
+      userData.userType === 'agent' ||
+      (userData.userType === 'client' && booking.userId === userData.id) ||
+      (userData.userType === 'host' && booking.place?.ownerId === userData.id);
+
+    if (!canAccess) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    res.json(booking);
+  } catch (error) {
+    console.error("Error fetching booking:", error);
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -643,5 +780,6 @@ module.exports = {
   getBookingCounts,
   checkAvailability,
   checkTimezoneAwareAvailability,
-  getCompetingBookings
+  getCompetingBookings,
+  getBookingById
 };

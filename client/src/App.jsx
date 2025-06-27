@@ -16,6 +16,7 @@ import PlacesPage from "./pages/PlacesPage";
 import ProfilePage from "./pages/ProfilePage";
 import PlacesFormPage from "./pages/PlacesFormPage";
 import BookingsPage from "./pages/BookingsPage";
+import BookingDetailsPage from "./pages/BookingDetailsPage";
 import PlaceDetailPage from "./pages/PlaceDetailPage";
 import DashboardPage from "./pages/DashboardPage";
 import UsersPage from "./pages/UsersPage";
@@ -60,6 +61,7 @@ function App() {
             <Route path="/place/:placeId" element={<PlaceDetailPage />}/>
             <Route path="/place/:placeId/:bookingId" element={<PlaceDetailPage />}/>
             <Route path="/account/bookings" element={<BookingsPage />}/>
+            <Route path="/account/bookings/:bookingId" element={<BookingDetailsPage />}/>
             <Route path="/account/host-management" element={<HostBookingManagementPage />}/>
             
             {/* Agent-specific routes */}
