@@ -28,6 +28,9 @@ router.delete("/account/delete", userController.deleteOwnAccount);
 // Update a user (agent only)
 router.put("/:id", userController.updateUser);
 
+// Get admin contact information (public endpoint)
+router.get("/admin/contact", userController.getAdminContact);
+
 // Delete a user (agent only)
 router.delete("/:id", userController.deleteUser);
 

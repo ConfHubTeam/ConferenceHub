@@ -769,7 +769,7 @@ const getBookingById = async (req, res) => {
           attributes: [
             'id', 'title', 'address', 'description', 'photos', 'price', 
             'checkIn', 'checkOut', 'maxGuests', 'ownerId', 'currencyId',
-            'squareMeters', 'isHotel', 'minimumHours', 'lat', 'lng'
+            'squareMeters', 'isHotel', 'minimumHours', 'lat', 'lng', 'refundOptions'
           ]
         },
         {
