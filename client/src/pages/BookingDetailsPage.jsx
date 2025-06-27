@@ -7,6 +7,7 @@ import PriceDisplay from "../components/PriceDisplay";
 import CloudinaryImage from "../components/CloudinaryImage";
 import ConfirmationModal from "../components/ConfirmationModal";
 import LoadingSpinner from "../components/LoadingSpinner";
+import BookingProgress from "../components/BookingProgress";
 import api from "../utils/api";
 import { format } from "date-fns";
 import { 
@@ -36,8 +37,10 @@ export default function BookingDetailsPage() {
         const { data } = await api.get(`/bookings/${bookingId}`);
         setBooking(data);
         
-        // Fetch competing bookings if this is a pending or selected booking
-        if ((data.status === 'pending' || data.status === 'selected') && data.timeSlots?.length > 0) {
+        // Fetch competing bookings only for hosts and agents
+        if ((user?.userType === 'host' || user?.userType === 'agent') && 
+            (data.status === 'pending' || data.status === 'selected') && 
+            data.timeSlots?.length > 0) {
           await fetchCompetingBookings(data);
         }
       } catch (error) {
@@ -65,10 +68,10 @@ export default function BookingDetailsPage() {
       }
     };
 
-    if (bookingId) {
+    if (bookingId && user) {
       fetchBookingDetails();
     }
-  }, [bookingId, navigate, notify]);
+  }, [bookingId, navigate, notify, user]);
 
   // Handle status update
   const handleStatusUpdate = async (newStatus, paymentConfirmed = false) => {
@@ -89,8 +92,10 @@ export default function BookingDetailsPage() {
       } else {
         setBooking(data.booking);
         
-        // Refresh competing bookings after status change
-        if ((data.booking.status === 'pending' || data.booking.status === 'selected') && data.booking.timeSlots?.length > 0) {
+        // Refresh competing bookings after status change (only for hosts and agents)
+        if ((user?.userType === 'host' || user?.userType === 'agent') &&
+            (data.booking.status === 'pending' || data.booking.status === 'selected') && 
+            data.booking.timeSlots?.length > 0) {
           try {
             const response = await api.get('/bookings/competing', {
               params: {
@@ -104,7 +109,7 @@ export default function BookingDetailsPage() {
             console.error('Error refreshing competing bookings:', error);
           }
         } else {
-          setCompetingBookings([]); // Clear competing bookings for non-pending/selected statuses
+          setCompetingBookings([]); // Clear competing bookings for non-pending/selected statuses or clients
         }
         
         notify(data.message || `Booking ${newStatus} successfully`, "success");
@@ -193,14 +198,14 @@ export default function BookingDetailsPage() {
               </p>
             </div>
           </div>
-          <div className={`px-3 py-1 text-sm font-medium rounded-full border ${getStatusBadgeClass(booking.status)}`}>
-            {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Booking Progress */}
+            <BookingProgress booking={booking} userType={user?.userType} />
+            
             {/* Place Information */}
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-4">Property Details</h2>
@@ -392,22 +397,6 @@ export default function BookingDetailsPage() {
                 </div>
               );
             })()}
-
-            {/* Status Info */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">Status</h2>
-              <div className="text-center">
-                <div className={`inline-flex px-4 py-2 rounded-full text-sm font-medium border ${getStatusBadgeClass(booking.status)}`}>
-                  {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                </div>
-                <p className="text-gray-600 mt-3 text-sm">
-                  {getBookingStatusMessage(booking.status, user)}
-                </p>
-                <p className="text-gray-500 mt-2 text-xs">
-                  Updated on {format(new Date(booking.updatedAt), "MMM d, yyyy 'at' HH:mm")}
-                </p>
-              </div>
-            </div>
           </div>
         </div>
       </div>
