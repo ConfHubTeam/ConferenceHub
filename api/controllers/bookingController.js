@@ -1,7 +1,7 @@
 const { Booking, Place, User, Currency } = require("../models");
 const { getUserDataFromToken } = require("../middleware/auth");
 const { Op } = require("sequelize");
-const { validateBookingTimeSlots, findConflictingBookings } = require("../utils/bookingUtils");
+const { validateBookingTimeSlots, findConflictingBookings, cleanupExpiredBookings } = require("../utils/bookingUtils");
 const { 
   getCurrentDateInUzbekistan,
   getUzbekistanAwareAvailableSlots,
@@ -109,6 +109,9 @@ const createBooking = async (req, res) => {
  */
 const getBookings = async (req, res) => {
   try {
+    // Clean up expired bookings before returning the list
+    await cleanupExpiredBookings();
+    
     const userData = await getUserDataFromToken(req);
     const { userId } = req.query;
     
@@ -252,6 +255,9 @@ const getBookings = async (req, res) => {
  */
 const updateBookingStatus = async (req, res) => {
   try {
+    // Clean up expired bookings before processing status updates
+    await cleanupExpiredBookings();
+    
     const { id } = req.params;
     const { status, paymentConfirmed = false } = req.body;
     const userData = await getUserDataFromToken(req);
@@ -282,7 +288,7 @@ const updateBookingStatus = async (req, res) => {
     // Validate status transitions
     const validTransitions = {
       "pending": ["selected", "approved", "rejected"],
-      "selected": ["approved", "rejected"],
+      "selected": ["pending", "approved", "rejected"], // Allow reverting selected back to pending
       "approved": [], // Final status
       "rejected": [], // Final status
       "cancelled": [] // Final status
@@ -300,6 +306,12 @@ const updateBookingStatus = async (req, res) => {
     
     if (status === 'selected') {
       // Only hosts/agents can select bookings
+      isAuthorized = (
+        (userData.userType === 'host' && booking.place.ownerId === userData.id) ||
+        (userData.userType === 'agent')
+      );
+    } else if (status === 'pending') {
+      // Only hosts/agents can revert selected bookings back to pending
       isAuthorized = (
         (userData.userType === 'host' && booking.place.ownerId === userData.id) ||
         (userData.userType === 'agent')
@@ -401,6 +413,11 @@ const updateBookingStatus = async (req, res) => {
     // Generate appropriate success message based on status
     let message;
     switch (status) {
+      case 'pending':
+        message = booking.status === 'selected' 
+          ? 'Selection cancelled. Booking reverted to pending status.' 
+          : 'Booking updated to pending status.';
+        break;
       case 'selected':
         message = 'Booking selected successfully. Client can now proceed with payment.';
         break;
@@ -432,6 +449,9 @@ const updateBookingStatus = async (req, res) => {
  */
 const getBookingCounts = async (req, res) => {
   try {
+    // Clean up expired bookings before counting
+    await cleanupExpiredBookings();
+    
     const userData = await getUserDataFromToken(req);
     
     if (userData.userType !== 'host' && userData.userType !== 'agent') {
@@ -655,6 +675,9 @@ const checkTimezoneAwareAvailability = async (req, res) => {
  */
 const getCompetingBookings = async (req, res) => {
   try {
+    // Clean up expired bookings before finding competing ones
+    await cleanupExpiredBookings();
+    
     console.log("Getting competing bookings, query params:", req.query);
     
     const userData = await getUserDataFromToken(req);

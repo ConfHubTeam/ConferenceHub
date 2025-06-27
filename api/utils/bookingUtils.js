@@ -7,6 +7,79 @@ const {
   isDateInPastUzbekistan,
   isTimeInPastUzbekistan
 } = require('./uzbekistanTimezoneUtils');
+const { Booking } = require('../models');
+const { Op } = require('sequelize');
+
+/**
+ * Automatic cleanup of expired pending/selected bookings
+ * Removes bookings in "pending" or "selected" status where all time slots are in the past
+ */
+const cleanupExpiredBookings = async () => {
+  try {
+    // Get all pending and selected bookings
+    const expiredCandidates = await Booking.findAll({
+      where: {
+        status: {
+          [Op.in]: ['pending', 'selected']
+        }
+      },
+      attributes: ['id', 'selectedTimeSlots', 'checkInDate', 'checkOutDate']
+    });
+
+    const expiredBookingIds = [];
+
+    for (const booking of expiredCandidates) {
+      let isExpired = false;
+
+      if (booking.selectedTimeSlots && booking.selectedTimeSlots.length > 0) {
+        // For time slot bookings, check if all slots are in the past
+        const allSlotsExpired = booking.selectedTimeSlots.every(slot => {
+          // Check if the date is in the past
+          if (isDateInPastUzbekistan(slot.date)) {
+            return true;
+          }
+          
+          // If it's today, check if the end time has passed
+          const currentDate = require('moment-timezone')().tz('Asia/Tashkent').format('YYYY-MM-DD');
+          if (slot.date === currentDate) {
+            return isTimeInPastUzbekistan(slot.date, slot.endTime);
+          }
+          
+          return false;
+        });
+
+        if (allSlotsExpired) {
+          isExpired = true;
+        }
+      } else if (booking.checkInDate && booking.checkOutDate) {
+        // For full-day bookings, check if checkout date is in the past
+        if (isDateInPastUzbekistan(booking.checkOutDate)) {
+          isExpired = true;
+        }
+      }
+
+      if (isExpired) {
+        expiredBookingIds.push(booking.id);
+      }
+    }
+
+    // Delete expired bookings (they are not counted as rejected, just removed)
+    if (expiredBookingIds.length > 0) {
+      await Booking.destroy({
+        where: {
+          id: {
+            [Op.in]: expiredBookingIds
+          }
+        }
+      });
+    }
+
+    return expiredBookingIds.length;
+  } catch (error) {
+    console.error('Error during booking cleanup:', error);
+    return 0;
+  }
+};
 
 /**
  * Check if two time slots have conflicts considering cooldown periods
@@ -96,7 +169,6 @@ const validateBookingTimeSlots = async (timeSlots, placeId, cooldownMinutes = 0)
     }
 
     // Get only CONFIRMED/PAID bookings for this place (not pending requests)
-    const { Booking } = require("../models");
     const existingBookings = await Booking.findAll({
       where: {
         placeId: placeId,
@@ -162,14 +234,14 @@ const findConflictingBookings = (approvedBooking, pendingBookings, cooldownMinut
  */
 const findCompetingBookings = async (timeSlots, placeId, excludeBookingId = null) => {
   try {
-    const { Booking } = require("../models");
+    // Clean up expired bookings before finding competing ones
+    await cleanupExpiredBookings();
     
-    // Get all pending and selected bookings for this place
     const competingBookings = await Booking.findAll({
       where: {
         placeId: placeId,
-        status: { [require("sequelize").Op.in]: ['pending', 'selected'] },
-        ...(excludeBookingId && { id: { [require("sequelize").Op.ne]: excludeBookingId } })
+        status: { [Op.in]: ['pending', 'selected'] },
+        ...(excludeBookingId && { id: { [Op.ne]: excludeBookingId } })
       },
       include: [
         {
@@ -208,5 +280,6 @@ module.exports = {
   hasTimeSlotConflict,
   validateBookingTimeSlots,
   findConflictingBookings,
-  findCompetingBookings
+  findCompetingBookings,
+  cleanupExpiredBookings
 };
