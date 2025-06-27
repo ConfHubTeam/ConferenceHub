@@ -27,8 +27,36 @@ const Booking = sequelize.define('Booking', {
   totalPrice: {
     type: DataTypes.FLOAT
   },
+  serviceFee: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    defaultValue: 0,
+    comment: 'Platform service fee charged for this booking'
+  },
+  protectionPlanSelected: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    allowNull: false,
+    comment: 'Whether client selected protection plan for this booking'
+  },
+  protectionPlanFee: {
+    type: DataTypes.FLOAT,
+    defaultValue: 0,
+    allowNull: false,
+    comment: 'Protection plan fee charged (0 if not selected)'
+  },
+  finalTotal: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    comment: 'Total amount including all fees and protection'
+  },
+  refundPolicySnapshot: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    comment: 'Refund options that were active on the place when booking was made'
+  },
   status: {
-    type: DataTypes.ENUM('pending', 'approved', 'rejected'),
+    type: DataTypes.ENUM('pending', 'selected', 'approved', 'rejected', 'cancelled'),
     defaultValue: 'pending',
     allowNull: false
   },

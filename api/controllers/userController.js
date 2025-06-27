@@ -460,6 +460,34 @@ const updateUser = async (req, res) => {
   }
 };
 
+/**
+ * Get admin contact information for support
+ */
+const getAdminContact = async (req, res) => {
+  try {
+    // First try to find the specific Sys admin user
+    let admin = await User.findOne({
+      where: { email: 'admin@conferencehub.com' },
+      attributes: ['name', 'email', 'phoneNumber']
+    });
+    
+    // If Sys admin not found, try to find any agent user
+    if (!admin) {
+      admin = await User.findOne({
+        where: { userType: 'agent' },
+        attributes: ['name', 'email', 'phoneNumber']
+      });
+    }
+    
+    res.json(admin);
+  } catch (error) {
+    console.error('Error fetching admin contact:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch admin contact'
+    });
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -467,5 +495,6 @@ module.exports = {
   deleteUser,
   deleteOwnAccount,
   getStatistics,
-  updateUser
+  updateUser,
+  getAdminContact
 };

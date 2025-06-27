@@ -10,6 +10,7 @@ import AddressSection from "../components/AddressSection";
 import AvailabilitySection from "../components/AvailabilitySection";
 import YouTubeSection, { extractYouTubeVideoId } from "../components/YouTubeSection";
 import HostSelector from "../components/HostSelector";
+import RefundOptions from "../components/RefundOptions";
 
 export default function PlacesFormPage() {
   const { id } = useParams();
@@ -60,6 +61,9 @@ export default function PlacesFormPage() {
 
   // Agent-specific state for selecting host
   const [selectedHost, setSelectedHost] = useState(null);
+
+  // Refund options state
+  const [refundOptions, setRefundOptions] = useState([]);
 
   // Track the source of coordinate updates to prevent circular geocoding
   const coordinateUpdateSource = useRef('address'); // 'address' or 'map'
@@ -213,6 +217,9 @@ export default function PlacesFormPage() {
         // Load room property data
         setSquareMeters(data.squareMeters || null);
         setIsHotel(data.isHotel || false);
+        
+        // Load refund options if available
+        setRefundOptions(data.refundOptions || []);
         
         // Set the selected host for agents when editing a place
         if (user?.userType === 'agent' && data.owner) {
@@ -419,6 +426,11 @@ export default function PlacesFormPage() {
         },
         fieldId: "time-slots",
         errorMessage: "All available weekdays must have valid time slots (start and end times, with start before end)"
+      },
+      {
+        isValid: refundOptions && refundOptions.length > 0,
+        fieldId: "refund-options",
+        errorMessage: "At least one refund option must be selected"
       }
     ];
 
@@ -489,6 +501,7 @@ export default function PlacesFormPage() {
       weekdayTimeSlots,
       squareMeters, // Include square meters
       isHotel, // Include is hotel flag
+      refundOptions, // Include refund options
       // Include hostId for agents creating places on behalf of hosts
       ...(user?.userType === 'agent' && selectedHost ? { hostId: selectedHost.id } : {})
     };
@@ -680,6 +693,17 @@ export default function PlacesFormPage() {
           setIsHotel={setIsHotel}
           toggleBlockedDate={toggleBlockedDate}
           preInput={preInput}
+        />
+        
+        {preInput(
+          "Refund Options",
+          "Select the refund and cancellation policies for your conference room.",
+          true // Required field
+        )}
+        <RefundOptions
+          selectedOptions={refundOptions}
+          onOptionsChange={setRefundOptions}
+          isRequired={true}
         />
         
         <div className="flex justify-center md:justify-start">

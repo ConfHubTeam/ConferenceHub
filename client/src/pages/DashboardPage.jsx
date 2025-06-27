@@ -98,31 +98,6 @@ export default function DashboardPage() {
             </div>
           </div>
           
-          {/* Total Bookings Stat Card */}
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold mb-2">Bookings</h2>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="bg-yellow-50 p-3 rounded">
-                <div className="text-sm text-yellow-500">Pending</div>
-                <div className="text-2xl font-bold">{bookingStats.pending || 0}</div>
-              </div>
-              <div className="bg-green-50 p-3 rounded">
-                <div className="text-sm text-green-500">Approved</div>
-                <div className="text-2xl font-bold">{bookingStats.approved || 0}</div>
-              </div>
-              <div className="bg-red-50 p-3 rounded">
-                <div className="text-sm text-red-500">Rejected</div>
-                <div className="text-2xl font-bold">{bookingStats.rejected || 0}</div>
-              </div>
-              <div className="bg-gray-50 p-3 rounded">
-                <div className="text-sm text-gray-500">Total</div>
-                <div className="text-2xl font-bold">
-                  {Number(bookingStats.pending || 0) + Number(bookingStats.approved || 0) + Number(bookingStats.rejected || 0)}
-                </div>
-              </div>
-            </div>
-          </div>
-          
           {/* Total Places Stat Card */}
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-xl font-semibold mb-2">Conference Rooms</h2>
@@ -135,6 +110,31 @@ export default function DashboardPage() {
                 <div className="text-sm text-primary">Available</div>
                 <div className="text-2xl font-bold">
                   {stats?.places.available || 'N/A'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Total Bookings Stat Card */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-2">Bookings</h2>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-yellow-50 p-3 rounded">
+                <div className="text-sm text-yellow-600">Pending</div>
+                <div className="text-2xl font-bold">{bookingStats.pending || 0}</div>
+              </div>
+              <div className="bg-green-50 p-3 rounded">
+                <div className="text-sm text-green-600">Approved</div>
+                <div className="text-2xl font-bold">{bookingStats.approved || 0}</div>
+              </div>
+              <div className="bg-red-50 p-3 rounded">
+                <div className="text-sm text-red-600">Rejected</div>
+                <div className="text-2xl font-bold">{bookingStats.rejected || 0}</div>
+              </div>
+              <div className="bg-gray-50 p-3 rounded">
+                <div className="text-sm text-gray-500">Total</div>
+                <div className="text-2xl font-bold">
+                  {Number(bookingStats.pending || 0) + Number(bookingStats.approved || 0) + Number(bookingStats.rejected || 0)}
                 </div>
               </div>
             </div>

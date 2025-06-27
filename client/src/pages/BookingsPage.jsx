@@ -9,7 +9,6 @@ import { useNotification } from "../components/NotificationContext";
 import { useBookingNotifications } from "../contexts/BookingNotificationContext";
 import BookingNotificationBanner from "../components/BookingNotificationBanner";
 import BookingFilters from "../components/BookingFilters";
-import BookingStatsCards from "../components/BookingStatsCards";
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState([]);
@@ -26,28 +25,28 @@ export default function BookingsPage() {
   
   // Track when user visits the page to dismiss notifications
   useEffect(() => {
-    if (!user) return;
+    if (!user || user.userType !== 'client' || !bookings.length) return;
     
-    // For hosts/agents, DON'T automatically mark as viewed - let them dismiss the banner
-    // For clients, mark notifications as viewed when they see the filtered bookings
-    if (user.userType === 'client') {
-      const currentBookings = getCurrentPageItems();
-      const approvedBookings = currentBookings.filter(b => b.status === 'approved');
-      const rejectedBookings = currentBookings.filter(b => b.status === 'rejected');
-      
-      if (approvedBookings.length > 0 && statusFilter === 'approved') {
+    // For clients, mark notifications as viewed when they switch to viewing those statuses
+    // Add a small delay to prevent race conditions
+    const timeoutId = setTimeout(() => {
+      if (statusFilter === 'approved') {
         markAsViewed('approved');
-      }
-      if (rejectedBookings.length > 0 && statusFilter === 'rejected') {
+      } else if (statusFilter === 'rejected') {
         markAsViewed('rejected');
+      } else if (statusFilter === 'all') {
+        // When viewing all, mark both as viewed if there are any bookings
+        if (bookings.some(b => b.status === 'approved')) {
+          markAsViewed('approved');
+        }
+        if (bookings.some(b => b.status === 'rejected')) {
+          markAsViewed('rejected');
+        }
       }
-      // If showing all bookings, mark both as viewed if they exist
-      if (statusFilter === 'all') {
-        if (approvedBookings.length > 0) markAsViewed('approved');
-        if (rejectedBookings.length > 0) markAsViewed('rejected');
-      }
-    }
-  }, [user, markAsViewed, statusFilter, filteredBookings]);
+    }, 100); // Small delay to prevent race conditions
+
+    return () => clearTimeout(timeoutId);
+  }, [user?.userType, statusFilter, bookings.length]); // Use bookings.length instead of filteredBookings
   
   // Extract any query params if needed
   const params = new URLSearchParams(location.search);
@@ -100,12 +99,12 @@ export default function BookingsPage() {
     }
   }
 
-  // Load competing bookings for each pending booking
+  // Load competing bookings for each pending or selected booking
   const loadCompetingBookings = async (bookingsList) => {
     const competingData = {};
     
     for (const booking of bookingsList) {
-      if (booking.status === 'pending' && booking.timeSlots?.length > 0) {
+      if ((booking.status === 'pending' || booking.status === 'selected') && booking.timeSlots?.length > 0) {
         try {
           const response = await api.get('/bookings/competing', {
             params: {
@@ -125,15 +124,20 @@ export default function BookingsPage() {
     setCompetingBookingsMap(competingData);
   };
 
-  // Calculate summary statistics for hosts
+  // Calculate summary statistics for hosts - selected bookings should be counted as pending
   function calculateStats(bookingData) {
     const stats = bookingData.reduce(
       (acc, booking) => {
         acc.total++;
-        acc[booking.status]++;
+        // Count "selected" bookings as "pending" for stats purposes since they're still awaiting payment
+        if (booking.status === 'selected') {
+          acc.pending++;
+        } else {
+          acc[booking.status]++;
+        }
         return acc;
       },
-      { pending: 0, approved: 0, rejected: 0, total: 0 }
+      { pending: 0, selected: 0, approved: 0, rejected: 0, total: 0 }
     );
     setStats(stats);
   }
@@ -142,9 +146,15 @@ export default function BookingsPage() {
   useEffect(() => {
     let filtered = [...bookings];
     
-    // Filter by status
+    // Filter by status - "pending" includes both "pending" and "selected" for all user types
     if (statusFilter !== 'all') {
-      filtered = filtered.filter(booking => booking.status === statusFilter);
+      if (statusFilter === 'pending') {
+        // For all user types, "pending" view includes both pending and selected bookings
+        // Selected bookings are still considered pending until payment is complete
+        filtered = filtered.filter(booking => booking.status === 'pending' || booking.status === 'selected');
+      } else {
+        filtered = filtered.filter(booking => booking.status === statusFilter);
+      }
     }
     
     // Filter by search term
@@ -266,7 +276,9 @@ export default function BookingsPage() {
   const showingTo = Math.min(currentPage * itemsPerPage, filteredBookings.length);
 
   // Group bookings by status for filtered bookings
-  const pendingBookings = filteredBookings.filter(booking => booking.status === 'pending');
+  const pendingBookings = filteredBookings.filter(booking => 
+    booking.status === 'pending' || booking.status === 'selected'
+  );
   const approvedBookings = filteredBookings.filter(booking => booking.status === 'approved');
   const rejectedBookings = filteredBookings.filter(booking => booking.status === 'rejected');
 
@@ -299,9 +311,6 @@ export default function BookingsPage() {
         {/* Agent view - Production-level booking management */}
         {user?.userType === 'agent' && (
           <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
-            {/* Summary cards */}
-            <BookingStatsCards stats={stats} userType={user?.userType} />
-
             {/* Filters and controls */}
             <BookingFilters
               user={user}
@@ -379,9 +388,6 @@ export default function BookingsPage() {
         {user?.userType === 'host' && (
           <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
 
-            {/* Summary cards */}
-            <BookingStatsCards stats={stats} userType={user?.userType} />
-
             {/* Filters and controls */}
             <BookingFilters
               user={user}
@@ -457,9 +463,6 @@ export default function BookingsPage() {
         {/* Client view */}
         {user?.userType === 'client' && (
           <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
-
-            {/* Summary cards */}
-            <BookingStatsCards stats={stats} userType={user?.userType} />
 
             {/* Filters and controls */}
             <BookingFilters

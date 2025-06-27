@@ -162,6 +162,34 @@ const Place = sequelize.define('Place', {
     allowNull: false,
     defaultValue: false
   },
+  refundOptions: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    allowNull: false,
+    defaultValue: [],
+    field: 'refund_options', // Explicitly map to database column
+    validate: {
+      isValidRefundOptions(value) {
+        const validOptions = [
+          'flexible_14_day',
+          'moderate_7_day', 
+          'strict',
+          'non_refundable',
+          'reschedule_only',
+          'client_protection_plan'
+        ];
+        
+        if (!Array.isArray(value) || value.length === 0) {
+          throw new Error('At least one refund option must be selected');
+        }
+        
+        for (const option of value) {
+          if (!validOptions.includes(option)) {
+            throw new Error(`Invalid refund option: ${option}`);
+          }
+        }
+      }
+    }
+  },
 }, {
   timestamps: true
 });

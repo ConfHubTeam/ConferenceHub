@@ -1,7 +1,8 @@
 const { Booking, Place, User, Currency } = require("../models");
 const { getUserDataFromToken } = require("../middleware/auth");
-const { Op } = require("sequelize");
-const { validateBookingTimeSlots, findConflictingBookings } = require("../utils/bookingUtils");
+const BookingService = require("../services/bookingService");
+const BookingValidationService = require("../services/bookingValidationService");
+const { cleanupExpiredBookings } = require("../utils/bookingUtils");
 const { 
   getCurrentDateInUzbekistan,
   getUzbekistanAwareAvailableSlots,
@@ -15,80 +16,25 @@ const {
 const createBooking = async (req, res) => {
   try {
     const userData = await getUserDataFromToken(req);
-    const {
-      place, 
-      checkInDate, 
-      checkOutDate, 
-      selectedTimeSlots, // New field for time slot bookings
-      numOfGuests, 
-      guestName, 
-      guestPhone, 
-      totalPrice
-    } = req.body;
+    const bookingData = req.body;
 
-    // Only clients can create bookings
-    if (userData.userType !== 'client') {
-      return res.status(403).json({ error: "Only clients can create bookings. Hosts and agents cannot make bookings." });
-    }
+    // Validate booking data
+    BookingValidationService.validateBookingCreation(bookingData);
 
-    // Generate unique request ID
-    const uniqueRequestId = `REQ-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`.toUpperCase();
-    
-    // Get place details for cooldown information
-    const placeDetails = await Place.findByPk(place);
-    if (!placeDetails) {
-      return res.status(404).json({ error: "Place not found" });
-    }
-    
-    // Validate time slots for conflicts using enhanced detection
-    if (selectedTimeSlots && selectedTimeSlots.length > 0) {
-      const validation = await validateBookingTimeSlots(
-        selectedTimeSlots, 
-        place, 
-        placeDetails.cooldown || 0
-      );
-      
-      if (!validation.isValid) {
-        return res.status(422).json({ 
-          error: `Booking conflict detected: ${validation.message}`,
-          conflictingSlot: validation.conflictingSlot
-        });
-      }
-    }
-    
-    // Determine check-in/check-out dates
-    // If time slots are provided, use first and last date from slots
-    let finalCheckInDate = checkInDate;
-    let finalCheckOutDate = checkOutDate;
-    
-    if (selectedTimeSlots && selectedTimeSlots.length > 0) {
-      // Sort time slots by date
-      const sortedDates = [...selectedTimeSlots].sort((a, b) => 
-        new Date(a.date) - new Date(b.date)
-      );
-      
-      finalCheckInDate = sortedDates[0].date;
-      finalCheckOutDate = sortedDates[sortedDates.length - 1].date;
-    }
-
-    // Create booking with Sequelize
-    const booking = await Booking.create({
-      userId: userData.id,
-      placeId: place, 
-      checkInDate: finalCheckInDate,
-      checkOutDate: finalCheckOutDate, 
-      numOfGuests, 
-      guestName, 
-      guestPhone, 
-      totalPrice,
-      status: 'pending',
-      timeSlots: selectedTimeSlots || [], // Store the selected time slots
-      uniqueRequestId // Add the unique request ID
-    });
+    // Create booking using service
+    const booking = await BookingService.createBooking(userData, bookingData);
     
     res.json(booking);
   } catch (error) {
-    res.status(422).json({ error: error.message });
+    const statusCode = error.statusCode || 422;
+    const response = { error: error.message };
+    
+    // Include additional error data if present
+    if (error.conflictingSlot) {
+      response.conflictingSlot = error.conflictingSlot;
+    }
+    
+    res.status(statusCode).json(response);
   }
 };
 
@@ -102,136 +48,17 @@ const getBookings = async (req, res) => {
     
     // For agents with userId parameter - get bookings for a specific user
     if (userData.userType === 'agent' && userId) {
-      const userBookings = await Booking.findAll({
-        where: { 
-          userId: userId
-        },
-        include: [
-          {
-            model: Place,
-            as: 'place',
-            include: [
-              {
-                model: User,
-                as: 'owner',
-                attributes: ['id', 'name', 'email', 'phoneNumber']
-              },
-              {
-                model: Currency,
-                as: 'currency',
-                attributes: ['id', 'name', 'code', 'charCode']
-              }
-            ],
-            attributes: ['id', 'title', 'address', 'photos', 'price', 'checkIn', 'checkOut', 'ownerId', 'currencyId']
-          },
-          {
-            model: User,
-            as: 'user',
-            attributes: ['id', 'name', 'email', 'phoneNumber']
-          }
-        ],
-        order: [
-          ['createdAt', 'DESC'] // Most recent bookings first
-        ]
-      });
-      
+      const userBookings = await BookingService.getUserBookings(userId);
       return res.json(userBookings);
     }
     
-    // Agents can see all bookings across the system
-    if (userData.userType === 'agent') {
-      const allBookings = await Booking.findAll({
-        include: [
-          {
-            model: Place,
-            as: 'place',
-            include: [
-              {
-                model: User,
-                as: 'owner',
-                attributes: ['id', 'name', 'email', 'phoneNumber']
-              },
-              {
-                model: Currency,
-                as: 'currency',
-                attributes: ['id', 'name', 'code', 'charCode']
-              }
-            ],
-            attributes: ['id', 'title', 'address', 'photos', 'price', 'checkIn', 'checkOut', 'ownerId', 'currencyId']
-          },
-          {
-            model: User,
-            as: 'user',
-            attributes: ['id', 'name', 'email', 'phoneNumber']
-          }
-        ],
-        order: [
-          ['createdAt', 'DESC'] // Most recent bookings first
-        ]
-      });
-      
-      return res.json(allBookings);
-    }
-    
-    if (userData.userType === 'host') {
-      // For hosts: Find bookings for conference rooms they own
-      const hostBookings = await Booking.findAll({
-        include: [
-          {
-            model: Place,
-            as: 'place',
-            where: { ownerId: userData.id },
-            include: [
-              {
-                model: Currency,
-                as: 'currency',
-                attributes: ['id', 'name', 'code', 'charCode']
-              }
-            ],
-            attributes: ['id', 'title', 'address', 'photos', 'price', 'checkIn', 'checkOut', 'currencyId']
-          },
-          {
-            model: User,
-            as: 'user',
-            attributes: ['id', 'name', 'email']
-          }
-        ],
-        order: [
-          ['createdAt', 'DESC'] // Most recent bookings first
-        ]
-      });
-      
-      res.json(hostBookings);
-    } else {
-      // For clients: Find bookings made by this user
-      // Include all booking statuses so clients can see their full booking history
-      const clientBookings = await Booking.findAll({
-        where: { 
-          userId: userData.id
-          // Note: Include all statuses (pending, approved, rejected) for client's visibility
-        },
-        include: {
-          model: Place,
-          as: 'place',
-          include: [
-            {
-              model: Currency,
-              as: 'currency',
-              attributes: ['id', 'name', 'code', 'charCode']
-            }
-          ],
-          attributes: ['id', 'title', 'address', 'photos', 'price', 'checkIn', 'checkOut', 'currencyId']
-        },
-        order: [
-          ['createdAt', 'DESC'] // Most recent bookings first
-        ]
-      });
-      
-      res.json(clientBookings);
-    }
+    // Get bookings based on user type
+    const bookings = await BookingService.getBookings(userData);
+    res.json(bookings);
   } catch (error) {
     console.error("Error fetching bookings:", error);
-    res.status(422).json({ error: error.message });
+    const statusCode = error.statusCode || 422;
+    res.status(statusCode).json({ error: error.message });
   }
 };
 
@@ -241,120 +68,28 @@ const getBookings = async (req, res) => {
 const updateBookingStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const statusData = req.body;
     const userData = await getUserDataFromToken(req);
     
-    // Verify status is valid
-    if (!['pending', 'approved', 'rejected'].includes(status)) {
-      return res.status(400).json({ error: "Invalid status value" });
-    }
+    // Validate status
+    BookingValidationService.validateBookingStatus(statusData.status);
     
-    // Get the booking
-    const booking = await Booking.findByPk(id, {
-      include: [
-        {
-          model: Place,
-          as: 'place'
-        },
-        {
-          model: User,
-          as: 'user'
-        }
-      ]
-    });
+    // Update booking status using service
+    const result = await BookingService.updateBookingStatus(id, userData, statusData);
     
-    if (!booking) {
-      return res.status(404).json({ error: "Booking not found" });
-    }
-    
-    // Check authorization
-    const isAuthorized = (
-      (userData.userType === 'host' && booking.place.ownerId === userData.id) ||
-      (userData.userType === 'agent') ||
-      (userData.userType === 'client' && booking.userId === userData.id && status === 'rejected')
-    );
-    
-    if (!isAuthorized) {
-      return res.status(403).json({ error: "You are not authorized to update this booking" });
-    }
-    
-    // Handle client cancellation - delete the booking instead of marking as rejected
-    if (userData.userType === 'client' && booking.userId === userData.id && status === 'rejected') {
-      await booking.destroy();
-      return res.json({ 
-        message: "Booking cancelled successfully", 
-        booking: null, // Indicate the booking was deleted
-        deleted: true 
-      });
-    }
-    
-    // Handle conflicts if approving a booking
-    if (status === 'approved') {
-      // Get place details for cooldown information
-      const placeDetails = await Place.findByPk(booking.placeId);
-      const cooldownMinutes = placeDetails ? placeDetails.cooldown || 0 : 0;
-      
-      // Find pending bookings for the same place
-      const pendingBookings = await Booking.findAll({
-        where: {
-          placeId: booking.placeId,
-          status: 'pending',
-          id: { [Op.ne]: booking.id }
-        }
-      });
-      
-      // Use enhanced conflict detection to find conflicting bookings
-      const conflictingBookings = findConflictingBookings(
-        booking,
-        pendingBookings,
-        cooldownMinutes
-      );
-      
-      // Reject all conflicting bookings
-      if (conflictingBookings.length > 0) {
-        for (const conflictBooking of conflictingBookings) {
-          conflictBooking.status = 'rejected';
-          await conflictBooking.save();
-        }
-      }
-    }
-    
-    // Update booking status
-    booking.status = status;
-    await booking.save();
-
-    // Reload the booking with all associations to ensure we return complete data
-    const updatedBooking = await Booking.findByPk(booking.id, {
-      include: [
-        {
-          model: Place,
-          as: 'place',
-          include: [
-            {
-              model: User,
-              as: 'owner',
-              attributes: ['id', 'name', 'phoneNumber', 'email']
-            }
-          ]
-        },
-        {
-          model: User,
-          as: 'user',
-          attributes: ['id', 'name', 'phoneNumber', 'email']
-        }
-      ]
-    });
-
-    return res.json({ 
-      success: true, 
-      booking: updatedBooking,
-      message: status === 'approved' ? 
-        'Booking approved. Any conflicting bookings have been automatically rejected.' : 
-        `Booking ${status} successfully.`
-    });
+    res.json(result);
   } catch (error) {
     console.error("Error updating booking:", error);
-    res.status(422).json({ error: error.message });
+    const statusCode = error.statusCode || 422;
+    const response = { error: error.message };
+    
+    // Include additional error data if present
+    if (error.requiresPaymentCheck) {
+      response.requiresPaymentCheck = error.requiresPaymentCheck;
+      response.message = error.message;
+    }
+    
+    res.status(statusCode).json(response);
   }
 };
 
@@ -365,38 +100,17 @@ const getBookingCounts = async (req, res) => {
   try {
     const userData = await getUserDataFromToken(req);
     
-    if (userData.userType !== 'host' && userData.userType !== 'agent') {
-      return res.status(403).json({ error: "Only hosts and agents can access booking counts" });
-    }
+    // Validate user permissions
+    BookingValidationService.validateUserPermissions(userData.userType, 'getCounts');
     
-    let pendingCount;
+    // Get booking counts using service
+    const counts = await BookingService.getBookingCounts(userData);
     
-    if (userData.userType === 'agent') {
-      // Agents can see all pending bookings
-      pendingCount = await Booking.count({
-        where: { status: 'pending' }
-      });
-    } else {
-      // Hosts see only their pending bookings
-      pendingCount = await Booking.count({
-        include: [
-          {
-            model: Place,
-            as: 'place',
-            where: { ownerId: userData.id },
-            attributes: []
-          }
-        ],
-        where: {
-          status: 'pending'
-        }
-      });
-    }
-    
-    res.json({ pendingCount });
+    res.json(counts);
   } catch (error) {
     console.error("Error fetching booking counts:", error);
-    res.status(422).json({ error: error.message });
+    const statusCode = error.statusCode || 422;
+    res.status(statusCode).json({ error: error.message });
   }
 };
 
@@ -593,34 +307,41 @@ const getCompetingBookings = async (req, res) => {
       return res.status(400).json({ error: "placeId and timeSlots are required" });
     }
 
-    // Verify user has access to this place
-    const place = await Place.findByPk(placeId);
-    if (!place) {
-      return res.status(404).json({ error: "Place not found" });
-    }
-
-    // Only hosts and agents can view competing bookings for their places
-    if (userData.userType === 'host' && place.ownerId !== userData.id) {
-      return res.status(403).json({ error: "Access denied" });
-    }
-
-    if (userData.userType === 'client') {
-      return res.status(403).json({ error: "Clients cannot view competing bookings" });
-    }
-
-    const parsedTimeSlots = JSON.parse(timeSlots);
-    const { findCompetingBookings } = require("../utils/bookingUtils");
+    // Validate user permissions
+    BookingValidationService.validateUserPermissions(userData.userType, 'viewCompeting');
     
-    const competingBookings = await findCompetingBookings(
-      parsedTimeSlots, 
+    // Get competing bookings using service
+    const competingBookings = await BookingService.getCompetingBookings(
+      userData, 
       placeId, 
+      timeSlots, 
       excludeBookingId
     );
 
     res.json(competingBookings);
   } catch (error) {
     console.error("Error getting competing bookings:", error);
-    res.status(422).json({ error: error.message });
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({ error: error.message });
+  }
+};
+
+/**
+ * Get a single booking by ID with all related information
+ */
+const getBookingById = async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+    const { id } = req.params;
+    
+    // Get booking by ID using service
+    const booking = await BookingService.getBookingById(id, userData);
+    
+    res.json(booking);
+  } catch (error) {
+    console.error("Error fetching booking:", error);
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({ error: error.message });
   }
 };
 
@@ -631,5 +352,6 @@ module.exports = {
   getBookingCounts,
   checkAvailability,
   checkTimezoneAwareAvailability,
-  getCompetingBookings
+  getCompetingBookings,
+  getBookingById
 };

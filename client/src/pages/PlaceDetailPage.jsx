@@ -12,6 +12,7 @@ import PlaceDetailsInfo from "../components/PlaceDetailsInfo";
 import WeeklyAvailabilityDisplay from "../components/WeeklyAvailabilityDisplay";
 import PlaceAvailabilityCalendar from "../components/PlaceAvailabilityCalendar";
 import PlacePerks from "../components/PlacePerks";
+import RefundPolicyDisplay from "../components/RefundPolicyDisplay";
 
 export default function PlaceDetailPage() {
   const { placeId, bookingId } = useParams();
@@ -210,10 +211,15 @@ export default function PlaceDetailPage() {
                 selectedCalendarDates={selectedCalendarDates}
               />
             </div>
+
+            {/* Refund & Cancellation Policy Section */}
+            <div className="mb-8">
+              <RefundPolicyDisplay placeDetail={placeDetail} />
+            </div>
             
-            {/* Location Map */}
+            {/* Location Map - Hidden on mobile */}
             {hasCoordinates && (
-              <div className="mb-8">
+              <div className="mb-8 hidden md:block">
                 <h2 className="text-xl md:text-2xl font-semibold mb-4">Location</h2>
                 <div className="h-64 rounded-lg overflow-hidden border">
                   <MapView places={mapPlaces} disableInfoWindow={true} />
@@ -226,6 +232,19 @@ export default function PlaceDetailPage() {
               <div className="mb-8">
                 <h2 className="text-xl md:text-2xl font-semibold mb-4">Additional Information</h2>
                 <p className="leading-6 md:leading-7 text-sm md:text-base text-gray-700">{placeDetail.extraInfo}</p>
+              </div>
+            )}
+
+            {/* Refund Policy Section - Only for owners and agents */}
+            {canManage && (
+              <div className="mb-8">
+                <h2 className="text-xl md:text-2xl font-semibold mb-4">Refund Policy</h2>
+                <RefundPolicyDisplay 
+                  refundPolicy={placeDetail.refundPolicy}
+                  placeId={placeDetail.id}
+                  isOwner={isOwner}
+                  canManage={canManage}
+                />
               </div>
             )}
           </div>
