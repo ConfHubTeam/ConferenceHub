@@ -417,7 +417,7 @@ export default function BookingDetailsPage() {
 
             {/* Cancellation & Refund Policy */}
             <RefundPolicySection 
-              refundOptions={booking.place?.refundOptions}
+              booking={booking}
               formatRefundOption={formatRefundOption}
             />
           </div>

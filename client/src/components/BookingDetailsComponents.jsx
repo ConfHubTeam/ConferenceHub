@@ -339,15 +339,38 @@ export const RefundOptionItem = ({ option, formatRefundOption }) => {
 /**
  * Refund policy section component
  */
-export const RefundPolicySection = ({ refundOptions, formatRefundOption }) => {
+export const RefundPolicySection = ({ booking, formatRefundOption }) => {
+  // Get refund policy from booking snapshot, not from current place policy
+  const refundPolicySnapshot = booking.refundPolicySnapshot;
+  const protectionPlanSelected = booking.protectionPlanSelected;
+
+  // Filter out protection plan if it wasn't selected by the client
+  const filteredRefundOptions = refundPolicySnapshot && Array.isArray(refundPolicySnapshot)
+    ? refundPolicySnapshot.filter(option => {
+        if (option === 'client_protection_plan') {
+          return protectionPlanSelected; // Only show if client selected protection
+        }
+        return true; // Show all other options
+      })
+    : [];
+
+  // Check if we have any valid refund options to display
+  const hasValidOptions = filteredRefundOptions.length > 0;
+
   return (
     <SectionCard title="Cancellation & Refund Policy">
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <h3 className="font-medium text-yellow-800 mb-2">Policy at Time of Booking</h3>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="font-medium text-yellow-800">Policy at Time of Booking</h3>
+          <span className="text-xs text-yellow-600 bg-yellow-100 px-2 py-1 rounded-full">
+            {format(new Date(booking.createdAt), 'MMM dd, yyyy')}
+          </span>
+        </div>
+        
         <div className="text-sm text-yellow-700 space-y-2">
-          {refundOptions && refundOptions.length > 0 ? (
+          {hasValidOptions ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {refundOptions.map((option, index) => (
+              {filteredRefundOptions.map((option, index) => (
                 <RefundOptionItem 
                   key={index}
                   option={option}
@@ -356,7 +379,41 @@ export const RefundPolicySection = ({ refundOptions, formatRefundOption }) => {
               ))}
             </div>
           ) : (
-            <p><span className="font-medium">Contact Support:</span></p>
+            <div className="text-center py-4">
+              <p className="text-yellow-700 mb-2">
+                <span className="font-medium">No specific refund policy was captured at the time of booking.</span>
+              </p>
+              <p className="text-sm text-yellow-600">
+                Please contact customer support for assistance with cancellation and refund requests.
+              </p>
+            </div>
+          )}
+          
+          {/* Show protection plan status */}
+          {refundPolicySnapshot && refundPolicySnapshot.includes('client_protection_plan') && (
+            <div className="mt-4 p-3 border border-yellow-300 rounded-lg bg-yellow-25">
+              <div className="flex items-center">
+                {protectionPlanSelected ? (
+                  <>
+                    <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-sm font-medium text-green-700">
+                      Client Protection Plan: Active
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <span className="text-sm text-gray-600">
+                      Client Protection Plan: Not Selected
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
           )}
         </div>
       </div>

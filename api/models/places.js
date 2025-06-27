@@ -166,6 +166,7 @@ const Place = sequelize.define('Place', {
     type: DataTypes.ARRAY(DataTypes.STRING),
     allowNull: false,
     defaultValue: [],
+    field: 'refund_options', // Explicitly map to database column
     validate: {
       isValidRefundOptions(value) {
         const validOptions = [
