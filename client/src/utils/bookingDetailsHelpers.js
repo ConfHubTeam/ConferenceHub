@@ -356,6 +356,54 @@ export const getMainContentSections = (booking, user) => {
   return sections;
 };
 
+/**
+ * Get the most up-to-date contact information for a user
+ * Falls back to booking's stored contact info if latest info is not available
+ */
+export const getLatestContactInfo = (userType, booking, latestContactInfo) => {
+  const latestInfo = latestContactInfo[userType];
+  
+  if (latestInfo) {
+    // Return latest contact info if available
+    return latestInfo;
+  }
+  
+  // Fallback to booking's stored contact info
+  if (userType === 'client' && booking.user) {
+    return getContactDisplayInfo(booking.user);
+  }
+  
+  if (userType === 'host' && booking.place?.owner) {
+    return getContactDisplayInfo(booking.place.owner);
+  }
+  
+  return null;
+};
+
+/**
+ * Check if we should show updated contact info indicator
+ */
+export const shouldShowUpdatedIndicator = (userType, booking, latestContactInfo) => {
+  const latestInfo = latestContactInfo[userType];
+  if (!latestInfo) return false;
+  
+  let originalInfo = null;
+  if (userType === 'client' && booking.user) {
+    originalInfo = booking.user;
+  } else if (userType === 'host' && booking.place?.owner) {
+    originalInfo = booking.place.owner;
+  }
+  
+  if (!originalInfo) return false;
+  
+  // Check if any contact info has changed
+  return (
+    latestInfo.name !== originalInfo.name ||
+    latestInfo.email !== originalInfo.email ||
+    latestInfo.phoneNumber !== originalInfo.phoneNumber
+  );
+};
+
 // Update the default export
 export default {
   formatRefundOption,
@@ -383,5 +431,7 @@ export default {
   getPageHeaderProps,
   getModalConfiguration,
   getSidebarSections,
-  getMainContentSections
+  getMainContentSections,
+  getLatestContactInfo,
+  shouldShowUpdatedIndicator
 };

@@ -12,6 +12,7 @@ import {
   SectionCard, 
   InfoCard, 
   ContactInfoCard, 
+  EnhancedContactInfoCard,
   StatusIndicator, 
   TimeSlotCard, 
   FullDayBookingCard, 
@@ -34,6 +35,8 @@ import {
   getSupportContactHours,
   formatRefundOption,
   getContactDisplayInfo,
+  getLatestContactInfo,
+  shouldShowUpdatedIndicator,
   shouldShowPaymentSection,
   getModalConfiguration
 } from "../utils/bookingDetailsHelpers";
@@ -56,6 +59,10 @@ export default function BookingDetailsPage() {
   const [booking, setBooking] = useState(null);
   const [competingBookings, setCompetingBookings] = useState([]);
   const [agentContact, setAgentContact] = useState(null);
+  const [latestContactInfo, setLatestContactInfo] = useState({
+    client: null,
+    host: null
+  });
   const [loading, setLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -78,6 +85,11 @@ export default function BookingDetailsPage() {
         // Fetch agent contact information for admin contact section
         if (user?.userType === 'client' || user?.userType === 'host') {
           await fetchAgentContact();
+        }
+
+        // Fetch latest contact information for users involved in booking
+        if (user?.userType === 'agent') {
+          await fetchLatestContactInfo(data);
         }
       } catch (error) {
         notify("Error loading booking details", "error");
@@ -118,6 +130,53 @@ export default function BookingDetailsPage() {
         }
       } catch (error) {
         console.error('Error loading admin contact:', error);
+      }
+    };
+
+    const fetchLatestContactInfo = async (bookingData) => {
+      try {
+        const contactPromises = [];
+        
+        // Fetch latest client contact info if available
+        if (bookingData.userId) {
+          contactPromises.push(
+            api.get(`/users/${bookingData.userId}`).then(response => ({
+              type: 'client',
+              data: response.data
+            }))
+          );
+        }
+        
+        // Fetch latest host contact info if available
+        if (bookingData.place?.ownerId) {
+          contactPromises.push(
+            api.get(`/users/${bookingData.place.ownerId}`).then(response => ({
+              type: 'host',
+              data: response.data
+            }))
+          );
+        }
+        
+        if (contactPromises.length > 0) {
+          const results = await Promise.allSettled(contactPromises);
+          const contactInfo = { client: null, host: null };
+          
+          results.forEach((result) => {
+            if (result.status === 'fulfilled') {
+              const { type, data } = result.value;
+              contactInfo[type] = {
+                name: data.name,
+                email: data.email,
+                phoneNumber: data.phoneNumber
+              };
+            }
+          });
+          
+          setLatestContactInfo(contactInfo);
+        }
+      } catch (error) {
+        console.error('Error loading latest contact information:', error);
+        // Fallback to booking's stored contact info if API fails
       }
     };
 
@@ -334,9 +393,11 @@ export default function BookingDetailsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Client Info for agents */}
                   {booking.user && (
-                    <ContactInfoCard
+                    <EnhancedContactInfoCard
                       title="Client"
-                      contactInfo={getContactDisplayInfo(booking.user)}
+                      userType="client"
+                      booking={booking}
+                      latestContactInfo={latestContactInfo}
                       bgGradient="from-blue-50 to-cyan-50"
                       borderColor="border-blue-200"
                       iconBgColor="bg-blue-100"
@@ -347,9 +408,11 @@ export default function BookingDetailsPage() {
                   
                   {/* Host Info for agents */}
                   {booking.place?.owner && (
-                    <ContactInfoCard
+                    <EnhancedContactInfoCard
                       title="Host"
-                      contactInfo={getContactDisplayInfo(booking.place.owner)}
+                      userType="host"
+                      booking={booking}
+                      latestContactInfo={latestContactInfo}
                       bgGradient="from-green-50 to-emerald-50"
                       borderColor="border-green-200"
                       iconBgColor="bg-green-100"
