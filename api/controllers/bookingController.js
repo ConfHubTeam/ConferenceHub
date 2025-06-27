@@ -259,7 +259,7 @@ const updateBookingStatus = async (req, res) => {
     await cleanupExpiredBookings();
     
     const { id } = req.params;
-    const { status, paymentConfirmed = false } = req.body;
+    const { status, paymentConfirmed = false, agentApproval = false } = req.body;
     const userData = await getUserDataFromToken(req);
     
     // Verify status is valid
@@ -331,7 +331,8 @@ const updateBookingStatus = async (req, res) => {
     
     // Special handling for approving selected bookings (payment check)
     if (status === 'approved' && booking.status === 'selected') {
-      if (!paymentConfirmed) {
+      // Agents can approve without payment confirmation
+      if (!paymentConfirmed && !agentApproval) {
         return res.status(400).json({ 
           error: "Payment confirmation required for selected bookings",
           requiresPaymentCheck: true,
@@ -422,9 +423,13 @@ const updateBookingStatus = async (req, res) => {
         message = 'Booking selected successfully. Client can now proceed with payment.';
         break;
       case 'approved':
-        message = booking.status === 'selected' 
-          ? 'Booking approved after payment confirmation. Any remaining conflicting bookings have been rejected.' 
-          : 'Booking approved. Any conflicting bookings have been automatically rejected.';
+        if (agentApproval) {
+          message = 'Booking approved by agent. Payment and approval steps completed.';
+        } else {
+          message = booking.status === 'selected' 
+            ? 'Booking approved after payment confirmation. Any remaining conflicting bookings have been rejected.' 
+            : 'Booking approved. Any conflicting bookings have been automatically rejected.';
+        }
         break;
       case 'rejected':
         message = 'Booking rejected successfully.';

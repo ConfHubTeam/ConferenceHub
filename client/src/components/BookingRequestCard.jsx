@@ -174,16 +174,6 @@ export default function BookingRequestCard({ booking, competingBookings = [] }) 
           View Details
         </Link>
       </div>
-
-      {/* Show status for non-pending requests */}
-      {booking.status !== "pending" && (
-        <div className="text-center py-2 text-sm text-gray-600">
-          {user?.userType === 'client' 
-            ? `Booking ${booking.status} on ${format(new Date(booking.updatedAt), "MMM d, yyyy 'at' HH:mm")}`
-            : `Request ${booking.status} on ${format(new Date(booking.updatedAt), "MMM d, yyyy 'at' HH:mm")}`
-          }
-        </div>
-      )}
       </div>
   );
 }

@@ -84,6 +84,12 @@ export default function BookingDetailsPage() {
         requestBody.paymentConfirmed = paymentConfirmed;
       }
       
+      // Handle agent approval - bypass payment check and mark as agent action
+      if (modalConfig.agentApproval && newStatus === "approved") {
+        requestBody.agentApproval = true;
+        requestBody.paymentConfirmed = true; // Agents can approve without payment confirmation
+      }
+      
       const { data } = await api.put(`/bookings/${bookingId}`, requestBody);
       
       if (data.deleted) {
@@ -134,14 +140,15 @@ export default function BookingDetailsPage() {
 
   // Show confirmation modal for booking actions
   const showConfirmationModal = (actionButton) => {
-    const { label, action, description, requiresPaymentCheck } = actionButton;
+    const { label, action, description, requiresPaymentCheck, agentApproval } = actionButton;
     
     setModalConfig({
       title: `${label} Booking`,
       message: description || `Are you sure you want to ${label.toLowerCase()} this booking?`,
       status: action,
       action: label.toLowerCase(),
-      requiresPaymentCheck: requiresPaymentCheck || false
+      requiresPaymentCheck: requiresPaymentCheck || false,
+      agentApproval: agentApproval || false
     });
     setShowModal(true);
   };
@@ -376,6 +383,8 @@ export default function BookingDetailsPage() {
                             return `${baseClasses} bg-green-600 text-white hover:bg-green-700`;
                           case "danger":
                             return `${baseClasses} bg-red-600 text-white hover:bg-red-700`;
+                          case "secondary":
+                            return `${baseClasses} bg-gray-400 text-white cursor-not-allowed`;
                           default:
                             return `${baseClasses} bg-gray-600 text-white hover:bg-gray-700`;
                         }
@@ -384,8 +393,8 @@ export default function BookingDetailsPage() {
                       return (
                         <button
                           key={index}
-                          onClick={() => showConfirmationModal(button)}
-                          disabled={isUpdating}
+                          onClick={() => !button.disabled && showConfirmationModal(button)}
+                          disabled={isUpdating || button.disabled}
                           className={getButtonClasses(button.variant)}
                           title={button.description}
                         >
@@ -406,8 +415,8 @@ export default function BookingDetailsPage() {
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         onConfirm={() => {
-          if (modalConfig.requiresPaymentCheck) {
-            // Show payment confirmation options
+          if (modalConfig.requiresPaymentCheck && !modalConfig.agentApproval) {
+            // Show payment confirmation options for non-agent approvals
             return;
           }
           handleStatusUpdate(modalConfig.status);
@@ -417,7 +426,7 @@ export default function BookingDetailsPage() {
           modalConfig.paymentMessage : 
           modalConfig.message
         }
-        confirmText={modalConfig.requiresPaymentCheck ? "Approve Anyway" : "Confirm"}
+        confirmText={modalConfig.agentApproval ? "Approve" : (modalConfig.requiresPaymentCheck ? "Approve Anyway" : "Confirm")}
         cancelText="Cancel"
         confirmButtonClass={
           modalConfig.status === "approved" || modalConfig.status === "selected"
@@ -426,8 +435,8 @@ export default function BookingDetailsPage() {
         }
         isLoading={isUpdating}
       >
-        {/* Payment confirmation buttons for selected bookings */}
-        {modalConfig.requiresPaymentCheck && (
+        {/* Payment confirmation buttons for selected bookings (not for agent approvals) */}
+        {modalConfig.requiresPaymentCheck && !modalConfig.agentApproval && (
           <div className="mt-4 space-y-2">
             <button
               onClick={() => handlePaymentConfirmation(true)}
