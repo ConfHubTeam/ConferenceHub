@@ -217,9 +217,9 @@ export default function PlaceDetailPage() {
               <RefundPolicyDisplay placeDetail={placeDetail} />
             </div>
             
-            {/* Location Map */}
+            {/* Location Map - Hidden on mobile */}
             {hasCoordinates && (
-              <div className="mb-8">
+              <div className="mb-8 hidden md:block">
                 <h2 className="text-xl md:text-2xl font-semibold mb-4">Location</h2>
                 <div className="h-64 rounded-lg overflow-hidden border">
                   <MapView places={mapPlaces} disableInfoWindow={true} />

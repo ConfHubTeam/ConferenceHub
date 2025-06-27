@@ -182,16 +182,7 @@ export const getBookingActionButtons = (booking, user, competingBookings = []) =
     });
   }
   
-  // Payment button for clients on selected bookings
-  if (canPerformBookingAction(user, booking, "pay", competingBookings)) {
-    buttons.push({
-      label: "Pay Now",
-      action: "pay",
-      variant: "success",
-      icon: "credit-card",
-      description: "Complete payment to confirm your booking"
-    });
-  }
+
   
   // Approve button (with different behavior for hosts vs agents)
   if (canPerformBookingAction(user, booking, "approve", competingBookings)) {
@@ -228,24 +219,6 @@ export const getBookingActionButtons = (booking, user, competingBookings = []) =
         variant: "success",
         icon: "check",
         description: "Approve booking request"
-      });
-    }
-  }
-  
-  // Cancel Selection button for hosts/agents on selected bookings
-  if (booking.status === "selected" && (user.userType === "host" || user.userType === "agent")) {
-    const canRevertToPending = (
-      user.userType === "agent" || 
-      (user.userType === "host" && booking.place?.ownerId === user.id)
-    );
-    
-    if (canRevertToPending) {
-      buttons.push({
-        label: "Cancel Selection",
-        action: "pending",
-        variant: "secondary",
-        icon: "arrow-left",
-        description: "Revert this booking back to pending status"
       });
     }
   }

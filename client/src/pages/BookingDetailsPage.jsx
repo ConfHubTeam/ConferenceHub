@@ -14,7 +14,8 @@ import {
   getBookingActionButtons, 
   getStatusBadgeClass, 
   getBookingStatusMessage,
-  requiresPaymentBeforeApproval 
+  requiresPaymentBeforeApproval,
+  canPerformBookingAction
 } from "../utils/bookingUtils";
 
 export default function BookingDetailsPage() {
@@ -181,6 +182,30 @@ export default function BookingDetailsPage() {
     handleStatusUpdate(modalConfig.status, confirmed);
   };
 
+  // Check if payment is available for the current booking
+  const isPaymentAvailable = () => {
+    return canPerformBookingAction(user, booking, "pay");
+  };
+
+  // Handle payment provider selection (placeholder for future implementation)
+  const handlePaymentClick = (provider) => {
+    if (!isPaymentAvailable()) {
+      notify("Payment is only available for selected bookings", "warning");
+      return;
+    }
+
+    // Placeholder for future payment integration
+    notify(`Payment with ${provider.charAt(0).toUpperCase() + provider.slice(1)} will be implemented soon`, "info");
+    
+    // Future implementation will:
+    // 1. Redirect to third-party payment service
+    // 2. Handle success/failure response
+    // 3. Save non-sensitive payment transaction data to database
+    // 4. Update booking status and show payment transaction info
+    
+    console.log(`Payment initiated with provider: ${provider} for booking ${booking.id}`);
+  };
+
   if (loading) {
     return (
       <div>
@@ -243,7 +268,7 @@ export default function BookingDetailsPage() {
                 {booking.place?.photos?.[0] && (
                   <div className="w-32 h-24 flex-shrink-0">
                     <CloudinaryImage
-                      src={booking.place.photos[0]}
+                      photo={booking.place.photos[0]}
                       alt={booking.place.title}
                       className="w-full h-full object-cover rounded-lg"
                     />
@@ -577,8 +602,141 @@ export default function BookingDetailsPage() {
                     currency={booking.place?.currency} 
                   />
                 </div>
+                
+                {/* Payment Status - For hosts and agents */}
+                {(user?.userType === 'host' || user?.userType === 'agent') && booking.status === 'approved' && (
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                      <div className="flex items-center">
+                        <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-green-800">Payment Completed</p>
+                          <p className="text-xs text-green-600">
+                            {/* Placeholder for payment transaction info */}
+                            Transaction will be displayed here once payment integration is complete
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Payment Pending - For hosts and agents when booking is selected */}
+                {(user?.userType === 'host' || user?.userType === 'agent') && booking.status === 'selected' && (
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                      <div className="flex items-center">
+                        <svg className="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-yellow-800">Awaiting Payment</p>
+                          <p className="text-xs text-yellow-600">
+                            Client can now proceed with payment to complete the booking
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
+
+            {/* Payment Section - Only for clients */}
+            {user?.userType === 'client' && (
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <h2 className="text-xl font-semibold mb-4">Payment</h2>
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-600 mb-4">
+                    {isPaymentAvailable() ? 
+                      'Choose your preferred payment method to complete the booking:' : 
+                      'Payment options will be available once your booking is selected by the host.'}
+                  </p>
+                  
+                  {/* Payment Provider Icons */}
+                  <div className="grid grid-cols-3 gap-4">
+                    {/* Click Pay */}
+                    <button
+                      onClick={() => isPaymentAvailable() && handlePaymentClick('click')}
+                      disabled={!isPaymentAvailable()}
+                      className={`p-4 border-2 rounded-lg transition-all duration-200 ${
+                        isPaymentAvailable() 
+                          ? 'border-blue-300 hover:border-blue-500 hover:shadow-md cursor-pointer' 
+                          : 'border-gray-200 cursor-not-allowed opacity-50'
+                      }`}
+                      title={isPaymentAvailable() ? 'Pay with Click' : 'Available after booking selection'}
+                    >
+                      <div className="flex flex-col items-center space-y-2">
+                        <img 
+                          src="/click_pay_icon.jpg" 
+                          alt="Click Pay" 
+                          className="w-16 h-12 object-contain"
+                        />
+                        <span className="text-xs font-medium text-gray-700">Click</span>
+                      </div>
+                    </button>
+
+                    {/* Payme */}
+                    <button
+                      onClick={() => isPaymentAvailable() && handlePaymentClick('payme')}
+                      disabled={!isPaymentAvailable()}
+                      className={`p-4 border-2 rounded-lg transition-all duration-200 ${
+                        isPaymentAvailable() 
+                          ? 'border-blue-300 hover:border-blue-500 hover:shadow-md cursor-pointer' 
+                          : 'border-gray-200 cursor-not-allowed opacity-50'
+                      }`}
+                      title={isPaymentAvailable() ? 'Pay with Payme' : 'Available after booking selection'}
+                    >
+                      <div className="flex flex-col items-center space-y-2">
+                        <img 
+                          src="/payme_icon.png" 
+                          alt="Payme" 
+                          className="w-16 h-12 object-contain"
+                        />
+                        <span className="text-xs font-medium text-gray-700">Payme</span>
+                      </div>
+                    </button>
+
+                    {/* Octo Pay */}
+                    <button
+                      onClick={() => isPaymentAvailable() && handlePaymentClick('octo')}
+                      disabled={!isPaymentAvailable()}
+                      className={`p-4 border-2 rounded-lg transition-all duration-200 ${
+                        isPaymentAvailable() 
+                          ? 'border-blue-300 hover:border-blue-500 hover:shadow-md cursor-pointer' 
+                          : 'border-gray-200 cursor-not-allowed opacity-50'
+                      }`}
+                      title={isPaymentAvailable() ? 'Pay with Octo' : 'Available after booking selection'}
+                    >
+                      <div className="flex flex-col items-center space-y-2">
+                        <img 
+                          src="/octo_pay_icon.webp" 
+                          alt="Octo Pay" 
+                          className="w-16 h-12 object-contain"
+                        />
+                        <span className="text-xs font-medium text-gray-700">Octo</span>
+                      </div>
+                    </button>
+                  </div>
+
+                  {/* Payment Status Messages */}
+                  {isPaymentAvailable() && (
+                    <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center">
+                        <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="text-sm font-medium text-green-800">
+                          Your booking has been selected! You can now proceed with payment.
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Actions */}
             {(() => {
