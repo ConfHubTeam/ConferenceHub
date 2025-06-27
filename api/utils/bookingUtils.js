@@ -157,18 +157,18 @@ const findConflictingBookings = (approvedBooking, pendingBookings, cooldownMinut
 };
 
 /**
- * Find competing pending bookings for the same time slots
+ * Find competing pending and selected bookings for the same time slots
  * Used by hosts to see competing requests for selection
  */
 const findCompetingBookings = async (timeSlots, placeId, excludeBookingId = null) => {
   try {
     const { Booking } = require("../models");
     
-    // Get all pending bookings for this place
-    const pendingBookings = await Booking.findAll({
+    // Get all pending and selected bookings for this place
+    const competingBookings = await Booking.findAll({
       where: {
         placeId: placeId,
-        status: 'pending',
+        status: { [require("sequelize").Op.in]: ['pending', 'selected'] },
         ...(excludeBookingId && { id: { [require("sequelize").Op.ne]: excludeBookingId } })
       },
       include: [
@@ -180,24 +180,24 @@ const findCompetingBookings = async (timeSlots, placeId, excludeBookingId = null
       ]
     });
     
-    const competingBookings = [];
+    const conflictingBookings = [];
     
     // Find bookings that have overlapping time slots
-    for (const pendingBooking of pendingBookings) {
-      if (!pendingBooking.timeSlots) continue;
+    for (const booking of competingBookings) {
+      if (!booking.timeSlots) continue;
       
       const hasOverlap = timeSlots.some(targetSlot => 
-        pendingBooking.timeSlots.some(pendingSlot => 
-          hasTimeSlotConflict(targetSlot, pendingSlot, 0) // No cooldown for competition check
+        booking.timeSlots.some(bookingSlot => 
+          hasTimeSlotConflict(targetSlot, bookingSlot, 0) // No cooldown for competition check
         )
       );
       
       if (hasOverlap) {
-        competingBookings.push(pendingBooking);
+        conflictingBookings.push(booking);
       }
     }
     
-    return competingBookings;
+    return conflictingBookings;
   } catch (error) {
     console.error("Error finding competing bookings:", error);
     return [];

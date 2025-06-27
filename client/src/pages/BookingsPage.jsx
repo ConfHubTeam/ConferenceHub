@@ -100,12 +100,12 @@ export default function BookingsPage() {
     }
   }
 
-  // Load competing bookings for each pending booking
+  // Load competing bookings for each pending or selected booking
   const loadCompetingBookings = async (bookingsList) => {
     const competingData = {};
     
     for (const booking of bookingsList) {
-      if (booking.status === 'pending' && booking.timeSlots?.length > 0) {
+      if ((booking.status === 'pending' || booking.status === 'selected') && booking.timeSlots?.length > 0) {
         try {
           const response = await api.get('/bookings/competing', {
             params: {
@@ -125,15 +125,20 @@ export default function BookingsPage() {
     setCompetingBookingsMap(competingData);
   };
 
-  // Calculate summary statistics for hosts
+  // Calculate summary statistics for hosts - selected bookings should be counted as pending
   function calculateStats(bookingData) {
     const stats = bookingData.reduce(
       (acc, booking) => {
         acc.total++;
-        acc[booking.status]++;
+        // Count "selected" bookings as "pending" for stats purposes since they're still awaiting payment
+        if (booking.status === 'selected') {
+          acc.pending++;
+        } else {
+          acc[booking.status]++;
+        }
         return acc;
       },
-      { pending: 0, approved: 0, rejected: 0, total: 0 }
+      { pending: 0, selected: 0, approved: 0, rejected: 0, total: 0 }
     );
     setStats(stats);
   }
@@ -142,9 +147,15 @@ export default function BookingsPage() {
   useEffect(() => {
     let filtered = [...bookings];
     
-    // Filter by status
+    // Filter by status - "pending" includes both "pending" and "selected" for all user types
     if (statusFilter !== 'all') {
-      filtered = filtered.filter(booking => booking.status === statusFilter);
+      if (statusFilter === 'pending') {
+        // For all user types, "pending" view includes both pending and selected bookings
+        // Selected bookings are still considered pending until payment is complete
+        filtered = filtered.filter(booking => booking.status === 'pending' || booking.status === 'selected');
+      } else {
+        filtered = filtered.filter(booking => booking.status === statusFilter);
+      }
     }
     
     // Filter by search term
@@ -266,7 +277,9 @@ export default function BookingsPage() {
   const showingTo = Math.min(currentPage * itemsPerPage, filteredBookings.length);
 
   // Group bookings by status for filtered bookings
-  const pendingBookings = filteredBookings.filter(booking => booking.status === 'pending');
+  const pendingBookings = filteredBookings.filter(booking => 
+    booking.status === 'pending' || booking.status === 'selected'
+  );
   const approvedBookings = filteredBookings.filter(booking => booking.status === 'approved');
   const rejectedBookings = filteredBookings.filter(booking => booking.status === 'rejected');
 

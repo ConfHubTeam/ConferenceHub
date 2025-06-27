@@ -9,9 +9,6 @@ router.post("/", authenticateToken, bookingController.createBooking);
 // Get bookings (different behavior based on user role)
 router.get("/", authenticateToken, bookingController.getBookings);
 
-// Update booking status
-router.put("/:id", authenticateToken, bookingController.updateBookingStatus);
-
 // Get booking counts for hosts
 router.get("/counts", authenticateToken, bookingController.getBookingCounts);
 
@@ -23,5 +20,11 @@ router.get("/availability", bookingController.checkAvailability);
 
 // Check timezone-aware availability for Uzbekistan (no auth required)
 router.get("/availability/uzbekistan", bookingController.checkTimezoneAwareAvailability);
+
+// Get single booking details  
+router.get("/:id", authenticateToken, bookingController.getBookingById);
+
+// Update booking status
+router.put("/:id", authenticateToken, bookingController.updateBookingStatus);
 
 module.exports = router;

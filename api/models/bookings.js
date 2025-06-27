@@ -56,7 +56,7 @@ const Booking = sequelize.define('Booking', {
     comment: 'Refund options that were active on the place when booking was made'
   },
   status: {
-    type: DataTypes.ENUM('pending', 'approved', 'rejected', 'cancelled'),
+    type: DataTypes.ENUM('pending', 'selected', 'approved', 'rejected', 'cancelled'),
     defaultValue: 'pending',
     allowNull: false
   },
