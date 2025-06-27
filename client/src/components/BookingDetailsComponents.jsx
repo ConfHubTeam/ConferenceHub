@@ -2,6 +2,7 @@ import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import CloudinaryImage from "./CloudinaryImage";
 import PriceDisplay from "./PriceDisplay";
+import { getLatestContactInfo, shouldShowUpdatedIndicator } from "../utils/bookingDetailsHelpers";
 
 /**
  * Reusable UI components for BookingDetailsPage
@@ -103,6 +104,99 @@ export const ContactInfoCard = ({
           />
         )}
       </div>
+    </div>
+  );
+};
+
+/**
+ * Enhanced contact information card component with update indicator
+ */
+export const EnhancedContactInfoCard = ({ 
+  title, 
+  userType,
+  booking,
+  latestContactInfo,
+  bgGradient = "from-blue-50 to-cyan-50", 
+  borderColor = "border-blue-200",
+  iconBgColor = "bg-blue-100",
+  iconTextColor = "text-blue-600",
+  titleTextColor = "text-blue-800"
+}) => {
+  const contactInfo = getLatestContactInfo(userType, booking, latestContactInfo);
+  const hasUpdates = shouldShowUpdatedIndicator(userType, booking, latestContactInfo);
+  
+  if (!contactInfo) return null;
+
+  return (
+    <div className={`bg-gradient-to-br ${bgGradient} border ${borderColor} rounded-lg p-6 shadow-sm relative`}>
+      {/* Updated indicator */}
+      {hasUpdates && (
+        <div className="absolute top-3 right-3">
+          <div className="flex items-center bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
+            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Updated
+          </div>
+        </div>
+      )}
+      
+      <div className="flex items-center mb-4">
+        <div className={`w-8 h-8 ${iconBgColor} rounded-full flex items-center justify-center mr-3`}>
+          <svg className={`w-4 h-4 ${iconTextColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        </div>
+        <h3 className={`font-semibold ${titleTextColor}`}>{title}</h3>
+      </div>
+      <div className="space-y-3 text-sm">
+        {contactInfo.name && (
+          <ContactInfoRow 
+            icon={<UserIcon />}
+            label="Name"
+            value={contactInfo.name}
+            iconColor={iconTextColor}
+            titleColor={titleTextColor}
+          />
+        )}
+        {contactInfo.email && (
+          <ContactInfoRow 
+            icon={<EmailIcon />}
+            label="Email"
+            value={
+              <a href={`mailto:${contactInfo.email}`} className={`ml-1 ${iconTextColor} hover:${titleTextColor} hover:underline break-all`}>
+                {contactInfo.email}
+              </a>
+            }
+            iconColor={iconTextColor}
+            titleColor={titleTextColor}
+            isLink
+          />
+        )}
+        {contactInfo.phoneNumber && (
+          <ContactInfoRow 
+            icon={<PhoneIcon />}
+            label="Phone"
+            value={
+              <a href={`tel:${contactInfo.phoneNumber}`} className={`ml-1 ${iconTextColor} hover:${titleTextColor} hover:underline`}>
+                {contactInfo.phoneNumber}
+              </a>
+            }
+            iconColor={iconTextColor}
+            titleColor={titleTextColor}
+            isLink
+          />
+        )}
+      </div>
+      
+      {/* Show timestamp of last update if available */}
+      {hasUpdates && (
+        <div className="mt-3 pt-3 border-t border-gray-200">
+          <p className="text-xs text-gray-500 italic">
+            * Contact information has been updated since booking was created
+          </p>
+        </div>
+      )}
     </div>
   );
 };
