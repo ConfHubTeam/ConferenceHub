@@ -62,7 +62,7 @@ export const REFUND_POLICY_METADATA = {
     shortLabel: 'Strict',
     description: 'No refund if canceled less than 6 days before check-in',
     shortDescription: 'No refund (<6 days notice)',
-    detailedDescription: 'No refund available unless cancellation is made more than 6 days before check-in.',
+    detailedDescription: 'No refund available if cancellation is made less than 6 days before check-in.',
     icon: '🔒',
     type: 'strict',
     refundRules: [

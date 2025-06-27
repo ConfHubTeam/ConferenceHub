@@ -62,8 +62,11 @@ class BookingService {
     // Generate unique request ID
     const uniqueRequestId = this._generateUniqueRequestId();
 
-    // Capture refund policy snapshot
-    const refundPolicySnapshot = placeDetails.refundOptions || [];
+    // Capture refund policy snapshot from place details
+    // If place has no refund options set, store null to indicate no policy was captured
+    const refundPolicySnapshot = placeDetails.refundOptions && placeDetails.refundOptions.length > 0 
+      ? placeDetails.refundOptions 
+      : null;
 
     // Create booking
     const booking = await Booking.create({

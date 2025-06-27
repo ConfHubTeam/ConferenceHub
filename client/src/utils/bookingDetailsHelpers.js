@@ -11,9 +11,9 @@ export const formatRefundOption = (option) => {
   const optionMap = {
     'flexible_14_day': 'Flexible 14-Day: Full refund if canceled 14+ days before check-in',
     'moderate_7_day': 'Moderate 7-Day: 50% refund if canceled 7+ days before check-in', 
-    'strict': 'Strict: No refund unless exceptional circumstances',
+    'strict': 'Strict: No refund if canceled less than 6 days before check-in',
     'non_refundable': 'Non-Refundable: No refunds allowed',
-    'reschedule_only': 'Reschedule Only: Can reschedule but no monetary refund',
+    'reschedule_only': 'Reschedule Only: No refund, but reschedule allowed with 3+ days notice',
     'client_protection_plan': 'Client Protection Plan: Additional insurance coverage available'
   };
   return optionMap[option] || option;
@@ -200,12 +200,24 @@ export const shouldShowPaymentStatus = (user, booking) => {
 };
 
 /**
- * Get refund policy display data
+ * Get refund policy display data from booking snapshot
+ * Filters out protection plan if not selected by client
  */
-export const getRefundPolicyData = (place) => {
+export const getRefundPolicyData = (booking) => {
+  const snapshotOptions = booking?.refundPolicySnapshot || [];
+  
+  // Filter out protection plan if client didn't select it
+  const filteredOptions = snapshotOptions.filter(option => {
+    if (option === 'client_protection_plan') {
+      return booking.protectionPlanSelected === true;
+    }
+    return true;
+  });
+  
   return {
-    refundOptions: place?.refundOptions || [],
-    hasRefundOptions: place?.refundOptions && place.refundOptions.length > 0
+    refundOptions: filteredOptions,
+    hasRefundOptions: filteredOptions.length > 0,
+    isFromSnapshot: true // Indicates this is from booking time, not current place policy
   };
 };
 
@@ -351,11 +363,11 @@ export const getMainContentSections = (booking, user) => {
     props: { booking, user }
   });
   
-  // Always show refund policy
+  // Always show refund policy from booking snapshot
   sections.push({
     type: 'refund-policy',
     component: 'RefundPolicySection',
-    props: { refundOptions: booking.place?.refundOptions }
+    props: { booking } // Pass booking instead of just refundOptions
   });
   
   return sections;
@@ -409,6 +421,23 @@ export const shouldShowUpdatedIndicator = (userType, booking, latestContactInfo)
   );
 };
 
+/**
+ * Check if protection plan should be displayed for this booking
+ */
+export const shouldShowProtectionPlan = (booking) => {
+  return booking.protectionPlanSelected === true;
+};
+
+/**
+ * Get protection plan display text
+ */
+export const getProtectionPlanText = (booking) => {
+  if (booking.protectionPlanSelected) {
+    return `Protection Plan Selected (+${booking.protectionPlanFee || 0} ${booking.place?.currency?.code || 'USD'})`;
+  }
+  return null;
+};
+
 // Update the default export
 export default {
   formatRefundOption,
@@ -438,5 +467,7 @@ export default {
   getSidebarSections,
   getMainContentSections,
   getLatestContactInfo,
-  shouldShowUpdatedIndicator
+  shouldShowUpdatedIndicator,
+  shouldShowProtectionPlan,
+  getProtectionPlanText
 };
