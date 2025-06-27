@@ -258,7 +258,6 @@ export default function BookingDetailsPage() {
                   </Link>
                   <p className="text-gray-600 mt-1">{booking.place?.address}</p>
                   <div className="mt-2 text-sm text-gray-500">
-                    <span>Max guests: {booking.place?.maxGuests}</span>
                     {booking.place?.checkIn && (
                       <>
                         <span> • Check-in: {booking.place.checkIn}</span>
@@ -352,94 +351,159 @@ export default function BookingDetailsPage() {
 
             {/* Contact Information */}
             <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Agent can see both client and host info */}
-                {user?.userType === 'agent' && (
-                  <>
-                    {/* Client Info for agents */}
-                    {booking.user && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <h3 className="font-medium text-blue-700 mb-2">Client</h3>
-                        <div className="space-y-1 text-sm">
-                          <p><span className="font-medium">Name:</span> {booking.user.name}</p>
-                          <p><span className="font-medium">Email:</span> {booking.user.email}</p>
-                          <p><span className="font-medium">Phone:</span> {booking.user.phoneNumber}</p>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Host Info for agents */}
-                    {booking.place?.owner && (
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                        <h3 className="font-medium text-green-700 mb-2">Host</h3>
-                        <div className="space-y-1 text-sm">
-                          <p><span className="font-medium">Name:</span> {booking.place.owner.name}</p>
-                          <p><span className="font-medium">Email:</span> {booking.place.owner.email}</p>
-                          <p><span className="font-medium">Phone:</span> {booking.place.owner.phoneNumber}</p>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-                
-                {/* Client and Host see admin contact info instead */}
-                {(user?.userType === 'client' || user?.userType === 'host') && (
-                  <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-6 shadow-sm">
-                    <div className="flex items-center mb-3">
-                      <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
-                        <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 12l.01.01M12 12l.01.01M12 12l.01.01M12 12l.01.01" />
-                        </svg>
-                      </div>
-                      <h3 className="font-semibold text-purple-800">Support Contact</h3>
-                    </div>
-                    {agentContact ? (
-                      <div className="space-y-3 text-sm">
-                        <div className="flex items-center">
-                          <svg className="w-4 h-4 text-purple-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <h2 className="text-xl font-semibold mb-6">Contact Information</h2>
+              
+              {/* Agent can see both client and host info */}
+              {user?.userType === 'agent' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Client Info for agents */}
+                  {booking.user && (
+                    <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-lg p-6 shadow-sm">
+                      <div className="flex items-center mb-4">
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                          <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                           </svg>
-                          <span className="font-medium text-purple-700">Agent:</span>
-                          <span className="ml-1 text-purple-800">{agentContact.name}</span>
+                        </div>
+                        <h3 className="font-semibold text-blue-800">Client</h3>
+                      </div>
+                      <div className="space-y-3 text-sm">
+                        <div className="flex items-center">
+                          <svg className="w-4 h-4 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          <span className="font-medium text-blue-700">Name:</span>
+                          <span className="ml-1 text-blue-800">{booking.user.name}</span>
                         </div>
                         <div className="flex items-center">
-                          <svg className="w-4 h-4 text-purple-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                           </svg>
-                          <span className="font-medium text-purple-700">Email:</span>
-                          <a href={`mailto:${agentContact.email}`} className="ml-1 text-purple-600 hover:text-purple-800 hover:underline">
+                          <span className="font-medium text-blue-700">Email:</span>
+                          <a href={`mailto:${booking.user.email}`} className="ml-1 text-blue-600 hover:text-blue-800 hover:underline break-all">
+                            {booking.user.email}
+                          </a>
+                        </div>
+                        <div className="flex items-center">
+                          <svg className="w-4 h-4 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                          </svg>
+                          <span className="font-medium text-blue-700">Phone:</span>
+                          <a href={`tel:${booking.user.phoneNumber}`} className="ml-1 text-blue-600 hover:text-blue-800 hover:underline">
+                            {booking.user.phoneNumber}
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Host Info for agents */}
+                  {booking.place?.owner && (
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6 shadow-sm">
+                      <div className="flex items-center mb-4">
+                        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                          <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                          </svg>
+                        </div>
+                        <h3 className="font-semibold text-green-800">Host</h3>
+                      </div>
+                      <div className="space-y-3 text-sm">
+                        <div className="flex items-center">
+                          <svg className="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          <span className="font-medium text-green-700">Name:</span>
+                          <span className="ml-1 text-green-800">{booking.place.owner.name}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <svg className="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          <span className="font-medium text-green-700">Email:</span>
+                          <a href={`mailto:${booking.place.owner.email}`} className="ml-1 text-green-600 hover:text-green-800 hover:underline break-all">
+                            {booking.place.owner.email}
+                          </a>
+                        </div>
+                        <div className="flex items-center">
+                          <svg className="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                          </svg>
+                          <span className="font-medium text-green-700">Phone:</span>
+                          <a href={`tel:${booking.place.owner.phoneNumber}`} className="ml-1 text-green-600 hover:text-green-800 hover:underline">
+                            {booking.place.owner.phoneNumber}
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Client and Host see admin contact info instead */}
+              {(user?.userType === 'client' || user?.userType === 'host') && (
+                <div className="max-w-2xl">
+                  <div className="bg-gradient-to-br from-blue-50 to-sky-50 border border-blue-200 rounded-lg p-4 shadow-sm">
+                    <div className="flex items-center mb-2">
+                      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                        <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                          <circle cx="12" cy="8" r="3" />
+                          <path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2" />
+                        </svg>
+                      </div>
+                      <h3 className="font-semibold text-blue-800 text-base">Support Contact</h3>
+                    </div>
+                    {agentContact ? (
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center">
+                          <svg className="w-3 h-3 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          <span className="font-medium text-blue-700">Agent:</span>
+                          <span className="ml-1 text-blue-800">{agentContact.name}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <svg className="w-3 h-3 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          <span className="font-medium text-blue-700">Email:</span>
+                          <a href={`mailto:${agentContact.email}`} className="ml-1 text-blue-600 hover:text-blue-800 hover:underline break-all">
                             {agentContact.email}
                           </a>
                         </div>
                         {agentContact.phoneNumber && (
-                          <div className="flex items-center">
-                            <svg className="w-4 h-4 text-purple-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                            </svg>
-                            <span className="font-medium text-purple-700">Phone:</span>
-                            <a href={`tel:${agentContact.phoneNumber}`} className="ml-1 text-purple-600 hover:text-purple-800 hover:underline">
-                              {agentContact.phoneNumber}
-                            </a>
-                          </div>
+                          <>
+                            <div className="flex items-center">
+                              <svg className="w-3 h-3 text-blue-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                              </svg>
+                              <span className="font-medium text-blue-700">Phone:</span>
+                              <a href={`tel:${agentContact.phoneNumber}`} className="ml-1 text-blue-600 hover:text-blue-800 hover:underline">
+                                {agentContact.phoneNumber}
+                              </a>
+                            </div>
+                            <div className="flex items-center">
+                              <svg className="w-3 h-3 text-blue-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span className="font-medium text-blue-700">Hours:</span>
+                              <span className="ml-1 text-sm text-blue-600">Mon-Fri: 9 AM - 6 PM, Sat: 10 AM - 4 PM</span>
+                            </div>
+                          </>
                         )}
-                        <div className="mt-4 p-3 bg-white bg-opacity-60 rounded-lg border border-purple-100">
-                          <p className="text-xs text-purple-600 font-medium mb-1">Available Hours:</p>
-                          <p className="text-sm text-purple-700">Monday - Friday: 9 AM - 6 PM</p>
-                          <p className="text-sm text-purple-700">Saturday: 10 AM - 4 PM</p>
-                        </div>
                       </div>
                     ) : (
-                      <div className="text-sm text-purple-600">
+                      <div className="text-sm text-blue-600">
                         <p>Contact information is currently unavailable. Please try again later.</p>
                       </div>
                     )}
-                    <p className="text-xs text-purple-600 mt-4 italic">
+                    <p className="text-xs text-blue-600 mt-2 italic">
                       For booking-related inquiries, questions, or assistance
                     </p>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
             {/* Cancellation & Refund Policy */}
