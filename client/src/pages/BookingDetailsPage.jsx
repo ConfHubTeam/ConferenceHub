@@ -25,6 +25,7 @@ export default function BookingDetailsPage() {
   
   const [booking, setBooking] = useState(null);
   const [competingBookings, setCompetingBookings] = useState([]);
+  const [agentContact, setAgentContact] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -42,6 +43,11 @@ export default function BookingDetailsPage() {
             (data.status === 'pending' || data.status === 'selected') && 
             data.timeSlots?.length > 0) {
           await fetchCompetingBookings(data);
+        }
+
+        // Fetch agent contact information for admin contact section
+        if (user?.userType === 'client' || user?.userType === 'host') {
+          await fetchAgentContact();
         }
       } catch (error) {
         notify("Error loading booking details", "error");
@@ -65,6 +71,23 @@ export default function BookingDetailsPage() {
       } catch (error) {
         console.error('Error loading competing bookings:', error);
         // Don't show error to user as this is not critical
+      }
+    };
+
+    const fetchAgentContact = async () => {
+      try {
+        // For clients and hosts, get admin contact information using dedicated endpoint
+        const response = await api.get('/users/admin/contact');
+        
+        if (response.data) {
+          setAgentContact({
+            name: response.data.name,
+            email: response.data.email,
+            phoneNumber: response.data.phoneNumber
+          });
+        }
+      } catch (error) {
+        console.error('Error loading admin contact:', error);
       }
     };
 
@@ -207,9 +230,9 @@ export default function BookingDetailsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-3 space-y-6">
             {/* Booking Progress */}
             <BookingProgress booking={booking} userType={user?.userType} />
             
@@ -254,82 +277,214 @@ export default function BookingDetailsPage() {
 
             {/* Booking Information */}
             <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">Booking Information</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Guest Name</label>
-                  <p className="text-gray-900">{booking.guestName}</p>
+              <h2 className="text-xl font-semibold mb-6">Booking Information</h2>
+              
+              {/* Booking Details Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center mb-2">
+                    <svg className="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <label className="text-sm font-medium text-gray-700">Number of Guests</label>
+                  </div>
+                  <p className="text-lg font-semibold text-gray-900">{booking.numOfGuests}</p>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Phone Number</label>
-                  <p className="text-gray-900">{booking.guestPhone}</p>
+
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center mb-2">
+                    <svg className="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <label className="text-sm font-medium text-gray-700">Booking Date</label>
+                  </div>
+                  <p className="text-lg font-semibold text-gray-900">{format(new Date(booking.createdAt), "MMM d, yyyy 'at' HH:mm")}</p>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Number of Guests</label>
-                  <p className="text-gray-900">{booking.numOfGuests}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Booking Date</label>
-                  <p className="text-gray-900">{format(new Date(booking.createdAt), "MMM d, yyyy 'at' HH:mm")}</p>
+
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center mb-2">
+                    <svg className="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                    </svg>
+                    <label className="text-sm font-medium text-gray-700">Request ID</label>
+                  </div>
+                  <p className="text-lg font-semibold text-gray-900 font-mono">{booking.uniqueRequestId || `REQ-${booking.id}`}</p>
                 </div>
               </div>
 
-              {/* Time Slots */}
-              <div className="mt-6">
-                <label className="text-sm font-medium text-gray-700 block mb-2">Reserved Time Slots</label>
+              {/* Time Slots Section */}
+              <div className="border-t border-gray-200 pt-6">
+                <div className="flex items-center mb-4">
+                  <svg className="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <h3 className="text-lg font-medium text-gray-900">Reserved Time Slots</h3>
+                </div>
                 {booking.timeSlots && booking.timeSlots.length > 0 ? (
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {booking.timeSlots.map((slot, index) => (
-                      <div key={index} className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                        <span className="text-blue-800 font-medium">
-                          {slot.formattedDate || format(new Date(slot.date), "MMM d, yyyy")}: {slot.startTime} - {slot.endTime}
-                        </span>
+                      <div key={index} className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 shadow-sm">
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                          <div>
+                            <p className="text-blue-800 font-medium text-sm">
+                              {slot.formattedDate || format(new Date(slot.date), "MMM d, yyyy")}
+                            </p>
+                            <p className="text-blue-700 text-sm font-semibold">
+                              {slot.startTime} - {slot.endTime}
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <span className="text-blue-800 font-medium">Full day booking</span>
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 shadow-sm text-center">
+                    <div className="flex items-center justify-center">
+                      <div className="w-4 h-4 bg-blue-500 rounded-full mr-3"></div>
+                      <span className="text-blue-800 font-medium text-lg">Full Day Booking</span>
+                    </div>
+                    <p className="text-blue-600 text-sm mt-2">This booking covers the entire day</p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Contact Information (for hosts and agents) */}
-            {(user?.userType === 'host' || user?.userType === 'agent') && (
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Client Info */}
-                  {booking.user && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <h3 className="font-medium text-blue-700 mb-2">Client</h3>
-                      <div className="space-y-1 text-sm">
-                        <p><span className="font-medium">Name:</span> {booking.user.name}</p>
-                        <p><span className="font-medium">Email:</span> {booking.user.email}</p>
-                        <p><span className="font-medium">Phone:</span> {booking.user.phoneNumber}</p>
+            {/* Contact Information */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Agent can see both client and host info */}
+                {user?.userType === 'agent' && (
+                  <>
+                    {/* Client Info for agents */}
+                    {booking.user && (
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h3 className="font-medium text-blue-700 mb-2">Client</h3>
+                        <div className="space-y-1 text-sm">
+                          <p><span className="font-medium">Name:</span> {booking.user.name}</p>
+                          <p><span className="font-medium">Email:</span> {booking.user.email}</p>
+                          <p><span className="font-medium">Phone:</span> {booking.user.phoneNumber}</p>
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  
-                  {/* Host Info (for agents) */}
-                  {user?.userType === 'agent' && booking.place?.owner && (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <h3 className="font-medium text-green-700 mb-2">Host</h3>
-                      <div className="space-y-1 text-sm">
-                        <p><span className="font-medium">Name:</span> {booking.place.owner.name}</p>
-                        <p><span className="font-medium">Email:</span> {booking.place.owner.email}</p>
-                        <p><span className="font-medium">Phone:</span> {booking.place.owner.phoneNumber}</p>
+                    )}
+                    
+                    {/* Host Info for agents */}
+                    {booking.place?.owner && (
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <h3 className="font-medium text-green-700 mb-2">Host</h3>
+                        <div className="space-y-1 text-sm">
+                          <p><span className="font-medium">Name:</span> {booking.place.owner.name}</p>
+                          <p><span className="font-medium">Email:</span> {booking.place.owner.email}</p>
+                          <p><span className="font-medium">Phone:</span> {booking.place.owner.phoneNumber}</p>
+                        </div>
                       </div>
+                    )}
+                  </>
+                )}
+                
+                {/* Client and Host see admin contact info instead */}
+                {(user?.userType === 'client' || user?.userType === 'host') && (
+                  <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-6 shadow-sm">
+                    <div className="flex items-center mb-3">
+                      <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                        <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 12l.01.01M12 12l.01.01M12 12l.01.01M12 12l.01.01" />
+                        </svg>
+                      </div>
+                      <h3 className="font-semibold text-purple-800">Support Contact</h3>
                     </div>
+                    {agentContact ? (
+                      <div className="space-y-3 text-sm">
+                        <div className="flex items-center">
+                          <svg className="w-4 h-4 text-purple-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          <span className="font-medium text-purple-700">Agent:</span>
+                          <span className="ml-1 text-purple-800">{agentContact.name}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <svg className="w-4 h-4 text-purple-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          <span className="font-medium text-purple-700">Email:</span>
+                          <a href={`mailto:${agentContact.email}`} className="ml-1 text-purple-600 hover:text-purple-800 hover:underline">
+                            {agentContact.email}
+                          </a>
+                        </div>
+                        {agentContact.phoneNumber && (
+                          <div className="flex items-center">
+                            <svg className="w-4 h-4 text-purple-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                            <span className="font-medium text-purple-700">Phone:</span>
+                            <a href={`tel:${agentContact.phoneNumber}`} className="ml-1 text-purple-600 hover:text-purple-800 hover:underline">
+                              {agentContact.phoneNumber}
+                            </a>
+                          </div>
+                        )}
+                        <div className="mt-4 p-3 bg-white bg-opacity-60 rounded-lg border border-purple-100">
+                          <p className="text-xs text-purple-600 font-medium mb-1">Available Hours:</p>
+                          <p className="text-sm text-purple-700">Monday - Friday: 9 AM - 6 PM</p>
+                          <p className="text-sm text-purple-700">Saturday: 10 AM - 4 PM</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-purple-600">
+                        <p>Contact information is currently unavailable. Please try again later.</p>
+                      </div>
+                    )}
+                    <p className="text-xs text-purple-600 mt-4 italic">
+                      For booking-related inquiries, questions, or assistance
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Cancellation & Refund Policy */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">Cancellation & Refund Policy</h2>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <h3 className="font-medium text-yellow-800 mb-2">Policy at Time of Booking</h3>
+                <div className="text-sm text-yellow-700 space-y-2">
+                  {booking.place?.refundOptions && booking.place.refundOptions.length > 0 ? (
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {booking.place.refundOptions.map((option, index) => {
+                          const formatRefundOption = (option) => {
+                            const optionMap = {
+                              'flexible_14_day': 'Flexible 14-Day: Full refund if canceled 14+ days before check-in',
+                              'moderate_7_day': 'Moderate 7-Day: 50% refund if canceled 7+ days before check-in', 
+                              'strict': 'Strict: No refund unless exceptional circumstances',
+                              'non_refundable': 'Non-Refundable: No refunds allowed',
+                              'reschedule_only': 'Reschedule Only: Can reschedule but no monetary refund',
+                              'client_protection_plan': 'Client Protection Plan: Additional insurance coverage available'
+                            };
+                            return optionMap[option] || option;
+                          };
+                          
+                          return (
+                            <p key={index} className="flex items-start bg-white bg-opacity-60 rounded-lg p-3 border border-yellow-100">
+                              <span className="inline-block w-2 h-2 bg-yellow-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                              <span>{formatRefundOption(option)}</span>
+                            </p>
+                          );
+                        })}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p><span className="font-medium">Contact Support:</span> </p>
+                    </>
                   )}
                 </div>
               </div>
-            )}
+            </div>
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <div className="lg:col-span-2 space-y-6">
             {/* Pricing */}
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-4">Pricing</h2>
