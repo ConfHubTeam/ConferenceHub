@@ -36,7 +36,7 @@ export const getStatusDisplayText = (status) => {
  * Check if user can perform action on booking
  * @param {Object} user - Current user
  * @param {Object} booking - Booking object
- * @param {string} action - Action type ('approve', 'reject', 'cancel')
+ * @param {string} action - Action type ('approve', 'reject', 'cancel', 'select')
  * @param {Array} competingBookings - Array of competing bookings (optional)
  * @returns {boolean} True if action is allowed
  */
@@ -62,10 +62,26 @@ export const canPerformBookingAction = (user, booking, action, competingBookings
   switch (action) {
     case "approve":
     case "reject":
-      return (
+      // Check if user has authorization
+      const hasAuthorization = (
         userType === "agent" || 
         (userType === "host" && place?.ownerId === userId)
       );
+      
+      if (!hasAuthorization) return false;
+      
+      // For approve action, check competing bookings
+      if (action === "approve" && status === "pending") {
+        // Check if there's a selected booking among competitors
+        const hasSelectedCompetitor = competingBookings.some(
+          competitor => competitor.status === "selected" && competitor.id !== booking.id
+        );
+        
+        // If there's a selected competitor, this pending booking cannot be approved
+        if (hasSelectedCompetitor) return false;
+      }
+      
+      return true;
     
     case "select":
       // Only hosts/agents can select pending bookings
@@ -166,10 +182,21 @@ export const isBookingEditable = (booking, user) => {
  * @param {Object} booking - Booking object
  * @param {Object} user - Current user
  * @param {Array} competingBookings - Array of competing bookings (optional)
- * @returns {Array} Array of button configurations
+ * @returns {Object} Object with buttons array and optional note
  */
 export const getBookingActionButtons = (booking, user, competingBookings = []) => {
   const buttons = [];
+  let note = null;
+  
+  // Check if there's a selected competitor for pending bookings
+  const hasSelectedCompetitor = competingBookings.some(
+    competitor => competitor.status === "selected" && competitor.id !== booking.id
+  );
+  
+  // Add note for pending bookings that cannot be approved/selected due to competing selection
+  if (booking.status === "pending" && hasSelectedCompetitor) {
+    note = "Note: Cannot be approved or selected due to another competing request being selected for this time slot.";
+  }
   
   // Select button for hosts/agents on pending bookings
   if (canPerformBookingAction(user, booking, "select", competingBookings)) {
@@ -182,16 +209,25 @@ export const getBookingActionButtons = (booking, user, competingBookings = []) =
     });
   }
   
-
-  
-  // Approve button (with different behavior for hosts vs agents)
+  // Approve button logic
   if (canPerformBookingAction(user, booking, "approve", competingBookings)) {
     const isSelected = booking.status === "selected";
+    const isPending = booking.status === "pending";
     const isHost = user.userType === "host";
     const isAgent = user.userType === "agent";
     
-    if (isHost && isSelected) {
-      // For hosts: Approve button is disabled for selected bookings (waiting for payment)
+    if (isPending && hasSelectedCompetitor) {
+      // For pending bookings with selected competitors - disable approve
+      buttons.push({
+        label: "Approve",
+        action: "approved",
+        variant: "secondary",
+        icon: "check",
+        disabled: true,
+        description: "Cannot approve - another booking is already selected for this time slot"
+      });
+    } else if (isSelected && isHost) {
+      // For hosts on selected bookings: Approve button is disabled (waiting for payment)
       buttons.push({
         label: "Approve",
         action: "approved",
@@ -200,19 +236,19 @@ export const getBookingActionButtons = (booking, user, competingBookings = []) =
         disabled: true,
         description: "Waiting for client payment before approval"
       });
-    } else if (isAgent && isSelected) {
-      // For agents: Approve button is available and can bypass payment check
+    } else if (isSelected && isAgent) {
+      // For agents on selected bookings: Approve button is available
       buttons.push({
         label: "Approve",
         action: "approved",
         variant: "success",
         icon: "check",
-        requiresPaymentCheck: false, // Agents can approve without payment check
-        agentApproval: true, // Flag to indicate agent approval
+        requiresPaymentCheck: false, 
+        agentApproval: true, 
         description: "Approve booking (marks payment and approval complete)"
       });
-    } else {
-      // For pending bookings: Normal approval
+    } else if (isPending) {
+      // For pending bookings without selected competitors: Normal approval
       buttons.push({
         label: "Approve",
         action: "approved",
@@ -245,7 +281,7 @@ export const getBookingActionButtons = (booking, user, competingBookings = []) =
     });
   }
   
-  return buttons;
+  return { buttons, note };
 };
 
 /**

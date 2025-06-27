@@ -9,7 +9,6 @@ import { useNotification } from "../components/NotificationContext";
 import { useBookingNotifications } from "../contexts/BookingNotificationContext";
 import BookingNotificationBanner from "../components/BookingNotificationBanner";
 import BookingFilters from "../components/BookingFilters";
-import BookingStatsCards from "../components/BookingStatsCards";
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState([]);
@@ -312,9 +311,6 @@ export default function BookingsPage() {
         {/* Agent view - Production-level booking management */}
         {user?.userType === 'agent' && (
           <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
-            {/* Summary cards */}
-            <BookingStatsCards stats={stats} userType={user?.userType} />
-
             {/* Filters and controls */}
             <BookingFilters
               user={user}
@@ -392,9 +388,6 @@ export default function BookingsPage() {
         {user?.userType === 'host' && (
           <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
 
-            {/* Summary cards */}
-            <BookingStatsCards stats={stats} userType={user?.userType} />
-
             {/* Filters and controls */}
             <BookingFilters
               user={user}
@@ -470,9 +463,6 @@ export default function BookingsPage() {
         {/* Client view */}
         {user?.userType === 'client' && (
           <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
-
-            {/* Summary cards */}
-            <BookingStatsCards stats={stats} userType={user?.userType} />
 
             {/* Filters and controls */}
             <BookingFilters

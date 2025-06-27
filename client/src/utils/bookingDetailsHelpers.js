@@ -141,7 +141,12 @@ export const canViewPaymentStatus = (userType) => {
  * Check if user can see actions section
  */
 export const canViewActionsSection = (actionButtons) => {
-  return actionButtons && actionButtons.length > 0;
+  // Handle both old array format and new object format
+  if (Array.isArray(actionButtons)) {
+    return actionButtons.length > 0;
+  }
+  // New object format with buttons property
+  return actionButtons && actionButtons.buttons && actionButtons.buttons.length > 0;
 };
 
 /**

@@ -135,48 +135,31 @@ export default function BookingDetailsPage() {
 
     const fetchLatestContactInfo = async (bookingData) => {
       try {
-        const contactPromises = [];
+        // Use contact info already included in booking response
+        const contactInfo = { client: null, host: null };
         
-        // Fetch latest client contact info if available
-        if (bookingData.userId) {
-          contactPromises.push(
-            api.get(`/users/${bookingData.userId}`).then(response => ({
-              type: 'client',
-              data: response.data
-            }))
-          );
+        // Set client contact info from booking user data
+        if (bookingData.user) {
+          contactInfo.client = {
+            name: bookingData.user.name,
+            email: bookingData.user.email,
+            phoneNumber: bookingData.user.phoneNumber
+          };
         }
         
-        // Fetch latest host contact info if available
-        if (bookingData.place?.ownerId) {
-          contactPromises.push(
-            api.get(`/users/${bookingData.place.ownerId}`).then(response => ({
-              type: 'host',
-              data: response.data
-            }))
-          );
+        // Set host contact info from booking place owner data
+        if (bookingData.place?.owner) {
+          contactInfo.host = {
+            name: bookingData.place.owner.name,
+            email: bookingData.place.owner.email,
+            phoneNumber: bookingData.place.owner.phoneNumber
+          };
         }
         
-        if (contactPromises.length > 0) {
-          const results = await Promise.allSettled(contactPromises);
-          const contactInfo = { client: null, host: null };
-          
-          results.forEach((result) => {
-            if (result.status === 'fulfilled') {
-              const { type, data } = result.value;
-              contactInfo[type] = {
-                name: data.name,
-                email: data.email,
-                phoneNumber: data.phoneNumber
-              };
-            }
-          });
-          
-          setLatestContactInfo(contactInfo);
-        }
+        setLatestContactInfo(contactInfo);
       } catch (error) {
-        console.error('Error loading latest contact information:', error);
-        // Fallback to booking's stored contact info if API fails
+        console.error('Error processing contact info:', error);
+        // Fallback to booking's stored contact info if processing fails
       }
     };
 
@@ -456,12 +439,29 @@ export default function BookingDetailsPage() {
             )}
 
             {/* Actions */}
-            <ActionButtonsSection 
-              actionButtons={getBookingActionButtons(booking, user, competingBookings)}
-              isUpdating={isUpdating}
-              onActionClick={showConfirmationModal}
-              getActionButtonClasses={getActionButtonClasses}
-            />
+            {(() => {
+              const { buttons, note } = getBookingActionButtons(booking, user, competingBookings);
+              return (
+                <>
+                  {note && (
+                    <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                      <div className="flex items-start">
+                        <svg className="w-5 h-5 text-amber-600 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 18.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                        <p className="text-sm text-amber-800">{note}</p>
+                      </div>
+                    </div>
+                  )}
+                  <ActionButtonsSection 
+                    actionButtons={buttons}
+                    isUpdating={isUpdating}
+                    onActionClick={showConfirmationModal}
+                    getActionButtonClasses={getActionButtonClasses}
+                  />
+                </>
+              );
+            })()}
           </div>
         </div>
       </div>
