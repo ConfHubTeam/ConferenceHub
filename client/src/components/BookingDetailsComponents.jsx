@@ -212,12 +212,6 @@ export const PricingSection = ({ booking, user, children }) => {
           <span>Subtotal</span>
           <PriceDisplay price={booking.totalPrice} currency={booking.place?.currency} />
         </div>
-        {booking.serviceFee > 0 && (
-          <div className="flex justify-between">
-            <span>Service Fee</span>
-            <PriceDisplay price={booking.serviceFee} currency={booking.place?.currency} />
-          </div>
-        )}
         {booking.protectionPlanSelected && (
           <div className="flex justify-between">
             <span>Protection Plan</span>

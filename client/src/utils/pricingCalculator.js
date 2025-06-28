@@ -1,13 +1,6 @@
-// Centralized service fee configuration
-export const SERVICE_FEE_CONFIG = {
-  // Service fee rates per currency (base amounts)
-  SERVICE_FEE_BY_CURRENCY: {
-    UZS: parseInt(import.meta.env.VITE_FLAT_RATE_FEE_UZS) || 100000,
-  },
+// Centralized pricing configuration for conference room bookings
+export const PRICING_CONFIG = {
   DEFAULT_CURRENCY: 'UZS',
-  // You can add more service fee configurations here if needed
-  // PERCENTAGE_BASED: false,
-  // PERCENTAGE_RATE: 0.05,
 };
 
 // Protection Plan Configuration
@@ -30,32 +23,9 @@ const formatHourTo12 = (hour24) => {
   return `${displayHour}:00 ${amPm}`;
 };
 
-// Calculate service fee based on configuration and currency
-export const calculateServiceFee = (totalPrice, placeDetail, customServiceFee = null) => {
-  // If a custom service fee is provided, use it
-  if (customServiceFee !== null) {
-    return customServiceFee;
-  }
-  
-  // Get currency from place detail, fallback to default
-  const currency = placeDetail?.currency?.code || SERVICE_FEE_CONFIG.DEFAULT_CURRENCY;
-  
-  // Get service fee for the specific currency
-  const serviceFee = SERVICE_FEE_CONFIG.SERVICE_FEE_BY_CURRENCY[currency] || 
-                     SERVICE_FEE_CONFIG.SERVICE_FEE_BY_CURRENCY[SERVICE_FEE_CONFIG.DEFAULT_CURRENCY];
-  
-  return serviceFee;
-  
-  // Future: Add percentage-based calculation if needed
-  // if (SERVICE_FEE_CONFIG.PERCENTAGE_BASED) {
-  //   return totalPrice * SERVICE_FEE_CONFIG.PERCENTAGE_RATE;
-  // }
-};
-
 // Calculate total hours and pricing from selected calendar dates
-export const calculateBookingPricing = (selectedCalendarDates, placeDetail, customServiceFee = null, protectionPlanSelected = false) => {
+export const calculateBookingPricing = (selectedCalendarDates, placeDetail, protectionPlanSelected = false) => {
   if (!selectedCalendarDates || selectedCalendarDates.length === 0) {
-    const serviceFee = calculateServiceFee(0, placeDetail, customServiceFee);
     return {
       totalHours: 0,
       regularHours: 0,
@@ -63,9 +33,8 @@ export const calculateBookingPricing = (selectedCalendarDates, placeDetail, cust
       regularPrice: 0,
       fullDayPrice: 0,
       totalPrice: 0,
-      serviceFee,
       protectionPlanFee: 0,
-      finalTotal: serviceFee,
+      finalTotal: 0,
       breakdown: []
     };
   }
@@ -119,19 +88,15 @@ export const calculateBookingPricing = (selectedCalendarDates, placeDetail, cust
     });
   });
 
-  // Calculate service fee using the centralized function with currency awareness
-  const serviceFee = calculateServiceFee(totalPrice, placeDetail, customServiceFee);
-  
   // Calculate protection plan fee using configurable rate
   const protectionPlanFee = protectionPlanSelected ? Math.round(totalPrice * PROTECTION_PLAN_CONFIG.PROTECTION_RATE) : 0;
   
-  // Calculate final total with service fee and protection plan
-  const finalTotal = totalPrice + serviceFee + protectionPlanFee;
+  // Calculate final total with protection plan
+  const finalTotal = totalPrice + protectionPlanFee;
 
   return {
     totalHours,
     totalPrice,
-    serviceFee,
     protectionPlanFee,
     finalTotal,
     breakdown

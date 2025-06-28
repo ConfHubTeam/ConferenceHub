@@ -19,7 +19,6 @@ class BookingService {
       guestName, 
       guestPhone, 
       totalPrice,
-      serviceFee,
       protectionPlanSelected = false,
       protectionPlanFee = 0,
       finalTotal
@@ -78,7 +77,6 @@ class BookingService {
       guestName, 
       guestPhone, 
       totalPrice,
-      serviceFee: serviceFee || 0,
       protectionPlanSelected,
       protectionPlanFee,
       finalTotal: finalTotal || totalPrice,

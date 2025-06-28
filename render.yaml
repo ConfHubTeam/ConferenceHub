@@ -52,8 +52,6 @@ services:
         sync: false
       - key: APP_URL
         sync: false
-      - key: VITE_FLAT_RATE_FEE_UZS
-        sync: false
 
 databases:
   - name: conferencehub-db
