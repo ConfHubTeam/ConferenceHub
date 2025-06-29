@@ -10,7 +10,7 @@ export default function AuthenticatedRoute() {
   // Redirect unauthenticated users to landing page
   useEffect(() => {
     if (isReady && !user) {
-      navigate("/landingpage");
+      navigate("/landing");
     }
   }, [user, isReady, navigate]);
 

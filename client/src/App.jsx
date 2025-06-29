@@ -46,6 +46,7 @@ function App() {
             <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<AuthenticatedRoute />} />
+            <Route path="/landing" element={<LandingPage />} />
             <Route path="/landingpage" element={<LandingPage />} />
             <Route path="/places" element={<IndexPage />} />
             <Route path="/login" element={<LoginPage />} />
