@@ -3,7 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 
 export default function Layout() {
   const location = useLocation();
-  const isLandingPage = location.pathname === "/landingpage";
+  const isLandingPage = location.pathname === "/landing" || location.pathname === "/landingpage";
 
   if (isLandingPage) {
     return (
