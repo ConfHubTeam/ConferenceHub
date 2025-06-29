@@ -61,14 +61,17 @@
 .zoom-out-animation {
   opacity: 0;
   transform: scale(0.95);
-  animation: zoomOut 0.7s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-  animation-delay: 0.5s;
+  animation: zoomOut 1s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+  animation-delay: 0.3s;
 }
 
 @keyframes zoomOut {
   0% {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.92);
+  }
+  30% {
+    opacity: 0.5;
   }
   100% {
     opacity: 1;
