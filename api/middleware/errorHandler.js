@@ -46,6 +46,19 @@ const errorHandler = (err, req, res, next) => {
     console.error(err.stack);
   }
 
+  // If it's a Payme transaction error, handle it specifically
+  if (err.isTransactionError) {
+    return res.status(200).json({
+      error: {
+        code: err.transactionErrorCode,
+        message: err.transactionErrorMessage,
+        data: err.transactionData
+      },
+      id: err.transactionId,
+      result: null
+    });
+  }
+
   // Handle specific errors
   if (err.name === 'SequelizeValidationError') {
     // Handle database validation errors
@@ -97,8 +110,27 @@ const notFound = (req, res, next) => {
   next();
 };
 
+
+/**
+ * Custom error class for operational errors
+ */
+class PaymeTransactionError extends Error {
+  constructor(paymeError, id, data) {
+    super(paymeError.message);
+
+    this.name = paymeError.name;
+    this.statusCode = 200;
+    this.transactionErrorCode = paymeError.code;
+    this.transactionErrorMessage = paymeError.message;
+    this.transactionData = data;
+    this.transactionId = id;
+    this.isTransactionError = true;
+  }
+}
+
 module.exports = {
   ApiError,
+  PaymeTransactionError,
   catchAsync,
   errorHandler,
   notFound
