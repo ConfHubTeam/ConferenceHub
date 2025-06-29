@@ -2,14 +2,15 @@ const {
   Booking,
   Place,
   User,
-  Transaction,
   ClickTransaction,
 } = require("../models");
+
 const {
   ClickError,
   ClickAction,
   TransactionState,
 } = require("../enum/transaction.enum");
+
 const clickCheckToken = require("../utils/clickUtil");
 const transactionService = require("../services/transactionService");
 /**
@@ -79,7 +80,6 @@ class ClickService {
       performDate: null,
       cancelDate: null,
       createDate: new Date(time),
-      transactionId: ent.id,
       bookingId: bookingId,
       prepareId: time,
       state: TransactionState.Pending,
@@ -220,7 +220,7 @@ class ClickService {
    * Retrieves the booking context based on the booking ID.
    */
   static async _getBookingContext(bookingId) {
-    const booking = await Booking.findById(merchantTransId);
+    const booking = await Booking.findById(bookingId);
     if (!booking) {
       return {
         error: ClickError.TransactionNotFound,

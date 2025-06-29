@@ -25,6 +25,7 @@ const userRoutes = require('./routes/users');
 const placeRoutes = require('./routes/places');
 const bookingRoutes = require('./routes/bookings');
 const currencyRoutes = require('./routes/currency');
+const clickRoutes = require('./routes/click');
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -153,6 +154,7 @@ app.use('/api/telegram-auth', telegramAuthRoutes);
 app.use('/api/places', placeRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/currency', currencyRoutes);
+app.use('/api/click', clickRoutes);
 
 // For production: Serve static files from the client build folder
 if (process.env.NODE_ENV === 'production') {

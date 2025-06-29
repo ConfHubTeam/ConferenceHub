@@ -1,4 +1,4 @@
-const { ClickTransaction } = require("../models");
+const { ClickTransaction, PaymeTransaction } = require("../models");
 
 /**
  * TransactionService - Handles the core business.
@@ -29,6 +29,33 @@ class TransactionService {
       prepareId,
       state,
       amount,
+      userId: userId
+    });
+  }
+
+  /**
+   * Create a new payme transaction.
+   */
+  static async createPayme(data) {
+    const {
+      paymeTransId,
+      performDate,
+      cancelDate,
+      createDate,
+      bookingId,
+      state,
+      amount,
+      userId
+    } = data;
+
+    return await PaymeTransaction.create({
+      paymeTransId: paymeTransId,
+      performDate: performDate,
+      cancelDate: cancelDate,
+      createDate: createDate,
+      bookingId: bookingId,
+      state: state,
+      amount: amount,
       userId: userId
     });
   }
