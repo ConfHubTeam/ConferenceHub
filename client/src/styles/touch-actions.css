@@ -156,6 +156,19 @@ textarea {
     height: 100%;
     -webkit-overflow-scrolling: touch;
   }
+  
+  /* Fixed header for iOS Safari */
+  .fixed.top-0 {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 1000;
+    /* Prevent Safari from moving the header during elastic scroll */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+  }
 }
 
 /* Prevent text selection on map markers and controls */
@@ -197,4 +210,21 @@ textarea {
 /* Allow all gestures (for maps) */
 .allow-all-gestures {
   touch-action: none;
+}
+
+/* Mobile map view specific styles */
+@media (max-width: 768px) {
+  /* Fixed header and filters for mobile map view */
+  .fixed.top-0 {
+    position: fixed;
+    width: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+  }
+
+  /* Prevent content from sliding under the fixed header */
+  .pt-\[120px\] {
+    padding-top: 120px; /* Adjust this value based on your header + filter height */
+  }
 }
