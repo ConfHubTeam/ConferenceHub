@@ -58,13 +58,13 @@ export default function Header() {
   };
 
   return (
-    <header className="flex justify-between items-center px-4 md:px-14 relative z-50">
+    <header className="flex justify-between items-center pl-2 pr-4 md:pl-6 md:pr-14 relative z-50">
       <div className="flex flex-col">
         <Link to={"/"} className="logo flex items-center gap-1">
           <img 
             src="/getSpace_logo.png" 
             alt="GetSpace" 
-            className="h-12 sm:h-14 w-auto object-contain"
+            className="h-8 sm:h-10 lg:h-12 w-auto object-contain"
           />
         </Link>
       </div>
