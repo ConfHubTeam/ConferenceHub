@@ -69,13 +69,13 @@ export default function IndexPage() {
       {/* Mobile Map View - Full Screen */}
       {isMobileMapView && (
         <div className="md:hidden fixed inset-0 z-[70] bg-white flex flex-col">
-          {/* Header - Sticky at top */}
-          <div className="sticky top-0 z-[80] bg-white shadow-sm">
+          {/* Header - Fixed at top */}
+          <div className="fixed top-0 left-0 right-0 z-[80] bg-white shadow-sm">
             <Header />
           </div>
           
-          {/* Filter Row - Sticky below header */}
-          <div className="sticky top-0 z-[75] bg-white shadow-sm">
+          {/* Filter Row - Fixed below header */}
+          <div className="fixed top-[73px] left-0 right-0 z-[75] bg-white shadow-sm">
             <FilterRow 
               isMapVisible={false}
               toggleMap={() => {}}
@@ -94,8 +94,8 @@ export default function IndexPage() {
             </svg>
           </button>
           
-          {/* Mobile Map container - remaining height */}
-          <div className="flex-1 w-full">
+          {/* Mobile Map container - remaining height with padding for header and filter */}
+          <div className="flex-1 w-full pt-[120px]">
             <MapView places={filteredPlaces} />
           </div>
         </div>
