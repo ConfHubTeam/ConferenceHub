@@ -55,7 +55,7 @@ const Booking = sequelize.define('Booking', {
     allowNull: false
   },
   timeSlots: {
-    type: DataTypes.JSON,
+    type: DataTypes.JSONB,
     allowNull: true,
     defaultValue: [],
     comment: 'Array of time slots with date, startTime, endTime for each booking day'

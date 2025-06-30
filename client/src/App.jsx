@@ -11,6 +11,7 @@ import { UserContextProvider } from "./components/UserContext";
 import { NotificationProvider } from "./components/NotificationContext";
 import { BookingNotificationProvider } from "./contexts/BookingNotificationContext";
 import { CurrencyProvider } from "./contexts/CurrencyContext";
+import { DateTimeFilterProvider } from "./contexts/DateTimeFilterContext";
 import PlacesPage from "./pages/PlacesPage";
 import ProfilePage from "./pages/ProfilePage";
 import PlacesFormPage from "./pages/PlacesFormPage";
@@ -42,7 +43,8 @@ function App() {
       <CurrencyProvider>
         <NotificationProvider>
           <BookingNotificationProvider>
-            <Routes>
+            <DateTimeFilterProvider>
+              <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<LandingPage />} />
             <Route path="/landing" element={<LandingPage />} />
@@ -70,6 +72,7 @@ function App() {
             <Route path="/account/all-places" element={<AllPlacesPage />}/>
           </Route>
         </Routes>
+            </DateTimeFilterProvider>
         </BookingNotificationProvider>
       </NotificationProvider>
       </CurrencyProvider>
