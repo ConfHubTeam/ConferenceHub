@@ -121,13 +121,66 @@ export const fixIOSViewportUnits = () => {
 export const initIOSSafariFixes = () => {
   if (!isIOSSafari()) return;
 
-  // Apply all fixes
-  preventIOSZoomOnInputFocus();
-  handleIOSViewportHeight();
-  fixIOSViewportUnits();
-  disableIOSElasticScrolling();
+  // Fix for iOS Safari 100vh issue (viewport height)
+  const setVhProperty = () => {
+    // Set CSS variable for full viewport height
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+  };
 
-  console.log('iOS Safari fixes applied');
+  // Set initially and on resize
+  setVhProperty();
+  window.addEventListener('resize', setVhProperty);
+  
+  // Prevent scrolling on iOS Safari when in mobile map view
+  const lockBodyScrollForMap = () => {
+    const isMobileMapView = document.querySelector('.fixed.inset-0.z-\\[70\\]');
+    if (isMobileMapView) {
+      // Lock the body
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.height = '100%';
+    } else {
+      // Unlock the body
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
+    }
+  };
+
+  // Fix for iOS Safari position:fixed elements disappearing after scrolling
+  const fixFixedElements = () => {
+    const fixedElements = document.querySelectorAll('.fixed.top-0, .fixed.top-\\[73px\\]');
+    fixedElements.forEach(element => {
+      // Force a repaint to prevent iOS Safari from hiding fixed elements
+      element.style.transform = 'translateZ(0)';
+      element.style.webkitTransform = 'translateZ(0)';
+    });
+  };
+
+  // Apply these fixes on scroll
+  document.addEventListener('scroll', fixFixedElements, { passive: true });
+  
+  // Monitor DOM changes to reapply fixes when map view is toggled
+  const observer = new MutationObserver(() => {
+    lockBodyScrollForMap();
+    fixFixedElements();
+  });
+  
+  // Observe the body for changes that might indicate map view toggle
+  observer.observe(document.body, { 
+    childList: true, 
+    subtree: true 
+  });
+  
+  // Make sure we clean up
+  return () => {
+    window.removeEventListener('resize', setVhProperty);
+    document.removeEventListener('scroll', fixFixedElements);
+    observer.disconnect();
+  };
 };
 
 /**

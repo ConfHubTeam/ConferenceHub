@@ -8,7 +8,7 @@ function IndexPageLayout() {
   
   return (
     <div className="flex flex-col h-screen overflow-hidden">
-      <div className="sticky top-0 z-[60] bg-white flex-shrink-0">
+      <div className={`${isMobileMapView ? 'fixed w-full' : 'sticky'} top-0 z-[60] bg-white flex-shrink-0`}>
         <div className="py-5 border-b border-gray-200">
           <Header />
         </div>
@@ -19,7 +19,7 @@ function IndexPageLayout() {
           showMobileMap={showMobileMap}
         />
       </div>
-      <div className="flex-1 overflow-hidden flex flex-col">
+      <div className={`flex-1 overflow-hidden flex flex-col ${isMobileMapView ? 'pt-[120px]' : ''}`}>
         <Outlet context={{ isMapVisible, isMobileMapView, hideMap, hideMobileMap }} />
       </div>
     </div>

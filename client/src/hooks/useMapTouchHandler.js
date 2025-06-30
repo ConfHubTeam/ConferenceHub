@@ -26,8 +26,16 @@ export const useMapTouchHandler = () => {
         return;
       }
 
-      // Check if this is a map-related touch
+      // Check if this is a map-related touch and not on header elements
+      const isHeaderTouch = e.target.closest(".fixed.top-0") !== null;
       const isMapTouch = e.target.closest(".map-container") !== null;
+      
+      // Don't capture touch events from the header or filter row
+      if (isHeaderTouch) {
+        isMapGestureRef.current = false;
+        return;
+      }
+      
       isMapGestureRef.current = isMapTouch;
 
       if (e.touches.length === 1) {
