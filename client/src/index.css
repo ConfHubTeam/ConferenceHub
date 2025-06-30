@@ -135,3 +135,21 @@ input[type="checkbox"]:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.1);
 }
+
+/* Calendar container optimization for fixed height modal */
+.calendar-container {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar-container * {
+  max-height: 100%;
+}
+
+/* Ensure select dropdowns can scroll when needed */
+select {
+  max-height: 200px;
+  overflow-y: auto;
+}

@@ -6,6 +6,7 @@ import PriceDisplay from "../components/PriceDisplay";
 import Pagination from "../components/Pagination";
 import FilterRow from "../components/FilterRow";
 import Header from "../components/Header";
+import { useDateTimeFilter } from "../contexts/DateTimeFilterContext";
 import api from "../utils/api";
 
 export default function IndexPage() {
@@ -19,6 +20,9 @@ export default function IndexPage() {
   const itemsPerPage = 10; // Number of places to show per page
   
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  
+  // Date/Time filter context
+  const { setFromSerializedValues } = useDateTimeFilter();
   
   // Get map state from outlet context (passed down from Layout)
   const context = useOutletContext();
@@ -55,6 +59,15 @@ export default function IndexPage() {
     // Get URL params if any
     const params = new URLSearchParams(location.search);
     
+    // Initialize DateTimeFilter from URL parameters
+    if (params.has('dates') || params.has('startTime') || params.has('endTime')) {
+      setFromSerializedValues({
+        dates: params.get('dates') || '',
+        startTime: params.get('startTime') || '',
+        endTime: params.get('endTime') || ''
+      });
+    }
+    
     // Using our API utility instead of direct axios import
     api.get("/places/home" + (location.search ? location.search : "")).then((response) => {
       setPlaces(response.data);
@@ -62,7 +75,7 @@ export default function IndexPage() {
       setTotalItems(response.data.length);
       setIsLoading(false);
     });
-  }, [location.search]);
+  }, [location.search, setFromSerializedValues]);
 
   return (
     <div className="flex flex-col h-full">
