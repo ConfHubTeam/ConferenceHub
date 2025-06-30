@@ -5,6 +5,7 @@ import MapView from "../components/MapView";
 import PriceDisplay from "../components/PriceDisplay";
 import Pagination from "../components/Pagination";
 import FilterRow from "../components/FilterRow";
+import Header from "../components/Header";
 import api from "../utils/api";
 
 export default function IndexPage() {
@@ -68,7 +69,12 @@ export default function IndexPage() {
       {/* Mobile Map View - Full Screen */}
       {isMobileMapView && (
         <div className="md:hidden fixed inset-0 z-[70] bg-white flex flex-col">
-          {/* Filter Row - Sticky at top */}
+          {/* Header - Sticky at top */}
+          <div className="sticky top-0 z-[80] bg-white shadow-sm">
+            <Header />
+          </div>
+          
+          {/* Filter Row - Sticky below header */}
           <div className="sticky top-0 z-[75] bg-white shadow-sm">
             <FilterRow 
               isMapVisible={false}
