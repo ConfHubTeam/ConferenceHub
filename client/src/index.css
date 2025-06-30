@@ -20,6 +20,13 @@ button.primary {
   @apply bg-primary p-2 w-full text-white rounded-2xl;
 }
 
+/* DateTimeFilterModal desktop enhancements */
+@media (min-width: 768px) {
+  .calendar-container .aspect-square {
+    height: 40px;
+  }
+}
+
 button.normal {
   @apply bg-normal p-2 w-full text-white rounded-2xl;
 }
