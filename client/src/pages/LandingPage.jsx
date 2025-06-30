@@ -39,8 +39,8 @@ export default function LandingPage() {
    * @param {Object} searchData - Search parameters
    */
   const handleSearch = (searchData) => {
-    const { query, location, date } = searchData;
-    navigate(`/places?search=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}&date=${encodeURIComponent(date)}`);
+    const { query, location, date, price } = searchData;
+    navigate(`/places?search=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}&date=${encodeURIComponent(date)}&price=${encodeURIComponent(price)}`);
   };
 
   return (
@@ -93,14 +93,16 @@ export default function LandingPage() {
             <SearchFilter 
               onSearch={handleSearch}
               placeholder={{
-                activity: "Enter your activity",
-                location: "UZ",
-                when: "Anytime"
+                when: "Anytime",
+                price: "Any price",
+                attendance: "Number of attendees",
+                size: "Conference size"
               }}
               initialValues={{
-                activity: "",
-                location: "UZ",
-                when: "Anytime"
+                when: "",
+                price: "",
+                attendance: "",
+                size: ""
               }}
               className=""
             />
