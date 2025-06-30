@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDateTimeFilter } from "../contexts/DateTimeFilterContext";
+import DateTimeFilterModal from "./DateTimeFilterModal";
 
 /**
  * Reusable Search Filter Component
  * Follows DRY principle - can be used across multiple pages
  * Enhanced styling to match screenshot requirements
+ * Integrated with DateTimeFilterModal for date/time selection
  */
 export default function SearchFilter({ 
   onSearch, 
@@ -22,21 +25,43 @@ export default function SearchFilter({
     size: ""
   }
 }) {
-  const [when, setWhen] = useState(initialValues.when);
   const [price, setPrice] = useState(initialValues.price);
   const [attendance, setAttendance] = useState(initialValues.attendance);
   const [size, setSize] = useState(initialValues.size);
+  const [isDateTimeModalOpen, setIsDateTimeModalOpen] = useState(false);
   const navigate = useNavigate();
+  
+  // Use the DateTimeFilter context for date/time state
+  const { getFormattedDateTime, getSerializedValues } = useDateTimeFilter();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     
+    // Get serialized date/time values for URL parameters  
+    const dateTimeValues = getSerializedValues();
+    
     if (onSearch) {
-      // Custom handler provided
-      onSearch({ when, price, attendance, size });
+      // Custom handler provided - include date/time values
+      onSearch({ 
+        when: getFormattedDateTime(),
+        dates: dateTimeValues.dates,
+        startTime: dateTimeValues.startTime,
+        endTime: dateTimeValues.endTime,
+        price, 
+        attendance, 
+        size 
+      });
     } else {
-      // Default navigation behavior
-      navigate(`/places?when=${encodeURIComponent(when)}&price=${encodeURIComponent(price)}&attendance=${encodeURIComponent(attendance)}&size=${encodeURIComponent(size)}`);
+      // Default navigation behavior with date/time parameters
+      const params = new URLSearchParams();
+      if (dateTimeValues.dates) params.set('dates', dateTimeValues.dates);
+      if (dateTimeValues.startTime) params.set('startTime', dateTimeValues.startTime);
+      if (dateTimeValues.endTime) params.set('endTime', dateTimeValues.endTime);
+      if (price && price !== 'Any price') params.set('price', price);
+      if (attendance) params.set('attendance', attendance);
+      if (size) params.set('size', size);
+      
+      navigate(`/places?${params.toString()}`);
     }
   };
 
@@ -44,19 +69,19 @@ export default function SearchFilter({
     <div className={`w-full max-w-6xl mx-auto mt-20 ${className}`}>
       <form onSubmit={handleSubmit} className="bg-white rounded-xl lg:rounded-2xl shadow-2xl overflow-hidden">
         <div className="flex flex-col lg:flex-row bg-white">
-          {/* When? */}
+          {/* When? - Date/Time Filter Button */}
           <div className="flex-2 px-4 sm:px-4 lg:px-5 py-2 sm:py-2 lg:py-2.5 hover:bg-gray-50 transition-colors duration-200 bg-white">
             <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider">
               When?
             </label>
-            <input
-              type="text"
-              value={when}
-              onChange={(e) => setWhen(e.target.value)}
-              placeholder={placeholder.when}
-              className="w-full text-gray-900 placeholder-gray-500 text-sm sm:text-base lg:text-lg bg-transparent outline-none focus:ring-0 border-0 font-medium pt-0 pl-0"
-              aria-label="When?"
-            />
+            <button
+              type="button"
+              onClick={() => setIsDateTimeModalOpen(true)}
+              className="w-full text-left text-gray-900 text-sm sm:text-base lg:text-lg bg-transparent outline-none focus:ring-0 border-0 font-medium pt-0 pl-0 hover:text-brand-purple transition-colors"
+              aria-label="Select dates and times"
+            >
+              {getFormattedDateTime() || placeholder.when}
+            </button>
           </div>
 
           {/* Price */}
@@ -130,6 +155,12 @@ export default function SearchFilter({
           </div>
         </div>
       </form>
+      
+      {/* Date/Time Filter Modal */}
+      <DateTimeFilterModal
+        isOpen={isDateTimeModalOpen}
+        onClose={() => setIsDateTimeModalOpen(false)}
+      />
     </div>
   );
 }

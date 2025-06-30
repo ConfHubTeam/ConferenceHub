@@ -36,11 +36,21 @@ export default function LandingPage() {
 
   /**
    * Handle search submission with enhanced UX
-   * @param {Object} searchData - Search parameters
+   * @param {Object} searchData - Search parameters including date/time data
    */
   const handleSearch = (searchData) => {
-    const { query, location, date, price } = searchData;
-    navigate(`/places?search=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}&date=${encodeURIComponent(date)}&price=${encodeURIComponent(price)}`);
+    const { dates, startTime, endTime, price, attendance, size } = searchData;
+    
+    // Build URL parameters
+    const params = new URLSearchParams();
+    if (dates) params.set('dates', dates);
+    if (startTime) params.set('startTime', startTime);  
+    if (endTime) params.set('endTime', endTime);
+    if (price && price !== 'Any price') params.set('price', price);
+    if (attendance) params.set('attendance', attendance);
+    if (size) params.set('size', size);
+    
+    navigate(`/places?${params.toString()}`);
   };
 
   return (
