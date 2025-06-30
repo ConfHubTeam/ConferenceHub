@@ -4,6 +4,7 @@ import CloudinaryImage from "../components/CloudinaryImage";
 import MapView from "../components/MapView";
 import PriceDisplay from "../components/PriceDisplay";
 import Pagination from "../components/Pagination";
+import FilterRow from "../components/FilterRow";
 import api from "../utils/api";
 
 export default function IndexPage() {
@@ -66,19 +67,29 @@ export default function IndexPage() {
     <div className="flex flex-col h-full">
       {/* Mobile Map View - Full Screen */}
       {isMobileMapView && (
-        <div className="md:hidden fixed inset-0 z-50 bg-white">
+        <div className="md:hidden fixed inset-0 z-[70] bg-white flex flex-col">
+          {/* Filter Row - Sticky at top */}
+          <div className="sticky top-0 z-[75] bg-white shadow-sm">
+            <FilterRow 
+              isMapVisible={false}
+              toggleMap={() => {}}
+              showMobileMap={() => {}}
+              isMobileMapView={true}
+            />
+          </div>
+          
           {/* X button to close mobile map - bottom center */}
           <button
             onClick={() => hideMobileMap && hideMobileMap()}
-            className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-[70] bg-white shadow-lg hover:shadow-xl p-4 transition-shadow rounded-full"
+            className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-[75] bg-white shadow-lg hover:shadow-xl p-4 transition-shadow rounded-full"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
           
-          {/* Mobile Map container - full height, not scrollable */}
-          <div className="h-full w-full">
+          {/* Mobile Map container - remaining height */}
+          <div className="flex-1 w-full">
             <MapView places={filteredPlaces} />
           </div>
         </div>

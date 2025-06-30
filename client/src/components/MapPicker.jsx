@@ -576,13 +576,13 @@ export default function MapPicker({
     <div 
       className={`map-container ${
         isFullScreen 
-          ? "fixed inset-0 z-50 bg-white" 
+          ? "fixed inset-0 z-[70] bg-white" 
           : "rounded-lg overflow-hidden border border-gray-300"
       }`}
       ref={mapContainerRef}
     >
       {isFullScreen && (
-        <div className="absolute top-0 left-0 right-0 z-50 bg-white flex justify-between items-center p-4 shadow-md">
+        <div className="absolute top-0 left-0 right-0 z-[75] bg-white flex justify-between items-center p-4 shadow-md">
           <h3 className="text-lg font-semibold text-gray-800">Select Location</h3>
           <button 
             onClick={handleConfirmLocation}

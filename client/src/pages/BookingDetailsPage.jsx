@@ -423,8 +423,9 @@ export default function BookingDetailsPage() {
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Pricing */}
+          <div className="lg:col-span-2">
+            <div className="sticky top-24 space-y-6">
+              {/* Pricing */}
             <PricingSection booking={booking} user={user}>
               <PaymentStatusIndicator status={booking.status} userType={user?.userType} />
             </PricingSection>
@@ -462,6 +463,7 @@ export default function BookingDetailsPage() {
                 </>
               );
             })()}
+            </div>
           </div>
         </div>
       </div>

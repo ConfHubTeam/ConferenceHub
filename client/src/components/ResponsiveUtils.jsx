@@ -84,7 +84,7 @@ export const ResponsiveContainer = ({ children, className = "" }) => {
  * Mobile Navigation Component
  * Shows mobile-specific navigation when needed
  */
-export const MobileNavigation = ({ isOpen, onToggle, onClose }) => {
+export const MobileNavigation = ({ isOpen, onToggle, onClose, user = null }) => {
   const { isMobile } = useResponsive();
 
   if (!isMobile) return null;
@@ -108,7 +108,7 @@ export const MobileNavigation = ({ isOpen, onToggle, onClose }) => {
 
       {/* Mobile Menu Overlay */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[70] bg-black/90 backdrop-blur-sm">
           <div className="flex flex-col items-center justify-center h-full space-y-8">
             <button
               onClick={onClose}
@@ -121,19 +121,37 @@ export const MobileNavigation = ({ isOpen, onToggle, onClose }) => {
             </button>
             
             <nav className="flex flex-col items-center space-y-6 text-white text-xl">
-              <a href="/places" className="hover:text-brand-orange transition-colors" onClick={onClose}>
-                List Your Space
-              </a>
-              <a href="/login" className="hover:text-brand-orange transition-colors" onClick={onClose}>
-                Log In
-              </a>
-              <a 
-                href="/register" 
-                className="bg-white text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-                onClick={onClose}
-              >
-                Sign Up
-              </a>
+              {user ? (
+                /* Authenticated user menu */
+                <>
+                  <a href="/places" className="hover:text-brand-orange transition-colors" onClick={onClose}>
+                    Browse Spaces
+                  </a>
+                  <a href="/account" className="hover:text-brand-orange transition-colors" onClick={onClose}>
+                    My Account
+                  </a>
+                  <a href="/account/user-places" className="hover:text-brand-orange transition-colors" onClick={onClose}>
+                    My Places
+                  </a>
+                </>
+              ) : (
+                /* Non-authenticated user menu */
+                <>
+                  <a href="/places" className="hover:text-brand-orange transition-colors" onClick={onClose}>
+                    Browse Spaces
+                  </a>
+                  <a href="/login" className="hover:text-brand-orange transition-colors" onClick={onClose}>
+                    Log In
+                  </a>
+                  <a 
+                    href="/register" 
+                    className="bg-white text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+                    onClick={onClose}
+                  >
+                    Sign Up
+                  </a>
+                </>
+              )}
             </nav>
           </div>
         </div>

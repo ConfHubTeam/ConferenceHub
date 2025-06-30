@@ -56,7 +56,7 @@ export default function Layout() {
           <Header />
         </div>
       </div>
-      <div>
+      <div className="pt-5">
         <Outlet />
       </div>
     </div>

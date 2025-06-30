@@ -9,7 +9,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [redirect, setRedirect] = useState(false);
-  const [redirectTo, setRedirectTo] = useState("/");
+  const [redirectTo, setRedirectTo] = useState("/account");
   const [error, setError] = useState("");
   const [showAdminHint, setShowAdminHint] = useState(false);
   const [emailValid, setEmailValid] = useState(true);
