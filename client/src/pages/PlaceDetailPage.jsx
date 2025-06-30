@@ -252,7 +252,7 @@ export default function PlaceDetailPage() {
 
         {/* Right side - Booking widget or management options */}
         <div className="lg:col-span-1">
-          <div className="sticky top-4">
+          <div className="sticky top-24">
             {/* Show booking widget only for clients or if viewing a booking */}
             {(!user || user.userType === 'client' || bookingId) && (
               <BookingWidget

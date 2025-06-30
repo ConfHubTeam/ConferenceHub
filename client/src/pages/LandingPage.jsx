@@ -22,13 +22,6 @@ export default function LandingPage() {
   const { user, isReady } = useContext(UserContext);
   const navigate = useNavigate();
 
-  // Redirect authenticated users to the main places page
-  useEffect(() => {
-    if (isReady && user) {
-      navigate("/");
-    }
-  }, [user, isReady, navigate]);
-
   // Loading state with enhanced styling
   if (!isReady) {
     return (
@@ -39,11 +32,6 @@ export default function LandingPage() {
         <p className="text-white mt-4 text-lg font-medium">Loading GetSpace...</p>
       </div>
     );
-  }
-
-  // Don't render if user is authenticated (will redirect)
-  if (user) {
-    return null;
   }
 
   /**
@@ -72,7 +60,7 @@ export default function LandingPage() {
       </div>
 
       {/* Header */}
-      <LandingHeader />
+      <LandingHeader user={user} />
 
       {/* Main Content - Restructured layout */}
       <main className="relative z-40 flex-1 flex flex-col px-6 max-w-7xl mx-auto w-full">

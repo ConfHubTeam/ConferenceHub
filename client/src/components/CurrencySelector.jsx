@@ -171,7 +171,7 @@ export default function CurrencySelector({ selectedCurrency, onChange, available
         <div 
           id="currency-listbox"
           role="listbox"
-          className={`absolute z-50 mt-1 ${compact ? 'min-w-[100px] w-auto' : 'w-full'} bg-white border rounded-md shadow-lg max-h-60 overflow-auto`}
+          className={`absolute z-[65] mt-1 ${compact ? 'min-w-[100px] w-auto' : 'w-full'} bg-white border rounded-md shadow-lg max-h-60 overflow-auto`}
           style={{ 
             borderRadius: "0.75rem",
             right: compact ? '0' : 'auto'

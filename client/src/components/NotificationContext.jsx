@@ -20,7 +20,7 @@ export function NotificationProvider({ children }) {
       {children}
       
       {notification && (
-        <div className={`fixed top-16 md:top-20 md:right-4 left-0 right-0 md:left-auto md:w-72 mx-auto md:mx-0 py-3 px-6 rounded-md md:rounded-xl shadow-lg z-50 transform transition-all duration-300 ease-in-out
+        <div className={`fixed top-16 md:top-20 md:right-4 left-0 right-0 md:left-auto md:w-72 mx-auto md:mx-0 py-3 px-6 rounded-md md:rounded-xl shadow-lg z-[80] transform transition-all duration-300 ease-in-out
           ${notification.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' : 
             notification.type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' : 
             'bg-blue-100 text-blue-800 border border-blue-200'}`}>

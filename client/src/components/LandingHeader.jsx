@@ -14,7 +14,8 @@ export default function LandingHeader({
   logoAlt = "GetSpace",
   showNavigation = true,
   showAuth = true,
-  className = ""
+  className = "",
+  user = null
 }) {
   const { selectedCurrency, changeCurrency, availableCurrencies } = useContext(CurrencyContext);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -57,18 +58,26 @@ export default function LandingHeader({
             className="text-white hover:text-brand-orange transition-colors duration-200 flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg px-3 py-2 text-sm lg:text-base"
             aria-label="Browse Spaces"
             to="/places"
-
           >
             <GlobeAltIcon className="w-4 h-4 lg:w-5 lg:h-5" aria-hidden="true" />
             <span className="font-medium">Browse Spaces</span>
             <ChevronDownIcon className="w-3 h-3 lg:w-4 lg:h-4" aria-hidden="true" />
           </Link>
-          <Link 
-            to="/register"
-            className="text-white hover:text-brand-orange transition-colors duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg px-3 py-2 text-sm lg:text-base"
-          >
-            List Your Space
-          </Link>
+          {user ? (
+            <Link 
+              to="/account/user-places"
+              className="text-white hover:text-brand-orange transition-colors duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg px-3 py-2 text-sm lg:text-base"
+            >
+              My Places
+            </Link>
+          ) : (
+            <Link 
+              to="/register"
+              className="text-white hover:text-brand-orange transition-colors duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg px-3 py-2 text-sm lg:text-base"
+            >
+              List Your Space
+            </Link>
+          )}
         </nav>
       )}
 
@@ -114,26 +123,40 @@ export default function LandingHeader({
         {/* Desktop Auth Buttons */}
         {showAuth && (
           <>
-            <div className="hidden sm:flex items-center space-x-2 lg:space-x-4">
-              <Link 
-                to="/login"
-                className="text-white hover:text-brand-orange transition-colors duration-200 px-3 lg:px-4 py-2 rounded-lg hover:bg-white/10 font-medium focus:outline-none focus:ring-2 focus:ring-white/50 text-sm lg:text-base"
-              >
-                Log In
-              </Link>
-              <Link 
-                to="/register"
-                className="bg-white text-gray-900 hover:bg-gray-100 transition-colors duration-200 px-4 lg:px-6 py-2 rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 text-sm lg:text-base"
-              >
-                Sign Up
-              </Link>
-            </div>
+            {user ? (
+              /* Authenticated user section */
+              <div className="hidden sm:flex items-center space-x-2 lg:space-x-4">
+                <Link 
+                  to="/account"
+                  className="bg-white text-gray-900 hover:bg-gray-100 transition-colors duration-200 px-4 lg:px-6 py-2 rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 text-sm lg:text-base"
+                >
+                  My Account
+                </Link>
+              </div>
+            ) : (
+              /* Non-authenticated user section */
+              <div className="hidden sm:flex items-center space-x-2 lg:space-x-4">
+                <Link 
+                  to="/login"
+                  className="text-white hover:text-brand-orange transition-colors duration-200 px-3 lg:px-4 py-2 rounded-lg hover:bg-white/10 font-medium focus:outline-none focus:ring-2 focus:ring-white/50 text-sm lg:text-base"
+                >
+                  Log In
+                </Link>
+                <Link 
+                  to="/register"
+                  className="bg-white text-gray-900 hover:bg-gray-100 transition-colors duration-200 px-4 lg:px-6 py-2 rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 text-sm lg:text-base"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
 
             {/* Mobile Menu */}
             <MobileNavigation 
               isOpen={isMobileMenuOpen}
               onToggle={toggleMobileMenu}
               onClose={closeMobileMenu}
+              user={user}
             />
           </>
         )}

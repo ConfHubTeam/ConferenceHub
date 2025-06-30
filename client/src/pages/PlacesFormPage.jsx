@@ -706,7 +706,17 @@ export default function PlacesFormPage() {
           isRequired={true}
         />
         
-        <div className="flex justify-center md:justify-start">
+        <div className="flex justify-center md:justify-start gap-4">
+          <button 
+            type="button"
+            onClick={() => navigate("/account/user-places")}
+            className="bg-gray-500 hover:bg-gray-600 text-white p-2 w-full max-w-xs rounded-2xl my-5 flex items-center justify-center transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Cancel
+          </button>
           <button 
             type="submit"
             className="primary my-5 max-w-xs flex items-center justify-center"

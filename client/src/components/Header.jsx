@@ -60,7 +60,7 @@ export default function Header() {
   return (
     <header className="flex justify-between items-center pl-2 pr-4 md:pl-6 md:pr-14 relative z-50">
       <div className="flex flex-col">
-        <Link to={"/"} className="logo flex items-center gap-1">
+        <Link to={user ? "/places" : "/"} className="logo flex items-center gap-1">
           <img 
             src="/getSpace_logo.png" 
             alt="GetSpace" 
