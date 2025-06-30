@@ -1,22 +1,57 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useOutletContext } from "react-router-dom";
 import CloudinaryImage from "../components/CloudinaryImage";
 import MapView from "../components/MapView";
 import PriceDisplay from "../components/PriceDisplay";
+import Pagination from "../components/Pagination";
+import FilterRow from "../components/FilterRow";
+import Header from "../components/Header";
 import api from "../utils/api";
 
 export default function IndexPage() {
   const [places, setPlaces] = useState([]);
   const [filteredPlaces, setFilteredPlaces] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [viewMode, setViewMode] = useState("grid"); // "grid" or "map"
-  const [isMapVisible, setIsMapVisible] = useState(true); // Default to true for desktop view
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 10; // Number of places to show per page
+  
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  
+  // Get map state from outlet context (passed down from Layout)
+  const context = useOutletContext();
+  const { 
+    isMapVisible = false, 
+    isMobileMapView = false, 
+    hideMap = () => {}, 
+    hideMobileMap = () => {} 
+  } = context || {};
   
   const location = useLocation();
   
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredPlaces.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentPagePlaces = filteredPlaces.slice(startIndex, endIndex);
+  const showingFrom = filteredPlaces.length === 0 ? 0 : startIndex + 1;
+  const showingTo = Math.min(endIndex, filteredPlaces.length);
+  
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    // Scroll to top of listings when page changes
+    const listingsSection = document.querySelector('[data-listings-section]');
+    if (listingsSection) {
+      listingsSection.scrollTop = 0;
+    }
+  };
+  
   useEffect(() => {
     setIsLoading(true);
+    setCurrentPage(1); // Reset to first page when search changes
     // Get URL params if any
     const params = new URLSearchParams(location.search);
     
@@ -24,72 +59,58 @@ export default function IndexPage() {
     api.get("/places/home" + (location.search ? location.search : "")).then((response) => {
       setPlaces(response.data);
       setFilteredPlaces(response.data);
+      setTotalItems(response.data.length);
       setIsLoading(false);
     });
   }, [location.search]);
 
-  // Toggle map visibility function
-  const toggleMap = () => {
-    setIsMapVisible(!isMapVisible);
-  };
-
   return (
-    <div className="flex flex-col h-[calc(100vh-166px)]">
-      {/* View toggle buttons */}
-      <div className="flex justify-center items-center my-4 gap-2">
-        {/* Mobile-only view toggle buttons */}
-        <button 
-          onClick={() => setViewMode("grid")}
-          className={`md:hidden px-4 py-2 rounded-full flex items-center transition ${
-            viewMode === "grid" 
-            ? "bg-primary text-white" 
-            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2-2v-2z" />
-          </svg>
-          List View
-        </button>
-        <button 
-          onClick={() => setViewMode("map")}
-          className={`md:hidden px-4 py-2 rounded-full flex items-center transition ${
-            viewMode === "map" 
-            ? "bg-primary text-white" 
-            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-          </svg>
-          Map View
-        </button>
-        
-        {/* Desktop-only map toggle button */}
-        <button 
-          onClick={toggleMap}
-          className={`hidden md:flex px-4 py-2 rounded-full items-center transition ${
-            isMapVisible 
-            ? "bg-primary text-white" 
-            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-          </svg>
-          {isMapVisible ? "Hide Map" : "Show Map"}
-        </button>
-      </div>
+    <div className="flex flex-col h-full">
+      {/* Mobile Map View - Full Screen */}
+      {isMobileMapView && (
+        <div className="md:hidden fixed inset-0 z-[70] bg-white flex flex-col">
+          {/* Header - Sticky at top */}
+          <div className="sticky top-0 z-[80] bg-white shadow-sm">
+            <Header />
+          </div>
+          
+          {/* Filter Row - Sticky below header */}
+          <div className="sticky top-0 z-[75] bg-white shadow-sm">
+            <FilterRow 
+              isMapVisible={false}
+              toggleMap={() => {}}
+              showMobileMap={() => {}}
+              isMobileMapView={true}
+            />
+          </div>
+          
+          {/* X button to close mobile map - bottom center */}
+          <button
+            onClick={() => hideMobileMap && hideMobileMap()}
+            className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-[75] bg-white shadow-lg hover:shadow-xl p-4 transition-shadow rounded-full"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          
+          {/* Mobile Map container - remaining height */}
+          <div className="flex-1 w-full">
+            <MapView places={filteredPlaces} />
+          </div>
+        </div>
+      )}
 
       {/* Main content */}
-      {viewMode === "grid" ? (
-        <div className="flex flex-col md:flex-row h-full overflow-hidden">
-          {/* Listings section - takes full width on mobile, 55% or 100% on desktop based on map visibility */}
-          <div 
-            className={`px-4 md:px-8 py-4 overflow-y-auto transition-all duration-300 ease-in-out ${
-              isMapVisible ? "md:w-[55%] md:pr-2" : "w-full"
-            }`}
-          >
+      <div className="flex-1 flex overflow-hidden">
+        {/* Listings section */}
+        <div 
+          className={`transition-all duration-300 ease-in-out overflow-y-auto ${
+            isMapVisible ? "w-1/2" : "w-full"
+          }`}
+          data-listings-section
+        >
+          <div className="p-4">
             {isLoading ? (
               <div className="flex justify-center my-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -100,64 +121,89 @@ export default function IndexPage() {
                 <p className="text-gray-500 mt-2">Try adjusting your filters to find more options</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-                {filteredPlaces.map((place) => (
-                  <Link key={place.id} to={"/place/" + place.id}>
-                    <div className="bg-white rounded-2xl overflow-hidden shadow hover:shadow-md transition-shadow">
-                      <div className="aspect-square overflow-hidden">
-                        {place.photos?.length > 0 && (
-                          <CloudinaryImage
-                            photo={place.photos[0]}
-                            alt={place.title}
-                            className="w-full h-full object-cover"
-                          />
-                        )}
-                      </div>
-                      <div className="p-3">
-                        <h2 className="font-bold text-sm truncate">{place.address}</h2>
-                        <h3 className="text-gray-500 text-sm truncate">{place.title}</h3>
-                        {place.startDate && place.endDate && (
-                          <p className="text-gray-500 text-xs">
-                            {new Date(place.startDate).getDate()} {months[new Date(place.startDate).getMonth()]}
-                            {" - "}{new Date(place.endDate).getDate()} {months[new Date(place.endDate).getMonth()]}
-                          </p>
-                        )}
-                        <div className="flex justify-between items-center mt-1">
-                          <PriceDisplay 
-                            price={place.price} 
-                            currency={place.currency} 
-                            suffix=" / hour"
-                            className="text-primary text-sm"
-                          />
-                          {place.type && (
-                            <span className="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded-full">{place.type}</span>
+              <div 
+                className={`grid gap-6 ${
+                  isMapVisible 
+                    ? "grid-cols-1 lg:grid-cols-2" // 2 columns when map is open
+                    : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" // 3 columns when map is closed
+                }`}
+              >
+                {currentPagePlaces.map((place) => (
+                  <div key={place.id} className="relative group">
+                    <Link to={"/place/" + place.id}>
+                      <div className="bg-white overflow-hidden shadow hover:shadow-lg transition-shadow">
+                        <div className="aspect-square overflow-hidden">
+                          {place.photos?.length > 0 && (
+                            <CloudinaryImage
+                              photo={place.photos[0]}
+                              alt={place.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
                           )}
                         </div>
+                        <div className="p-4">
+                          <h2 className="font-semibold text-base truncate">{place.address}</h2>
+                          <h3 className="text-gray-500 text-sm truncate mt-1">{place.title}</h3>
+                          {place.startDate && place.endDate && (
+                            <p className="text-gray-500 text-sm mt-1">
+                              {new Date(place.startDate).getDate()} {months[new Date(place.startDate).getMonth()]}
+                              {" - "}{new Date(place.endDate).getDate()} {months[new Date(place.endDate).getMonth()]}
+                            </p>
+                          )}
+                          <div className="flex justify-between items-center mt-2">
+                            <PriceDisplay 
+                              price={place.price} 
+                              currency={place.currency} 
+                              suffix=" / hour"
+                              className="text-primary text-base font-semibold"
+                            />
+                            {place.type && (
+                              <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1">{place.type}</span>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </Link>
+                    </Link>
+                  </div>
                 ))}
               </div>
             )}
+            
+            {/* Pagination */}
+            {!isLoading && filteredPlaces.length > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                showingFrom={showingFrom}
+                showingTo={showingTo}
+                totalItems={filteredPlaces.length}
+                itemName="places"
+              />
+            )}
           </div>
+        </div>
 
-          {/* Map section - hidden on mobile, 45% width on desktop when visible, with rounded corners */}
-          <div className={`hidden md:block md:w-[45%] h-full transition-all duration-300 ease-in-out ${
-            isMapVisible ? "opacity-100 max-w-[45%]" : "opacity-0 max-w-0"
-          }`}>
-            <div className="h-full w-full rounded-l-2xl overflow-hidden shadow-lg">
+        {/* Desktop Map section */}
+        {isMapVisible && (
+          <div className="hidden md:block w-1/2 relative">
+            {/* X button to close map */}
+            <button
+              onClick={() => hideMap && hideMap()}
+              className="absolute top-4 right-4 z-40 bg-white shadow-lg hover:shadow-xl p-3 transition-shadow rounded-full"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            {/* Map container - fixed height, not scrollable */}
+            <div className="w-full h-full overflow-hidden relative">
               <MapView places={filteredPlaces} />
             </div>
           </div>
-        </div>
-      ) : (
-        // Full map view (when viewMode is "map")
-        <div className="h-full px-4 md:px-8 py-4">
-          <div className="h-full relative rounded-2xl overflow-hidden shadow-lg">
-            <MapView places={filteredPlaces} />
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

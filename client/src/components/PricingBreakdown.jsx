@@ -1,5 +1,4 @@
 import PriceDisplay from "./PriceDisplay";
-import { calculateServiceFee } from "../utils/pricingCalculator";
 
 export default function PricingBreakdown({ 
   selectedCalendarDates = [], 
@@ -7,7 +6,6 @@ export default function PricingBreakdown({
   totalPrice, 
   breakdown = [], 
   placeDetail,
-  serviceFee,
   protectionPlanFee = 0,
   finalTotal,
   // New props for booking details display
@@ -29,29 +27,16 @@ export default function PricingBreakdown({
         
         <div className="space-y-3">
           {/* Base Price */}
-          <div className="flex justify-between items-center">
-            <span className="text-gray-600">Base price</span>
-            <PriceDisplay 
-              price={basePrice || totalPrice} 
-              currency={displayCurrency} 
-              bold={false}
-            />
-          </div>
-          
-          {/* Service Fee */}
-          {serviceFee > 0 && (
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Service fee</span>
-              <PriceDisplay 
-                price={serviceFee} 
-                currency={displayCurrency} 
-                bold={false}
-              />
-            </div>
-          )}
-          
-          {/* Protection Plan Fee */}
-          {protectionPlanIncluded && protectionPlanFee > 0 && (
+          <div className="flex justify-between items-center">          <span className="text-gray-600">Base price</span>
+          <PriceDisplay 
+            price={basePrice || totalPrice} 
+            currency={displayCurrency} 
+            bold={false}
+          />
+        </div>
+        
+        {/* Protection Plan Fee */}
+        {protectionPlanIncluded && protectionPlanFee > 0 && (
             <div className="flex justify-between items-center">
               <span className="text-gray-600">Protection plan</span>
               <PriceDisplay 
@@ -91,11 +76,8 @@ export default function PricingBreakdown({
     return null;
   }
 
-  // Calculate service fee based on currency if not provided
-  const displayServiceFee = serviceFee !== undefined ? serviceFee : calculateServiceFee(totalPrice, placeDetail);
-  
   // Use finalTotal from calculator if provided, otherwise calculate it
-  const displayTotal = finalTotal !== undefined ? finalTotal : totalPrice + displayServiceFee + protectionPlanFee;
+  const displayTotal = finalTotal !== undefined ? finalTotal : totalPrice + protectionPlanFee;
 
   return (
     <div className="border-t">
@@ -130,17 +112,6 @@ export default function PricingBreakdown({
             </div>
           </>
         )}
-        
-        <div className="flex px-3 pb-4 justify-between items-center text-gray-600">
-          <p className="underline">Service fee</p>
-          <p className="">
-            <PriceDisplay 
-              price={displayServiceFee} 
-              currency={placeDetail.currency} 
-              bold={false}
-            />
-          </p>
-        </div>
         
         {protectionPlanFee > 0 && (
           <div className="flex px-3 pb-4 justify-between items-center text-blue-600">

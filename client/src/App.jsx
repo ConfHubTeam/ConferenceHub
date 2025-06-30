@@ -7,7 +7,6 @@ import LandingPage from "./pages/LandingPage.jsx";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import Layout from "./components/Layout";
-import AuthenticatedRoute from "./components/AuthenticatedRoute";
 import { UserContextProvider } from "./components/UserContext";
 import { NotificationProvider } from "./components/NotificationContext";
 import { BookingNotificationProvider } from "./contexts/BookingNotificationContext";
@@ -45,7 +44,8 @@ function App() {
           <BookingNotificationProvider>
             <Routes>
           <Route path="/" element={<Layout />}>
-            <Route index element={<AuthenticatedRoute />} />
+            <Route index element={<LandingPage />} />
+            <Route path="/landing" element={<LandingPage />} />
             <Route path="/landingpage" element={<LandingPage />} />
             <Route path="/places" element={<IndexPage />} />
             <Route path="/login" element={<LoginPage />} />

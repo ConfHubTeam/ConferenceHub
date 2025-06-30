@@ -27,12 +27,6 @@ const Booking = sequelize.define('Booking', {
   totalPrice: {
     type: DataTypes.FLOAT
   },
-  serviceFee: {
-    type: DataTypes.FLOAT,
-    allowNull: true,
-    defaultValue: 0,
-    comment: 'Platform service fee charged for this booking'
-  },
   protectionPlanSelected: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
