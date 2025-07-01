@@ -35,7 +35,7 @@ export default function IndexPage() {
   const { selectedCurrency } = useCurrency();
   
   // Attendees filter context
-  const { filterPlacesByAttendees, hasActiveAttendeesFilter } = useAttendeesFilter();
+  const { filterPlacesByAttendees, hasActiveAttendeesFilter, setFromSerializedValues: setAttendeesFromSerializedValues } = useAttendeesFilter();
   
   // Get map state from outlet context (passed down from Layout)
   const context = useOutletContext();
@@ -81,6 +81,15 @@ export default function IndexPage() {
       });
     }
     
+    // Initialize AttendeesFilter from URL parameters
+    if (params.has('attendeesMin') || params.has('attendeesMax') || params.has('attendeesRange')) {
+      setAttendeesFromSerializedValues({
+        minAttendees: params.get('attendeesMin') || '',
+        maxAttendees: params.get('attendeesMax') || '',
+        attendeesRange: params.get('attendeesRange') || ''
+      });
+    }
+    
     // Using our API utility instead of direct axios import
     api.get("/places/home" + (location.search ? location.search : "")).then((response) => {
       setPlaces(response.data);
@@ -88,7 +97,7 @@ export default function IndexPage() {
       setTotalItems(response.data.length);
       setIsLoading(false);
     });
-  }, [location.search, setFromSerializedValues]);
+  }, [location.search, setFromSerializedValues, setAttendeesFromSerializedValues]);
 
   // Apply all filters whenever any filter or places change
   useEffect(() => {

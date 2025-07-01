@@ -39,7 +39,7 @@ export default function LandingPage() {
    * @param {Object} searchData - Search parameters including date/time data
    */
   const handleSearch = (searchData) => {
-    const { dates, startTime, endTime, price, attendance, size } = searchData;
+    const { dates, startTime, endTime, price, attendees, size } = searchData;
     
     // Build URL parameters
     const params = new URLSearchParams();
@@ -47,7 +47,7 @@ export default function LandingPage() {
     if (startTime) params.set('startTime', startTime);  
     if (endTime) params.set('endTime', endTime);
     if (price && price !== 'Any price') params.set('price', price);
-    if (attendance) params.set('attendance', attendance);
+    if (attendees) params.set('attendees', attendees);
     if (size) params.set('size', size);
     
     navigate(`/places?${params.toString()}`);
@@ -105,13 +105,13 @@ export default function LandingPage() {
               placeholder={{
                 when: "Anytime",
                 price: "Any price",
-                attendance: "Number of attendees",
+                attendees: "Add attendees",
                 size: "Conference size"
               }}
               initialValues={{
                 when: "",
                 price: "",
-                attendance: "",
+                attendees: "",
                 size: ""
               }}
               className=""
