@@ -238,7 +238,6 @@ export default function PlaceDetailPage() {
             {/* Refund Policy Section - Only for owners and agents */}
             {canManage && (
               <div className="mb-8">
-                <h2 className="text-xl md:text-2xl font-semibold mb-4">Refund Policy</h2>
                 <RefundPolicyDisplay 
                   refundPolicy={placeDetail.refundPolicy}
                   placeId={placeDetail.id}
