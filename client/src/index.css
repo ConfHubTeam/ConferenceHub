@@ -49,19 +49,14 @@ button.normal {
   object-fit: cover;
 }
 
-.tgme_widget_login_user_photo.bgcolor0 {
-  background-color: #0088cc;
-  color: #fff;
+/* Mobile filter row scrolling styles */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
 }
 
-.tgme_widget_login_user_photo.bgcolor0::before {
-  content: attr(data-content);
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 24px;
-  font-weight: 500;
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
 }
 
 /* Make sure dropdown is full width on smaller screens */
