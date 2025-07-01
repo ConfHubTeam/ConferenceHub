@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDateTimeFilter } from "../contexts/DateTimeFilterContext";
+import { usePriceFilter } from "../contexts/PriceFilterContext";
 import DateTimeFilterModal from "./DateTimeFilterModal";
+import PriceFilterModal from "./PriceFilterModal";
 
 /**
  * Reusable Search Filter Component
@@ -25,14 +27,17 @@ export default function SearchFilter({
     size: ""
   }
 }) {
-  const [price, setPrice] = useState(initialValues.price);
   const [attendance, setAttendance] = useState(initialValues.attendance);
   const [size, setSize] = useState(initialValues.size);
   const [isDateTimeModalOpen, setIsDateTimeModalOpen] = useState(false);
+  const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
   const navigate = useNavigate();
   
   // Use the DateTimeFilter context for date/time state
   const { getFormattedDateTime, getSerializedValues } = useDateTimeFilter();
+  
+  // Use the PriceFilter context for price state
+  const { getFormattedPriceRange, getSerializedValues: getPriceSerializedValues } = usePriceFilter();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -40,24 +45,32 @@ export default function SearchFilter({
     // Get serialized date/time values for URL parameters  
     const dateTimeValues = getSerializedValues();
     
+    // Get serialized price values for URL parameters
+    const priceValues = getPriceSerializedValues();
+    
     if (onSearch) {
-      // Custom handler provided - include date/time values
+      // Custom handler provided - include date/time and price values
       onSearch({ 
         when: getFormattedDateTime(),
         dates: dateTimeValues.dates,
         startTime: dateTimeValues.startTime,
         endTime: dateTimeValues.endTime,
-        price, 
+        price: getFormattedPriceRange(), 
+        priceMin: priceValues.minPrice,
+        priceMax: priceValues.maxPrice,
+        priceCurrency: priceValues.currency,
         attendance, 
         size 
       });
     } else {
-      // Default navigation behavior with date/time parameters
+      // Default navigation behavior with date/time and price parameters
       const params = new URLSearchParams();
       if (dateTimeValues.dates) params.set('dates', dateTimeValues.dates);
       if (dateTimeValues.startTime) params.set('startTime', dateTimeValues.startTime);
       if (dateTimeValues.endTime) params.set('endTime', dateTimeValues.endTime);
-      if (price && price !== 'Any price') params.set('price', price);
+      if (priceValues.minPrice !== null) params.set('priceMin', priceValues.minPrice);
+      if (priceValues.maxPrice !== null) params.set('priceMax', priceValues.maxPrice);
+      if (priceValues.currency) params.set('currency', priceValues.currency);
       if (attendance) params.set('attendance', attendance);
       if (size) params.set('size', size);
       
@@ -84,19 +97,19 @@ export default function SearchFilter({
             </button>
           </div>
 
-          {/* Price */}
+          {/* Price - Price Filter Button */}
           <div className="flex-2 px-4 sm:px-4 lg:px-5 py-2 sm:py-2 lg:py-2.5 hover:bg-gray-50 transition-colors duration-200 bg-white border-t lg:border-t-0 lg:border-l border-gray-100">
             <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider">
               Price
             </label>
-            <input
-              type="text"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              placeholder={placeholder.price}
-              className="w-full text-gray-900 placeholder-gray-500 text-sm sm:text-base lg:text-lg bg-transparent outline-none focus:ring-0 border-0 font-medium pt-0 pl-0"
-              aria-label="Price"
-            />
+            <button
+              type="button"
+              onClick={() => setIsPriceModalOpen(true)}
+              className="w-full text-left text-gray-900 text-sm sm:text-base lg:text-lg bg-transparent outline-none focus:ring-0 border-0 font-medium pt-0 pl-0 hover:text-brand-purple transition-colors"
+              aria-label="Select price range"
+            >
+              {getFormattedPriceRange() || placeholder.price}
+            </button>
           </div>
 
           {/* Attendance */}
@@ -160,6 +173,12 @@ export default function SearchFilter({
       <DateTimeFilterModal
         isOpen={isDateTimeModalOpen}
         onClose={() => setIsDateTimeModalOpen(false)}
+      />
+      
+      {/* Price Filter Modal */}
+      <PriceFilterModal
+        isOpen={isPriceModalOpen}
+        onClose={() => setIsPriceModalOpen(false)}
       />
     </div>
   );

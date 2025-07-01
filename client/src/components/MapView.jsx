@@ -305,9 +305,9 @@ export default function MapView({ places, disableInfoWindow = false }) {
 
   // Update markers when places change (but not currency)
   useEffect(() => {
-    if (!map || !places.length) return;
+    if (!map) return;
 
-    // Clear existing markers first
+    // Always clear existing markers first
     markersRef.current.forEach(marker => {
       marker.setMap(null);
     });
@@ -316,6 +316,9 @@ export default function MapView({ places, disableInfoWindow = false }) {
 
     // Clear previous clusterer
     clearMarkerClusterer();
+
+    // If no places, just return after clearing markers (this handles empty filtered results)
+    if (!places.length) return;
 
     // Create new markers
     createMarkersAsync(map).then(({ markers, bounds }) => {
