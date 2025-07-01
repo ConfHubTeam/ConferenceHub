@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useDateTimeFilter } from "../contexts/DateTimeFilterContext";
 import { usePriceFilter } from "../contexts/PriceFilterContext";
+import { useAttendeesFilter } from "../contexts/AttendeesFilterContext";
 import DateTimeFilterModal from "./DateTimeFilterModal";
 import PriceFilterModal from "./PriceFilterModal";
+import AttendeesFilterModal from "./AttendeesFilterModal";
 
 export default function FilterRow({ 
   isMapVisible, 
@@ -13,6 +15,7 @@ export default function FilterRow({
   // State for modal visibility
   const [isDateTimeModalOpen, setIsDateTimeModalOpen] = useState(false);
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
+  const [isAttendeesModalOpen, setIsAttendeesModalOpen] = useState(false);
   
   // Get date/time filter state from context
   const { getFormattedDateTime, hasActiveDateTimeFilter } = useDateTimeFilter();
@@ -20,11 +23,16 @@ export default function FilterRow({
   // Get price filter state from context
   const { getFormattedPriceRange, hasActivePriceFilter } = usePriceFilter();
   
+  // Get attendees filter state from context
+  const { getFormattedAttendeesRange, hasActiveAttendeesFilter } = useAttendeesFilter();
+  
   // Open/close modal handlers
   const openDateTimeModal = () => setIsDateTimeModalOpen(true);
   const closeDateTimeModal = () => setIsDateTimeModalOpen(false);
   const openPriceModal = () => setIsPriceModalOpen(true);
   const closePriceModal = () => setIsPriceModalOpen(false);
+  const openAttendeesModal = () => setIsAttendeesModalOpen(true);
+  const closeAttendeesModal = () => setIsAttendeesModalOpen(false);
   
   return (
     <div className="w-full px-4 py-3 bg-white border-b border-gray-200 shadow-sm">
@@ -38,6 +46,12 @@ export default function FilterRow({
       <PriceFilterModal 
         isOpen={isPriceModalOpen}
         onClose={closePriceModal}
+      />
+      
+      {/* Attendees Filter Modal */}
+      <AttendeesFilterModal 
+        isOpen={isAttendeesModalOpen}
+        onClose={closeAttendeesModal}
       />
       
       {/* Mobile: Single row with resizing */}
@@ -70,6 +84,21 @@ export default function FilterRow({
             >
               <div className="truncate max-w-[85px]">
                 {hasActivePriceFilter ? getFormattedPriceRange() : "Price"}
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <button 
+              onClick={openAttendeesModal}
+              className={`flex px-3 py-1 items-center transition-all duration-200 border rounded-full text-xs flex-shrink-0 ${
+                hasActiveAttendeesFilter 
+                  ? "bg-brand-orange text-white border-brand-orange" 
+                  : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
+              }`}
+            >
+              <div className="truncate max-w-[85px]">
+                {hasActiveAttendeesFilter ? getFormattedAttendeesRange() : "Attendees"}
               </div>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -137,9 +166,18 @@ export default function FilterRow({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
-            <button className="flex px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 items-center transition-all duration-200 border border-gray-300 hover:border-gray-400 rounded-full">
-              Attendees
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <button 
+              onClick={openAttendeesModal}
+              className={`flex px-4 py-2 items-center transition-all duration-200 border rounded-full ${
+                hasActiveAttendeesFilter 
+                  ? "bg-brand-orange text-white border-brand-orange" 
+                  : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
+              }`}
+            >
+              <div className="truncate max-w-[150px]">
+                {hasActiveAttendeesFilter ? getFormattedAttendeesRange() : "Attendees"}
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>

@@ -9,6 +9,7 @@ import Header from "../components/Header";
 import { useDateTimeFilter } from "../contexts/DateTimeFilterContext";
 import { usePriceFilter } from "../contexts/PriceFilterContext";
 import { useCurrency } from "../contexts/CurrencyContext";
+import { useAttendeesFilter } from "../contexts/AttendeesFilterContext";
 import { convertCurrency } from "../utils/currencyUtils";
 import api from "../utils/api";
 
@@ -32,6 +33,9 @@ export default function IndexPage() {
   
   // Currency context
   const { selectedCurrency } = useCurrency();
+  
+  // Attendees filter context
+  const { filterPlacesByAttendees, hasActiveAttendeesFilter } = useAttendeesFilter();
   
   // Get map state from outlet context (passed down from Layout)
   const context = useOutletContext();
@@ -86,95 +90,101 @@ export default function IndexPage() {
     });
   }, [location.search, setFromSerializedValues]);
 
-  // Apply price filtering whenever price filter or places change
+  // Apply all filters whenever any filter or places change
   useEffect(() => {
-    const applyPriceFilter = async () => {
-      if (!hasActivePriceFilter || !places.length) {
+    const applyFilters = async () => {
+      let filtered = [...places];
+      
+      // If no filters are active, show all places
+      if (!hasActiveAttendeesFilter && !hasActivePriceFilter) {
         setFilteredPlaces(places);
         setTotalItems(places.length);
         return;
       }
-
-      try {
-        // Get the currency to filter in (from price filter context or current currency context)
-        const filterCurrency = priceFilterCurrency || selectedCurrency;
-        
-        console.log("Applying price filter:", { minPrice, maxPrice, filterCurrency: filterCurrency?.charCode });
-        
-        if (!filterCurrency) {
-          setFilteredPlaces(places);
-          setTotalItems(places.length);
-          return;
-        }
-
-        const filtered = [];
-        
-        for (const place of places) {
-          // Get place price and currency
-          const placePrice = place.price;
-          const placeCurrency = place.currency;
-          
-          // Skip places without price or currency info
-          if (!placePrice || !placeCurrency) {
-            continue;
-          }
-          
-          let convertedPrice = placePrice;
-          
-          // Convert place price to filter currency if they're different
-          if (placeCurrency.charCode !== filterCurrency.charCode) {
-            try {
-              convertedPrice = await convertCurrency(
-                placePrice, 
-                placeCurrency.charCode, 
-                filterCurrency.charCode
-              );
-            } catch (error) {
-              console.error("Error converting price for filtering:", error);
-              // If conversion fails, skip this place from filtering
-              continue;
-            }
-          }
-          
-          // Apply price range filter
-          let passesFilter = true;
-          
-          if (minPrice !== null && minPrice !== undefined) {
-            if (convertedPrice < minPrice) {
-              passesFilter = false;
-            }
-          }
-          
-          if (maxPrice !== null && maxPrice !== undefined) {
-            if (convertedPrice > maxPrice) {
-              passesFilter = false;
-            }
-          }
-          
-          // Debug log for price filtering
-          if (minPrice !== null || maxPrice !== null) {
-            console.log(`Place "${place.title}": ${placePrice} ${placeCurrency.charCode} → ${convertedPrice.toFixed(2)} ${filterCurrency.charCode}, Range: ${minPrice || 'no min'} - ${maxPrice || 'no max'}, Passes: ${passesFilter}`);
-          }
-          
-          if (passesFilter) {
-            filtered.push(place);
-          }
-        }
-        
-        setFilteredPlaces(filtered);
-        setTotalItems(filtered.length);
-        setCurrentPage(1); // Reset to first page when filter changes
-        
-      } catch (error) {
-        console.error("Error applying price filter:", error);
-        // On error, show all places
-        setFilteredPlaces(places);
-        setTotalItems(places.length);
+      
+      // Apply attendees filter
+      if (hasActiveAttendeesFilter) {
+        filtered = filterPlacesByAttendees(filtered);
       }
+      
+      // Apply price filter
+      if (hasActivePriceFilter && filtered.length > 0) {
+        try {
+          // Get the currency to filter in (from price filter context or current currency context)
+          const filterCurrency = priceFilterCurrency || selectedCurrency;
+          
+          console.log("Applying price filter:", { minPrice, maxPrice, filterCurrency: filterCurrency?.charCode });
+          
+          if (filterCurrency) {
+            const priceFiltered = [];
+            
+            for (const place of filtered) {
+              // Get place price and currency
+              const placePrice = place.price;
+              const placeCurrency = place.currency;
+              
+              // Skip places without price or currency info
+              if (!placePrice || !placeCurrency) {
+                continue;
+              }
+              
+              let convertedPrice = placePrice;
+              
+              // Convert place price to filter currency if they're different
+              if (placeCurrency.charCode !== filterCurrency.charCode) {
+                try {
+                  convertedPrice = await convertCurrency(
+                    placePrice, 
+                    placeCurrency.charCode, 
+                    filterCurrency.charCode
+                  );
+                } catch (error) {
+                  console.error("Error converting price for filtering:", error);
+                  // If conversion fails, skip this place from filtering
+                  continue;
+                }
+              }
+              
+              // Apply price range filter
+              let passesFilter = true;
+              
+              if (minPrice !== null && minPrice !== undefined) {
+                if (convertedPrice < minPrice) {
+                  passesFilter = false;
+                }
+              }
+              
+              if (maxPrice !== null && maxPrice !== undefined) {
+                if (convertedPrice > maxPrice) {
+                  passesFilter = false;
+                }
+              }
+              
+              // Debug log for price filtering
+              if (minPrice !== null || maxPrice !== null) {
+                console.log(`Place "${place.title}": ${placePrice} ${placeCurrency.charCode} → ${convertedPrice.toFixed(2)} ${filterCurrency.charCode}, Range: ${minPrice || 'no min'} - ${maxPrice || 'no max'}, Passes: ${passesFilter}`);
+              }
+              
+              if (passesFilter) {
+                priceFiltered.push(place);
+              }
+            }
+            
+            filtered = priceFiltered;
+          }
+        } catch (error) {
+          console.error("Error applying price filter:", error);
+          // On error, don't apply price filter
+        }
+      }
+      
+      setFilteredPlaces(filtered);
+      setTotalItems(filtered.length);
+      setCurrentPage(1); // Reset to first page when filter changes
     };
 
-    applyPriceFilter();
-  }, [places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency]);
+    applyFilters();
+  }, [places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency, hasActiveAttendeesFilter, filterPlacesByAttendees]);
 
   return (
     <div className="flex flex-col h-full">
