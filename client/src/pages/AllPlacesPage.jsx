@@ -7,6 +7,7 @@ import { usePriceFilter } from "../contexts/PriceFilterContext";
 import { useCurrency } from "../contexts/CurrencyContext";
 import { useAttendeesFilter } from "../contexts/AttendeesFilterContext";
 import { useSizeFilter } from "../contexts/SizeFilterContext";
+import { usePerksFilter } from "../contexts/PerksFilterContext";
 import { convertCurrency } from "../utils/currencyUtils";
 import CloudinaryImage from "../components/CloudinaryImage";
 import PriceDisplay from "../components/PriceDisplay";
@@ -33,6 +34,9 @@ export default function AllPlacesPage() {
   
   // Size filter context
   const { filterPlacesBySize, hasActiveSizeFilter } = useSizeFilter();
+  
+  // Perks filter context
+  const { filterPlacesByPerks, hasSelectedPerks } = usePerksFilter();
   
   // Agent-specific state for user filtering
   const [allUsers, setAllUsers] = useState([]);
@@ -183,6 +187,11 @@ export default function AllPlacesPage() {
         filtered = filterPlacesBySize(filtered);
       }
       
+      // Apply perks filter
+      if (hasSelectedPerks) {
+        filtered = filterPlacesByPerks(filtered);
+      }
+      
       // Apply price filter
       if (hasActivePriceFilter && filtered.length > 0) {
         try {
@@ -250,7 +259,7 @@ export default function AllPlacesPage() {
     };
 
     applyFilters();
-  }, [searchTerm, places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency, hasActiveAttendeesFilter, filterPlacesByAttendees, hasActiveSizeFilter, filterPlacesBySize]);
+  }, [searchTerm, places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency, hasActiveAttendeesFilter, filterPlacesByAttendees, hasActiveSizeFilter, filterPlacesBySize, hasSelectedPerks, filterPlacesByPerks]);
 
   // Redirect non-agents away from this page
   if (user && user.userType !== 'agent') {
@@ -319,12 +328,12 @@ export default function AllPlacesPage() {
         
         {/* Page header with Create Place button for agents */}
         <div className="mb-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-center">
             
             {/* Create Place button for agents */}
             {user && user.userType === 'agent' && (
               <Link
-                className="inline-flex items-center gap-2 bg-primary text-white py-3 px-6 rounded-lg hover:bg-primary-dark transition-colors font-medium"
+                className="inline-flex items-center gap-2 bg-primary text-white py-2 px-4 rounded-full hover:bg-primary-dark transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
                 to={"/account/places/new"}
               >
                 <svg

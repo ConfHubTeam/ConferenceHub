@@ -4,10 +4,12 @@ import { useDateTimeFilter } from "../contexts/DateTimeFilterContext";
 import { usePriceFilter } from "../contexts/PriceFilterContext";
 import { useAttendeesFilter } from "../contexts/AttendeesFilterContext";
 import { useSizeFilter } from "../contexts/SizeFilterContext";
+import { usePerksFilter } from "../contexts/PerksFilterContext";
 import DateTimeFilterModal from "./DateTimeFilterModal";
 import PriceFilterModal from "./PriceFilterModal";
 import AttendeesFilterModal from "./AttendeesFilterModal";
 import SizeFilterModal from "./SizeFilterModal";
+import PerksFilterModal from "./PerksFilterModal";
 
 export default function FilterRow({ 
   isMapVisible, 
@@ -20,6 +22,7 @@ export default function FilterRow({
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
   const [isAttendeesModalOpen, setIsAttendeesModalOpen] = useState(false);
   const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
+  const [isPerksModalOpen, setIsPerksModalOpen] = useState(false);
   
   // Scroll state for showing appropriate arrows
   const [scrollPosition, setScrollPosition] = useState("start"); // "start", "middle", "end"
@@ -41,8 +44,11 @@ export default function FilterRow({
   // Get size filter state from context
   const { getFormattedSizeRange, hasActiveSizeFilter, clearSizeFilter } = useSizeFilter();
   
+  // Get perks filter state from context
+  const { hasSelectedPerks, selectedPerksCount, clearAllPerks } = usePerksFilter();
+  
   // Check if any filter is active
-  const hasAnyActiveFilter = hasActiveDateTimeFilter || hasActivePriceFilter || hasActiveAttendeesFilter || hasActiveSizeFilter;
+  const hasAnyActiveFilter = hasActiveDateTimeFilter || hasActivePriceFilter || hasActiveAttendeesFilter || hasActiveSizeFilter || hasSelectedPerks;
   
   // Clear all filters
   const handleResetAllFilters = () => {
@@ -51,6 +57,7 @@ export default function FilterRow({
     clearPriceFilter();
     clearAttendeesFilter();
     clearSizeFilter();
+    clearAllPerks();
     
     // Clear URL parameters by navigating to the same path without query parameters
     navigate(location.pathname, { replace: true });
@@ -65,6 +72,8 @@ export default function FilterRow({
   const closeAttendeesModal = () => setIsAttendeesModalOpen(false);
   const openSizeModal = () => setIsSizeModalOpen(true);
   const closeSizeModal = () => setIsSizeModalOpen(false);
+  const openPerksModal = () => setIsPerksModalOpen(true);
+  const closePerksModal = () => setIsPerksModalOpen(false);
   
   // Handle scroll to update arrow indicators
   const handleScroll = () => {
@@ -119,6 +128,12 @@ export default function FilterRow({
       <SizeFilterModal 
         isOpen={isSizeModalOpen}
         onClose={closeSizeModal}
+      />
+      
+      {/* Perks Filter Modal */}
+      <PerksFilterModal 
+        isOpen={isPerksModalOpen}
+        onClose={closePerksModal}
       />
       
       {/* Mobile: Scrollable filter row with fixed map button */}
@@ -195,11 +210,27 @@ export default function FilterRow({
                   </svg>
                 </button>
                 
+                <button 
+                  onClick={openPerksModal}
+                  className={`flex px-3 py-2 items-center transition-all duration-200 border rounded-full text-xs flex-shrink-0 whitespace-nowrap ${
+                    hasSelectedPerks 
+                      ? "bg-brand-orange text-white border-brand-orange" 
+                      : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
+                  }`}
+                >
+                  <div className="truncate max-w-[100px]">
+                    {hasSelectedPerks ? `Perks (${selectedPerksCount})` : "Perks"}
+                  </div>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
                 {/* Reset button - only show when filters are active */}
                 {hasAnyActiveFilter && (
                   <button 
                     onClick={handleResetAllFilters}
-                    className="flex px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 items-center transition-all duration-200 border border-red-200 hover:border-red-300 rounded-full text-xs flex-shrink-0 whitespace-nowrap"
+                    className="flex px-3 py-2 bg-orange-50 hover:bg-orange-100 text-orange-600 hover:text-orange-700 items-center transition-all duration-200 border border-orange-200 hover:border-orange-300 rounded-full text-xs flex-shrink-0 whitespace-nowrap"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -322,12 +353,27 @@ export default function FilterRow({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
+            <button 
+              onClick={openPerksModal}
+              className={`flex px-4 py-2 items-center transition-all duration-200 border rounded-full ${
+                hasSelectedPerks 
+                  ? "bg-brand-orange text-white border-brand-orange" 
+                  : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
+              }`}
+            >
+              <div className="truncate max-w-[150px]">
+                {hasSelectedPerks ? `Perks (${selectedPerksCount})` : "Perks"}
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
             
             {/* Reset button - only show when filters are active */}
             {hasAnyActiveFilter && (
               <button 
                 onClick={handleResetAllFilters}
-                className="flex px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 items-center transition-all duration-200 border border-red-200 hover:border-red-300 rounded-full"
+                className="flex px-4 py-2 bg-orange-50 hover:bg-orange-100 text-orange-600 hover:text-orange-700 items-center transition-all duration-200 border border-orange-200 hover:border-orange-300 rounded-full"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

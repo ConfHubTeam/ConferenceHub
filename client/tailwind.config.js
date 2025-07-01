@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#ff385cff",
+        primary: "#f38129", // Changed from red to orange
         normal: "#717171ff",
         // Brand colors from the design
         "brand-orange": "#f38129",

@@ -11,6 +11,7 @@ import { usePriceFilter } from "../contexts/PriceFilterContext";
 import { useCurrency } from "../contexts/CurrencyContext";
 import { useAttendeesFilter } from "../contexts/AttendeesFilterContext";
 import { useSizeFilter } from "../contexts/SizeFilterContext";
+import { usePerksFilter } from "../contexts/PerksFilterContext";
 import { convertCurrency } from "../utils/currencyUtils";
 import api from "../utils/api";
 
@@ -40,6 +41,9 @@ export default function IndexPage() {
   
   // Size filter context
   const { filterPlacesBySize, hasActiveSizeFilter, setFromSerializedValues: setSizeFromSerializedValues } = useSizeFilter();
+  
+  // Perks filter context  
+  const { filterPlacesByPerks, hasSelectedPerks } = usePerksFilter();
   
   // Get map state from outlet context (passed down from Layout)
   const context = useOutletContext();
@@ -118,7 +122,7 @@ export default function IndexPage() {
       let filtered = [...places];
       
       // If no filters are active, show all places
-      if (!hasActiveAttendeesFilter && !hasActivePriceFilter && !hasActiveSizeFilter) {
+      if (!hasActiveAttendeesFilter && !hasActivePriceFilter && !hasActiveSizeFilter && !hasSelectedPerks) {
         setFilteredPlaces(places);
         setTotalItems(places.length);
         return;
@@ -132,6 +136,11 @@ export default function IndexPage() {
       // Apply size filter
       if (hasActiveSizeFilter) {
         filtered = filterPlacesBySize(filtered);
+      }
+      
+      // Apply perks filter
+      if (hasSelectedPerks) {
+        filtered = filterPlacesByPerks(filtered);
       }
       
       // Apply price filter
@@ -211,7 +220,7 @@ export default function IndexPage() {
     };
 
     applyFilters();
-  }, [places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency, hasActiveAttendeesFilter, filterPlacesByAttendees, hasActiveSizeFilter, filterPlacesBySize]);
+  }, [places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency, hasActiveAttendeesFilter, filterPlacesByAttendees, hasActiveSizeFilter, filterPlacesBySize, hasSelectedPerks, filterPlacesByPerks]);
 
   return (
     <div className="flex flex-col h-full">
