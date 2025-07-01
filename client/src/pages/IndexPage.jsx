@@ -7,6 +7,9 @@ import Pagination from "../components/Pagination";
 import FilterRow from "../components/FilterRow";
 import Header from "../components/Header";
 import { useDateTimeFilter } from "../contexts/DateTimeFilterContext";
+import { usePriceFilter } from "../contexts/PriceFilterContext";
+import { useCurrency } from "../contexts/CurrencyContext";
+import { convertCurrency } from "../utils/currencyUtils";
 import api from "../utils/api";
 
 export default function IndexPage() {
@@ -23,6 +26,12 @@ export default function IndexPage() {
   
   // Date/Time filter context
   const { setFromSerializedValues } = useDateTimeFilter();
+  
+  // Price filter context
+  const { minPrice, maxPrice, hasActivePriceFilter, selectedCurrency: priceFilterCurrency } = usePriceFilter();
+  
+  // Currency context
+  const { selectedCurrency } = useCurrency();
   
   // Get map state from outlet context (passed down from Layout)
   const context = useOutletContext();
@@ -76,6 +85,96 @@ export default function IndexPage() {
       setIsLoading(false);
     });
   }, [location.search, setFromSerializedValues]);
+
+  // Apply price filtering whenever price filter or places change
+  useEffect(() => {
+    const applyPriceFilter = async () => {
+      if (!hasActivePriceFilter || !places.length) {
+        setFilteredPlaces(places);
+        setTotalItems(places.length);
+        return;
+      }
+
+      try {
+        // Get the currency to filter in (from price filter context or current currency context)
+        const filterCurrency = priceFilterCurrency || selectedCurrency;
+        
+        console.log("Applying price filter:", { minPrice, maxPrice, filterCurrency: filterCurrency?.charCode });
+        
+        if (!filterCurrency) {
+          setFilteredPlaces(places);
+          setTotalItems(places.length);
+          return;
+        }
+
+        const filtered = [];
+        
+        for (const place of places) {
+          // Get place price and currency
+          const placePrice = place.price;
+          const placeCurrency = place.currency;
+          
+          // Skip places without price or currency info
+          if (!placePrice || !placeCurrency) {
+            continue;
+          }
+          
+          let convertedPrice = placePrice;
+          
+          // Convert place price to filter currency if they're different
+          if (placeCurrency.charCode !== filterCurrency.charCode) {
+            try {
+              convertedPrice = await convertCurrency(
+                placePrice, 
+                placeCurrency.charCode, 
+                filterCurrency.charCode
+              );
+            } catch (error) {
+              console.error("Error converting price for filtering:", error);
+              // If conversion fails, skip this place from filtering
+              continue;
+            }
+          }
+          
+          // Apply price range filter
+          let passesFilter = true;
+          
+          if (minPrice !== null && minPrice !== undefined) {
+            if (convertedPrice < minPrice) {
+              passesFilter = false;
+            }
+          }
+          
+          if (maxPrice !== null && maxPrice !== undefined) {
+            if (convertedPrice > maxPrice) {
+              passesFilter = false;
+            }
+          }
+          
+          // Debug log for price filtering
+          if (minPrice !== null || maxPrice !== null) {
+            console.log(`Place "${place.title}": ${placePrice} ${placeCurrency.charCode} → ${convertedPrice.toFixed(2)} ${filterCurrency.charCode}, Range: ${minPrice || 'no min'} - ${maxPrice || 'no max'}, Passes: ${passesFilter}`);
+          }
+          
+          if (passesFilter) {
+            filtered.push(place);
+          }
+        }
+        
+        setFilteredPlaces(filtered);
+        setTotalItems(filtered.length);
+        setCurrentPage(1); // Reset to first page when filter changes
+        
+      } catch (error) {
+        console.error("Error applying price filter:", error);
+        // On error, show all places
+        setFilteredPlaces(places);
+        setTotalItems(places.length);
+      }
+    };
+
+    applyPriceFilter();
+  }, [places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency]);
 
   return (
     <div className="flex flex-col h-full">
