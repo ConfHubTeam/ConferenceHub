@@ -14,6 +14,7 @@ import { CurrencyProvider } from "./contexts/CurrencyContext";
 import { DateTimeFilterProvider } from "./contexts/DateTimeFilterContext";
 import { PriceFilterProvider } from "./contexts/PriceFilterContext";
 import { AttendeesFilterProvider } from "./contexts/AttendeesFilterContext";
+import { SizeFilterProvider } from "./contexts/SizeFilterContext";
 import PlacesPage from "./pages/PlacesPage";
 import ProfilePage from "./pages/ProfilePage";
 import PlacesFormPage from "./pages/PlacesFormPage";
@@ -48,6 +49,7 @@ function App() {
             <DateTimeFilterProvider>
               <PriceFilterProvider>
                 <AttendeesFilterProvider>
+                  <SizeFilterProvider>
                   <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<LandingPage />} />
@@ -76,6 +78,7 @@ function App() {
             <Route path="/account/all-places" element={<AllPlacesPage />}/>
           </Route>
         </Routes>
+                  </SizeFilterProvider>
                 </AttendeesFilterProvider>
               </PriceFilterProvider>
             </DateTimeFilterProvider>

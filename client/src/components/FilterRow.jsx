@@ -2,9 +2,11 @@ import { useState } from "react";
 import { useDateTimeFilter } from "../contexts/DateTimeFilterContext";
 import { usePriceFilter } from "../contexts/PriceFilterContext";
 import { useAttendeesFilter } from "../contexts/AttendeesFilterContext";
+import { useSizeFilter } from "../contexts/SizeFilterContext";
 import DateTimeFilterModal from "./DateTimeFilterModal";
 import PriceFilterModal from "./PriceFilterModal";
 import AttendeesFilterModal from "./AttendeesFilterModal";
+import SizeFilterModal from "./SizeFilterModal";
 
 export default function FilterRow({ 
   isMapVisible, 
@@ -16,6 +18,7 @@ export default function FilterRow({
   const [isDateTimeModalOpen, setIsDateTimeModalOpen] = useState(false);
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
   const [isAttendeesModalOpen, setIsAttendeesModalOpen] = useState(false);
+  const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
   
   // Get date/time filter state from context
   const { getFormattedDateTime, hasActiveDateTimeFilter } = useDateTimeFilter();
@@ -26,6 +29,9 @@ export default function FilterRow({
   // Get attendees filter state from context
   const { getFormattedAttendeesRange, hasActiveAttendeesFilter } = useAttendeesFilter();
   
+  // Get size filter state from context
+  const { getFormattedSizeRange, hasActiveSizeFilter } = useSizeFilter();
+  
   // Open/close modal handlers
   const openDateTimeModal = () => setIsDateTimeModalOpen(true);
   const closeDateTimeModal = () => setIsDateTimeModalOpen(false);
@@ -33,6 +39,8 @@ export default function FilterRow({
   const closePriceModal = () => setIsPriceModalOpen(false);
   const openAttendeesModal = () => setIsAttendeesModalOpen(true);
   const closeAttendeesModal = () => setIsAttendeesModalOpen(false);
+  const openSizeModal = () => setIsSizeModalOpen(true);
+  const closeSizeModal = () => setIsSizeModalOpen(false);
   
   return (
     <div className="w-full px-4 py-3 bg-white border-b border-gray-200 shadow-sm">
@@ -52,6 +60,12 @@ export default function FilterRow({
       <AttendeesFilterModal 
         isOpen={isAttendeesModalOpen}
         onClose={closeAttendeesModal}
+      />
+      
+      {/* Size Filter Modal */}
+      <SizeFilterModal 
+        isOpen={isSizeModalOpen}
+        onClose={closeSizeModal}
       />
       
       {/* Mobile: Single row with resizing */}
@@ -99,6 +113,21 @@ export default function FilterRow({
             >
               <div className="truncate max-w-[85px]">
                 {hasActiveAttendeesFilter ? getFormattedAttendeesRange() : "Attendees"}
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <button 
+              onClick={openSizeModal}
+              className={`flex px-3 py-1 items-center transition-all duration-200 border rounded-full text-xs flex-shrink-0 ${
+                hasActiveSizeFilter 
+                  ? "bg-brand-orange text-white border-brand-orange" 
+                  : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
+              }`}
+            >
+              <div className="truncate max-w-[85px]">
+                {hasActiveSizeFilter ? getFormattedSizeRange() : "Size"}
               </div>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -176,6 +205,21 @@ export default function FilterRow({
             >
               <div className="truncate max-w-[150px]">
                 {hasActiveAttendeesFilter ? getFormattedAttendeesRange() : "Attendees"}
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <button 
+              onClick={openSizeModal}
+              className={`flex px-4 py-2 items-center transition-all duration-200 border rounded-full ${
+                hasActiveSizeFilter 
+                  ? "bg-brand-orange text-white border-brand-orange" 
+                  : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
+              }`}
+            >
+              <div className="truncate max-w-[150px]">
+                {hasActiveSizeFilter ? getFormattedSizeRange() : "Size"}
               </div>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />

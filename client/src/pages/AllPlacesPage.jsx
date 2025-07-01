@@ -6,6 +6,7 @@ import { Navigate, useLocation, useNavigate, Link } from "react-router-dom";
 import { usePriceFilter } from "../contexts/PriceFilterContext";
 import { useCurrency } from "../contexts/CurrencyContext";
 import { useAttendeesFilter } from "../contexts/AttendeesFilterContext";
+import { useSizeFilter } from "../contexts/SizeFilterContext";
 import { convertCurrency } from "../utils/currencyUtils";
 import CloudinaryImage from "../components/CloudinaryImage";
 import PriceDisplay from "../components/PriceDisplay";
@@ -29,6 +30,9 @@ export default function AllPlacesPage() {
   
   // Attendees filter context
   const { filterPlacesByAttendees, hasActiveAttendeesFilter } = useAttendeesFilter();
+  
+  // Size filter context
+  const { filterPlacesBySize, hasActiveSizeFilter } = useSizeFilter();
   
   // Agent-specific state for user filtering
   const [allUsers, setAllUsers] = useState([]);
@@ -174,6 +178,11 @@ export default function AllPlacesPage() {
         filtered = filterPlacesByAttendees(filtered);
       }
       
+      // Apply size filter
+      if (hasActiveSizeFilter) {
+        filtered = filterPlacesBySize(filtered);
+      }
+      
       // Apply price filter
       if (hasActivePriceFilter && filtered.length > 0) {
         try {
@@ -241,7 +250,7 @@ export default function AllPlacesPage() {
     };
 
     applyFilters();
-  }, [searchTerm, places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency, hasActiveAttendeesFilter, filterPlacesByAttendees]);
+  }, [searchTerm, places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency, hasActiveAttendeesFilter, filterPlacesByAttendees, hasActiveSizeFilter, filterPlacesBySize]);
 
   // Redirect non-agents away from this page
   if (user && user.userType !== 'agent') {
