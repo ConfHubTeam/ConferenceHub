@@ -97,12 +97,12 @@ export default function PlacesPage() {
       <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
         {/* Page header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-center">
             
             {/* Add new room button */}
             {user && user.userType === 'host' && (
               <Link
-                className="inline-flex items-center gap-2 bg-primary text-white py-3 px-6 rounded-lg hover:bg-primary-dark transition-colors font-medium"
+                className="inline-flex items-center gap-2 bg-primary text-white py-4 px-8 rounded-full hover:bg-primary-dark transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
                 to={"/account/places/new"}
               >
                 <svg
@@ -158,7 +158,7 @@ export default function PlacesPage() {
             ) : (
               <Link
                 to="/account/places/new"
-                className="bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary-dark transition-colors inline-block"
+                className="bg-primary text-white py-3 px-6 rounded-full hover:bg-primary-dark transition-all duration-200 inline-block font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
               >
                 Add Your First Room
               </Link>

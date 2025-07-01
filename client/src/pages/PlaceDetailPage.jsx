@@ -274,7 +274,7 @@ export default function PlaceDetailPage() {
                     Edit Conference Room
                   </a>
                   <button 
-                    className="bg-red-500 py-2 px-5 rounded-2xl text-white"
+                    className="bg-orange-500 py-2 px-5 rounded-2xl text-white"
                     onClick={handleDeleteClick}
                     disabled={isDeleting}
                   >
