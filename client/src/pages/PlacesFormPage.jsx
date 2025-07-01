@@ -577,7 +577,7 @@ export default function PlacesFormPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-8xl mx-auto">
       <form onSubmit={savePlace} className="px-4 md:px-8 lg:px-14">
         {error && (
           <div className="bg-red-100 text-red-800 p-4 mb-4 rounded-lg">
