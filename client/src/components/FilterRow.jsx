@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useDateTimeFilter } from "../contexts/DateTimeFilterContext";
 import { usePriceFilter } from "../contexts/PriceFilterContext";
 import { useAttendeesFilter } from "../contexts/AttendeesFilterContext";
@@ -20,17 +21,36 @@ export default function FilterRow({
   const [isAttendeesModalOpen, setIsAttendeesModalOpen] = useState(false);
   const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
   
+  // Navigation hooks
+  const navigate = useNavigate();
+  const location = useLocation();
+  
   // Get date/time filter state from context
-  const { getFormattedDateTime, hasActiveDateTimeFilter } = useDateTimeFilter();
+  const { getFormattedDateTime, hasActiveDateTimeFilter, clearDateTimeFilter } = useDateTimeFilter();
   
   // Get price filter state from context
-  const { getFormattedPriceRange, hasActivePriceFilter } = usePriceFilter();
+  const { getFormattedPriceRange, hasActivePriceFilter, clearPriceFilter } = usePriceFilter();
   
   // Get attendees filter state from context
-  const { getFormattedAttendeesRange, hasActiveAttendeesFilter } = useAttendeesFilter();
+  const { getFormattedAttendeesRange, hasActiveAttendeesFilter, clearAttendeesFilter } = useAttendeesFilter();
   
   // Get size filter state from context
-  const { getFormattedSizeRange, hasActiveSizeFilter } = useSizeFilter();
+  const { getFormattedSizeRange, hasActiveSizeFilter, clearSizeFilter } = useSizeFilter();
+  
+  // Check if any filter is active
+  const hasAnyActiveFilter = hasActiveDateTimeFilter || hasActivePriceFilter || hasActiveAttendeesFilter || hasActiveSizeFilter;
+  
+  // Clear all filters
+  const handleResetAllFilters = () => {
+    // Clear all filter contexts
+    clearDateTimeFilter();
+    clearPriceFilter();
+    clearAttendeesFilter();
+    clearSizeFilter();
+    
+    // Clear URL parameters by navigating to the same path without query parameters
+    navigate(location.pathname, { replace: true });
+  };
   
   // Open/close modal handlers
   const openDateTimeModal = () => setIsDateTimeModalOpen(true);
@@ -139,6 +159,19 @@ export default function FilterRow({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
+            
+            {/* Reset button - only show when filters are active */}
+            {hasAnyActiveFilter && (
+              <button 
+                onClick={handleResetAllFilters}
+                className="flex px-3 py-1 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 items-center transition-all duration-200 border border-red-200 hover:border-red-300 rounded-full text-xs flex-shrink-0 whitespace-nowrap"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Reset
+              </button>
+            )}
           </div>
           
           {/* Right side - Map toggle */}
@@ -231,6 +264,19 @@ export default function FilterRow({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
+            
+            {/* Reset button - only show when filters are active */}
+            {hasAnyActiveFilter && (
+              <button 
+                onClick={handleResetAllFilters}
+                className="flex px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 items-center transition-all duration-200 border border-red-200 hover:border-red-300 rounded-full"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Reset Filters
+              </button>
+            )}
           </div>
         </div>
         
