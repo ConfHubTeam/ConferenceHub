@@ -10,6 +10,7 @@ import { useDateTimeFilter } from "../contexts/DateTimeFilterContext";
 import { usePriceFilter } from "../contexts/PriceFilterContext";
 import { useCurrency } from "../contexts/CurrencyContext";
 import { useAttendeesFilter } from "../contexts/AttendeesFilterContext";
+import { useSizeFilter } from "../contexts/SizeFilterContext";
 import { convertCurrency } from "../utils/currencyUtils";
 import api from "../utils/api";
 
@@ -36,6 +37,9 @@ export default function IndexPage() {
   
   // Attendees filter context
   const { filterPlacesByAttendees, hasActiveAttendeesFilter, setFromSerializedValues: setAttendeesFromSerializedValues } = useAttendeesFilter();
+  
+  // Size filter context
+  const { filterPlacesBySize, hasActiveSizeFilter, setFromSerializedValues: setSizeFromSerializedValues } = useSizeFilter();
   
   // Get map state from outlet context (passed down from Layout)
   const context = useOutletContext();
@@ -90,6 +94,15 @@ export default function IndexPage() {
       });
     }
     
+    // Initialize SizeFilter from URL parameters
+    if (params.has('minSize') || params.has('maxSize') || params.has('sizeRange')) {
+      setSizeFromSerializedValues({
+        minSize: params.get('minSize') || '',
+        maxSize: params.get('maxSize') || '',
+        sizeRange: params.get('sizeRange') || ''
+      });
+    }
+    
     // Using our API utility instead of direct axios import
     api.get("/places/home" + (location.search ? location.search : "")).then((response) => {
       setPlaces(response.data);
@@ -97,7 +110,7 @@ export default function IndexPage() {
       setTotalItems(response.data.length);
       setIsLoading(false);
     });
-  }, [location.search, setFromSerializedValues, setAttendeesFromSerializedValues]);
+  }, [location.search, setFromSerializedValues, setAttendeesFromSerializedValues, setSizeFromSerializedValues]);
 
   // Apply all filters whenever any filter or places change
   useEffect(() => {
@@ -105,7 +118,7 @@ export default function IndexPage() {
       let filtered = [...places];
       
       // If no filters are active, show all places
-      if (!hasActiveAttendeesFilter && !hasActivePriceFilter) {
+      if (!hasActiveAttendeesFilter && !hasActivePriceFilter && !hasActiveSizeFilter) {
         setFilteredPlaces(places);
         setTotalItems(places.length);
         return;
@@ -114,6 +127,11 @@ export default function IndexPage() {
       // Apply attendees filter
       if (hasActiveAttendeesFilter) {
         filtered = filterPlacesByAttendees(filtered);
+      }
+      
+      // Apply size filter
+      if (hasActiveSizeFilter) {
+        filtered = filterPlacesBySize(filtered);
       }
       
       // Apply price filter
@@ -193,7 +211,7 @@ export default function IndexPage() {
     };
 
     applyFilters();
-  }, [places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency, hasActiveAttendeesFilter, filterPlacesByAttendees]);
+  }, [places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency, hasActiveAttendeesFilter, filterPlacesByAttendees, hasActiveSizeFilter, filterPlacesBySize]);
 
   return (
     <div className="flex flex-col h-full">

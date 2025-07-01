@@ -106,7 +106,7 @@ export default function LandingPage() {
                 when: "Anytime",
                 price: "Any price",
                 attendees: "Add attendees",
-                size: "Conference size"
+                size: "Any size"
               }}
               initialValues={{
                 when: "",
