@@ -2,8 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDateTimeFilter } from "../contexts/DateTimeFilterContext";
 import { usePriceFilter } from "../contexts/PriceFilterContext";
+import { useAttendeesFilter } from "../contexts/AttendeesFilterContext";
 import DateTimeFilterModal from "./DateTimeFilterModal";
 import PriceFilterModal from "./PriceFilterModal";
+import AttendeesFilterModal from "./AttendeesFilterModal";
 
 /**
  * Reusable Search Filter Component
@@ -17,20 +19,20 @@ export default function SearchFilter({
   placeholder = {
     when: "Anytime",
     price: "Any price",
-    attendance: "Number of attendees",
+    attendees: "Number of attendees",
     size: "Conference size"
   },
   initialValues = {
     when: "Anytime",
     price: "Any price",
-    attendance: "",
+    attendees: "",
     size: ""
   }
 }) {
-  const [attendance, setAttendance] = useState(initialValues.attendance);
   const [size, setSize] = useState(initialValues.size);
   const [isDateTimeModalOpen, setIsDateTimeModalOpen] = useState(false);
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
+  const [isAttendeesModalOpen, setIsAttendeesModalOpen] = useState(false);
   const navigate = useNavigate();
   
   // Use the DateTimeFilter context for date/time state
@@ -38,6 +40,9 @@ export default function SearchFilter({
   
   // Use the PriceFilter context for price state
   const { getFormattedPriceRange, getSerializedValues: getPriceSerializedValues } = usePriceFilter();
+  
+  // Use the AttendeesFilter context for attendees state
+  const { getFormattedAttendeesRange, getSerializedValues: getAttendeesSerializedValues } = useAttendeesFilter();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -48,8 +53,11 @@ export default function SearchFilter({
     // Get serialized price values for URL parameters
     const priceValues = getPriceSerializedValues();
     
+    // Get serialized attendees values for URL parameters
+    const attendeesValues = getAttendeesSerializedValues();
+    
     if (onSearch) {
-      // Custom handler provided - include date/time and price values
+      // Custom handler provided - include date/time, price, and attendees values
       onSearch({ 
         when: getFormattedDateTime(),
         dates: dateTimeValues.dates,
@@ -59,11 +67,13 @@ export default function SearchFilter({
         priceMin: priceValues.minPrice,
         priceMax: priceValues.maxPrice,
         priceCurrency: priceValues.currency,
-        attendance, 
+        attendees: getFormattedAttendeesRange(),
+        attendeesMin: attendeesValues.minAttendees,
+        attendeesMax: attendeesValues.maxAttendees,
         size 
       });
     } else {
-      // Default navigation behavior with date/time and price parameters
+      // Default navigation behavior with date/time, price, and attendees parameters
       const params = new URLSearchParams();
       if (dateTimeValues.dates) params.set('dates', dateTimeValues.dates);
       if (dateTimeValues.startTime) params.set('startTime', dateTimeValues.startTime);
@@ -71,7 +81,8 @@ export default function SearchFilter({
       if (priceValues.minPrice !== null) params.set('priceMin', priceValues.minPrice);
       if (priceValues.maxPrice !== null) params.set('priceMax', priceValues.maxPrice);
       if (priceValues.currency) params.set('currency', priceValues.currency);
-      if (attendance) params.set('attendance', attendance);
+      if (attendeesValues.minAttendees !== null) params.set('attendeesMin', attendeesValues.minAttendees);
+      if (attendeesValues.maxAttendees !== null) params.set('attendeesMax', attendeesValues.maxAttendees);
       if (size) params.set('size', size);
       
       navigate(`/places?${params.toString()}`);
@@ -112,19 +123,19 @@ export default function SearchFilter({
             </button>
           </div>
 
-          {/* Attendance */}
+          {/* Attendees - Attendees Filter Button */}
           <div className="flex-1 px-4 sm:px-4 lg:px-5 py-2 sm:py-2 lg:py-2.5 hover:bg-gray-50 transition-colors duration-200 bg-white border-t lg:border-t-0 lg:border-l border-gray-100">
             <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              Attendance
+              Attendees
             </label>
-            <input
-              type="text"
-              value={attendance}
-              onChange={(e) => setAttendance(e.target.value)}
-              placeholder={placeholder.attendance}
-              className="w-full text-gray-900 placeholder-gray-400 text-sm sm:text-base lg:text-lg bg-transparent outline-none focus:ring-0 border-0 font-medium pt-0 pl-0"
-              aria-label="Attendance"
-            />
+            <button
+              type="button"
+              onClick={() => setIsAttendeesModalOpen(true)}
+              className="w-full text-left text-gray-900 text-sm sm:text-base lg:text-lg bg-transparent outline-none focus:ring-0 border-0 font-medium pt-0 pl-0 hover:text-brand-purple transition-colors"
+              aria-label="Select attendees range"
+            >
+              {getFormattedAttendeesRange() || placeholder.attendees}
+            </button>
           </div>
 
           {/* Size */}
@@ -179,6 +190,12 @@ export default function SearchFilter({
       <PriceFilterModal
         isOpen={isPriceModalOpen}
         onClose={() => setIsPriceModalOpen(false)}
+      />
+      
+      {/* Attendees Filter Modal */}
+      <AttendeesFilterModal
+        isOpen={isAttendeesModalOpen}
+        onClose={() => setIsAttendeesModalOpen(false)}
       />
     </div>
   );
