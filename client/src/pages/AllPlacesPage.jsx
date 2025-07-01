@@ -176,7 +176,6 @@ export default function AllPlacesPage() {
       
       // Apply price filter
       if (hasActivePriceFilter && filtered.length > 0) {
-        console.log("Applying price filter:", { minPrice, maxPrice, filterCurrency: priceFilterCurrency?.charCode || selectedCurrency?.charCode });
         try {
           // Get the currency to filter in (from price filter context or current currency context)
           const filterCurrency = priceFilterCurrency || selectedCurrency;
@@ -205,7 +204,6 @@ export default function AllPlacesPage() {
                     filterCurrency.charCode
                   );
                 } catch (error) {
-                  console.error("Error converting price for filtering:", error);
                   // If conversion fails, skip this place from filtering
                   continue;
                 }
@@ -224,11 +222,6 @@ export default function AllPlacesPage() {
                 if (convertedPrice > maxPrice) {
                   passesFilter = false;
                 }
-              }
-              
-              // Debug log for price filtering
-              if (minPrice !== null || maxPrice !== null) {
-                console.log(`Place "${place.title}": ${placePrice} ${placeCurrency.charCode} → ${convertedPrice.toFixed(2)} ${filterCurrency.charCode}, Range: ${minPrice || 'no min'} - ${maxPrice || 'no max'}, Passes: ${passesFilter}`);
               }
               
               if (passesFilter) {

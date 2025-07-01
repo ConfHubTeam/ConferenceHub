@@ -391,21 +391,9 @@ export default function PriceFilterModal({ isOpen, onClose }) {
         
         {/* Main Content */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
-          {/* Currency Display */}
-          <div className="p-3 bg-blue-50 rounded-lg">
-            <span className="text-sm text-blue-800">
-              Filtering in: <span className="font-medium">{selectedCurrency?.name} ({getCurrencySymbol(selectedCurrency)})</span>
-            </span>
-            <div className="text-xs text-blue-600 mt-1">
-              Change currency using the selector in the header
-            </div>
-          </div>
 
           {/* Price Presets */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Choose a price range
-            </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
               {dynamicPresets.map((preset) => (
                 <button
@@ -434,8 +422,6 @@ export default function PriceFilterModal({ isOpen, onClose }) {
           {/* Custom Price Range Inputs */}
           {showCustomRange && (
             <div className="space-y-4">
-              <h3 className="text-sm font-medium text-gray-700">Custom price range</h3>
-              
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Minimum Price Input */}
                 <div>

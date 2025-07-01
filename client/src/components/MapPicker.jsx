@@ -182,13 +182,11 @@ export default function MapPicker({
         const newPos = newMarker.getPosition();
         const lat = newPos.lat();
         const lng = newPos.lng();
-        console.log('Marker dragged to new position:', { lat, lng });
         handlePositionChange({ lat, lng });
       });
       
       // Add drag start listener for better UX feedback
       newMarker.addListener('dragstart', () => {
-        console.log('Marker drag started');
         setAddressFetchStatus('loading');
       });
       
@@ -223,13 +221,11 @@ export default function MapPicker({
           const newPos = newMarker.getPosition();
           const lat = newPos.lat();
           const lng = newPos.lng();
-          console.log('Marker dragged to new position:', { lat, lng });
           handlePositionChange({ lat, lng });
         });
         
         // Add drag start listener for better UX feedback
         newMarker.addListener('dragstart', () => {
-          console.log('Marker drag started');
           setAddressFetchStatus('loading');
         });
         
@@ -346,13 +342,11 @@ export default function MapPicker({
               const newPos = newMarker.getPosition();
               const lat = newPos.lat();
               const lng = newPos.lng();
-              console.log('Marker dragged to new position:', { lat, lng });
               handlePositionChange({ lat, lng });
             });
             
             // Add drag start listener for better UX feedback
             newMarker.addListener('dragstart', () => {
-              console.log('Marker drag started');
               setAddressFetchStatus('loading');
             });
             
@@ -390,13 +384,11 @@ export default function MapPicker({
         const newPos = newMarker.getPosition();
         const lat = newPos.lat();
         const lng = newPos.lng();
-        console.log('Marker dragged to new position:', { lat, lng });
         handlePositionChange({ lat, lng });
       });
       
       // Add drag start listener for better UX feedback
       newMarker.addListener('dragstart', () => {
-        console.log('Marker drag started');
         setAddressFetchStatus('loading');
       });
       
@@ -431,10 +423,8 @@ export default function MapPicker({
       
       // Force immediate marker update for responsive UI
       if (marker) {
-        console.log("Updating existing marker position");
         marker.setPosition(newPosition);
       } else if (map) {
-        console.log("Creating new marker");
         // Create new marker if it doesn't exist
         const newMarker = new window.google.maps.Marker({
           position: newPosition,
@@ -448,13 +438,11 @@ export default function MapPicker({
           const newPos = newMarker.getPosition();
           const dragLat = newPos.lat();
           const dragLng = newPos.lng();
-          console.log('Marker dragged to new position:', { lat: dragLat, lng: dragLng });
           handlePositionChange({ lat: dragLat, lng: dragLng });
         });
         
         // Add drag start listener for better UX feedback
         newMarker.addListener('dragstart', () => {
-          console.log('Marker drag started');
           setAddressFetchStatus('loading');
         });
         
@@ -479,7 +467,6 @@ export default function MapPicker({
   const handlePositionChange = async (newPosition) => {
     // Ensure we have valid coordinates
     if (!newPosition || typeof newPosition.lat !== 'number' || typeof newPosition.lng !== 'number') {
-      console.error("Invalid position data:", newPosition);
       return;
     }
     
@@ -522,12 +509,11 @@ export default function MapPicker({
         
         // DO NOT call onAddressUpdate to prevent circular geocoding
         // The address field should remain independent of map coordinates
-        console.log('Map reverse geocoded address (not updating field):', address);
+        
       } else {
         setAddressFetchStatus('failed');
       }
     } catch (error) {
-      console.error('Error reverse geocoding:', error);
       setAddressFetchStatus('failed');
     }
   };

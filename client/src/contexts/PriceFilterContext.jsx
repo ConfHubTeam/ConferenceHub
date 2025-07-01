@@ -55,7 +55,6 @@ export const PriceFilterProvider = ({ children }) => {
 
     // Ensure min is not greater than max
     if (sanitizedMin !== null && sanitizedMax !== null && sanitizedMin > sanitizedMax) {
-      console.warn("Minimum price cannot be greater than maximum price");
       return;
     }
 
@@ -75,7 +74,6 @@ export const PriceFilterProvider = ({ children }) => {
 
     // Validate against existing max price
     if (sanitizedMin !== null && maxPrice !== null && sanitizedMin > maxPrice) {
-      console.warn("Minimum price cannot be greater than maximum price");
       return;
     }
 
@@ -94,7 +92,6 @@ export const PriceFilterProvider = ({ children }) => {
 
     // Validate against existing min price
     if (sanitizedMax !== null && minPrice !== null && sanitizedMax < minPrice) {
-      console.warn("Maximum price cannot be less than minimum price");
       return;
     }
 
@@ -203,7 +200,6 @@ export const PriceFilterProvider = ({ children }) => {
         currency: targetCurrency
       };
     } catch (error) {
-      console.error("Error converting price range:", error);
       return { minPrice, maxPrice, currency: selectedCurrency };
     }
   }, [minPrice, maxPrice, selectedCurrency, hasActivePriceFilter]);
@@ -264,7 +260,6 @@ export const PriceFilterProvider = ({ children }) => {
 
     // Validate that min is not greater than max
     if (parsedMin !== null && parsedMax !== null && parsedMin > parsedMax) {
-      console.warn("Invalid price range in URL parameters: min > max");
       return;
     }
 
