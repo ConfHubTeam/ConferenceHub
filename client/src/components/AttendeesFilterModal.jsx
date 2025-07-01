@@ -239,21 +239,9 @@ export default function AttendeesFilterModal({ isOpen, onClose }) {
         
         {/* Main Content */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
-          {/* Info Display */}
-          <div className="p-3 bg-blue-50 rounded-lg">
-            <span className="text-sm text-blue-800">
-              Set the number of people who will be in the conference room
-            </span>
-            <div className="text-xs text-blue-600 mt-1">
-              This helps filter places based on their maximum capacity
-            </div>
-          </div>
 
           {/* Attendees Range Presets */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Choose attendees range
-            </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
               {ATTENDEES_RANGES.map((range) => (
                 <button
@@ -285,8 +273,6 @@ export default function AttendeesFilterModal({ isOpen, onClose }) {
           {/* Custom Attendees Range Inputs */}
           {showCustomRange && (
             <div className="space-y-4">
-              <h3 className="text-sm font-medium text-gray-700">Custom attendees range</h3>
-              
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Minimum Attendees Input */}
                 <div>
