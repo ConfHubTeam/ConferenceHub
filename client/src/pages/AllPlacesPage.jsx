@@ -5,6 +5,7 @@ import { UserContext } from "../components/UserContext";
 import { Navigate, useLocation, useNavigate, Link } from "react-router-dom";
 import { usePriceFilter } from "../contexts/PriceFilterContext";
 import { useCurrency } from "../contexts/CurrencyContext";
+import { useAttendeesFilter } from "../contexts/AttendeesFilterContext";
 import { convertCurrency } from "../utils/currencyUtils";
 import CloudinaryImage from "../components/CloudinaryImage";
 import PriceDisplay from "../components/PriceDisplay";
@@ -25,6 +26,9 @@ export default function AllPlacesPage() {
   
   // Currency context
   const { selectedCurrency } = useCurrency();
+  
+  // Attendees filter context
+  const { filterPlacesByAttendees, hasActiveAttendeesFilter } = useAttendeesFilter();
   
   // Agent-specific state for user filtering
   const [allUsers, setAllUsers] = useState([]);
@@ -165,6 +169,11 @@ export default function AllPlacesPage() {
         );
       }
       
+      // Apply attendees filter
+      if (hasActiveAttendeesFilter) {
+        filtered = filterPlacesByAttendees(filtered);
+      }
+      
       // Apply price filter
       if (hasActivePriceFilter && filtered.length > 0) {
         console.log("Applying price filter:", { minPrice, maxPrice, filterCurrency: priceFilterCurrency?.charCode || selectedCurrency?.charCode });
@@ -239,7 +248,7 @@ export default function AllPlacesPage() {
     };
 
     applyFilters();
-  }, [searchTerm, places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency]);
+  }, [searchTerm, places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency, hasActiveAttendeesFilter, filterPlacesByAttendees]);
 
   // Redirect non-agents away from this page
   if (user && user.userType !== 'agent') {
