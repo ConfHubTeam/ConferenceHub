@@ -57,7 +57,7 @@ const defaultCenter = {
 // Define libraries as a constant outside the component to prevent recreation on each render
 const libraries = ['places'];
 
-const MapView = memo(function MapView({ places, disableInfoWindow = false }) {
+const MapView = memo(function MapView({ places, disableInfoWindow = false, hoveredPlaceId = null }) {
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
@@ -68,6 +68,7 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false }) {
   const [selectedPlace, setSelectedPlace] = useState(null);
   const markersRef = useRef([]);
   const isUpdatingMarkersRef = useRef(false);
+  const highlightedMarkerRef = useRef(null);
   const { selectedCurrency } = useCurrency();
   
   // Use MapContext if available, otherwise use defaults
@@ -94,7 +95,7 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false }) {
   const memoizedPlaces = useMemo(() => places, [places]);
   
   // Create a custom price marker icon with current currency
-  const createPriceMarkerIcon = useCallback(async (price, currency, size = "medium") => {
+  const createPriceMarkerIcon = useCallback(async (price, currency, size = "medium", isHighlighted = false) => {
     // Format the price with the current currency
     let formattedPrice;
     
@@ -136,9 +137,16 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false }) {
     // Device pixel ratio for high DPI screens
     const dpr = window.devicePixelRatio || 1;
     
-    // Get size configuration from utility
+    // Get size configuration from utility, increase size for highlighted markers
     const sizeConfig = getMarkerSizeConfig(size);
     let { width: baseWidth, height: baseHeight, fontSize, borderRadius } = sizeConfig;
+    
+    // If highlighted, increase size by 10% for subtle emphasis
+    if (isHighlighted) {
+      baseWidth = Math.round(baseWidth * 1.1);
+      baseHeight = Math.round(baseHeight * 1.1);
+      fontSize = Math.round(fontSize * 1.05); // Slight font increase
+    }
     
     // Calculate text width to dynamically adjust marker width if needed
     context.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`;
@@ -173,7 +181,7 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false }) {
     context.imageSmoothingQuality = "high";
     
     // Draw the marker shape using extracted utility
-    drawMarkerShape(context, baseWidth, baseHeight, borderRadius);
+    drawMarkerShape(context, baseWidth, baseHeight, borderRadius, isHighlighted);
     
     // Draw the price text using extracted utility
     drawPriceText(context, formattedPrice, baseWidth, baseHeight, fontSize);
@@ -348,10 +356,14 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false }) {
       });
       markersRef.current = [];
     }
+    
     // Clear clusterer
     clearMarkerClusterer();
-    // Reset updating flag
+    
+    // Reset updating flag and highlighted marker ref
     isUpdatingMarkersRef.current = false;
+    highlightedMarkerRef.current = null;
+    
     setMap(null);
   }, []);
 
@@ -385,6 +397,7 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false }) {
     });
     markersRef.current = [];
     isUpdatingMarkersRef.current = false; // Reset flag when clearing markers
+    highlightedMarkerRef.current = null; // Reset highlighted marker ref
 
     // Clear previous clusterer
     clearMarkerClusterer();
@@ -446,6 +459,73 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false }) {
       }
     });
   }, [map, memoizedPlaces, createMarkersAsync, areMarkersInCurrentView]);
+
+  // Handle marker highlighting when hoveredPlaceId changes
+  useEffect(() => {
+    if (!markersRef.current.length) return;
+    
+    // If hovering over the same place, don't do anything
+    if (highlightedMarkerRef.current && hoveredPlaceId === highlightedMarkerRef.current.placeData.id) {
+      return;
+    }
+    
+    // Reset previous highlighted marker if any
+    if (highlightedMarkerRef.current) {
+      const prevMarker = highlightedMarkerRef.current;
+      const place = prevMarker.placeData;
+      const currentZoom = map?.getZoom() || 12;
+      const size = getMarkerSizeByZoom(currentZoom);
+      
+      // Restore normal icon
+      createPriceMarkerIcon(place.price, place.currency, size, false)
+        .then(iconUrl => {
+          const markerProps = getMarkerGoogleMapsProperties(size);
+          prevMarker.setIcon({
+            url: iconUrl,
+            anchor: markerProps.anchor,
+            scaledSize: markerProps.scaledSize
+          });
+          prevMarker.setZIndex(1); // Reset z-index
+        })
+        .catch(error => console.error("Error resetting marker icon:", error));
+    }
+    
+    // Find and highlight new marker if hoveredPlaceId is provided
+    if (hoveredPlaceId) {
+      const markerToHighlight = markersRef.current.find(
+        marker => marker.placeData.id === hoveredPlaceId
+      );
+      
+      if (markerToHighlight) {
+        const place = markerToHighlight.placeData;
+        const currentZoom = map?.getZoom() || 12;
+        const size = getMarkerSizeByZoom(currentZoom);
+        
+        // Create highlighted icon
+        createPriceMarkerIcon(place.price, place.currency, size, true)
+          .then(iconUrl => {
+            const markerProps = getMarkerGoogleMapsProperties(size);
+            // For highlighted markers, scale up the size slightly for subtle emphasis
+            const highlightedSize = new window.google.maps.Size(
+              markerProps.scaledSize.width * 1.1,
+              markerProps.scaledSize.height * 1.1
+            );
+            
+            markerToHighlight.setIcon({
+              url: iconUrl,
+              anchor: markerProps.anchor,
+              scaledSize: highlightedSize
+            });
+            markerToHighlight.setZIndex(1000); // Bring to front
+          })
+          .catch(error => console.error("Error highlighting marker icon:", error));
+        
+        highlightedMarkerRef.current = markerToHighlight;
+      }
+    } else {
+      highlightedMarkerRef.current = null;
+    }
+  }, [hoveredPlaceId, createPriceMarkerIcon, map]);
 
   // Update marker icons when currency changes (without recreating markers)
   useEffect(() => {
@@ -611,6 +691,7 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false }) {
   // Custom comparison function for memo
   return (
     prevProps.disableInfoWindow === nextProps.disableInfoWindow &&
+    prevProps.hoveredPlaceId === nextProps.hoveredPlaceId &&
     prevProps.places.length === nextProps.places.length &&
     prevProps.places.every((place, index) => 
       place.id === nextProps.places[index]?.id &&

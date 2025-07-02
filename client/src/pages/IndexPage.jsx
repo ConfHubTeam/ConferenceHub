@@ -20,6 +20,7 @@ export default function IndexPage() {
   const [places, setPlaces] = useState([]);
   const [filteredPlaces, setFilteredPlaces] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hoveredPlaceId, setHoveredPlaceId] = useState(null);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -335,7 +336,10 @@ export default function IndexPage() {
           
           {/* Mobile Map container - remaining height with padding for header and filter */}
           <div className="flex-1 w-full pt-[120px] border-0 outline-0">
-            <MapView places={memoizedFilteredPlaces} />
+            <MapView 
+              places={memoizedFilteredPlaces} 
+              hoveredPlaceId={hoveredPlaceId}
+            />
           </div>
         </div>
       )}
@@ -368,7 +372,12 @@ export default function IndexPage() {
                 className={`grid gap-6 ${getGridColumns()}`}
               >
                 {currentPagePlaces.map((place) => (
-                  <div key={place.id} className="relative group">
+                  <div 
+                    key={place.id} 
+                    className="relative group transition-transform duration-200 hover:scale-[1.02]"
+                    onMouseEnter={() => setHoveredPlaceId(place.id)}
+                    onMouseLeave={() => setHoveredPlaceId(null)}
+                  >
                     <Link to={"/place/" + place.id}>
                       <div className="bg-white overflow-hidden shadow hover:shadow-lg transition-shadow">
                         <div className="aspect-square overflow-hidden">
@@ -472,7 +481,10 @@ export default function IndexPage() {
             
             {/* Map container - only render when visible */}
             <div className="w-full h-full overflow-hidden relative border-0 outline-0">
-              <MapView places={memoizedFilteredPlaces} />
+              <MapView 
+                places={memoizedFilteredPlaces} 
+                hoveredPlaceId={hoveredPlaceId}
+              />
             </div>
           </div>
         )}

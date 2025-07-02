@@ -8,36 +8,43 @@
  * @param {number} baseWidth - Width of the marker
  * @param {number} baseHeight - Height of the marker
  * @param {number} borderRadius - Border radius for rounded corners
+ * @param {boolean} isHighlighted - Whether the marker is highlighted
  */
-export const drawMarkerShape = (context, baseWidth, baseHeight, borderRadius) => {
+export const drawMarkerShape = (context, baseWidth, baseHeight, borderRadius, isHighlighted = false) => {
   // Calculate marker dimensions (full height without pointer)
   const markerWidth = baseWidth * 0.95;
   const markerHeight = baseHeight * 0.9; // Use more of the available height
   const startX = (baseWidth - markerWidth) / 2;
   const startY = (baseHeight - markerHeight) / 2;
   
-  // Add subtle shadow for depth
-  context.shadowColor = "rgba(0, 0, 0, 0.25)";
-  context.shadowBlur = 6;
+  // Enhanced shadow for highlighted markers - more subtle
+  context.shadowColor = isHighlighted ? "rgba(0, 0, 0, 0.35)" : "rgba(0, 0, 0, 0.25)";
+  context.shadowBlur = isHighlighted ? 10 : 6;
   context.shadowOffsetX = 0;
-  context.shadowOffsetY = 3;
+  context.shadowOffsetY = isHighlighted ? 3 : 3;
   
   // Create rounded rectangle path
   context.beginPath();
   context.roundRect(startX, startY, markerWidth, markerHeight, borderRadius);
   
-  // Create gradient using theme colors
+  // Create gradient using theme colors - more elegant highlighting
   const gradient = context.createLinearGradient(0, startY, 0, startY + markerHeight);
-  gradient.addColorStop(0, "#f59e5e"); // Lighter orange
-  gradient.addColorStop(0.5, "#f38129"); // Primary theme color
-  gradient.addColorStop(1, "#d66d1c"); // Darker orange for depth
+  if (isHighlighted) {
+    gradient.addColorStop(0, "#ff6b35"); // Slightly brighter but elegant orange
+    gradient.addColorStop(0.5, "#ff5722"); // Primary color
+    gradient.addColorStop(1, "#e64100"); // Deeper orange for sophistication
+  } else {
+    gradient.addColorStop(0, "#f59e5e"); // Lighter orange
+    gradient.addColorStop(0.5, "#f38129"); // Primary theme color
+    gradient.addColorStop(1, "#d66d1c"); // Darker orange for depth
+  }
   
   context.fillStyle = gradient;
   context.fill();
   
-  // Add subtle border for definition
-  context.strokeStyle = "rgba(255, 255, 255, 0.4)";
-  context.lineWidth = 1;
+  // More subtle border enhancement for highlighted markers
+  context.strokeStyle = isHighlighted ? "rgba(255, 255, 255, 0.6)" : "rgba(255, 255, 255, 0.4)";
+  context.lineWidth = isHighlighted ? 1.5 : 1;
   context.stroke();
   
   // Reset shadow for text
