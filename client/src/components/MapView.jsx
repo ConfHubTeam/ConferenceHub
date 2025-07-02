@@ -293,8 +293,8 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false, hover
               anchor: markerProps.anchor,
               // Set size to match the canvas dimensions
               scaledSize: markerProps.scaledSize
-            },
-            animation: window.google.maps.Animation.DROP
+            }
+            // No animation for smooth appearance in place
           });
           
           // Add click event to marker
