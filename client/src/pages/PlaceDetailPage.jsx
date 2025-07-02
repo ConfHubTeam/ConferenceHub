@@ -238,7 +238,6 @@ export default function PlaceDetailPage() {
             {/* Refund Policy Section - Only for owners and agents */}
             {canManage && (
               <div className="mb-8">
-                <h2 className="text-xl md:text-2xl font-semibold mb-4">Refund Policy</h2>
                 <RefundPolicyDisplay 
                   refundPolicy={placeDetail.refundPolicy}
                   placeId={placeDetail.id}
@@ -275,7 +274,7 @@ export default function PlaceDetailPage() {
                     Edit Conference Room
                   </a>
                   <button 
-                    className="bg-red-500 py-2 px-5 rounded-2xl text-white"
+                    className="bg-orange-500 py-2 px-5 rounded-2xl text-white"
                     onClick={handleDeleteClick}
                     disabled={isDeleting}
                   >

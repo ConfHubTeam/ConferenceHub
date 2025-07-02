@@ -346,7 +346,7 @@ export default function PlaceAvailabilityCalendar({
         </div>
 
         {/* Calendar with click functionality */}
-        <div className="max-w-lg mx-auto">
+        <div className="w-full max-w-lg lg:max-w-4xl mx-auto">
         <Calendar 
           startDate=""
           endDate=""
@@ -404,7 +404,7 @@ export default function PlaceAvailabilityCalendar({
       )}
       
       {/* Calendar Display */}
-      <div className="max-w-lg mx-auto">
+      <div className="w-full max-w-lg lg:max-w-4xl mx-auto">
         <Calendar 
           startDate="" // Clear range selection
           endDate=""

@@ -42,9 +42,9 @@ const COLOR_THEMES = {
     badge: "bg-green-100 text-green-800"
   },
   red: {
-    active: "bg-red-500 text-white border-red-500",
-    inactive: "bg-white text-red-600 border-red-300 hover:bg-red-50",
-    badge: "bg-red-100 text-red-800"
+    active: "bg-orange-500 text-white border-orange-500",
+    inactive: "bg-white text-orange-600 border-orange-300 hover:bg-orange-50",
+    badge: "bg-orange-100 text-orange-800"
   },
   gray: {
     active: "bg-gray-500 text-white border-gray-500",

@@ -311,7 +311,7 @@ export default function ProfilePage({}) {
                 
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="w-full bg-red-50 text-red-600 py-3 px-4 rounded-lg hover:bg-red-100 transition-colors flex items-center justify-center space-x-2 border border-red-200"
+                  className="w-full bg-orange-50 text-orange-600 py-3 px-4 rounded-lg hover:bg-orange-100 transition-colors flex items-center justify-center space-x-2 border border-orange-200"
                   disabled={isDeleting}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

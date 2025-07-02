@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo, memo } from "react";
 import { GoogleMap, useJsApiLoader, InfoWindow } from "@react-google-maps/api";
 import { Link } from "react-router-dom";
 import CloudinaryImage from "./CloudinaryImage";
 import { useCurrency } from "../contexts/CurrencyContext";
+import { useMap } from "../contexts/MapContext";
 import { formatPrice, formatUZSShort, convertCurrency } from "../utils/currencyUtils";
 import PriceDisplay from "./PriceDisplay";
 import { 
@@ -56,7 +57,7 @@ const defaultCenter = {
 // Define libraries as a constant outside the component to prevent recreation on each render
 const libraries = ['places'];
 
-export default function MapView({ places, disableInfoWindow = false }) {
+const MapView = memo(function MapView({ places, disableInfoWindow = false, hoveredPlaceId = null, onBoundsChanged = null }) {
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
@@ -67,29 +68,61 @@ export default function MapView({ places, disableInfoWindow = false }) {
   const [selectedPlace, setSelectedPlace] = useState(null);
   const markersRef = useRef([]);
   const isUpdatingMarkersRef = useRef(false);
+  const highlightedMarkerRef = useRef(null);
   const { selectedCurrency } = useCurrency();
+  
+  // Use MapContext if available, otherwise use defaults
+  let saveMapState, getMapState;
+  try {
+    const mapContext = useMap();
+    saveMapState = mapContext.saveMapState;
+    getMapState = mapContext.getMapState;
+  } catch (error) {
+    // If MapProvider is not available, use no-op functions
+    saveMapState = () => {};
+    getMapState = () => ({ zoom: 12, center: { lat: 41.2995, lng: 69.2401 }, bounds: null });
+  }
+  
+  // Store previous zoom level in ref to persist across unmounts
+  const previousZoomRef = useRef(12);
+  // Track zoom level to maintain consistency when map is toggled
+  const [currentZoom, setCurrentZoom] = useState(12);
   
   // Use the custom touch handler hook
   const { mapContainerRef } = useMapTouchHandler();
   
+  // Memoize the places data to prevent unnecessary marker recreation
+  const memoizedPlaces = useMemo(() => places, [places]);
+  
+  // Store current currency in a ref to ensure consistency across all marker updates
+  const currentCurrencyRef = useRef(selectedCurrency);
+  
+  // Update currency ref whenever selectedCurrency changes
+  useEffect(() => {
+    currentCurrencyRef.current = selectedCurrency;
+  }, [selectedCurrency]);
+  
   // Create a custom price marker icon with current currency
-  const createPriceMarkerIcon = useCallback(async (price, currency, size = "medium") => {
-    // Format the price with the current currency
+  const createPriceMarkerIcon = useCallback(async (price, currency, size = "medium", isHighlighted = false) => {
+    // Format the price with the current currency from ref to ensure consistency
     let formattedPrice;
     
     try {
+      // Use currency from ref to ensure we have the latest value
+      const currentCurrency = currentCurrencyRef.current;
+      
       // Check if we need to convert currency first
-      if (selectedCurrency && currency && selectedCurrency.charCode !== currency.charCode) {
+      if (currentCurrency && currency && currentCurrency.charCode !== currency.charCode) {
         // Convert to selected currency first
         const fromCode = currency?.charCode || currency;
-        const toCode = selectedCurrency?.charCode;
+        const toCode = currentCurrency?.charCode;
         const convertedPrice = await convertCurrency(price, fromCode, toCode);
         
         // Use shorter format for UZS currency on map markers
-        if (selectedCurrency.charCode === 'UZS') {
+        if (currentCurrency.charCode === 'UZS') {
           formattedPrice = formatUZSShort(convertedPrice);
         } else {
-          formattedPrice = await formatPrice(convertedPrice, selectedCurrency, selectedCurrency);
+          formattedPrice = await formatPrice(convertedPrice, currentCurrency, currentCurrency);
         }
       } else {
         // Use original currency
@@ -99,7 +132,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
         if (currencyCode === 'UZS') {
           formattedPrice = formatUZSShort(price);
         } else {
-          formattedPrice = await formatPrice(price, currency, selectedCurrency);
+          formattedPrice = await formatPrice(price, currency, currentCurrency);
         }
       }
     } catch (error) {
@@ -115,9 +148,16 @@ export default function MapView({ places, disableInfoWindow = false }) {
     // Device pixel ratio for high DPI screens
     const dpr = window.devicePixelRatio || 1;
     
-    // Get size configuration from utility
+    // Get size configuration from utility, increase size for highlighted markers
     const sizeConfig = getMarkerSizeConfig(size);
     let { width: baseWidth, height: baseHeight, fontSize, borderRadius } = sizeConfig;
+    
+    // If highlighted, increase size by 10% for subtle emphasis
+    if (isHighlighted) {
+      baseWidth = Math.round(baseWidth * 1.1);
+      baseHeight = Math.round(baseHeight * 1.1);
+      fontSize = Math.round(fontSize * 1.05); // Slight font increase
+    }
     
     // Calculate text width to dynamically adjust marker width if needed
     context.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`;
@@ -152,14 +192,14 @@ export default function MapView({ places, disableInfoWindow = false }) {
     context.imageSmoothingQuality = "high";
     
     // Draw the marker shape using extracted utility
-    drawMarkerShape(context, baseWidth, baseHeight, borderRadius);
+    drawMarkerShape(context, baseWidth, baseHeight, borderRadius, isHighlighted);
     
     // Draw the price text using extracted utility
     drawPriceText(context, formattedPrice, baseWidth, baseHeight, fontSize);
     
     // Convert canvas to image URL with maximum quality
     return canvas.toDataURL("image/png", 1.0);
-  }, [selectedCurrency]);
+  }, []); // Remove selectedCurrency dependency since we use currentCurrencyRef
 
   // Update marker icons based on zoom level (without repositioning)
   const updateMarkerSizes = useCallback(async (zoomLevel) => {
@@ -190,7 +230,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
     } finally {
       isUpdatingMarkersRef.current = false;
     }
-  }, [selectedCurrency]);  // Create markers function that can be reused
+  }, [createPriceMarkerIcon]); // Remove selectedCurrency dependency  // Update the createMarkersAsync to use memoizedPlaces
   const createMarkersAsync = useCallback(async (map) => {
     // Create new bounds object to fit all markers
     const bounds = new window.google.maps.LatLngBounds();
@@ -199,7 +239,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
     const positionGroups = new Map(); // Group markers by position
     
     // First pass: group places by position
-    for (const place of places) {
+    for (const place of memoizedPlaces) {
       if (!place.lat || !place.lng) continue;
       
       const position = { lat: parseFloat(place.lat), lng: parseFloat(place.lng) };
@@ -253,8 +293,8 @@ export default function MapView({ places, disableInfoWindow = false }) {
               anchor: markerProps.anchor,
               // Set size to match the canvas dimensions
               scaledSize: markerProps.scaledSize
-            },
-            animation: window.google.maps.Animation.DROP
+            }
+            // No animation for smooth appearance in place
           });
           
           // Add click event to marker
@@ -265,12 +305,8 @@ export default function MapView({ places, disableInfoWindow = false }) {
             // Only set selected place if info windows are not disabled
             if (!disableInfoWindow) {
               setSelectedPlace(marker.placeData);
-              
-              // Zoom in closer when marker is clicked for better user experience
-              const currentZoom = map.getZoom();
-              const targetZoom = Math.min(16, currentZoom + 2); // Zoom in by 2 levels, up to max of 16
-              map.setZoom(targetZoom);
-              map.panTo(marker.getPosition()); // Center map on the clicked marker
+              // Removed auto-zoom and auto-center for smooth user experience
+              // Users can control the map zoom and position naturally
             }
           });
           
@@ -282,13 +318,86 @@ export default function MapView({ places, disableInfoWindow = false }) {
     }
     
     return { markers: markers.filter(Boolean), bounds };
-  }, [places, disableInfoWindow, createPriceMarkerIcon]);
+  }, [memoizedPlaces, disableInfoWindow, createPriceMarkerIcon]);
 
   const onLoad = useCallback(function callback(map) {
+    // Prioritize saved zoom level from context, then from ref, then default
+    const mapState = getMapState();
+    const savedZoom = mapState.zoom;
+    const refZoom = previousZoomRef.current;
+    const zoomToSet = savedZoom !== 12 ? savedZoom : (refZoom !== 12 ? refZoom : 12);
+    
+    console.log('MapView onLoad - Setting zoom to:', zoomToSet, { savedZoom, refZoom });
+    
+    map.setZoom(zoomToSet);
+    setCurrentZoom(zoomToSet);
+    previousZoomRef.current = zoomToSet; // Sync ref with set zoom
+    
+    // If we have a saved center, use it, otherwise use default
+    if (mapState.center && (mapState.center.lat !== 41.2995 || mapState.center.lng !== 69.2401)) {
+      map.setCenter(mapState.center);
+    } else {
+      map.setCenter(defaultCenter);
+    }
+    
+    // Add single listener for zoom changes to handle both state and marker updates
+    const zoomListener = map.addListener('zoom_changed', () => {
+      const newZoom = map.getZoom();
+      setCurrentZoom(newZoom);
+      previousZoomRef.current = newZoom; // Store zoom level in ref
+      updateMarkerSizes(newZoom);
+      
+      // Save map state for persistence
+      if (saveMapState) {
+        saveMapState(map);
+      }
+    });
+    
+    // Add bounds change listener to notify parent when map viewport changes
+    const boundsListener = map.addListener('bounds_changed', () => {
+      // Save map state more frequently to ensure state persistence
+      if (saveMapState) {
+        saveMapState(map);
+      }
+      
+      if (onBoundsChanged) {
+        const bounds = map.getBounds();
+        if (bounds) {
+          onBoundsChanged(bounds);
+        }
+      }
+    });
+    
+    // Store the listeners for cleanup
+    map._zoomListener = zoomListener;
+    map._boundsListener = boundsListener;
+    
+    // Immediately trigger bounds change callback after map loads
+    if (onBoundsChanged) {
+      // Use a small timeout to ensure map is fully initialized
+      setTimeout(() => {
+        const bounds = map.getBounds();
+        if (bounds) {
+          console.log('MapView onLoad - Triggering initial bounds change');
+          onBoundsChanged(bounds);
+        }
+      }, 100);
+    }
+    
     setMap(map);
-  }, []);
+  }, [updateMarkerSizes, getMapState, saveMapState, onBoundsChanged]);
 
-  const onUnmount = useCallback(function callback() {
+  const onUnmount = useCallback(function callback(map) {
+    // Cleanup zoom listener if it exists
+    if (map && map._zoomListener) {
+      window.google.maps.event.removeListener(map._zoomListener);
+    }
+    
+    // Cleanup bounds listener if it exists
+    if (map && map._boundsListener) {
+      window.google.maps.event.removeListener(map._boundsListener);
+    }
+    
     // Cleanup markers
     if (markersRef.current.length > 0) {
       markersRef.current.forEach(marker => {
@@ -296,26 +405,63 @@ export default function MapView({ places, disableInfoWindow = false }) {
       });
       markersRef.current = [];
     }
+    
     // Clear clusterer
     clearMarkerClusterer();
-    // Reset updating flag
+    
+    // Reset updating flag and highlighted marker ref
     isUpdatingMarkersRef.current = false;
+    highlightedMarkerRef.current = null;
+    
     setMap(null);
   }, []);
 
+  // Helper function to check if markers are in current view
+  const areMarkersInCurrentView = useCallback((markers, map) => {
+    if (!markers.length || !map) return false;
+    
+    const bounds = map.getBounds();
+    if (!bounds) return false;
+    
+    // Check if at least 80% of markers are within the current view
+    const visibleMarkers = markers.filter(marker => {
+      const position = marker.getPosition();
+      return bounds.contains(position);
+    });
+    
+    const visibilityRatio = visibleMarkers.length / markers.length;
+    return visibilityRatio >= 0.8; // At least 80% of markers should be visible
+  }, []);
+
+  // Track previous places to detect filter changes
+  const previousPlacesRef = useRef([]);
+  
   // Update markers when places change (but not currency)
   useEffect(() => {
-    if (!map || !places.length) return;
+    if (!map) return;
 
-    // Clear existing markers first
+    // Always clear existing markers first
     markersRef.current.forEach(marker => {
       marker.setMap(null);
     });
     markersRef.current = [];
     isUpdatingMarkersRef.current = false; // Reset flag when clearing markers
+    highlightedMarkerRef.current = null; // Reset highlighted marker ref
 
     // Clear previous clusterer
     clearMarkerClusterer();
+
+    // If no places, just return after clearing markers (this handles empty filtered results)
+    if (!memoizedPlaces.length) return;
+
+    // Detect if this is a filter change (different places than before)
+    const isFilterChange = previousPlacesRef.current.length !== memoizedPlaces.length ||
+      !previousPlacesRef.current.every(prevPlace => 
+        memoizedPlaces.some(place => place.id === prevPlace.id)
+      );
+
+    // Update the previous places reference
+    previousPlacesRef.current = [...memoizedPlaces];
 
     // Create new markers
     createMarkersAsync(map).then(({ markers, bounds }) => {
@@ -332,26 +478,117 @@ export default function MapView({ places, disableInfoWindow = false }) {
         setMarkerClusterer(clusterer);
       }
 
-      // Fit map to bounds if we have markers
+      // Auto-fit bounds for better UX in these scenarios:
+      // 1. Filter change detected (always fit when filters are applied)
+      // 2. Initial load with truly default state (no saved zoom and ref is default)
+      // 3. When markers are outside current view (but only for filter changes)
       if (markers.length > 0) {
-        map.fitBounds(bounds);
-        // Add a one-time listener to adjust zoom after bounds are set
-        const boundsChangedListener = map.addListener('bounds_changed', () => {
-          const zoom = map.getZoom();
-          // If zoom is too close (higher than 13), set it back to city level
-          if (zoom > 13) {
-            map.setZoom(13);
-          }
-          // Remove this listener after first use
-          window.google.maps.event.removeListener(boundsChangedListener);
+        const mapState = getMapState();
+        const hasCustomZoom = mapState.zoom !== 12 || previousZoomRef.current !== 12;
+        
+        const shouldFitBounds = isFilterChange || 
+                                (!hasCustomZoom && map.getZoom() === 12) || 
+                                (isFilterChange && !areMarkersInCurrentView(markers, map));
+
+        console.log('Auto-fit decision:', { 
+          isFilterChange, 
+          hasCustomZoom, 
+          currentZoom: map.getZoom(), 
+          shouldFitBounds 
         });
+
+        if (shouldFitBounds) {
+          // Fit bounds to show all filtered markers
+          map.fitBounds(bounds);
+          
+          // Add a one-time listener to adjust zoom after bounds are set
+          const boundsChangedListener = map.addListener('bounds_changed', () => {
+            const zoom = map.getZoom();
+            // If zoom is too close (higher than 15), set it back to reasonable level
+            if (zoom > 15) {
+              map.setZoom(15);
+              previousZoomRef.current = 15; // Update ref
+            } else {
+              previousZoomRef.current = zoom; // Update ref with final zoom
+            }
+            // Remove this listener after first use
+            window.google.maps.event.removeListener(boundsChangedListener);
+          });
+        }
       }
     });
-  }, [map, places, createMarkersAsync]);
+  }, [map, memoizedPlaces, createMarkersAsync, areMarkersInCurrentView]);
+
+  // Handle marker highlighting when hoveredPlaceId changes
+  useEffect(() => {
+    if (!markersRef.current.length) return;
+    
+    // If hovering over the same place, don't do anything
+    if (highlightedMarkerRef.current && hoveredPlaceId === highlightedMarkerRef.current.placeData.id) {
+      return;
+    }
+    
+    // Reset previous highlighted marker if any
+    if (highlightedMarkerRef.current) {
+      const prevMarker = highlightedMarkerRef.current;
+      const place = prevMarker.placeData;
+      const currentZoom = map?.getZoom() || 12;
+      const size = getMarkerSizeByZoom(currentZoom);
+      
+      // Restore normal icon
+      createPriceMarkerIcon(place.price, place.currency, size, false)
+        .then(iconUrl => {
+          const markerProps = getMarkerGoogleMapsProperties(size);
+          prevMarker.setIcon({
+            url: iconUrl,
+            anchor: markerProps.anchor,
+            scaledSize: markerProps.scaledSize
+          });
+          prevMarker.setZIndex(1); // Reset z-index
+        })
+        .catch(error => console.error("Error resetting marker icon:", error));
+    }
+    
+    // Find and highlight new marker if hoveredPlaceId is provided
+    if (hoveredPlaceId) {
+      const markerToHighlight = markersRef.current.find(
+        marker => marker.placeData.id === hoveredPlaceId
+      );
+      
+      if (markerToHighlight) {
+        const place = markerToHighlight.placeData;
+        const currentZoom = map?.getZoom() || 12;
+        const size = getMarkerSizeByZoom(currentZoom);
+        
+        // Create highlighted icon
+        createPriceMarkerIcon(place.price, place.currency, size, true)
+          .then(iconUrl => {
+            const markerProps = getMarkerGoogleMapsProperties(size);
+            // For highlighted markers, scale up the size slightly for subtle emphasis
+            const highlightedSize = new window.google.maps.Size(
+              markerProps.scaledSize.width * 1.1,
+              markerProps.scaledSize.height * 1.1
+            );
+            
+            markerToHighlight.setIcon({
+              url: iconUrl,
+              anchor: markerProps.anchor,
+              scaledSize: highlightedSize
+            });
+            markerToHighlight.setZIndex(1000); // Bring to front
+          })
+          .catch(error => console.error("Error highlighting marker icon:", error));
+        
+        highlightedMarkerRef.current = markerToHighlight;
+      }
+    } else {
+      highlightedMarkerRef.current = null;
+    }
+  }, [hoveredPlaceId, createPriceMarkerIcon, map]);
 
   // Update marker icons when currency changes (without recreating markers)
   useEffect(() => {
-    if (!markersRef.current.length || !selectedCurrency || isUpdatingMarkersRef.current) return;
+    if (!markersRef.current.length || !currentCurrencyRef.current || isUpdatingMarkersRef.current) return;
 
     const updateMarkerIcons = async () => {
       isUpdatingMarkersRef.current = true;
@@ -382,24 +619,6 @@ export default function MapView({ places, disableInfoWindow = false }) {
 
     updateMarkerIcons();
   }, [selectedCurrency, createPriceMarkerIcon, map]);
-
-  // Listen for zoom changes to update marker sizes
-  useEffect(() => {
-    if (!map) return;
-    
-    // Add listener for zoom changes
-    const zoomListener = map.addListener('zoom_changed', () => {
-      const zoom = map.getZoom();
-      updateMarkerSizes(zoom);
-    });
-    
-    // Cleanup listener on unmount
-    return () => {
-      if (zoomListener) {
-        window.google.maps.event.removeListener(zoomListener);
-      }
-    };
-  }, [map, updateMarkerSizes]);
 
   // Error state handling
   if (loadError) {
@@ -452,7 +671,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={defaultCenter}
-        zoom={10}
+        zoom={currentZoom}
         onLoad={onLoad}
         onUnmount={onUnmount}
         onClick={(event) => {
@@ -489,7 +708,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
             onCloseClick={() => setSelectedPlace(null)}
             options={{
               maxWidth: 250,
-              pixelOffset: new window.google.maps.Size(0, -45),
+              pixelOffset: new window.google.maps.Size(0, -15),
               disableAutoPan: false,
               ariaLabel: selectedPlace.title
             }}
@@ -527,4 +746,19 @@ export default function MapView({ places, disableInfoWindow = false }) {
       </GoogleMap>
     </div>
   );
-}
+}, (prevProps, nextProps) => {
+  // Custom comparison function for memo
+  return (
+    prevProps.disableInfoWindow === nextProps.disableInfoWindow &&
+    prevProps.hoveredPlaceId === nextProps.hoveredPlaceId &&
+    prevProps.onBoundsChanged === nextProps.onBoundsChanged &&
+    prevProps.places.length === nextProps.places.length &&
+    prevProps.places.every((place, index) => 
+      place.id === nextProps.places[index]?.id &&
+      place.price === nextProps.places[index]?.price &&
+      place.currency?.charCode === nextProps.places[index]?.currency?.charCode
+    )
+  );
+});
+
+export default MapView;

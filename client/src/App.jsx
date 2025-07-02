@@ -11,6 +11,12 @@ import { UserContextProvider } from "./components/UserContext";
 import { NotificationProvider } from "./components/NotificationContext";
 import { BookingNotificationProvider } from "./contexts/BookingNotificationContext";
 import { CurrencyProvider } from "./contexts/CurrencyContext";
+import { DateTimeFilterProvider } from "./contexts/DateTimeFilterContext";
+import { PriceFilterProvider } from "./contexts/PriceFilterContext";
+import { AttendeesFilterProvider } from "./contexts/AttendeesFilterContext";
+import { SizeFilterProvider } from "./contexts/SizeFilterContext";
+import { PerksFilterProvider } from "./contexts/PerksFilterContext";
+import { PoliciesFilterProvider } from "./contexts/PoliciesFilterContext";
 import PlacesPage from "./pages/PlacesPage";
 import ProfilePage from "./pages/ProfilePage";
 import PlacesFormPage from "./pages/PlacesFormPage";
@@ -42,7 +48,13 @@ function App() {
       <CurrencyProvider>
         <NotificationProvider>
           <BookingNotificationProvider>
-            <Routes>
+            <DateTimeFilterProvider>
+              <PriceFilterProvider>
+                <AttendeesFilterProvider>
+                  <SizeFilterProvider>
+                    <PerksFilterProvider>
+                      <PoliciesFilterProvider>
+                  <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<LandingPage />} />
             <Route path="/landing" element={<LandingPage />} />
@@ -70,6 +82,12 @@ function App() {
             <Route path="/account/all-places" element={<AllPlacesPage />}/>
           </Route>
         </Routes>
+                      </PoliciesFilterProvider>
+                    </PerksFilterProvider>
+                  </SizeFilterProvider>
+                </AttendeesFilterProvider>
+              </PriceFilterProvider>
+            </DateTimeFilterProvider>
         </BookingNotificationProvider>
       </NotificationProvider>
       </CurrencyProvider>
