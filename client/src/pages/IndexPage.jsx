@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Link, useLocation, useOutletContext } from "react-router-dom";
 import CloudinaryImage from "../components/CloudinaryImage";
 import MapView from "../components/MapView";
@@ -19,8 +19,12 @@ import api from "../utils/api";
 export default function IndexPage() {
   const [places, setPlaces] = useState([]);
   const [filteredPlaces, setFilteredPlaces] = useState([]);
+  const [placesForMap, setPlacesForMap] = useState([]); // Places for map markers (without bounds filtering)
   const [isLoading, setIsLoading] = useState(true);
   const [hoveredPlaceId, setHoveredPlaceId] = useState(null);
+  
+  // Map bounds state for additional filtering
+  const [mapBounds, setMapBounds] = useState(null);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -63,6 +67,9 @@ export default function IndexPage() {
     hideMobileMap = () => {} 
   } = context || {};
   
+  // Memoize map visibility to prevent unnecessary renders
+  const mapVisible = useMemo(() => isMapVisible, [isMapVisible]);
+  
   const location = useLocation();
   
   // Pagination calculations
@@ -82,6 +89,18 @@ export default function IndexPage() {
       listingsSection.scrollTop = 0;
     }
   };
+  
+  // Handle map bounds changes
+  const handleMapBoundsChanged = useCallback((bounds) => {
+    setMapBounds(bounds);
+  }, []);
+  
+  // Reset map bounds when map visibility changes
+  useEffect(() => {
+    if (!mapVisible) {
+      setMapBounds(null);
+    }
+  }, [mapVisible]);
   
   useEffect(() => {
     setIsLoading(true);
@@ -120,6 +139,7 @@ export default function IndexPage() {
     api.get("/places/home" + (location.search ? location.search : "")).then((response) => {
       setPlaces(response.data);
       setFilteredPlaces(response.data);
+      setPlacesForMap(response.data);
       setTotalItems(response.data.length);
       setIsLoading(false);
     });
@@ -132,8 +152,25 @@ export default function IndexPage() {
       
       // If no filters are active, show all places
       if (!hasActiveAttendeesFilter && !hasActivePriceFilter && !hasActiveSizeFilter && !hasSelectedPerks && !hasSelectedPolicies) {
-        setFilteredPlaces(places);
-        setTotalItems(places.length);
+        // Set places for map (all places, no bounds filtering)
+        setPlacesForMap(places);
+        
+        // Apply map bounds filter only for the listing display (only if bounds are available)
+        if (mapBounds && mapVisible && window.google && window.google.maps) {
+          filtered = places.filter(place => {
+            if (!place.lat || !place.lng) return false;
+            const position = new window.google.maps.LatLng(
+              parseFloat(place.lat), 
+              parseFloat(place.lng)
+            );
+            return mapBounds.contains(position);
+          });
+        } else {
+          // If map bounds are not available yet, show all places
+          filtered = places;
+        }
+        setFilteredPlaces(filtered);
+        setTotalItems(filtered.length);
         return;
       }
       
@@ -228,13 +265,34 @@ export default function IndexPage() {
         }
       }
       
-      setFilteredPlaces(filtered);
-      setTotalItems(filtered.length);
+      // Set places for map (all filtered places without bounds filtering)
+      setPlacesForMap(filtered);
+      
+      // Apply map bounds filter as the final step for the listing display only (only if bounds are available)
+      let displayFiltered = filtered;
+      if (mapBounds && mapVisible && window.google && window.google.maps) {
+        displayFiltered = filtered.filter(place => {
+          // Skip places without coordinates
+          if (!place.lat || !place.lng) return false;
+          
+          const position = new window.google.maps.LatLng(
+            parseFloat(place.lat), 
+            parseFloat(place.lng)
+          );
+          return mapBounds.contains(position);
+        });
+      } else if (mapVisible) {
+        // If map is visible but bounds are not available yet, show all filtered places
+        displayFiltered = filtered;
+      }
+      
+      setFilteredPlaces(displayFiltered);
+      setTotalItems(displayFiltered.length);
       setCurrentPage(1); // Reset to first page when filter changes
     };
 
     applyFilters();
-  }, [places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency, hasActiveAttendeesFilter, filterPlacesByAttendees, hasActiveSizeFilter, filterPlacesBySize, hasSelectedPerks, filterPlacesByPerks, hasSelectedPolicies, filterPlacesByPolicies]);
+  }, [places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency, hasActiveAttendeesFilter, filterPlacesByAttendees, hasActiveSizeFilter, filterPlacesBySize, hasSelectedPerks, filterPlacesByPerks, hasSelectedPolicies, filterPlacesByPolicies, mapBounds, mapVisible]);
 
   // Resizable functionality
   const handleMouseDown = (e) => {
@@ -300,9 +358,7 @@ export default function IndexPage() {
 
   // Memoize filtered places to prevent unnecessary re-renders
   const memoizedFilteredPlaces = useMemo(() => filteredPlaces, [filteredPlaces]);
-
-  // Memoize map visibility to prevent unnecessary renders
-  const mapVisible = useMemo(() => isMapVisible, [isMapVisible]);
+  const memoizedPlacesForMap = useMemo(() => placesForMap, [placesForMap]);
 
   return (
     <div className="flex flex-col h-full">
@@ -337,8 +393,9 @@ export default function IndexPage() {
           {/* Mobile Map container - remaining height with padding for header and filter */}
           <div className="flex-1 w-full pt-[120px] border-0 outline-0">
             <MapView 
-              places={memoizedFilteredPlaces} 
+              places={memoizedPlacesForMap} 
               hoveredPlaceId={hoveredPlaceId}
+              onBoundsChanged={handleMapBoundsChanged}
             />
           </div>
         </div>
@@ -482,8 +539,9 @@ export default function IndexPage() {
             {/* Map container - only render when visible */}
             <div className="w-full h-full overflow-hidden relative border-0 outline-0">
               <MapView 
-                places={memoizedFilteredPlaces} 
+                places={memoizedPlacesForMap} 
                 hoveredPlaceId={hoveredPlaceId}
+                onBoundsChanged={handleMapBoundsChanged}
               />
             </div>
           </div>
