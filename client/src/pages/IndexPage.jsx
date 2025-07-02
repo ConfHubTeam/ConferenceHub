@@ -26,6 +26,10 @@ export default function IndexPage() {
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 10; // Number of places to show per page
   
+  // Resizable layout state
+  const [listingsWidth, setListingsWidth] = useState(50); // Percentage width of listings section
+  const [isDragging, setIsDragging] = useState(false);
+  
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   
   // Date/Time filter context
@@ -231,6 +235,68 @@ export default function IndexPage() {
     applyFilters();
   }, [places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency, hasActiveAttendeesFilter, filterPlacesByAttendees, hasActiveSizeFilter, filterPlacesBySize, hasSelectedPerks, filterPlacesByPerks, hasSelectedPolicies, filterPlacesByPolicies]);
 
+  // Resizable functionality
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    e.preventDefault();
+  };
+
+  // Add global mouse event listeners for dragging
+  useEffect(() => {
+    if (isDragging) {
+      const handleGlobalMouseMove = (e) => {
+        const mainContent = document.querySelector('[data-main-content]');
+        if (mainContent) {
+          const containerRect = mainContent.getBoundingClientRect();
+          const newWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
+          const constrainedWidth = Math.min(Math.max(newWidth, 25), 75);
+          setListingsWidth(constrainedWidth);
+        }
+      };
+
+      const handleGlobalMouseUp = () => {
+        setIsDragging(false);
+      };
+
+      document.addEventListener('mousemove', handleGlobalMouseMove, { passive: true });
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+
+      return () => {
+        document.removeEventListener('mousemove', handleGlobalMouseMove);
+        document.removeEventListener('mouseup', handleGlobalMouseUp);
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      };
+    }
+  }, [isDragging]);
+
+  // Load saved layout preference
+  useEffect(() => {
+    const savedWidth = localStorage.getItem('listingsWidth');
+    if (savedWidth) {
+      const width = parseFloat(savedWidth);
+      if (width >= 25 && width <= 75) {
+        setListingsWidth(width);
+      }
+    }
+  }, []);
+
+  // Save layout preference when it changes
+  useEffect(() => {
+    localStorage.setItem('listingsWidth', listingsWidth.toString());
+  }, [listingsWidth]);
+
+  // Calculate grid columns based on listings width
+  const getGridColumns = () => {
+    if (!isMapVisible) return "grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
+    
+    if (listingsWidth >= 65) return "grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
+    if (listingsWidth >= 45) return "grid-cols-1 lg:grid-cols-2";
+    return "grid-cols-1";
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Mobile Map View - Full Screen */}
@@ -262,19 +328,23 @@ export default function IndexPage() {
           </button>
           
           {/* Mobile Map container - remaining height with padding for header and filter */}
-          <div className="flex-1 w-full pt-[120px]">
+          <div className="flex-1 w-full pt-[120px] border-0 outline-0">
             <MapView places={filteredPlaces} />
           </div>
         </div>
       )}
 
       {/* Main content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div 
+        className="flex-1 flex overflow-hidden relative"
+        data-main-content
+      >
         {/* Listings section */}
         <div 
-          className={`transition-all duration-300 ease-in-out overflow-y-auto ${
-            isMapVisible ? "w-1/2" : "w-full"
-          }`}
+          className={`overflow-y-auto ${isDragging ? '' : 'transition-all duration-75 ease-linear'}`}
+          style={{ 
+            width: isMapVisible ? `${listingsWidth}%` : '100%'
+          }}
           data-listings-section
         >
           <div className="p-4">
@@ -289,11 +359,7 @@ export default function IndexPage() {
               </div>
             ) : (
               <div 
-                className={`grid gap-6 ${
-                  isMapVisible 
-                    ? "grid-cols-1 lg:grid-cols-2" // 2 columns when map is open
-                    : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" // 3 columns when map is closed
-                }`}
+                className={`grid gap-6 ${getGridColumns()}`}
               >
                 {currentPagePlaces.map((place) => (
                   <div key={place.id} className="relative group">
@@ -351,9 +417,43 @@ export default function IndexPage() {
           </div>
         </div>
 
+        {/* Resizable Divider */}
+        {isMapVisible && (
+          <div
+            className={`hidden md:flex w-1 hover:w-2 flex-shrink-0 relative group transition-all duration-75 ease-linear ${
+              isDragging 
+                ? 'bg-primary w-2' 
+                : 'bg-gray-200 hover:bg-primary'
+            } cursor-col-resize`}
+            onMouseDown={handleMouseDown}
+            title="Drag to resize layout"
+          >
+            {/* Drag handle indicator */}
+            <div className={`absolute inset-y-0 -left-1 -right-1 flex items-center justify-center transition-opacity duration-75 ease-linear ${
+              isDragging ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+            }`}>
+              <div className="flex flex-col space-y-0.5">
+                <div className="w-0.5 h-1 bg-white rounded-full"></div>
+                <div className="w-0.5 h-1 bg-white rounded-full"></div>
+                <div className="w-0.5 h-1 bg-white rounded-full"></div>
+                <div className="w-0.5 h-1 bg-white rounded-full"></div>
+                <div className="w-0.5 h-1 bg-white rounded-full"></div>
+              </div>
+            </div>
+            
+            {/* Expanded hover area for better UX */}
+            <div className="absolute inset-y-0 -left-3 -right-3"></div>
+          </div>
+        )}
+
         {/* Desktop Map section */}
         {isMapVisible && (
-          <div className="hidden md:block w-1/2 relative">
+          <div 
+            className={`hidden md:block relative flex-1 ${isDragging ? '' : 'transition-all duration-75 ease-linear'}`}
+            style={{ 
+              width: `${100 - listingsWidth}%`
+            }}
+          >
             {/* X button to close map */}
             <button
               onClick={() => hideMap && hideMap()}
@@ -365,7 +465,7 @@ export default function IndexPage() {
             </button>
             
             {/* Map container - fixed height, not scrollable */}
-            <div className="w-full h-full overflow-hidden relative">
+            <div className="w-full h-full overflow-hidden relative border-0 outline-0">
               <MapView places={filteredPlaces} />
             </div>
           </div>
