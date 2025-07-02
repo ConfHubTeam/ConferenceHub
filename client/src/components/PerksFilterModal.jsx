@@ -112,7 +112,7 @@ const PerksFilterModal = ({ isOpen, onClose }) => {
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white rounded-xl w-full max-w-2xl max-h-[75vh] flex flex-col shadow-2xl">
+      <div className="bg-white rounded-xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl">
         {/* Modal Header */}
         <div className="flex items-center justify-between p-3 border-b border-gray-200">
           <div className="flex items-center gap-3">
