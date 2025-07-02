@@ -217,7 +217,7 @@ export default function DateTimeFilterModal({ isOpen, onClose }) {
     <div className="fixed inset-0 z-[99999] bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4" style={{ zIndex: 999999 }}>
       <div 
         ref={modalRef}
-        className="bg-white rounded-xl shadow-2xl w-full max-w-sm sm:max-w-md md:max-w-4xl h-[98vh] sm:h-[95vh] md:h-[90vh] flex flex-col overflow-hidden relative z-[99999]"
+        className="bg-white rounded-xl shadow-2xl w-full max-w-sm sm:max-w-md md:max-w-4xl max-h-[90vh] flex flex-col overflow-hidden relative z-[99999]"
         style={{ zIndex: 999999 }}
       >
         {/* Header - Ultra compact */}
