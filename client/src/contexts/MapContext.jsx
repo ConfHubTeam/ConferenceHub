@@ -20,7 +20,7 @@ export const MapProvider = ({ children }) => {
   
   // Store map state to preserve across toggles
   const mapStateRef = useRef({
-    zoom: 10,
+    zoom: 12, // Start with a more reasonable zoom level
     center: { lat: 41.2995, lng: 69.2401 },
     bounds: null
   });
