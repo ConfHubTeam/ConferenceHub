@@ -1,7 +1,20 @@
 /**
  * Marker size utility functions for map markers
- * Contains configurations and helper functions for handling marker sizes based on zoom levels
+ * C/**
+ * Gets the anchor point for a marker based on its size
+ * The anchor point determines where the marker is positioned relative to its coordinates
+ * @param {string} size - Size category ('small', 'medium', or 'large')
+ * @returns {object} Object with x and y coordinates for the anchor point
  */
+export const getMarkerAnchorPoint = (size = 'medium') => {
+  const config = getMarkerSizeConfig(size);
+  
+  // Anchor point is at the center of the rounded marker for optimal positioning
+  return {
+    x: config.width / 2,
+    y: config.height / 2
+  };
+};
 
 // Marker size configurations
 export const MARKER_SIZE_CONFIGS = {
@@ -53,22 +66,6 @@ export const getMarkerSizeByZoom = (zoomLevel) => {
  */
 export const getMarkerSizeConfig = (size = 'medium') => {
   return MARKER_SIZE_CONFIGS[size] || MARKER_SIZE_CONFIGS.medium;
-};
-
-/**
- * Calculates the anchor point for a marker based on its size
- * The anchor point determines where the marker is positioned relative to its coordinates
- * @param {string} size - Size category ('small', 'medium', or 'large')
- * @returns {object} Object with x and y coordinates for the anchor point
- */
-export const getMarkerAnchorPoint = (size = 'medium') => {
-  const config = getMarkerSizeConfig(size);
-  
-  // Anchor point is typically at the bottom center of the marker (tip of the pointer)
-  return {
-    x: config.width / 2,
-    y: config.height
-  };
 };
 
 /**
