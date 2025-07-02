@@ -3,58 +3,42 @@
  */
 
 /**
- * Draw the marker shape (hexagon with pointer) on canvas
+ * Draw the marker shape (rounded rectangle without pin) on canvas
  * @param {CanvasRenderingContext2D} context - Canvas 2D context
  * @param {number} baseWidth - Width of the marker
  * @param {number} baseHeight - Height of the marker
  * @param {number} borderRadius - Border radius for rounded corners
  */
 export const drawMarkerShape = (context, baseWidth, baseHeight, borderRadius) => {
-  // Draw marker shape (more rectangular than hexagon for larger price values)
-  const hexHeight = baseHeight * 0.75; // Increased from 0.72
-  const hexWidth = baseWidth * 0.95; // Increased from 0.9
-  const startX = (baseWidth - hexWidth) / 2;
-  const startY = 0;
-  const pointHeight = baseHeight - hexHeight;
+  // Calculate marker dimensions (full height without pointer)
+  const markerWidth = baseWidth * 0.95;
+  const markerHeight = baseHeight * 0.9; // Use more of the available height
+  const startX = (baseWidth - markerWidth) / 2;
+  const startY = (baseHeight - markerHeight) / 2;
   
-  // Add shadow
-  context.shadowColor = "rgba(0, 0, 0, 0.3)";
-  context.shadowBlur = 4;
+  // Add subtle shadow for depth
+  context.shadowColor = "rgba(0, 0, 0, 0.25)";
+  context.shadowBlur = 6;
   context.shadowOffsetX = 0;
-  context.shadowOffsetY = 2;
+  context.shadowOffsetY = 3;
   
-  // Create hexagon path
+  // Create rounded rectangle path
   context.beginPath();
-  // Top left corner
-  context.moveTo(startX + borderRadius, startY);
-  // Top side
-  context.lineTo(startX + hexWidth - borderRadius, startY);
-  // Top right corner
-  context.arcTo(startX + hexWidth, startY, startX + hexWidth, startY + borderRadius, borderRadius);
-  // Right side
-  context.lineTo(startX + hexWidth, startY + hexHeight - borderRadius);
-  // Bottom right corner
-  context.arcTo(startX + hexWidth, startY + hexHeight, startX + hexWidth - borderRadius, startY + hexHeight, borderRadius);
-  // Bottom side to pointer start
-  context.lineTo(startX + (hexWidth * 0.55), startY + hexHeight);
-  // Pointer
-  context.lineTo(baseWidth / 2, baseHeight);
-  context.lineTo(startX + (hexWidth * 0.45), startY + hexHeight);
-  // Bottom side from pointer end
-  context.lineTo(startX + borderRadius, startY + hexHeight);
-  // Bottom left corner
-  context.arcTo(startX, startY + hexHeight, startX, startY + hexHeight - borderRadius, borderRadius);
-  // Left side
-  context.lineTo(startX, startY + borderRadius);
-  // Top left corner
-  context.arcTo(startX, startY, startX + borderRadius, startY, borderRadius);
+  context.roundRect(startX, startY, markerWidth, markerHeight, borderRadius);
   
-  // Fill with gradient
-  const gradient = context.createLinearGradient(0, 0, 0, hexHeight);
-  gradient.addColorStop(0, "#ff385c");
-  gradient.addColorStop(1, "#e31c5f");
+  // Create gradient using theme colors
+  const gradient = context.createLinearGradient(0, startY, 0, startY + markerHeight);
+  gradient.addColorStop(0, "#f59e5e"); // Lighter orange
+  gradient.addColorStop(0.5, "#f38129"); // Primary theme color
+  gradient.addColorStop(1, "#d66d1c"); // Darker orange for depth
+  
   context.fillStyle = gradient;
   context.fill();
+  
+  // Add subtle border for definition
+  context.strokeStyle = "rgba(255, 255, 255, 0.4)";
+  context.lineWidth = 1;
+  context.stroke();
   
   // Reset shadow for text
   context.shadowColor = "transparent";
@@ -69,34 +53,41 @@ export const drawMarkerShape = (context, baseWidth, baseHeight, borderRadius) =>
  * @param {number} fontSize - Initial font size
  */
 export const drawPriceText = (context, formattedPrice, baseWidth, baseHeight, fontSize) => {
-  const hexHeight = baseHeight * 0.75; // Same as in drawMarkerShape
-  const hexWidth = baseWidth * 0.95; // Same as in drawMarkerShape
+  const markerHeight = baseHeight * 0.9; // Same as in drawMarkerShape
+  const markerWidth = baseWidth * 0.95; // Same as in drawMarkerShape
   
-  // Text preparations
+  // Text configuration for high contrast and readability
   context.fillStyle = "white";
   context.textAlign = "center";
   context.textBaseline = "middle";
   
-  // Handle long texts (like large UZS amounts)
-  // Start with default font size and reduce if needed
+  // Dynamic font sizing for optimal readability
   let dynamicFontSize = fontSize;
   context.font = `bold ${dynamicFontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`;
   
   let textWidth = context.measureText(formattedPrice).width;
-  let maxWidth = hexWidth * 0.9; // Max width = 90% of shape width
+  const maxWidth = markerWidth * 0.85; // More conservative padding for better UX
   
-  // Reduce font size if text is too wide
+  // Optimize font size for text width
   if (textWidth > maxWidth) {
-    // More aggressive font size reduction for very long text
-    let reductionStep = textWidth > maxWidth * 1.5 ? 1.0 : 0.5;
+    const reductionStep = textWidth > maxWidth * 1.5 ? 1.0 : 0.5;
     
-    while (textWidth > maxWidth && dynamicFontSize > 7) {
+    while (textWidth > maxWidth && dynamicFontSize > 8) {
       dynamicFontSize -= reductionStep;
       context.font = `bold ${dynamicFontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`;
       textWidth = context.measureText(formattedPrice).width;
     }
   }
   
-  // Draw the text with possibly reduced font size
-  context.fillText(formattedPrice, baseWidth / 2, hexHeight / 2);
+  // Add text shadow for better legibility
+  context.shadowColor = "rgba(0, 0, 0, 0.3)";
+  context.shadowBlur = 1;
+  context.shadowOffsetX = 0;
+  context.shadowOffsetY = 1;
+  
+  // Draw the price text centered on the marker
+  context.fillText(formattedPrice, baseWidth / 2, baseHeight / 2);
+  
+  // Reset shadow
+  context.shadowColor = "transparent";
 };

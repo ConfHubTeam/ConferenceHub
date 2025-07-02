@@ -69,6 +69,9 @@ export default function MapView({ places, disableInfoWindow = false }) {
   const isUpdatingMarkersRef = useRef(false);
   const { selectedCurrency } = useCurrency();
   
+  // Track zoom level to maintain consistency when map is toggled
+  const [currentZoom, setCurrentZoom] = useState(10);
+  
   // Use the custom touch handler hook
   const { mapContainerRef } = useMapTouchHandler();
   
@@ -285,10 +288,28 @@ export default function MapView({ places, disableInfoWindow = false }) {
   }, [places, disableInfoWindow, createPriceMarkerIcon]);
 
   const onLoad = useCallback(function callback(map) {
+    // Set the zoom level consistently
+    map.setZoom(currentZoom);
+    
+    // Add single listener for zoom changes to handle both state and marker updates
+    const zoomListener = map.addListener('zoom_changed', () => {
+      const newZoom = map.getZoom();
+      setCurrentZoom(newZoom);
+      updateMarkerSizes(newZoom);
+    });
+    
+    // Store the listener for cleanup
+    map._zoomListener = zoomListener;
+    
     setMap(map);
-  }, []);
+  }, [currentZoom, updateMarkerSizes]);
 
-  const onUnmount = useCallback(function callback() {
+  const onUnmount = useCallback(function callback(map) {
+    // Cleanup zoom listener if it exists
+    if (map && map._zoomListener) {
+      window.google.maps.event.removeListener(map._zoomListener);
+    }
+    
     // Cleanup markers
     if (markersRef.current.length > 0) {
       markersRef.current.forEach(marker => {
@@ -386,24 +407,6 @@ export default function MapView({ places, disableInfoWindow = false }) {
     updateMarkerIcons();
   }, [selectedCurrency, createPriceMarkerIcon, map]);
 
-  // Listen for zoom changes to update marker sizes
-  useEffect(() => {
-    if (!map) return;
-    
-    // Add listener for zoom changes
-    const zoomListener = map.addListener('zoom_changed', () => {
-      const zoom = map.getZoom();
-      updateMarkerSizes(zoom);
-    });
-    
-    // Cleanup listener on unmount
-    return () => {
-      if (zoomListener) {
-        window.google.maps.event.removeListener(zoomListener);
-      }
-    };
-  }, [map, updateMarkerSizes]);
-
   // Error state handling
   if (loadError) {
     // Check for specific error types to provide better guidance
@@ -455,7 +458,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={defaultCenter}
-        zoom={10}
+        zoom={currentZoom}
         onLoad={onLoad}
         onUnmount={onUnmount}
         onClick={(event) => {
