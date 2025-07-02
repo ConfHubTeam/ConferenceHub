@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link, useLocation, useOutletContext } from "react-router-dom";
 import CloudinaryImage from "../components/CloudinaryImage";
 import MapView from "../components/MapView";
@@ -297,6 +297,12 @@ export default function IndexPage() {
     return "grid-cols-1";
   };
 
+  // Memoize filtered places to prevent unnecessary re-renders
+  const memoizedFilteredPlaces = useMemo(() => filteredPlaces, [filteredPlaces]);
+
+  // Memoize map visibility to prevent unnecessary renders
+  const mapVisible = useMemo(() => isMapVisible, [isMapVisible]);
+
   return (
     <div className="flex flex-col h-full">
       {/* Mobile Map View - Full Screen */}
@@ -329,7 +335,7 @@ export default function IndexPage() {
           
           {/* Mobile Map container - remaining height with padding for header and filter */}
           <div className="flex-1 w-full pt-[120px] border-0 outline-0">
-            <MapView places={filteredPlaces} />
+            <MapView places={memoizedFilteredPlaces} />
           </div>
         </div>
       )}
@@ -343,7 +349,7 @@ export default function IndexPage() {
         <div 
           className={`overflow-y-auto ${isDragging ? '' : 'transition-all duration-75 ease-linear'}`}
           style={{ 
-            width: isMapVisible ? `${listingsWidth}%` : '100%'
+            width: mapVisible ? `${listingsWidth}%` : '100%'
           }}
           data-listings-section
         >
@@ -418,7 +424,7 @@ export default function IndexPage() {
         </div>
 
         {/* Resizable Divider */}
-        {isMapVisible && (
+        {mapVisible && (
           <div
             className={`hidden md:flex w-1 hover:w-2 flex-shrink-0 relative group transition-all duration-75 ease-linear ${
               isDragging 
@@ -447,7 +453,7 @@ export default function IndexPage() {
         )}
 
         {/* Desktop Map section */}
-        {isMapVisible && (
+        {mapVisible && (
           <div 
             className={`hidden md:block relative flex-1 ${isDragging ? '' : 'transition-all duration-75 ease-linear'}`}
             style={{ 
@@ -464,9 +470,9 @@ export default function IndexPage() {
               </svg>
             </button>
             
-            {/* Map container - fixed height, not scrollable */}
+            {/* Map container - only render when visible */}
             <div className="w-full h-full overflow-hidden relative border-0 outline-0">
-              <MapView places={filteredPlaces} />
+              <MapView places={memoizedFilteredPlaces} />
             </div>
           </div>
         )}

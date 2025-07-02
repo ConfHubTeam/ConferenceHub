@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo, memo } from "react";
 import { GoogleMap, useJsApiLoader, InfoWindow } from "@react-google-maps/api";
 import { Link } from "react-router-dom";
 import CloudinaryImage from "./CloudinaryImage";
 import { useCurrency } from "../contexts/CurrencyContext";
+import { useMap } from "../contexts/MapContext";
 import { formatPrice, formatUZSShort, convertCurrency } from "../utils/currencyUtils";
 import PriceDisplay from "./PriceDisplay";
 import { 
@@ -56,7 +57,7 @@ const defaultCenter = {
 // Define libraries as a constant outside the component to prevent recreation on each render
 const libraries = ['places'];
 
-export default function MapView({ places, disableInfoWindow = false }) {
+const MapView = memo(function MapView({ places, disableInfoWindow = false }) {
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
@@ -69,11 +70,28 @@ export default function MapView({ places, disableInfoWindow = false }) {
   const isUpdatingMarkersRef = useRef(false);
   const { selectedCurrency } = useCurrency();
   
+  // Use MapContext if available, otherwise use defaults
+  let saveMapState, getMapState;
+  try {
+    const mapContext = useMap();
+    saveMapState = mapContext.saveMapState;
+    getMapState = mapContext.getMapState;
+  } catch (error) {
+    // If MapProvider is not available, use no-op functions
+    saveMapState = () => {};
+    getMapState = () => ({ zoom: 10, center: { lat: 41.2995, lng: 69.2401 }, bounds: null });
+  }
+  
+  // Store previous zoom level in ref to persist across unmounts
+  const previousZoomRef = useRef(10);
   // Track zoom level to maintain consistency when map is toggled
   const [currentZoom, setCurrentZoom] = useState(10);
   
   // Use the custom touch handler hook
   const { mapContainerRef } = useMapTouchHandler();
+  
+  // Memoize the places data to prevent unnecessary marker recreation
+  const memoizedPlaces = useMemo(() => places, [places]);
   
   // Create a custom price marker icon with current currency
   const createPriceMarkerIcon = useCallback(async (price, currency, size = "medium") => {
@@ -193,7 +211,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
     } finally {
       isUpdatingMarkersRef.current = false;
     }
-  }, [selectedCurrency]);  // Create markers function that can be reused
+  }, [selectedCurrency]);  // Update the createMarkersAsync to use memoizedPlaces
   const createMarkersAsync = useCallback(async (map) => {
     // Create new bounds object to fit all markers
     const bounds = new window.google.maps.LatLngBounds();
@@ -202,7 +220,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
     const positionGroups = new Map(); // Group markers by position
     
     // First pass: group places by position
-    for (const place of places) {
+    for (const place of memoizedPlaces) {
       if (!place.lat || !place.lng) continue;
       
       const position = { lat: parseFloat(place.lat), lng: parseFloat(place.lng) };
@@ -285,24 +303,37 @@ export default function MapView({ places, disableInfoWindow = false }) {
     }
     
     return { markers: markers.filter(Boolean), bounds };
-  }, [places, disableInfoWindow, createPriceMarkerIcon]);
+  }, [memoizedPlaces, disableInfoWindow, createPriceMarkerIcon]);
 
   const onLoad = useCallback(function callback(map) {
-    // Set the zoom level consistently
-    map.setZoom(currentZoom);
+    // Restore the previous zoom level or get from context
+    const mapState = getMapState();
+    const zoomToSet = mapState.zoom || previousZoomRef.current || 10;
+    map.setZoom(zoomToSet);
+    
+    // If we have a saved center, use it
+    if (mapState.center) {
+      map.setCenter(mapState.center);
+    }
     
     // Add single listener for zoom changes to handle both state and marker updates
     const zoomListener = map.addListener('zoom_changed', () => {
       const newZoom = map.getZoom();
       setCurrentZoom(newZoom);
+      previousZoomRef.current = newZoom; // Store zoom level in ref
       updateMarkerSizes(newZoom);
+      
+      // Save map state for persistence
+      if (saveMapState) {
+        saveMapState(map);
+      }
     });
     
     // Store the listener for cleanup
     map._zoomListener = zoomListener;
     
     setMap(map);
-  }, [currentZoom, updateMarkerSizes]);
+  }, [updateMarkerSizes, getMapState, saveMapState]); // Remove currentZoom dependency
 
   const onUnmount = useCallback(function callback(map) {
     // Cleanup zoom listener if it exists
@@ -324,6 +355,26 @@ export default function MapView({ places, disableInfoWindow = false }) {
     setMap(null);
   }, []);
 
+  // Helper function to check if markers are in current view
+  const areMarkersInCurrentView = useCallback((markers, map) => {
+    if (!markers.length || !map) return false;
+    
+    const bounds = map.getBounds();
+    if (!bounds) return false;
+    
+    // Check if at least 80% of markers are within the current view
+    const visibleMarkers = markers.filter(marker => {
+      const position = marker.getPosition();
+      return bounds.contains(position);
+    });
+    
+    const visibilityRatio = visibleMarkers.length / markers.length;
+    return visibilityRatio >= 0.8; // At least 80% of markers should be visible
+  }, []);
+
+  // Track previous places to detect filter changes
+  const previousPlacesRef = useRef([]);
+  
   // Update markers when places change (but not currency)
   useEffect(() => {
     if (!map) return;
@@ -339,7 +390,16 @@ export default function MapView({ places, disableInfoWindow = false }) {
     clearMarkerClusterer();
 
     // If no places, just return after clearing markers (this handles empty filtered results)
-    if (!places.length) return;
+    if (!memoizedPlaces.length) return;
+
+    // Detect if this is a filter change (different places than before)
+    const isFilterChange = previousPlacesRef.current.length !== memoizedPlaces.length ||
+      !previousPlacesRef.current.every(prevPlace => 
+        memoizedPlaces.some(place => place.id === prevPlace.id)
+      );
+
+    // Update the previous places reference
+    previousPlacesRef.current = [...memoizedPlaces];
 
     // Create new markers
     createMarkersAsync(map).then(({ markers, bounds }) => {
@@ -356,22 +416,36 @@ export default function MapView({ places, disableInfoWindow = false }) {
         setMarkerClusterer(clusterer);
       }
 
-      // Fit map to bounds if we have markers
+      // Auto-fit bounds for better UX in these scenarios:
+      // 1. Filter change detected (always fit when filters are applied)
+      // 2. Initial load with default zoom level
+      // 3. When markers are outside current view
       if (markers.length > 0) {
-        map.fitBounds(bounds);
-        // Add a one-time listener to adjust zoom after bounds are set
-        const boundsChangedListener = map.addListener('bounds_changed', () => {
-          const zoom = map.getZoom();
-          // If zoom is too close (higher than 13), set it back to city level
-          if (zoom > 13) {
-            map.setZoom(13);
-          }
-          // Remove this listener after first use
-          window.google.maps.event.removeListener(boundsChangedListener);
-        });
+        const shouldFitBounds = isFilterChange || 
+                                map.getZoom() === 10 || 
+                                !areMarkersInCurrentView(markers, map);
+
+        if (shouldFitBounds) {
+          // Fit bounds to show all filtered markers
+          map.fitBounds(bounds);
+          
+          // Add a one-time listener to adjust zoom after bounds are set
+          const boundsChangedListener = map.addListener('bounds_changed', () => {
+            const zoom = map.getZoom();
+            // If zoom is too close (higher than 15), set it back to reasonable level
+            if (zoom > 15) {
+              map.setZoom(15);
+              previousZoomRef.current = 15; // Update ref
+            } else {
+              previousZoomRef.current = zoom; // Update ref with final zoom
+            }
+            // Remove this listener after first use
+            window.google.maps.event.removeListener(boundsChangedListener);
+          });
+        }
       }
     });
-  }, [map, places, createMarkersAsync]);
+  }, [map, memoizedPlaces, createMarkersAsync, areMarkersInCurrentView]);
 
   // Update marker icons when currency changes (without recreating markers)
   useEffect(() => {
@@ -495,7 +569,7 @@ export default function MapView({ places, disableInfoWindow = false }) {
             onCloseClick={() => setSelectedPlace(null)}
             options={{
               maxWidth: 250,
-              pixelOffset: new window.google.maps.Size(0, -45),
+              pixelOffset: new window.google.maps.Size(0, -15),
               disableAutoPan: false,
               ariaLabel: selectedPlace.title
             }}
@@ -533,4 +607,17 @@ export default function MapView({ places, disableInfoWindow = false }) {
       </GoogleMap>
     </div>
   );
-}
+}, (prevProps, nextProps) => {
+  // Custom comparison function for memo
+  return (
+    prevProps.disableInfoWindow === nextProps.disableInfoWindow &&
+    prevProps.places.length === nextProps.places.length &&
+    prevProps.places.every((place, index) => 
+      place.id === nextProps.places[index]?.id &&
+      place.price === nextProps.places[index]?.price &&
+      place.currency?.charCode === nextProps.places[index]?.currency?.charCode
+    )
+  );
+});
+
+export default MapView;

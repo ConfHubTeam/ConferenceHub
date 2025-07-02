@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
 
 const MapContext = createContext();
 
@@ -17,6 +17,13 @@ export const MapProvider = ({ children }) => {
   // Set map to visible by default only on desktop
   const [isMapVisible, setIsMapVisible] = useState(!isMobile);
   const [isMobileMapView, setIsMobileMapView] = useState(false);
+  
+  // Store map state to preserve across toggles
+  const mapStateRef = useRef({
+    zoom: 10,
+    center: { lat: 41.2995, lng: 69.2401 },
+    bounds: null
+  });
   
   // Handle window resize to adjust map visibility based on screen size
   useEffect(() => {
@@ -58,13 +65,28 @@ export const MapProvider = ({ children }) => {
     setIsMobileMapView(false);
   };
 
+  // New methods to preserve map state
+  const saveMapState = (mapInstance) => {
+    if (mapInstance) {
+      mapStateRef.current = {
+        zoom: mapInstance.getZoom(),
+        center: mapInstance.getCenter().toJSON(),
+        bounds: mapInstance.getBounds()?.toJSON()
+      };
+    }
+  };
+
+  const getMapState = () => mapStateRef.current;
+
   const value = {
     isMapVisible,
     isMobileMapView,
     toggleMap,
     hideMap,
     showMobileMap,
-    hideMobileMap
+    hideMobileMap,
+    saveMapState,
+    getMapState
   };
 
   return (
