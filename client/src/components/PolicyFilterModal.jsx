@@ -1,4 +1,5 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import { usePoliciesFilter } from "../contexts/PoliciesFilterContext";
 
 // Policy Filter Modal Component following Single Responsibility Principle
@@ -34,10 +35,10 @@ export default function PolicyFilterModal({ isOpen, onClose }) {
     return null;
   }
 
-  return (
+  const modalContent = (
     <div className="fixed inset-0 z-[99999] bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4">
       {/* Modal Container - Responsive design with mobile-first approach */}
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm sm:max-w-md md:max-w-2xl lg:max-w-3xl max-h-[80vh] flex flex-col overflow-hidden">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm sm:max-w-md md:max-w-2xl lg:max-w-3xl max-h-[95vh] flex flex-col overflow-hidden">
         
         {/* Modal Header - Fixed */}
         <div className="flex items-center justify-between px-2 sm:px-3 py-1.5 sm:py-2 border-b flex-shrink-0 bg-gray-50">
@@ -137,4 +138,6 @@ export default function PolicyFilterModal({ isOpen, onClose }) {
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }
