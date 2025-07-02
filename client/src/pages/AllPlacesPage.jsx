@@ -8,6 +8,7 @@ import { useCurrency } from "../contexts/CurrencyContext";
 import { useAttendeesFilter } from "../contexts/AttendeesFilterContext";
 import { useSizeFilter } from "../contexts/SizeFilterContext";
 import { usePerksFilter } from "../contexts/PerksFilterContext";
+import { usePoliciesFilter } from "../contexts/PoliciesFilterContext";
 import { convertCurrency } from "../utils/currencyUtils";
 import CloudinaryImage from "../components/CloudinaryImage";
 import PriceDisplay from "../components/PriceDisplay";
@@ -37,6 +38,9 @@ export default function AllPlacesPage() {
   
   // Perks filter context
   const { filterPlacesByPerks, hasSelectedPerks } = usePerksFilter();
+  
+  // Policies filter context
+  const { filterPlacesByPolicies, hasSelectedPolicies } = usePoliciesFilter();
   
   // Agent-specific state for user filtering
   const [allUsers, setAllUsers] = useState([]);
@@ -192,6 +196,11 @@ export default function AllPlacesPage() {
         filtered = filterPlacesByPerks(filtered);
       }
       
+      // Apply policies filter
+      if (hasSelectedPolicies) {
+        filtered = filterPlacesByPolicies(filtered);
+      }
+      
       // Apply price filter
       if (hasActivePriceFilter && filtered.length > 0) {
         try {
@@ -259,7 +268,7 @@ export default function AllPlacesPage() {
     };
 
     applyFilters();
-  }, [searchTerm, places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency, hasActiveAttendeesFilter, filterPlacesByAttendees, hasActiveSizeFilter, filterPlacesBySize, hasSelectedPerks, filterPlacesByPerks]);
+  }, [searchTerm, places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency, hasActiveAttendeesFilter, filterPlacesByAttendees, hasActiveSizeFilter, filterPlacesBySize, hasSelectedPerks, filterPlacesByPerks, hasSelectedPolicies, filterPlacesByPolicies]);
 
   // Redirect non-agents away from this page
   if (user && user.userType !== 'agent') {

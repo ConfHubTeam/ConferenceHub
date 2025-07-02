@@ -5,11 +5,13 @@ import { usePriceFilter } from "../contexts/PriceFilterContext";
 import { useAttendeesFilter } from "../contexts/AttendeesFilterContext";
 import { useSizeFilter } from "../contexts/SizeFilterContext";
 import { usePerksFilter } from "../contexts/PerksFilterContext";
+import { usePoliciesFilter } from "../contexts/PoliciesFilterContext";
 import DateTimeFilterModal from "./DateTimeFilterModal";
 import PriceFilterModal from "./PriceFilterModal";
 import AttendeesFilterModal from "./AttendeesFilterModal";
 import SizeFilterModal from "./SizeFilterModal";
 import PerksFilterModal from "./PerksFilterModal";
+import PolicyFilterModal from "./PolicyFilterModal";
 
 export default function FilterRow({ 
   isMapVisible, 
@@ -23,6 +25,7 @@ export default function FilterRow({
   const [isAttendeesModalOpen, setIsAttendeesModalOpen] = useState(false);
   const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
   const [isPerksModalOpen, setIsPerksModalOpen] = useState(false);
+  const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
   
   // Scroll state for showing appropriate arrows
   const [scrollPosition, setScrollPosition] = useState("start"); // "start", "middle", "end"
@@ -47,8 +50,11 @@ export default function FilterRow({
   // Get perks filter state from context
   const { hasSelectedPerks, selectedPerksCount, clearAllPerks } = usePerksFilter();
   
+  // Get policies filter state from context
+  const { hasSelectedPolicies, selectedPoliciesCount, clearAllPolicies } = usePoliciesFilter();
+  
   // Check if any filter is active
-  const hasAnyActiveFilter = hasActiveDateTimeFilter || hasActivePriceFilter || hasActiveAttendeesFilter || hasActiveSizeFilter || hasSelectedPerks;
+  const hasAnyActiveFilter = hasActiveDateTimeFilter || hasActivePriceFilter || hasActiveAttendeesFilter || hasActiveSizeFilter || hasSelectedPerks || hasSelectedPolicies;
   
   // Clear all filters
   const handleResetAllFilters = () => {
@@ -58,6 +64,7 @@ export default function FilterRow({
     clearAttendeesFilter();
     clearSizeFilter();
     clearAllPerks();
+    clearAllPolicies();
     
     // Clear URL parameters by navigating to the same path without query parameters
     navigate(location.pathname, { replace: true });
@@ -74,6 +81,8 @@ export default function FilterRow({
   const closeSizeModal = () => setIsSizeModalOpen(false);
   const openPerksModal = () => setIsPerksModalOpen(true);
   const closePerksModal = () => setIsPerksModalOpen(false);
+  const openPolicyModal = () => setIsPolicyModalOpen(true);
+  const closePolicyModal = () => setIsPolicyModalOpen(false);
   
   // Handle scroll to update arrow indicators
   const handleScroll = () => {
@@ -134,6 +143,12 @@ export default function FilterRow({
       <PerksFilterModal 
         isOpen={isPerksModalOpen}
         onClose={closePerksModal}
+      />
+      
+      {/* Policy Filter Modal */}
+      <PolicyFilterModal 
+        isOpen={isPolicyModalOpen}
+        onClose={closePolicyModal}
       />
       
       {/* Mobile: Scrollable filter row with fixed map button */}
@@ -220,6 +235,22 @@ export default function FilterRow({
                 >
                   <div className="truncate max-w-[100px]">
                     {hasSelectedPerks ? `Perks (${selectedPerksCount})` : "Perks"}
+                  </div>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                <button 
+                  onClick={openPolicyModal}
+                  className={`flex px-3 py-2 items-center transition-all duration-200 border rounded-full text-xs flex-shrink-0 whitespace-nowrap ${
+                    hasSelectedPolicies 
+                      ? "bg-brand-orange text-white border-brand-orange" 
+                      : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
+                  }`}
+                >
+                  <div className="truncate max-w-[100px]">
+                    {hasSelectedPolicies ? `Policies (${selectedPoliciesCount})` : "Policies"}
                   </div>
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -363,6 +394,21 @@ export default function FilterRow({
             >
               <div className="truncate max-w-[150px]">
                 {hasSelectedPerks ? `Perks (${selectedPerksCount})` : "Perks"}
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <button 
+              onClick={openPolicyModal}
+              className={`flex px-4 py-2 items-center transition-all duration-200 border rounded-full ${
+                hasSelectedPolicies 
+                  ? "bg-brand-orange text-white border-brand-orange" 
+                  : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
+              }`}
+            >
+              <div className="truncate max-w-[150px]">
+                {hasSelectedPolicies ? `Policies (${selectedPoliciesCount})` : "Policies"}
               </div>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />

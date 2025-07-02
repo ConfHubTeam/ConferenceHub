@@ -12,6 +12,7 @@ import { useCurrency } from "../contexts/CurrencyContext";
 import { useAttendeesFilter } from "../contexts/AttendeesFilterContext";
 import { useSizeFilter } from "../contexts/SizeFilterContext";
 import { usePerksFilter } from "../contexts/PerksFilterContext";
+import { usePoliciesFilter } from "../contexts/PoliciesFilterContext";
 import { convertCurrency } from "../utils/currencyUtils";
 import api from "../utils/api";
 
@@ -44,6 +45,9 @@ export default function IndexPage() {
   
   // Perks filter context  
   const { filterPlacesByPerks, hasSelectedPerks } = usePerksFilter();
+  
+  // Policies filter context
+  const { filterPlacesByPolicies, hasSelectedPolicies } = usePoliciesFilter();
   
   // Get map state from outlet context (passed down from Layout)
   const context = useOutletContext();
@@ -122,7 +126,7 @@ export default function IndexPage() {
       let filtered = [...places];
       
       // If no filters are active, show all places
-      if (!hasActiveAttendeesFilter && !hasActivePriceFilter && !hasActiveSizeFilter && !hasSelectedPerks) {
+      if (!hasActiveAttendeesFilter && !hasActivePriceFilter && !hasActiveSizeFilter && !hasSelectedPerks && !hasSelectedPolicies) {
         setFilteredPlaces(places);
         setTotalItems(places.length);
         return;
@@ -141,6 +145,11 @@ export default function IndexPage() {
       // Apply perks filter
       if (hasSelectedPerks) {
         filtered = filterPlacesByPerks(filtered);
+      }
+      
+      // Apply policies filter
+      if (hasSelectedPolicies) {
+        filtered = filterPlacesByPolicies(filtered);
       }
       
       // Apply price filter
@@ -220,7 +229,7 @@ export default function IndexPage() {
     };
 
     applyFilters();
-  }, [places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency, hasActiveAttendeesFilter, filterPlacesByAttendees, hasActiveSizeFilter, filterPlacesBySize, hasSelectedPerks, filterPlacesByPerks]);
+  }, [places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency, hasActiveAttendeesFilter, filterPlacesByAttendees, hasActiveSizeFilter, filterPlacesBySize, hasSelectedPerks, filterPlacesByPerks, hasSelectedPolicies, filterPlacesByPolicies]);
 
   return (
     <div className="flex flex-col h-full">
