@@ -112,9 +112,9 @@ const PerksFilterModal = ({ isOpen, onClose }) => {
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl">
+      <div className="bg-white rounded-xl w-full max-w-2xl max-h-[75vh] flex flex-col shadow-2xl">
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-3 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-semibold text-gray-900">Filter by Perks</h2>
             {hasSelectedPerks && (
@@ -135,12 +135,11 @@ const PerksFilterModal = ({ isOpen, onClose }) => {
         </div>
 
         {/* Modal Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-3">
           {!showAllPerks ? (
             // Most Relevant Perks View
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium text-gray-900">Most Popular for Conference Rooms</h3>
                 {hasSelectedPerks && (
                   <button
                     onClick={clearAllPerks}
@@ -268,7 +267,7 @@ const PerksFilterModal = ({ isOpen, onClose }) => {
         </div>
 
         {/* Modal Footer */}
-        <div className="p-6 border-t border-gray-200 bg-gray-50">
+        <div className="p-3 border-t border-gray-200 bg-gray-50">
           <div className="flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center">
             <div className="text-sm text-gray-600">
               {hasSelectedPerks ? (
