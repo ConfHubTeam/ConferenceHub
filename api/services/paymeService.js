@@ -4,7 +4,7 @@ const {
   PaymeData,
   TransactionState,
 } = require("../enum/transaction.enum");
-const { User, Booking, PaymeTransaction } = require("../models");
+const { User, Booking, Transaction } = require("../models");
 const { PaymeTransactionError } = require("../middleware/errorHandler");
 
 class PaymeService {
@@ -27,7 +27,7 @@ class PaymeService {
    * Checks the transaction status based on the provided parameters.
    */
   async checkTransaction(params, id) {
-    const transaction = await PaymeTransaction.findOne({
+    const transaction = await Transaction.findOne({
       paymeTransId: params.id,
     });
     if (!transaction) {
@@ -54,7 +54,7 @@ class PaymeService {
 
     await this.checkPerformTransaction(params, id);
 
-    let transaction = await PaymeTransaction.findOne({
+    let transaction = await Transaction.findOne({
       paymeTransId: params.id,
     });
 
@@ -69,7 +69,7 @@ class PaymeService {
       const expirationTime =
         (currentTime - transaction.createDate) / 60000 < 12;
       if (!expirationTime) {
-        await PaymeTransaction.findOneAndUpdate(
+        await Transaction.findOneAndUpdate(
           { paymeTransId: params.id },
           { state: TransactionState.PendingCanceled, reason: 4 }
         );
@@ -92,7 +92,7 @@ class PaymeService {
       );
     }
 
-    transaction = await PaymeTransaction.findOne({
+    transaction = await Transaction.findOne({
       userId: booking.userId,
       bookingId: account.booking_id,
     });
@@ -129,7 +129,7 @@ class PaymeService {
     const currentTime = Date.now();
 
     // 1. Find transaction by Payme transaction ID
-    const transaction = await PaymeTransaction.findOne({
+    const transaction = await Transaction.findOne({
       paymeTransId: params.id,
     });
     if (!transaction) {
@@ -151,7 +151,7 @@ class PaymeService {
     // 4. Check expiration based on createDate (not cancelDate!)
     const isNotExpired = (currentTime - transaction.createDate) / 60000 < 12;
     if (!isNotExpired) {
-      await PaymeTransaction.findOneAndUpdate(
+      await Transaction.findOneAndUpdate(
         { paymeTransId: params.id },
         {
           state: TransactionState.PendingCanceled,
@@ -163,7 +163,7 @@ class PaymeService {
     }
 
     // 5. Mark transaction as paid
-    await PaymeTransaction.findOneAndUpdate(
+    await Transaction.findOneAndUpdate(
       { paymeTransId: params.id },
       {
         state: TransactionState.Paid,
@@ -182,7 +182,7 @@ class PaymeService {
    * Cancels a transaction based on the provided parameters.
    */
   async cancelTransaction(params, id) {
-    const transaction = await PaymeTransaction.findOne({
+    const transaction = await Transaction.findOne({
       paymeTransId: params.id,
     });
 
@@ -193,7 +193,7 @@ class PaymeService {
     const currentTime = Date.now();
 
     if (transaction.state > 0) {
-      await PaymeTransaction.findOneAndUpdate(
+      await Transaction.findOneAndUpdate(
         { paymeTransId: params.id },
         {
           state: -Math.abs(transaction.state),
@@ -215,7 +215,7 @@ class PaymeService {
   async getStatement(params) {
     const { from, to } = params;
 
-    const transactions = await PaymeTransaction.find({
+    const transactions = await Transaction.find({
       createDate: { $gte: from, $lte: to }
     });
 
