@@ -3,18 +3,15 @@ const User = require('./users');
 const Place = require('./places');
 const Booking = require('./bookings');
 const Currency = require('./currency');
-const ClickTransaction = require('./clickTransaction');
-const PaymeTransaction = require('./paymeTransaction');
+const Transaction = require('./transaction');
 
 // Additional associations
 User.hasMany(Place, { foreignKey: 'ownerId', as: 'places' });
 User.hasMany(Booking, { foreignKey: 'userId', as: 'bookings' });
-User.hasMany(ClickTransaction, { foreignKey: 'userId', as: 'clickTransactions' });
-User.hasMany(PaymeTransaction, { foreignKey: 'userId', as: 'paymeTransactions' });
+User.hasMany(Transaction, { foreignKey: 'userId', as: 'transactions' });
 Place.hasMany(Booking, { foreignKey: 'placeId', as: 'bookings' });
 Currency.hasMany(Place, { foreignKey: 'currencyId', as: 'places' });
-Booking.hasMany(ClickTransaction, { foreignKey: 'bookingId', as: 'clickTransactions' });
-Booking.hasMany(PaymeTransaction, { foreignKey: 'bookingId', as: 'paymeTransactions' });
+Booking.hasMany(Transaction, { foreignKey: 'bookingId', as: 'transactions' });
 
 // Export models and sequelize connection
 module.exports = {
@@ -23,6 +20,5 @@ module.exports = {
   Place,
   Booking,
   Currency,
-  ClickTransaction,
-  PaymeTransaction
+  Transaction
 };

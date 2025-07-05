@@ -2,7 +2,7 @@ const {
   Booking,
   Place,
   User,
-  ClickTransaction,
+  Transaction,
 } = require("../models");
 
 const {
@@ -149,7 +149,7 @@ class ClickService {
     }
 
     // ------------------- TRANSACTION CHECK -------------------
-    const isPrepared = await ClickTransaction.findOne({
+    const isPrepared = await Transaction.findOne({
       where: {
         prepareId: merchant_prepare_id,
       },
@@ -172,7 +172,7 @@ class ClickService {
     const time = new Date().getTime();
 
     // IF ERROR IS NEGATIVE, IT MEANS THE TRANSACTION WAS CANCELED
-    const clickTransaction = await ClickTransaction.findOne({
+    const clickTransaction = await Transaction.findOne({
       where: { clickTransId: click_trans_id }
     });
 
@@ -247,7 +247,7 @@ class ClickService {
   static async _validationTransaction(data) {
     const { click_trans_id, bookingId, userId } = data;
 
-    const isAlreadyPaid = await ClickTransaction.findOne({
+    const isAlreadyPaid = await Transaction.findOne({
       where: {
         bookingId: bookingId,
         userId: userId,
@@ -259,7 +259,7 @@ class ClickService {
       return { error: ClickError.AlreadyPaid, error_note: "Already paid" };
     }
 
-    const clickTransaction = await ClickTransaction.findOne({
+    const clickTransaction = await Transaction.findOne({
       where: { clickTransId: click_trans_id },
     });
 
