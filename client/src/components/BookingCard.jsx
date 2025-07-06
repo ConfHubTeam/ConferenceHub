@@ -229,34 +229,44 @@ export default function BookingCard({bookingDetail, onBookingUpdate, competingBo
               </div>
               
               {/* Action buttons for host */}
-              {bookingDetail.status === 'pending' && user?.userType === 'host' && (
+              {user?.userType === 'host' && (
                 <div className="flex gap-2">
-                  <button 
-                    onClick={() => showConfirmationModal('approved')} 
-                    disabled={isUpdating}
-                    className="flex-1 bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 disabled:opacity-50"
-                  >
-                    {isUpdating ? 'Processing...' : 'Approve'}
-                  </button>
-                  <button 
-                    onClick={() => showConfirmationModal('rejected')} 
-                    disabled={isUpdating}
-                    className="flex-1 bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 disabled:opacity-50"
-                  >
-                    {isUpdating ? 'Processing...' : 'Reject'}
-                  </button>
+                  {/* Host cannot approve until payment is confirmed - approval button is hidden */}
+                  {/* Only agents can approve bookings */}
+                  
+                  {/* Host can reject at any pending/selected stage */}
+                  {(bookingDetail.status === 'pending' || bookingDetail.status === 'selected') && (
+                    <button 
+                      onClick={() => showConfirmationModal('rejected')} 
+                      disabled={isUpdating}
+                      className="w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 disabled:opacity-50"
+                    >
+                      {isUpdating ? 'Processing...' : 'Reject'}
+                    </button>
+                  )}
+                  
+                  {/* Show info message for pending/selected bookings */}
+                  {(bookingDetail.status === 'pending' || bookingDetail.status === 'selected') && (
+                    <div className="w-full bg-blue-50 border border-blue-200 rounded p-3 text-sm text-blue-800 mt-2">
+                      <p className="font-medium">Booking Management</p>
+                      <p>Only agents can approve bookings. You can reject unwanted bookings.</p>
+                      {bookingDetail.status === 'selected' && (
+                        <p className="mt-1">This booking is selected and waiting for agent approval.</p>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
               
-              {/* Action buttons for agent - can approve on behalf of host */}
-              {bookingDetail.status === 'pending' && user?.userType === 'agent' && (
+              {/* Action buttons for agent - can approve at any stage */}
+              {user?.userType === 'agent' && (bookingDetail.status === 'pending' || bookingDetail.status === 'selected') && (
                 <div className="flex gap-2">
                   <button 
                     onClick={() => showConfirmationModal('approved')} 
                     disabled={isUpdating}
                     className="flex-1 bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 disabled:opacity-50"
                   >
-                    {isUpdating ? 'Processing...' : 'Approve'}
+                    {isUpdating ? 'Processing...' : 'Approve (Agent)'}
                   </button>
                   <button 
                     onClick={() => showConfirmationModal('rejected')} 

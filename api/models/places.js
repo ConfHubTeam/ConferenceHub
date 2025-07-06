@@ -190,6 +190,36 @@ const Place = sequelize.define('Place', {
       }
     }
   },
+  // Rating aggregation fields for performance optimization
+  averageRating: {
+    type: DataTypes.DECIMAL(3, 2),
+    allowNull: true,
+    field: 'average_rating',
+    validate: {
+      min: 0,
+      max: 5
+    }
+  },
+  totalReviews: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+    field: 'total_reviews',
+    validate: {
+      min: 0
+    }
+  },
+  ratingBreakdown: {
+    type: DataTypes.JSONB,
+    allowNull: true,
+    field: 'rating_breakdown',
+    defaultValue: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+  },
+  ratingUpdatedAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    field: 'rating_updated_at'
+  }
 }, {
   timestamps: true
 });

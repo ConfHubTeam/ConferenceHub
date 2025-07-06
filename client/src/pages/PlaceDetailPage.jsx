@@ -13,6 +13,7 @@ import WeeklyAvailabilityDisplay from "../components/WeeklyAvailabilityDisplay";
 import PlaceAvailabilityCalendar from "../components/PlaceAvailabilityCalendar";
 import PlacePerks from "../components/PlacePerks";
 import RefundPolicyDisplay from "../components/RefundPolicyDisplay";
+import PlaceReviews from "../components/PlaceReviews";
 
 export default function PlaceDetailPage() {
   const { placeId, bookingId } = useParams();
@@ -246,6 +247,14 @@ export default function PlaceDetailPage() {
                 />
               </div>
             )}
+
+            {/* Reviews Section - Hidden on mobile, shown on desktop */}
+            <div className="hidden lg:block">
+              <PlaceReviews 
+                placeId={placeDetail.id} 
+                placeOwnerId={placeDetail.ownerId} 
+              />
+            </div>
           </div>
         </div>
 
@@ -285,6 +294,14 @@ export default function PlaceDetailPage() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Reviews Section - Shown on mobile after price section, hidden on desktop */}
+      <div className="block lg:hidden mt-8">
+        <PlaceReviews 
+          placeId={placeDetail.id} 
+          placeOwnerId={placeDetail.ownerId} 
+        />
       </div>
 
       {/* Delete Confirmation Modal */}

@@ -23,7 +23,7 @@ const cleanupExpiredBookings = async () => {
           [Op.in]: ['pending', 'selected']
         }
       },
-      attributes: ['id', 'selectedTimeSlots', 'checkInDate', 'checkOutDate']
+      attributes: ['id', 'timeSlots', 'checkInDate', 'checkOutDate']
     });
 
     const expiredBookingIds = [];
@@ -31,9 +31,9 @@ const cleanupExpiredBookings = async () => {
     for (const booking of expiredCandidates) {
       let isExpired = false;
 
-      if (booking.selectedTimeSlots && booking.selectedTimeSlots.length > 0) {
+      if (booking.timeSlots && booking.timeSlots.length > 0) {
         // For time slot bookings, check if all slots are in the past
-        const allSlotsExpired = booking.selectedTimeSlots.every(slot => {
+        const allSlotsExpired = booking.timeSlots.every(slot => {
           // Check if the date is in the past
           if (isDateInPastUzbekistan(slot.date)) {
             return true;
