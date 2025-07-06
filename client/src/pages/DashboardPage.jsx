@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import AccountNav from "../components/AccountNav";
+import ReviewAnalytics from "../components/ReviewAnalytics";
 import api from "../utils/api";
 import { UserContext } from "../components/UserContext";
 import { Navigate } from "react-router-dom";
@@ -17,6 +18,7 @@ export default function DashboardPage() {
       setLoading(true);
       api.get('/users/stats')
         .then(({data}) => {
+          console.log('Dashboard stats received:', data); // Debug log
           setStats(data);
           setLoading(false);
         })
@@ -66,6 +68,10 @@ export default function DashboardPage() {
     <div>
       <AccountNav />
       <div className="px-8">
+        <h1 className="text-2xl font-bold mb-6">Agent Dashboard</h1>
+        
+        {/* Review Analytics Section - US-R013 Implementation */}
+        <ReviewAnalytics reviewStats={stats?.reviews} />
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Total Users Stat Card */}
