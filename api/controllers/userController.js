@@ -1,5 +1,6 @@
-const { User, Place, Booking } = require("../models");
+const { User, Place, Booking, Review, ReviewReply } = require("../models");
 const { sequelize } = require("../models");
+const { Op } = require("sequelize");
 const jwt = require("jsonwebtoken");
 const authConfig = require("../config/auth");
 const { getUserDataFromToken } = require("../middleware/auth");
@@ -326,6 +327,7 @@ const deleteOwnAccount = async (req, res) => {
 
 /**
  * Get statistics for the system (for agents only)
+ * Enhanced with comprehensive review analytics for US-R013
  */
 const getStatistics = async (req, res) => {
   try {
@@ -335,7 +337,7 @@ const getStatistics = async (req, res) => {
     if (userData.userType !== 'agent') {
       return res.status(403).json({ error: "Only agents can access statistics" });
     }
-    
+
     // Count total users by type
     const userCounts = await User.findAll({
       attributes: [
@@ -344,7 +346,7 @@ const getStatistics = async (req, res) => {
       ],
       group: ['userType']
     });
-    
+
     // Count bookings by status
     const bookingCounts = await Booking.findAll({
       attributes: [
@@ -353,15 +355,224 @@ const getStatistics = async (req, res) => {
       ],
       group: ['status']
     });
-    
+
     // Count total places
     const totalPlaces = await Place.count();
+
+    // ==== REVIEW ANALYTICS FOR US-R013 ====
     
-    res.json({
-      users: userCounts,
-      bookings: bookingCounts,
-      places: { total: totalPlaces }
-    });
+    try {
+      // Total reviews count
+      const totalReviews = await Review.count();
+      
+      // Average platform rating
+      const averagePlatformRating = await Review.findOne({
+        attributes: [
+          [sequelize.fn('AVG', sequelize.col('rating')), 'avgRating']
+        ],
+        where: {
+          status: 'approved'
+        }
+      });
+
+      // Reviews per month (last 12 months) - Simplified version
+      const twelveMonthsAgo = new Date();
+      twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+      
+      const reviewsPerMonth = await Review.findAll({
+        attributes: [
+          [sequelize.fn('DATE_PART', 'month', sequelize.col('created_at')), 'month'],
+          [sequelize.fn('DATE_PART', 'year', sequelize.col('created_at')), 'year'],
+          [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+        ],
+        where: {
+          created_at: {
+            [Op.gte]: twelveMonthsAgo
+          }
+        },
+        group: [
+          sequelize.fn('DATE_PART', 'month', sequelize.col('created_at')),
+          sequelize.fn('DATE_PART', 'year', sequelize.col('created_at'))
+        ],
+        order: [
+          [sequelize.fn('DATE_PART', 'year', sequelize.col('created_at')), 'ASC'],
+          [sequelize.fn('DATE_PART', 'month', sequelize.col('created_at')), 'ASC']
+        ]
+      });
+
+      // Top 5 highest-rated places - Simplified
+      const topRatedPlaces = await sequelize.query(`
+        SELECT 
+          p.id,
+          p.title,
+          AVG(CAST(r.rating AS FLOAT)) as avg_rating,
+          COUNT(r.id) as review_count
+        FROM "Places" p
+        INNER JOIN reviews r ON p.id = r.place_id
+        WHERE r.status = 'approved'
+        GROUP BY p.id, p.title
+        HAVING COUNT(r.id) >= 1
+        ORDER BY AVG(CAST(r.rating AS FLOAT)) DESC
+        LIMIT 5
+      `, {
+        type: sequelize.QueryTypes.SELECT
+      });
+
+      // Bottom 5 lowest-rated places - Simplified
+      const lowestRatedPlaces = await sequelize.query(`
+        SELECT 
+          p.id,
+          p.title,
+          AVG(CAST(r.rating AS FLOAT)) as avg_rating,
+          COUNT(r.id) as review_count
+        FROM "Places" p
+        INNER JOIN reviews r ON p.id = r.place_id
+        WHERE r.status = 'approved'
+        GROUP BY p.id, p.title
+        HAVING COUNT(r.id) >= 1
+        ORDER BY AVG(CAST(r.rating AS FLOAT)) ASC
+        LIMIT 5
+      `, {
+        type: sequelize.QueryTypes.SELECT
+      });
+
+      // Top 5 most active reviewers
+      const mostActiveReviewers = await sequelize.query(`
+        SELECT 
+          u.id,
+          u.name,
+          u.email,
+          COUNT(r.id) as review_count
+        FROM "Users" u
+        INNER JOIN reviews r ON u.id = r.user_id
+        GROUP BY u.id, u.name, u.email
+        ORDER BY COUNT(r.id) DESC
+        LIMIT 5
+      `, {
+        type: sequelize.QueryTypes.SELECT
+      });
+
+      // Average host reply time (in hours) - Simplified
+      const avgReplyTime = await sequelize.query(`
+        SELECT 
+          AVG(EXTRACT(EPOCH FROM (rr.created_at - r.created_at))/3600) as avg_hours
+        FROM reviews r
+        INNER JOIN review_replies rr ON r.id = rr.review_id
+        WHERE r.status = 'approved'
+      `, {
+        type: sequelize.QueryTypes.SELECT
+      });
+
+      // Rating distribution (percentages)
+      const ratingDistribution = await Review.findAll({
+        attributes: [
+          'rating',
+          [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+        ],
+        where: {
+          status: 'approved'
+        },
+        group: ['rating'],
+        order: [['rating', 'ASC']]
+      });
+
+      // Calculate percentages for rating distribution
+      const totalApprovedReviews = ratingDistribution.reduce((sum, item) => sum + parseInt(item.dataValues.count), 0);
+      const ratingDistributionWithPercentages = ratingDistribution.map(item => ({
+        rating: item.rating,
+        count: parseInt(item.dataValues.count),
+        percentage: totalApprovedReviews > 0 ? Math.round((parseInt(item.dataValues.count) / totalApprovedReviews) * 100) : 0
+      }));
+
+      // Review moderation statistics
+      const moderationStats = await Review.findAll({
+        attributes: [
+          'status',
+          [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+        ],
+        group: ['status']
+      });
+
+      // Count reviews with replies vs without replies
+      const reviewReplyStats = await sequelize.query(`
+        SELECT 
+          CASE WHEN rr.id IS NOT NULL THEN 'with_reply' ELSE 'without_reply' END as reply_status,
+          COUNT(r.id) as count
+        FROM reviews r
+        LEFT JOIN review_replies rr ON r.id = rr.review_id
+        WHERE r.status = 'approved'
+        GROUP BY CASE WHEN rr.id IS NOT NULL THEN 'with_reply' ELSE 'without_reply' END
+      `, {
+        type: sequelize.QueryTypes.SELECT
+      });
+
+      // Recent review activity (last 7 days)
+      const lastWeek = new Date();
+      lastWeek.setDate(lastWeek.getDate() - 7);
+      
+      const recentReviewActivity = await Review.count({
+        where: {
+          created_at: {
+            [Op.gte]: lastWeek
+          }
+        }
+      });
+
+      res.json({
+        users: userCounts,
+        bookings: bookingCounts,
+        places: { total: totalPlaces },
+        reviews: {
+          total: totalReviews,
+          averagePlatformRating: averagePlatformRating?.dataValues?.avgRating ? parseFloat(averagePlatformRating.dataValues.avgRating).toFixed(2) : "0.0",
+          reviewsPerMonth: reviewsPerMonth.map(item => ({
+            month: `${item.dataValues.year}-${String(item.dataValues.month).padStart(2, '0')}`,
+            count: parseInt(item.dataValues.count)
+          })),
+          topRatedPlaces: topRatedPlaces.map(place => ({
+            ...place,
+            avg_rating: parseFloat(place.avg_rating).toFixed(2)
+          })),
+          lowestRatedPlaces: lowestRatedPlaces.map(place => ({
+            ...place,
+            avg_rating: parseFloat(place.avg_rating).toFixed(2)
+          })),
+          mostActiveReviewers,
+          averageHostReplyTime: avgReplyTime[0]?.avg_hours ? parseFloat(avgReplyTime[0].avg_hours).toFixed(1) : null,
+          ratingDistribution: ratingDistributionWithPercentages,
+          moderationStats: moderationStats.map(item => ({
+            status: item.status,
+            count: parseInt(item.dataValues.count)
+          })),
+          reviewReplyStats: reviewReplyStats.map(item => ({
+            status: item.reply_status,
+            count: parseInt(item.count)
+          })),
+          recentActivity: recentReviewActivity
+        }
+      });
+    } catch (reviewError) {
+      console.error("Error fetching review statistics:", reviewError);
+      // If review analytics fail, return basic stats without reviews
+      res.json({
+        users: userCounts,
+        bookings: bookingCounts,
+        places: { total: totalPlaces },
+        reviews: {
+          total: 0,
+          averagePlatformRating: "0.0",
+          reviewsPerMonth: [],
+          topRatedPlaces: [],
+          lowestRatedPlaces: [],
+          mostActiveReviewers: [],
+          averageHostReplyTime: null,
+          ratingDistribution: [],
+          moderationStats: [],
+          reviewReplyStats: [],
+          recentActivity: 0
+        }
+      });
+    }
   } catch (error) {
     console.error("Error fetching statistics:", error);
     res.status(422).json({ error: error.message });
