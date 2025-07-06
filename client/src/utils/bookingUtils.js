@@ -226,6 +226,9 @@ export const getBookingActionButtons = (booking, user, competingBookings = []) =
         disabled: true,
         description: "Cannot approve - another booking is already selected for this time slot"
       });
+    } else if (isPending && isHost) {
+      // For hosts on pending bookings: Approve button is not visible (no payment yet)
+      // Don't add approve button for hosts until payment is made
     } else if (isSelected && isHost) {
       // For hosts on selected bookings: Approve button is disabled (waiting for payment)
       buttons.push({
@@ -247,8 +250,8 @@ export const getBookingActionButtons = (booking, user, competingBookings = []) =
         agentApproval: true, 
         description: "Approve booking (marks payment and approval complete)"
       });
-    } else if (isPending) {
-      // For pending bookings without selected competitors: Normal approval
+    } else if (isPending && isAgent) {
+      // For agents on pending bookings: Approve button is always available
       buttons.push({
         label: "Approve",
         action: "approved",

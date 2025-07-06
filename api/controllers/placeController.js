@@ -3,6 +3,7 @@ const { getUserDataFromToken } = require('../middleware/auth');
 const Currency = require('../models/currency');
 const { validateRefundOptions, processRefundOptions } = require('../services/refundOptionsService');
 const PlaceAvailabilityService = require('../services/placeAvailabilityService');
+const PlaceRatingService = require('../services/placeRatingService');
 
 /**
  * Create a new place
@@ -183,12 +184,20 @@ const getUserPlaces = async (req, res) => {
 const getPlaceById = async (req, res) => {
   const {id} = req.params;
   try {
-    // Include currency and owner relations to get full details
+    // Include currency and owner relations to get full details plus rating data (US-R010)
     const place = await Place.findByPk(id, {
       include: [
         { model: Currency, as: 'currency' },
         { model: User, as: 'owner' }
-      ]
+      ],
+      attributes: {
+        include: [
+          'averageRating',
+          'totalReviews',
+          'ratingBreakdown',
+          'ratingUpdatedAt'
+        ]
+      }
     });
     res.json(place);
   } catch (error) {
@@ -383,6 +392,13 @@ const getHomePlaces = async (req, res) => {
           attributes: ['id', 'name', 'code', 'charCode']
         }
       ],
+      attributes: {
+        include: [
+          'averageRating',
+          'totalReviews',
+          'ratingBreakdown'
+        ]
+      },
       order: [['createdAt', 'DESC']] // Show newest places first
     });
     
@@ -521,6 +537,13 @@ const getAllPlaces = async (req, res) => {
           attributes: ['id', 'name', 'code', 'charCode']
         }
       ],
+      attributes: {
+        include: [
+          'averageRating',
+          'totalReviews',
+          'ratingBreakdown'
+        ]
+      },
       order: [['createdAt', 'DESC']]
     };
     

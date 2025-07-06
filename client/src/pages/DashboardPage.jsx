@@ -3,16 +3,13 @@ import AccountNav from "../components/AccountNav";
 import api from "../utils/api";
 import { UserContext } from "../components/UserContext";
 import { Navigate } from "react-router-dom";
-import BookingNotificationBanner from "../components/BookingNotificationBanner";
-import { useBookingNotifications } from "../contexts/BookingNotificationContext";
 
 export default function DashboardPage() {
   const { user } = useContext(UserContext);
-  const { markAsViewed } = useBookingNotifications();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Don't automatically mark notifications as viewed - let user dismiss the banner
+  // Notifications are now managed by the unified notification system
 
   // Fetch dashboard statistics
   useEffect(() => {
@@ -69,8 +66,6 @@ export default function DashboardPage() {
     <div>
       <AccountNav />
       <div className="px-8">
-        {/* Notification Banner */}
-        <BookingNotificationBanner />
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Total Users Stat Card */}
