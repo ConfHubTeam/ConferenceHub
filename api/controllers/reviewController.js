@@ -2,6 +2,7 @@ const { Op } = require("sequelize");
 const { Review, ReviewReply, ReviewHelpful, ReviewReport, User, Place, Booking } = require("../models");
 const PlaceRatingService = require("../services/placeRatingService");
 const ReviewNotificationService = require("../services/reviewNotificationService");
+const ReviewEligibilityService = require("../services/reviewEligibilityService");
 const {
   validateReviewCreation,
   validateReviewReply,
@@ -22,19 +23,27 @@ const {
 /**
  * Create new review
  * POST /api/reviews
- * Requires authentication and completed booking (US-R003 compliant)
+ * Requires authentication and completed booking with one review per booking
  */
 const createReview = async (req, res) => {
   try {
-    const { placeId, rating, comment } = req.body;
+    const { placeId, bookingId, rating, comment } = req.body;
     const userId = req.user.id;
 
-    // Validate review data using validation service (US-R003 compliant)
+    // Validate review data using validation service
     const validation = validateReviewCreation({ placeId, rating, comment });
     if (!validation.isValid) {
       return res.status(400).json({
         ok: false,
         error: validation.errors.join(", ")
+      });
+    }
+
+    // Validate that bookingId is provided
+    if (!bookingId) {
+      return res.status(400).json({
+        ok: false,
+        error: "Booking ID is required for review submission"
       });
     }
 
@@ -47,83 +56,46 @@ const createReview = async (req, res) => {
       });
     }
 
-    // Prevent hosts from reviewing their own places
-    if (place.userId === userId) {
-      return res.status(403).json({
-        ok: false,
-        error: "Hosts cannot review their own places"
-      });
-    }
-
-    // TODO: FOR TESTING PURPOSE ONLY - Remove this comment block when ready for production
-    // In production, uncomment the booking validation below to enforce:
-    // - Users can only review places they have completed bookings for
-    // - Booking status must be 'approved' 
-    // - Booking must be past checkout date
-    
-    /* PRODUCTION CODE - CURRENTLY DISABLED FOR TESTING:
-    // Check if user has completed booking for this place (US-R003 requirement)
-    const completedBooking = await Booking.findOne({
+    // Verify the booking exists and belongs to the user
+    const booking = await Booking.findOne({
       where: {
+        id: bookingId,
         userId,
         placeId,
-        status: "approved", // Must be approved booking as per US-R003
-        endDate: {
-          [Op.lt]: new Date() // Booking must be past checkout date as per US-R003
+        status: "approved",
+        checkOutDate: {
+          [Op.lt]: new Date() // Must be past checkout date
         }
       }
     });
 
-    if (!completedBooking) {
+    if (!booking) {
       return res.status(403).json({
         ok: false,
-        error: "You can only review places you have stayed at with approved bookings"
+        error: "Invalid booking or booking not eligible for review"
       });
     }
-    */
 
-    // TESTING CODE - CURRENTLY DISABLED FOR EASY TESTING:
-    // For testing purposes, we'll allow reviews without bookings
-    // Uncomment the code below if you want to require bookings for testing
-    /*
-    const anyBooking = await Booking.findOne({
-      where: {
-        userId,
-        placeId,
-        status: {
-          [Op.in]: ["pending", "selected", "approved", "rejected"]
-        }
-      }
-    });
-
-    if (!anyBooking) {
-      return res.status(403).json({
-        ok: false,
-        error: "You can only review places you have bookings for"
-      });
-    }
-    */
-
-    // Check if user has already reviewed this place (One review per user per place - US-R003)
+    // Check if this booking already has a review
     const existingReview = await Review.findOne({
-      where: { userId, placeId }
+      where: { bookingId }
     });
 
     if (existingReview) {
       return res.status(409).json({
         ok: false,
-        error: "You have already reviewed this place. Only one review per user per place is allowed."
+        error: "You have already reviewed this booking"
       });
     }
 
-    // Create review with validated data (US-R003 compliant)
-    // Auto-approve reviews - hosts can report inappropriate content later
+    // Create review with validated data and booking reference
     const review = await Review.create({
       userId,
       placeId,
+      bookingId,
       rating,
-      comment: comment ? comment.trim() : null, // Store trimmed comment or null
-      status: "approved" // Auto-approve all reviews, hosts can report inappropriate ones
+      comment: comment ? comment.trim() : null,
+      status: "approved" // Auto-approve all reviews
     });
 
     // Fetch created review with user data
@@ -137,15 +109,14 @@ const createReview = async (req, res) => {
       ]
     });
 
-    // Update place rating after review creation (US-R010 requirement)
+    // Update place rating after review creation
     try {
       await PlaceRatingService.calculateAndUpdateRating(placeId);
     } catch (error) {
       console.error("Error updating place rating:", error);
-      // Don't fail the request if rating update fails - it can be recalculated later
     }
 
-    // Create notification for place owner (US-R011 requirement)
+    // Create notification for place owner
     try {
       await ReviewNotificationService.createReviewNotification(createdReview);
     } catch (error) {
@@ -1045,6 +1016,71 @@ const updateReply = async (req, res) => {
   }
 };
 
+/**
+ * Check review eligibility for a place
+ * GET /api/reviews/eligibility/place/:placeId
+ * Returns eligibility status instead of throwing errors
+ */
+const checkReviewEligibility = async (req, res) => {
+  try {
+    const { placeId } = req.params;
+    const userId = req.user.id;
+
+    // Check if place exists
+    const place = await Place.findByPk(placeId);
+    if (!place) {
+      return res.status(404).json({
+        ok: false,
+        error: "Place not found"
+      });
+    }
+
+    // Check eligibility using the service
+    const eligibility = await ReviewEligibilityService.checkReviewEligibility(
+      userId, 
+      parseInt(placeId), 
+      place.userId
+    );
+
+    res.json({
+      ok: true,
+      eligibility
+    });
+
+  } catch (error) {
+    console.error("Error checking review eligibility:", error);
+    res.status(500).json({
+      ok: false,
+      error: "Failed to check review eligibility"
+    });
+  }
+};
+
+/**
+ * Get eligible bookings for review
+ * GET /api/reviews/eligibility/bookings
+ * Returns list of completed bookings that can be reviewed
+ */
+const getEligibleBookings = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const eligibleBookings = await ReviewEligibilityService.getEligibleBookingsForReview(userId);
+
+    res.json({
+      ok: true,
+      bookings: eligibleBookings
+    });
+
+  } catch (error) {
+    console.error("Error getting eligible bookings:", error);
+    res.status(500).json({
+      ok: false,
+      error: "Failed to get eligible bookings"
+    });
+  }
+};
+
 module.exports = {
   createReview,
   getReviewsForPlace,
@@ -1057,5 +1093,7 @@ module.exports = {
   getReviewReplies,
   getHelpfulStatus,
   getAllReviewsForAdmin,
-  updateReply
+  updateReply,
+  checkReviewEligibility,
+  getEligibleBookings
 };

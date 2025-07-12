@@ -34,6 +34,16 @@ const Review = sequelize.define(
       },
       onDelete: "CASCADE"
     },
+    bookingId: {
+      type: DataTypes.INTEGER,
+      allowNull: true, // Allow null for existing reviews
+      field: "booking_id",
+      references: {
+        model: "Bookings",
+        key: "id"
+      },
+      onDelete: "CASCADE"
+    },
     rating: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -91,6 +101,11 @@ const Review = sequelize.define(
     createdAt: "created_at",
     updatedAt: "updated_at",
     indexes: [
+      {
+        unique: true,
+        fields: ["booking_id"],
+        name: "unique_booking_review"
+      },
       {
         unique: true,
         fields: ["user_id", "place_id"],

@@ -4,10 +4,8 @@
  * Follows DRY principles with centralized validation logic
  * US-R003 compliant validation rules
  * 
- * TODO: FOR TESTING PURPOSE ONLY
- * The booking validation requirement is currently disabled in the controller.
- * In production, enable the booking validation in reviewController.js to enforce:
- * - Users can only review places they have completed bookings for
+ * PRODUCTION READY - Booking validation is enabled
+ * Users can only review places they have completed bookings for:
  * - Booking status must be 'approved'
  * - Booking must be past checkout date
  */
