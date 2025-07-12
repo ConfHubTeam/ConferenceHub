@@ -234,10 +234,10 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
+    <div className="min-h-screen bg-white">
       <AccountNav />
       
-      <div className="mt-8">
+      <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
           <div>
@@ -392,40 +392,40 @@ function NotificationItem({ notification, onClick }) {
         </div>
 
         {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between mb-1">
-            <h3 className={`text-sm font-medium ${isRead ? "text-gray-900" : "text-gray-900 font-semibold"}`}>
+        <div className="flex-1 min-w-0 pr-2">
+          <div className="flex items-start justify-between mb-1 gap-2">
+            <h3 className={`text-sm font-medium break-words whitespace-normal flex-1 leading-relaxed ${isRead ? "text-gray-900" : "text-gray-900 font-semibold"}`}>
               {title}
             </h3>
-            <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
+            <span className="text-xs text-gray-500 flex-shrink-0">
               {relativeTime}
             </span>
           </div>
           
-          <p className="text-sm text-gray-600 mb-2">
+          <p className="text-sm text-gray-600 mb-2 break-words whitespace-normal leading-relaxed">
             {excerpt}
           </p>
 
           {/* Metadata - Enhanced for booking notifications */}
           {metadata?.rating && (
-            <div className="flex items-center gap-2 text-xs text-gray-500">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 break-words">
               <span className="flex items-center">
                 ⭐ {metadata.rating} star{metadata.rating !== 1 ? "s" : ""}
               </span>
               {metadata.placeName && (
-                <span>• {metadata.placeName}</span>
+                <span className="break-words">• {metadata.placeName}</span>
               )}
             </div>
           )}
           
           {/* Booking-specific metadata */}
           {(metadata?.bookingReference || metadata?.dateTimeWindow) && (
-            <div className="flex items-center gap-2 text-xs text-gray-500">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 break-words">
               {metadata.bookingReference && (
-                <span>Booking #{metadata.bookingReference}</span>
+                <span className="break-words">Booking #{metadata.bookingReference}</span>
               )}
               {metadata.dateTimeWindow && (
-                <span>• {metadata.dateTimeWindow}</span>
+                <span className="break-words">• {metadata.dateTimeWindow}</span>
               )}
             </div>
           )}

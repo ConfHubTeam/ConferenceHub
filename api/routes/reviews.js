@@ -12,6 +12,12 @@ const { isAuthenticated, isAdmin } = require("../middleware/auth");
 // Create new review (authenticated clients only, must have completed booking)
 router.post("/", isAuthenticated, reviewController.createReview);
 
+// Check review eligibility for a place (authenticated users only)
+router.get("/eligibility/place/:placeId", isAuthenticated, reviewController.checkReviewEligibility);
+
+// Get eligible bookings for review (authenticated users only)  
+router.get("/eligibility/bookings", isAuthenticated, reviewController.getEligibleBookings);
+
 // Get reviews for a place with pagination (8 reviews per page)
 router.get("/place/:placeId", reviewController.getReviewsForPlace);
 
