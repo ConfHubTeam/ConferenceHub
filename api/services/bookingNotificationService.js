@@ -12,6 +12,7 @@
  */
 
 const { Notification, User, Place, Booking } = require("../models");
+const AgentService = require("./agentService");
 
 class BookingNotificationService {
   /**
@@ -90,8 +91,9 @@ class BookingNotificationService {
 
   /**
    * Create notification for booking payment (US-R011)
+   * Payment notifications go to agents, not hosts
    * @param {Object} booking - Booking object with place and user data
-   * @returns {Promise<Object>} Created notification
+   * @returns {Promise<Array>} Array of created notifications for agents
    */
   static async createBookingPaidNotification(booking) {
     if (!booking || !booking.placeId || !booking.userId) {
@@ -115,6 +117,14 @@ class BookingNotificationService {
         throw new Error("Place, owner, or booking user not found");
       }
 
+      // Get all agents to notify about payment
+      const agents = await AgentService.getAllAgents();
+      
+      if (!agents || agents.length === 0) {
+        console.warn("No agents found to notify about payment");
+        return [];
+      }
+
       // Include unique booking ID and date/time window in message
       const bookingReference = booking.uniqueRequestId || booking.id;
       const timeSlotInfo = booking.timeSlots && booking.timeSlots.length > 0 
@@ -125,27 +135,34 @@ class BookingNotificationService {
         ? this._formatDate(booking.checkInDate)
         : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
-      // Create notification for place owner (host)
-      const notification = await Notification.create({
-        userId: place.owner.id,
-        type: "booking_paid",
-        title: "Booking Payment Received",
-        message: `Payment received for booking #${bookingReference} of "${place.title}" on ${dateRange}${timeSlotInfo}`,
-        metadata: {
-          bookingId: booking.id,
-          uniqueRequestId: booking.uniqueRequestId,
-          bookingReference,
-          placeId: booking.placeId,
-          placeName: place.title,
-          totalPrice: booking.totalPrice,
-          checkInDate: booking.checkInDate,
-          checkOutDate: booking.checkOutDate,
-          timeSlots: booking.timeSlots,
-          dateTimeWindow: `${dateRange}${timeSlotInfo}`
-        }
-      });
+      // Create notifications for all agents
+      const notifications = [];
+      for (const agent of agents) {
+        const notification = await Notification.create({
+          userId: agent.id,
+          type: "booking_paid",
+          title: "Payment Received",
+          message: `Payment received for booking #${bookingReference} of "${place.title}" on ${dateRange}${timeSlotInfo}. Payout to host required.`,
+          metadata: {
+            bookingId: booking.id,
+            uniqueRequestId: booking.uniqueRequestId,
+            bookingReference,
+            placeId: booking.placeId,
+            placeName: place.title,
+            hostId: place.owner.id,
+            hostName: place.owner.name,
+            totalPrice: booking.totalPrice,
+            checkInDate: booking.checkInDate,
+            checkOutDate: booking.checkOutDate,
+            timeSlots: booking.timeSlots,
+            dateTimeWindow: `${dateRange}${timeSlotInfo}`,
+            notificationType: "agent_payment"
+          }
+        });
+        notifications.push(notification);
+      }
 
-      return notification;
+      return notifications;
 
     } catch (error) {
       console.error("Error creating booking paid notification:", error);
@@ -194,7 +211,7 @@ class BookingNotificationService {
         userId: booking.userId,
         type: "booking_approved",
         title: "Booking Approved",
-        message: `Booking #${bookingReference} for "${place.title}" on ${dateRange}${timeSlotInfo} has been approved ${approverText}`,
+        message: `Booking #${bookingReference} for "${place.title}" on ${dateRange}${timeSlotInfo} has been approved ${approverText}. Please proceed with payment.`,
         metadata: {
           bookingId: booking.id,
           uniqueRequestId: booking.uniqueRequestId,
@@ -214,6 +231,80 @@ class BookingNotificationService {
     } catch (error) {
       console.error("Error creating booking approved notification:", error);
       throw new Error(`Failed to create booking approved notification: ${error.message}`);
+    }
+  }
+
+  /**
+   * Create notification for booking confirmation (after payment is completed)
+   * This notification goes to the host to inform them the booking is confirmed
+   * @param {Object} booking - Booking object with place and user data
+   * @returns {Promise<Object>} Created notification for host
+   */
+  static async createBookingConfirmedNotification(booking) {
+    if (!booking || !booking.placeId || !booking.userId) {
+      throw new Error("Invalid booking data for notification");
+    }
+
+    try {
+      const place = await Place.findByPk(booking.placeId, {
+        include: [{
+          model: User,
+          as: "owner",
+          attributes: ["id", "name", "email"]
+        }]
+      });
+
+      const bookingUser = await User.findByPk(booking.userId, {
+        attributes: ["id", "name", "email"]
+      });
+
+      if (!place || !place.owner || !bookingUser) {
+        throw new Error("Place, owner, or booking user not found");
+      }
+
+      // Don't create notification if user is booking their own place
+      if (place.owner.id === booking.userId) {
+        return null;
+      }
+
+      // Include unique booking ID and date/time window in message
+      const bookingReference = booking.uniqueRequestId || booking.id;
+      const timeSlotInfo = booking.timeSlots && booking.timeSlots.length > 0 
+        ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
+        : '';
+      
+      const dateRange = booking.checkInDate === booking.checkOutDate 
+        ? this._formatDate(booking.checkInDate)
+        : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
+
+      // Create notification for place owner (host)
+      const notification = await Notification.create({
+        userId: place.owner.id,
+        type: "booking_confirmed",
+        title: "Booking Confirmed",
+        message: `Booking #${bookingReference} for "${place.title}" on ${dateRange}${timeSlotInfo} has been confirmed. Payment completed by ${bookingUser.name}.`,
+        metadata: {
+          bookingId: booking.id,
+          uniqueRequestId: booking.uniqueRequestId,
+          bookingReference,
+          placeId: booking.placeId,
+          placeName: place.title,
+          clientId: booking.userId,
+          clientName: bookingUser.name,
+          totalPrice: booking.totalPrice,
+          checkInDate: booking.checkInDate,
+          checkOutDate: booking.checkOutDate,
+          timeSlots: booking.timeSlots,
+          dateTimeWindow: `${dateRange}${timeSlotInfo}`,
+          notificationType: "host_confirmation"
+        }
+      });
+
+      return notification;
+
+    } catch (error) {
+      console.error("Error creating booking confirmed notification:", error);
+      throw new Error(`Failed to create booking confirmed notification: ${error.message}`);
     }
   }
 

@@ -16,6 +16,7 @@ import { UserContext } from "../components/UserContext";
 import { useReviewNotifications } from "../contexts/ReviewNotificationContext";
 import { useNotification } from "../components/NotificationContext";
 import AccountNav from "../components/AccountNav";
+import Pagination from "../components/Pagination";
 
 export default function NotificationsPage() {
   const { user } = useContext(UserContext);
@@ -35,44 +36,64 @@ export default function NotificationsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState(null);
   const [filter, setFilter] = useState("all"); // all, unread
-  const [loadingMore, setLoadingMore] = useState(false);
+  const [itemsPerPage] = useState(20); // Keep this for consistency with backend
+  const [loadingPage, setLoadingPage] = useState(false); // Loading state for page changes
+  const [hasInitialized, setHasInitialized] = useState(false); // Track if we've made initial load attempt
 
   /**
-   * Load notifications with pagination - passing filter as parameter to avoid closure issues
+   * Load notifications with pagination - modified to not append data
    */
   const handleLoadNotifications = useCallback(async (page = 1, reset = false, filterOverride = null) => {
     const currentFilter = filterOverride || filter;
     try {
+      // Only show page loading for page changes, not initial loads or filter changes
+      if (page !== 1 && !reset && !filterOverride) {
+        setLoadingPage(true);
+      }
+
       const paginationData = await loadNotifications({
         page,
-        limit: 20,
+        limit: itemsPerPage,
         unreadOnly: currentFilter === "unread",
-        append: !reset
+        append: false // Always replace data for traditional pagination
       });
 
       if (paginationData) {
         setPagination(paginationData);
         setCurrentPage(page);
       }
+      
+      // Mark as initialized after first load attempt
+      setHasInitialized(true);
     } catch (error) {
       console.error("Error loading notifications:", error);
       notify("Failed to load notifications", "error");
+      // Still mark as initialized even on error to prevent infinite loops
+      setHasInitialized(true);
+    } finally {
+      setLoadingPage(false);
     }
-  }, [loadNotifications, notify, filter]);
+  }, [loadNotifications, notify, filter, itemsPerPage]);
 
   /**
-   * Load more notifications (pagination)
+   * Handle page change for pagination
    */
-  const handleLoadMore = useCallback(async () => {
-    if (!pagination?.hasNextPage || loadingMore) return;
-
-    setLoadingMore(true);
-    try {
-      await handleLoadNotifications(currentPage + 1, false);
-    } finally {
-      setLoadingMore(false);
+  const handlePageChange = useCallback((page) => {
+    if (page >= 1 && page <= (pagination?.totalPages || 1)) {
+      // Update URL with current page
+      const newSearchParams = new URLSearchParams(searchParams);
+      if (page === 1) {
+        newSearchParams.delete('page');
+      } else {
+        newSearchParams.set('page', page.toString());
+      }
+      setSearchParams(newSearchParams);
+      
+      handleLoadNotifications(page);
+      // Scroll to top of notifications when page changes
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [pagination?.hasNextPage, loadingMore, handleLoadNotifications, currentPage]);
+  }, [handleLoadNotifications, pagination?.totalPages, searchParams, setSearchParams]);
 
   /**
    * Mark notification as read and handle navigation
@@ -112,24 +133,31 @@ export default function NotificationsPage() {
     setFilter(newFilter);
     setCurrentPage(1);
     setPagination(null);
-    // Update URL params to reflect the filter change
-    setSearchParams({ filter: newFilter });
+    setHasInitialized(false); // Reset initialization state when filter changes
+    // Update URL params to reflect the filter change and reset page to 1
+    const newSearchParams = new URLSearchParams();
+    newSearchParams.set('filter', newFilter);
+    setSearchParams(newSearchParams);
     // Immediately reload notifications with new filter
     if (user) {
       handleLoadNotifications(1, true, newFilter);
     }
   }, [setSearchParams, user, handleLoadNotifications]);
 
-  // Initialize filter from URL params or default to "unread" if there are unread notifications
+  // Initialize filter and page from URL params or default values
   useEffect(() => {
     if (!user) return;
 
     const urlFilter = searchParams.get("filter");
+    const urlPage = parseInt(searchParams.get("page") || "1", 10);
     
     let targetFilter = filter;
+    let targetPage = currentPage;
     let shouldLoadNotifications = false;
     let shouldSetFilter = false;
+    let shouldSetPage = false;
 
+    // Handle filter from URL
     if (urlFilter === "unread" || urlFilter === "all") {
       // URL has a valid filter
       if (filter !== urlFilter) {
@@ -143,27 +171,49 @@ export default function NotificationsPage() {
       if (unreadCount > 0) {
         // Default to unread if there are unread notifications
         setFilter("unread");
-        setSearchParams({ filter: "unread" }, { replace: true });
+        setSearchParams(prev => {
+          const newParams = new URLSearchParams(prev);
+          newParams.set("filter", "unread");
+          return newParams;
+        }, { replace: true });
         targetFilter = "unread";
         shouldLoadNotifications = true;
         shouldSetFilter = true;
       } else {
         // Default to all if no unread notifications
         setFilter("all");
-        setSearchParams({ filter: "all" }, { replace: true });
+        setSearchParams(prev => {
+          const newParams = new URLSearchParams(prev);
+          newParams.set("filter", "all");
+          return newParams;
+        }, { replace: true });
         targetFilter = "all";
         shouldLoadNotifications = true;
         shouldSetFilter = true;
       }
     }
 
-    // Load notifications if filter changed or this is the initial load
-    if (shouldLoadNotifications || (notifications.length === 0 && !loading && !shouldSetFilter)) {
-      setCurrentPage(1);
-      setPagination(null);
-      handleLoadNotifications(1, true, targetFilter);
+    // Handle page from URL
+    if (urlPage > 0 && urlPage !== currentPage) {
+      setCurrentPage(urlPage);
+      targetPage = urlPage;
+      shouldLoadNotifications = true;
+      shouldSetPage = true;
     }
-  }, [user, searchParams, setSearchParams, unreadCount, filter, handleLoadNotifications, notifications.length, loading]);
+
+    // Load notifications if filter or page changed, or this is the initial load
+    if (shouldLoadNotifications || (!hasInitialized && !loading && !shouldSetFilter && !shouldSetPage)) {
+      if (shouldSetFilter) {
+        // If filter changed, reset to page 1
+        setCurrentPage(1);
+        setPagination(null);
+        handleLoadNotifications(1, true, targetFilter);
+      } else {
+        // Load specific page
+        handleLoadNotifications(targetPage, false, targetFilter);
+      }
+    }
+  }, [user, searchParams, setSearchParams, unreadCount, filter, currentPage, handleLoadNotifications, hasInitialized, loading]);
 
   if (!user) {
     return (
@@ -263,7 +313,9 @@ export default function NotificationsPage() {
               <div className="text-center py-12">
                 <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
                   <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-5 5-5-5h5V3h0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-5 5-5-5h5v14z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18 8A6 6 0 106 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.73 21c-.39.72-1.13 1.2-1.99 1.2-.86 0-1.6-.48-1.99-1.2" />
                   </svg>
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -277,7 +329,14 @@ export default function NotificationsPage() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-4 relative">
+                {/* Page Loading Overlay */}
+                {loadingPage && (
+                  <div className="absolute inset-0 bg-white/75 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  </div>
+                )}
+
                 {notifications.map((notification) => {
                   const displayData = getNotificationDisplayData(notification);
                   
@@ -290,17 +349,17 @@ export default function NotificationsPage() {
                   );
                 })}
 
-                {/* Load More Button */}
-                {pagination?.hasNextPage && (
-                  <div className="flex justify-center pt-6">
-                    <button
-                      onClick={handleLoadMore}
-                      disabled={loadingMore}
-                      className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-orange-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {loadingMore ? "Loading..." : "Load More"}
-                    </button>
-                  </div>
+                {/* Pagination Component */}
+                {pagination && pagination.totalPages > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={pagination.totalPages}
+                    onPageChange={handlePageChange}
+                    showingFrom={((currentPage - 1) * itemsPerPage) + 1}
+                    showingTo={Math.min(currentPage * itemsPerPage, pagination.totalItems)}
+                    totalItems={pagination.totalItems}
+                    itemName="notifications"
+                  />
                 )}
               </div>
             )}
