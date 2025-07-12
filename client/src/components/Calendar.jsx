@@ -74,8 +74,13 @@ export default function Calendar({
   useEffect(() => {
     if (!startDate && !endDate) {
       setSelectingStart(true);
+      setHoverDate(null);
     } else if (startDate && !endDate) {
       setSelectingStart(false);
+    } else if (startDate && endDate) {
+      // Both dates are selected, ready to start fresh on next click
+      setSelectingStart(true);
+      setHoverDate(null);
     }
     
     // If both dates are set, prioritize showing the start date's month
@@ -129,10 +134,16 @@ export default function Calendar({
     }
     
     // Normal date selection behavior for the main calendar
-    if (selectingStart) {
+    // If both dates are already selected, start fresh with new start date
+    if (startDate && endDate) {
+      onDateChange(formattedDate, null);
+      setSelectingStart(false);
+    } else if (selectingStart) {
+      // Setting start date
       onDateChange(formattedDate, null);
       setSelectingStart(false);
     } else {
+      // Setting end date
       // If clicked date is before start date, swap them
       if (start && isBefore(day, start)) {
         onDateChange(formattedDate, format(start, "yyyy-MM-dd"));
@@ -145,7 +156,8 @@ export default function Calendar({
   
   // Handle hover effect for range selection
   const handleDateHover = (day) => {
-    if (!selectingStart && start) {
+    // Only show hover effect when selecting end date (not when both dates are already selected)
+    if (!selectingStart && start && !endDate) {
       setHoverDate(day);
     }
   };
