@@ -137,13 +137,25 @@ export const checkPasswordSpecialChars = (password, allowedSpecialChars = "@$!%*
     hasRequiredSpecialChar
   };
 };
+import { geocodeAddressYandex } from "./yandexMapsUtils";
+
 export async function geocodeAddress(address) {
   try {
-    // Use the Google Maps Geocoding API with the provided address
+    // Use Yandex Maps Geocoding API as the primary geocoding service for better regional coverage
+    console.log("Geocoding address with Yandex:", address);
+    const yandexResult = await geocodeAddressYandex(address);
+    
+    if (yandexResult) {
+      console.log("Yandex geocoding successful:", yandexResult);
+      return yandexResult;
+    }
+    
+    // Fallback to Google Maps only if Yandex fails completely
+    console.warn('Yandex geocoding failed, trying Google Maps as fallback...');
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
     
     if (!apiKey) {
-      console.warn('Google Maps API key is missing. Please check your .env file and ensure VITE_GOOGLE_MAPS_API_KEY is set.');
+      console.warn('Google Maps API key is missing. Cannot fallback to Google geocoding.');
       return null;
     }
 
@@ -157,9 +169,10 @@ export async function geocodeAddress(address) {
     
     if (data.status === 'OK' && data.results.length > 0) {
       const { lat, lng } = data.results[0].geometry.location;
+      console.log("Google Maps fallback geocoding successful:", { lat, lng });
       return { lat, lng };
     } else {
-      console.warn('Geocoding failed for address:', address, 'Status:', data.status);
+      console.warn('Google Maps geocoding also failed for address:', address, 'Status:', data.status);
       return null;
     }
   } catch (error) {

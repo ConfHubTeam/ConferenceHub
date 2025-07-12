@@ -5,7 +5,9 @@ import MapPicker from "./MapPicker";
  * AddressSection Component
  * 
  * Handles address input with geocoding validation and map integration.
- * Now supports manual address editing while preserving map coordinates.
+ * Uses hybrid approach:
+ * - Yandex geocoding API for address search (better regional data)
+ * - Google Maps for visualization only
  */
 export default function AddressSection({
   // Address state
@@ -31,7 +33,10 @@ export default function AddressSection({
   handleAddressUpdate,
   
   // UI helper functions
-  preInput
+  preInput,
+  
+  // Place ID for determining if this is creation or editing (kept for future extensibility)
+  placeId = null
 }) {
   // Track whether the address was manually edited after pin placement
   const [addressManuallyEdited, setAddressManuallyEdited] = useState(false);
@@ -74,20 +79,15 @@ export default function AddressSection({
     }
   };
   
-  // Handle address suggestions from the map
+  // Handle address suggestions from the map (when marker is dragged)
   const handleMapAddressUpdate = (suggestedAddress) => {
-    // We received an address suggestion from the map
-    // But we won't automatically update the address field anymore
-    // This keeps the address completely independent from the coordinates
-    
-    // If the user wants to update the address field programmatically,
-    // they can uncomment this:
-    /*
-    if (!addressManuallyEdited || !address.trim()) {
+    // When the user drags the marker, we get a Yandex-derived address
+    // Update the address field with this suggested address
+    if (suggestedAddress && suggestedAddress.trim()) {
       handleAddressUpdate(suggestedAddress);
+      // Mark that the address was updated from map interaction (not manually typed)
       setAddressManuallyEdited(false);
     }
-    */
   };
   
   // Handle toggling full screen mode
@@ -208,6 +208,7 @@ export default function AddressSection({
       
       {showMap && (
         <div className="mb-4">
+          {/* Use Google Maps for visualization, Yandex geocoding happens in address input field */}
           <MapPicker 
             initialCoordinates={lat && lng ? { lat: parseFloat(lat), lng: parseFloat(lng) } : null}
             onLocationSelect={handleLocationSelect}
@@ -220,13 +221,14 @@ export default function AddressSection({
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              Map and Address Usage:
+              Address & Map Usage:
             </div>
             <ul className="list-disc list-inside space-y-1 ml-1">
-              <li><span className="font-medium">Address field:</span> Enter any name or description you want for your location</li>
-              <li><span className="font-medium">Map pin:</span> Drag or click to set the exact coordinates</li>
-              <li><span className="font-medium">Independence:</span> Address name and map location work separately - you can have a custom name with precise coordinates</li>
-              <li><span className="font-medium">Tip:</span> Type an address first to get close, then fine-tune with the map pin</li>
+              <li><span className="font-medium">Address search:</span> Uses Yandex geocoding for better regional results</li>
+              <li><span className="font-medium">Map visualization:</span> Google Maps for clear display and interaction</li>
+              <li><span className="font-medium">Address field:</span> Enter any custom name independently of coordinates</li>
+              <li><span className="font-medium">Map pin:</span> Drag to set location and auto-fill address from Yandex</li>
+              <li><span className="font-medium">Tip:</span> Search address first, or drag pin to get address automatically</li>
             </ul>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
 import { useMapTouchHandler } from "../hooks/useMapTouchHandler";
+import { reverseGeocodeYandex } from "../utils/yandexMapsUtils";
 
 // Get Google Maps API key from environment variables with fallback
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
@@ -463,7 +464,7 @@ export default function MapPicker({
     }
   };
 
-  // Handle position change and reverse geocode
+  // Handle position change and reverse geocode with Yandex
   const handlePositionChange = async (newPosition) => {
     // Ensure we have valid coordinates
     if (!newPosition || typeof newPosition.lat !== 'number' || typeof newPosition.lng !== 'number') {
@@ -486,34 +487,30 @@ export default function MapPicker({
       lng: newPosition.lng
     });
     
-    // Only notify parent component about the position change
-    // DO NOT update the address field to prevent circular geocoding
+    // Notify parent component about the position change
     if (onLocationSelect) {
       onLocationSelect(newPosition);
     }
     
-    // We'll still fetch the address to show as a suggestion in the UI
-    // but we won't automatically update the address field to prevent circular updates
+    // Use Yandex reverse geocoding to get the address and update the address field
     try {
       setAddressFetchStatus('loading');
       
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${newPosition.lat},${newPosition.lng}&key=${GOOGLE_MAPS_API_KEY}`
-      );
+      // Use Yandex reverse geocoding for better regional accuracy
+      const address = await reverseGeocodeYandex(newPosition.lat, newPosition.lng);
       
-      const data = await response.json();
-      
-      if (data.status === 'OK' && data.results.length > 0) {
-        const address = data.results[0].formatted_address;
+      if (address) {
         setAddressFetchStatus('success');
         
-        // DO NOT call onAddressUpdate to prevent circular geocoding
-        // The address field should remain independent of map coordinates
-        
+        // Update the address field with the Yandex-derived address
+        if (onAddressUpdate) {
+          onAddressUpdate(address);
+        }
       } else {
         setAddressFetchStatus('failed');
       }
     } catch (error) {
+      console.error('Error during Yandex reverse geocoding:', error);
       setAddressFetchStatus('failed');
     }
   };
