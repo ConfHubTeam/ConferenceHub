@@ -550,6 +550,9 @@ class BookingService {
 
   /**
    * Create notifications based on booking status changes (US-R011)
+   * Updated to follow new notification flow:
+   * - Hosts receive approved/confirmed notifications only
+   * - Agents receive payment notifications
    * @param {Object} booking - The booking object
    * @param {string} newStatus - New status
    * @param {string} previousStatus - Previous status
@@ -567,10 +570,13 @@ class BookingService {
       case 'approved':
         if (previousStatus === 'selected') {
           // This means payment was confirmed and booking was approved
+          // Notify agents about payment (they handle payouts to hosts)
           await BookingNotificationService.createBookingPaidNotification(booking);
-          await BookingNotificationService.createBookingApprovedNotification(booking, agentApproval);
+          // Notify host about confirmation (not payment)
+          await BookingNotificationService.createBookingConfirmedNotification(booking);
         } else if (previousStatus === 'pending') {
-          // Direct approval without selection (rare case)
+          // Direct approval without payment selection
+          // Only notify host about approval/confirmation
           await BookingNotificationService.createBookingApprovedNotification(booking, agentApproval);
         }
         break;
