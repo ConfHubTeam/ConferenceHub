@@ -24,6 +24,8 @@ import BookingsPage from "./pages/BookingsPage";
 import BookingDetailsPage from "./pages/BookingDetailsPage";
 import PlaceDetailPage from "./pages/PlaceDetailPage";
 import DashboardPage from "./pages/DashboardPage";
+import HostDashboardPage from "./pages/HostDashboardPage";
+import HostReviewsPage from "./pages/HostReviewsPage";
 import UsersPage from "./pages/UsersPage";
 import AllPlacesPage from "./pages/AllPlacesPage";
 import AgentReviewsPage from "./pages/AgentReviewsPage";
@@ -81,6 +83,10 @@ function App() {
             
             {/* Agent-specific routes */}
             <Route path="/account/dashboard" element={<DashboardPage />}/>
+            
+            {/* Host-specific routes */}
+            <Route path="/account/hostdashboard" element={<HostDashboardPage />}/>
+            
             <Route path="/account/users" element={<UsersPage />}/>
             <Route path="/account/all-places" element={<AllPlacesPage />}/>
             <Route path="/account/reviews" element={<AgentReviewsPage />}/>
