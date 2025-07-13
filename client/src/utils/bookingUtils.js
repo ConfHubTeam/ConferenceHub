@@ -283,6 +283,17 @@ export const getBookingActionButtons = (booking, user, competingBookings = []) =
       description: "Cancel your booking request"
     });
   }
+
+  // Paid to Host button for agents on approved unpaid bookings
+  if (canMarkPaidToHost(user, booking)) {
+    buttons.push({
+      label: "Mark Paid to Host",
+      action: "paid_to_host",
+      variant: "primary",
+      icon: "dollar-sign",
+      description: "Mark payment to host as complete"
+    });
+  }
   
   return { buttons, note };
 };
@@ -393,4 +404,31 @@ export const validateStatusTransition = (currentStatus, newStatus) => {
       ? "Status transition is valid"
       : `Cannot transition from ${currentStatus} to ${newStatus}`
   };
+};
+
+/**
+ * Check if user can mark booking as paid to host
+ * @param {Object} user - Current user object
+ * @param {Object} booking - Booking object
+ * @returns {boolean} True if user can mark as paid to host
+ */
+export const canMarkPaidToHost = (user, booking) => {
+  return (
+    user?.userType === 'agent' &&
+    booking.status === 'approved' &&
+    !booking.paidToHost
+  );
+};
+
+/**
+ * Check if booking shows paid to host status (for display purposes)
+ * @param {Object} user - Current user object
+ * @param {Object} booking - Booking object
+ * @returns {boolean} True if paid to host status should be shown
+ */
+export const shouldShowPaidToHostStatus = (user, booking) => {
+  return (
+    (user?.userType === 'agent' || user?.userType === 'host') &&
+    booking.status === 'approved'
+  );
 };
