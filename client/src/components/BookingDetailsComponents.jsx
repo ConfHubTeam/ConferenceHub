@@ -280,12 +280,6 @@ export const PaymentSection = ({ isPaymentAvailable, paymentProviders, onPayment
   return (
     <SectionCard title="Payment">
       <div className="space-y-4">
-        <p className="text-sm text-gray-600 mb-4">
-          {isPaymentAvailable ? 
-            'Choose your preferred payment method to complete the booking:' : 
-            'Payment options will be available once your booking is selected by the host.'}
-        </p>
-        
         {/* Payment Provider Icons */}
         <div className="grid grid-cols-3 gap-4">
           {paymentProviders.map((provider) => (
@@ -649,13 +643,12 @@ export const PaymentButton = ({ provider, isAvailable, onClick, iconSrc, alt }) 
       }`}
       title={isAvailable ? `Pay with ${alt}` : 'Available after booking selection'}
     >
-      <div className="flex flex-col items-center space-y-2">
+      <div className="flex flex-col items-center">
         <img 
           src={iconSrc} 
           alt={alt} 
-          className="w-16 h-12 object-contain"
+          className="w-32 h-20 object-contain"
         />
-        <span className="text-xs font-medium text-gray-700">{alt}</span>
       </div>
     </button>
   );
