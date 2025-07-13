@@ -22,6 +22,12 @@ router.get("/all", userController.getAllUsers); // Alias for /users endpoint
 // Get system statistics (agent only)
 router.get("/stats", userController.getStatistics);
 
+// Get host statistics (host only)
+router.get("/host-stats", userController.getHostStatistics);
+
+// Get host reviews (host only)
+router.get("/host-reviews", userController.getHostReviews);
+
 // Delete own account (must come before /:id route to ensure proper matching)
 router.delete("/account/delete", userController.deleteOwnAccount);
 
