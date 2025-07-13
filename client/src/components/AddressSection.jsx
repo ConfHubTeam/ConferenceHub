@@ -120,12 +120,12 @@ export default function AddressSection({
 
   return (
     <>
-      {preInput("Address", "name or description of this location. You can enter any name you want, independently of the map coordinates.")}
+      {preInput("Address")}
       <div className="relative">
         <input
           id="place-address"
           type="text"
-          placeholder="address"
+          placeholder="Uzbekistan, Tashkent, Tashkent City Park Street, 1"
           value={address}
           onChange={handleAddressInputChange}
           className={`w-full border my-2 py-2 px-3 rounded-2xl ${
@@ -216,21 +216,6 @@ export default function AddressSection({
             isFullScreen={isFullScreen}
             onToggleFullScreen={toggleFullScreen}
           />
-          <div className="bg-blue-50 p-3 mt-2 rounded-md text-sm text-gray-700 border border-blue-200">
-            <div className="font-semibold mb-1 flex items-center text-blue-700">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Address & Map Usage:
-            </div>
-            <ul className="list-disc list-inside space-y-1 ml-1">
-              <li><span className="font-medium">Address search:</span> Uses Yandex geocoding for better regional results</li>
-              <li><span className="font-medium">Map visualization:</span> Google Maps for clear display and interaction</li>
-              <li><span className="font-medium">Address field:</span> Enter any custom name independently of coordinates</li>
-              <li><span className="font-medium">Map pin:</span> Drag to set location and auto-fill address from Yandex</li>
-              <li><span className="font-medium">Tip:</span> Search address first, or drag pin to get address automatically</li>
-            </ul>
-          </div>
         </div>
       )}
     </>
