@@ -137,16 +137,16 @@ class BookingService {
   /**
    * Get bookings based on user type
    */
-  static async getBookings(userData) {
+  static async getBookings(userData, filters = {}) {
     // Clean up expired bookings first
     await cleanupExpiredBookings();
 
     if (userData.userType === 'agent') {
-      return this._getAgentBookings();
+      return this._getAgentBookings(filters);
     } else if (userData.userType === 'host') {
-      return this._getHostBookings(userData.id);
+      return this._getHostBookings(userData.id, filters);
     } else {
-      return this._getClientBookings(userData.id);
+      return this._getClientBookings(userData.id, filters);
     }
   }
 
@@ -183,6 +183,12 @@ class BookingService {
     
     // Handle client cancellation (delete booking)
     if (this._isClientCancellation(userData, booking, status)) {
+      // Set cancelled timestamp before deletion for record keeping
+      booking.cancelledAt = new Date();
+      booking.status = 'cancelled';
+      await booking.save();
+      
+      // Then delete the booking
       await booking.destroy();
       return {
         message: "Booking cancelled successfully", 
@@ -201,6 +207,34 @@ class BookingService {
     
     // Update booking status
     booking.status = status;
+    
+    // Set appropriate timestamp when status changes for the first time
+    const currentTime = new Date();
+    if (status !== previousStatus) {
+      switch (status) {
+        case 'selected':
+          if (!booking.selectedAt) {
+            booking.selectedAt = currentTime;
+          }
+          break;
+        case 'approved':
+          if (!booking.approvedAt) {
+            booking.approvedAt = currentTime;
+          }
+          break;
+        case 'rejected':
+          if (!booking.rejectedAt) {
+            booking.rejectedAt = currentTime;
+          }
+          break;
+        case 'cancelled':
+          if (!booking.cancelledAt) {
+            booking.cancelledAt = currentTime;
+          }
+          break;
+      }
+    }
+    
     await booking.save();
 
     // Create notifications based on status change (US-R011)
@@ -293,11 +327,26 @@ class BookingService {
       throw error;
     }
     
-    let pendingCount;
+    let pendingCount, paidToHostCount, unpaidToHostCount;
     
     if (userData.userType === 'agent') {
       pendingCount = await Booking.count({
         where: { status: { [Op.in]: ['pending', 'selected'] } }
+      });
+      
+      // Count paid and unpaid approved bookings for agents
+      paidToHostCount = await Booking.count({
+        where: { 
+          status: 'approved',
+          paidToHost: true 
+        }
+      });
+      
+      unpaidToHostCount = await Booking.count({
+        where: { 
+          status: 'approved',
+          paidToHost: false 
+        }
       });
     } else {
       pendingCount = await Booking.count({
@@ -313,9 +362,99 @@ class BookingService {
           status: { [Op.in]: ['pending', 'selected'] }
         }
       });
+      
+      // Count paid and unpaid approved bookings for hosts
+      paidToHostCount = await Booking.count({
+        include: [
+          {
+            model: Place,
+            as: 'place',
+            where: { ownerId: userData.id },
+            attributes: []
+          }
+        ],
+        where: {
+          status: 'approved',
+          paidToHost: true
+        }
+      });
+      
+      unpaidToHostCount = await Booking.count({
+        include: [
+          {
+            model: Place,
+            as: 'place',
+            where: { ownerId: userData.id },
+            attributes: []
+          }
+        ],
+        where: {
+          status: 'approved',
+          paidToHost: false
+        }
+      });
     }
     
-    return { pendingCount };
+    return { 
+      pendingCount, 
+      paidToHostCount, 
+      unpaidToHostCount 
+    };
+  }
+
+  /**
+   * Mark booking as paid to host (Agent-only action)
+   * This is the final step in the booking process where agent pays the host
+   */
+  static async markPaidToHost(bookingId, userData) {
+    // Only agents can perform this action
+    if (userData.userType !== 'agent') {
+      const error = new Error("Only agents can mark bookings as paid to host");
+      error.statusCode = 403;
+      throw error;
+    }
+
+    // Get booking with associations
+    const booking = await this.getBookingWithAssociations(bookingId);
+    if (!booking) {
+      throw new Error("Booking not found");
+    }
+
+    // Validate booking status - only approved bookings can be paid to host
+    if (booking.status !== 'approved') {
+      const error = new Error("Only approved bookings can be marked as paid to host");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    // Check if already paid to host
+    if (booking.paidToHost) {
+      const error = new Error("This booking has already been marked as paid to host");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    // Update booking to mark as paid to host
+    booking.paidToHost = true;
+    booking.paidToHostAt = new Date();
+    await booking.save();
+
+    // Create notification for host about payment received (US-R011)
+    try {
+      await BookingNotificationService.createBookingPaidToHostNotification(booking);
+    } catch (error) {
+      console.error("Error creating paid to host notification:", error);
+      // Don't fail the payment marking if notification fails
+    }
+
+    // Reload with associations
+    const updatedBooking = await this.getBookingWithAssociations(booking.id);
+    
+    return {
+      success: true,
+      booking: updatedBooking,
+      message: "Payment to host marked successfully"
+    };
   }
 
   // Private helper methods
@@ -473,8 +612,21 @@ class BookingService {
     });
   }
 
-  static async _getAgentBookings() {
+  static async _getAgentBookings(filters = {}) {
+    const whereClause = {};
+    
+    // Apply paid filter if specified - only for approved bookings
+    if (filters.paidFilter === 'paid') {
+      whereClause.status = 'approved';
+      whereClause.paidToHost = true;
+    } else if (filters.paidFilter === 'unpaid') {
+      whereClause.status = 'approved';
+      whereClause.paidToHost = false;
+    }
+    // If no paid filter specified, show all bookings regardless of status
+    
     return Booking.findAll({
+      where: whereClause,
       include: [
         {
           model: Place,
@@ -503,13 +655,25 @@ class BookingService {
     });
   }
 
-  static async _getHostBookings(hostId) {
+  static async _getHostBookings(hostId, filters = {}) {
+    const whereClause = {};
+    
+    // Apply paid filter if specified for approved bookings only
+    if (filters.paidFilter === 'paid') {
+      whereClause.status = 'approved';
+      whereClause.paidToHost = true;
+    } else if (filters.paidFilter === 'unpaid') {
+      whereClause.status = 'approved';
+      whereClause.paidToHost = false;
+    }
+    // If no paid filter specified, show all bookings (pending, selected, approved, rejected)
+    
     return Booking.findAll({
       include: [
         {
           model: Place,
           as: 'place',
-          where: { ownerId: hostId },
+          where: { ownerId: hostId }, // This ensures we only get bookings for this host's places
           include: [
             {
               model: Currency,
@@ -525,11 +689,13 @@ class BookingService {
           attributes: ['id', 'name', 'email']
         }
       ],
+      where: whereClause, // Apply status/paid filters here
       order: [['createdAt', 'DESC']]
     });
   }
 
-  static async _getClientBookings(clientId) {
+  static async _getClientBookings(clientId, filters = {}) {
+    // Clients don't need to see paid status - this is for agent/host only
     return Booking.findAll({
       where: { userId: clientId },
       include: {
@@ -574,10 +740,14 @@ class BookingService {
           await BookingNotificationService.createBookingPaidNotification(booking);
           // Notify host about confirmation (not payment)
           await BookingNotificationService.createBookingConfirmedNotification(booking);
+          // Notify client about booking confirmation
+          await BookingNotificationService.createBookingConfirmedNotificationForClient(booking);
         } else if (previousStatus === 'pending') {
           // Direct approval without payment selection
           // Only notify host about approval/confirmation
           await BookingNotificationService.createBookingApprovedNotification(booking, agentApproval);
+          // Also notify client about booking approval
+          await BookingNotificationService.createBookingConfirmedNotificationForClient(booking);
         }
         break;
         

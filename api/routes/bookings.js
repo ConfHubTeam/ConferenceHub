@@ -27,4 +27,7 @@ router.get("/:id", authenticateToken, bookingController.getBookingById);
 // Update booking status
 router.put("/:id", authenticateToken, bookingController.updateBookingStatus);
 
+// Mark booking as paid to host (agent-only)
+router.post("/:id/paid-to-host", authenticateToken, bookingController.markPaidToHost);
+
 module.exports = router;

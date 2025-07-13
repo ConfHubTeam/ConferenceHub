@@ -109,9 +109,17 @@ export default function BookingsPage() {
         } else {
           acc[booking.status]++;
         }
+        
+        // Count paid to host bookings for agents and hosts
+        if (user?.userType === 'agent' || user?.userType === 'host') {
+          if (booking.status === 'approved' && booking.paidToHost) {
+            acc.paidToHostCount = (acc.paidToHostCount || 0) + 1;
+          }
+        }
+        
         return acc;
       },
-      { pending: 0, selected: 0, approved: 0, rejected: 0, total: 0 }
+      { pending: 0, selected: 0, approved: 0, rejected: 0, total: 0, paidToHostCount: 0 }
     );
     setStats(stats);
   }
@@ -126,8 +134,16 @@ export default function BookingsPage() {
         // For all user types, "pending" view includes both pending and selected bookings
         // Selected bookings are still considered pending until payment is complete
         filtered = filtered.filter(booking => booking.status === 'pending' || booking.status === 'selected');
+      } else if (statusFilter === 'paid_to_host') {
+        // Show only approved bookings that have been paid to host
+        filtered = filtered.filter(booking => booking.status === 'approved' && booking.paidToHost);
       } else {
-        filtered = filtered.filter(booking => booking.status === statusFilter);
+        // For other statuses, show only unpaid approved bookings or exact status matches
+        if (statusFilter === 'approved') {
+          filtered = filtered.filter(booking => booking.status === 'approved' && !booking.paidToHost);
+        } else {
+          filtered = filtered.filter(booking => booking.status === statusFilter);
+        }
       }
     }
     
