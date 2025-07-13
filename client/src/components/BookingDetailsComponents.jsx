@@ -237,22 +237,58 @@ export const PricingSection = ({ booking, user, children }) => {
 /**
  * Payment status indicator component
  */
-export const PaymentStatusIndicator = ({ status, userType }) => {
+export const PaymentStatusIndicator = ({ status, userType, booking }) => {
   if (!((userType === 'host' || userType === 'agent'))) return null;
 
+  // Format timestamp for display
+  const formatPaymentTimestamp = (timestamp) => {
+    if (!timestamp) return '';
+    try {
+      const date = new Date(timestamp);
+      return date.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+    } catch (error) {
+      console.error('Error formatting payment timestamp:', error);
+      return '';
+    }
+  };
+
   if (status === 'approved') {
-    return (
-      <StatusIndicator
-        status="Payment Completed"
-        message="Transaction will be displayed here once payment integration is complete"
-        icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />}
-        bgColor="bg-green-50"
-        borderColor="border-green-200"
-        iconColor="text-green-600"
-        titleColor="text-green-800"
-        descColor="text-green-600"
-      />
-    );
+    // Check if payment to host has been made
+    if (booking?.paidToHost) {
+      const paidAtTimestamp = formatPaymentTimestamp(booking.paidToHostAt);
+      return (
+        <StatusIndicator
+          status="Payment Completed & Paid to Host"
+          message={paidAtTimestamp ? `Host was paid on ${paidAtTimestamp}` : "Host has been paid for this booking"}
+          icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />}
+          bgColor="bg-blue-50"
+          borderColor="border-blue-200"
+          iconColor="text-blue-600"
+          titleColor="text-blue-800"
+          descColor="text-blue-600"
+        />
+      );
+    } else {
+      return (
+        <StatusIndicator
+          status="Payment Completed"
+          message={userType === 'agent' ? "Ready to pay host" : "Payment pending from agent"}
+          icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />}
+          bgColor="bg-green-50"
+          borderColor="border-green-200"
+          iconColor="text-green-600"
+          titleColor="text-green-800"
+          descColor="text-green-600"
+        />
+      );
+    }
   }
 
   if (status === 'selected') {
@@ -280,12 +316,6 @@ export const PaymentSection = ({ isPaymentAvailable, paymentProviders, onPayment
   return (
     <SectionCard title="Payment">
       <div className="space-y-4">
-        <p className="text-sm text-gray-600 mb-4">
-          {isPaymentAvailable ? 
-            'Choose your preferred payment method to complete the booking:' : 
-            'Payment options will be available once your booking is selected by the host.'}
-        </p>
-        
         {/* Payment Provider Icons */}
         <div className="grid grid-cols-3 gap-4">
           {paymentProviders.map((provider) => (
@@ -649,16 +679,243 @@ export const PaymentButton = ({ provider, isAvailable, onClick, iconSrc, alt }) 
       }`}
       title={isAvailable ? `Pay with ${alt}` : 'Available after booking selection'}
     >
-      <div className="flex flex-col items-center space-y-2">
+      <div className="flex flex-col items-center">
         <img 
           src={iconSrc} 
           alt={alt} 
-          className="w-16 h-12 object-contain"
+          className="w-32 h-20 object-contain"
         />
-        <span className="text-xs font-medium text-gray-700">{alt}</span>
       </div>
     </button>
   );
+};
+
+/**
+ * Booking Timeline Component
+ * Shows the complete booking status progression with timestamps
+ * Visible to hosts and agents only
+ */
+export const BookingTimeline = ({ booking, userType }) => {
+  // Only show for hosts and agents
+  if (userType !== 'host' && userType !== 'agent') return null;
+
+  // Format timestamp for display
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return null;
+    try {
+      const date = new Date(timestamp);
+      return date.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+    } catch (error) {
+      console.error('Error formatting timestamp:', error);
+      return null;
+    }
+  };
+
+  // Build timeline steps based on booking data
+  const getTimelineSteps = () => {
+    const steps = [];
+    
+    // 1. Request Submitted (always present)
+    steps.push({
+      title: 'Request Submitted',
+      timestamp: booking.createdAt ? formatTimestamp(booking.createdAt) : null,
+      status: 'completed',
+      icon: 'submit'
+    });
+
+    // 2. Selected for Payment (if booking was selected)
+    if (booking.selectedAt || booking.status === 'selected' || 
+        booking.status === 'approved' || booking.status === 'rejected') {
+      steps.push({
+        title: 'Selected for Payment',
+        timestamp: booking.selectedAt ? formatTimestamp(booking.selectedAt) : null,
+        status: booking.selectedAt ? 'completed' : 'unknown',
+        icon: 'selected'
+      });
+    }
+
+    // 3. Pending Payment (transitional step for selected bookings)
+    if (booking.status === 'selected' || booking.status === 'approved') {
+      steps.push({
+        title: 'Pending Payment',
+        timestamp: booking.selectedAt ? formatTimestamp(booking.selectedAt) : null,
+        status: booking.status === 'approved' ? 'completed' : 'current',
+        icon: 'pending'
+      });
+    }
+
+    // 4. Payment Complete (for approved bookings)
+    if (booking.status === 'approved') {
+      steps.push({
+        title: 'Payment Complete',
+        timestamp: booking.approvedAt ? formatTimestamp(booking.approvedAt) : null,
+        status: 'completed',
+        icon: 'payment'
+      });
+    }
+
+    // 5. Confirmed (for approved bookings)
+    if (booking.status === 'approved') {
+      steps.push({
+        title: 'Confirmed',
+        timestamp: booking.approvedAt ? formatTimestamp(booking.approvedAt) : null,
+        status: 'completed',
+        icon: 'confirmed'
+      });
+    }
+
+    // 6. Paid to Host (for approved bookings with agent payment)
+    if (booking.status === 'approved') {
+      steps.push({
+        title: 'Paid to Host',
+        timestamp: booking.paidToHostAt ? formatTimestamp(booking.paidToHostAt) : null,
+        status: booking.paidToHost ? 'completed' : 'pending',
+        icon: 'paid',
+        description: booking.paidToHost 
+          ? `Agent marked payment complete`
+          : userType === 'agent' 
+            ? 'Ready to mark payment complete' 
+            : 'Awaiting payment from agent'
+      });
+    }
+
+    // 7. Rejected (if booking was rejected)
+    if (booking.status === 'rejected') {
+      steps.push({
+        title: 'Rejected',
+        timestamp: booking.rejectedAt ? formatTimestamp(booking.rejectedAt) : null,
+        status: 'rejected',
+        icon: 'rejected'
+      });
+    }
+
+    return steps;
+  };
+
+  const getStepIcon = (iconType, status) => {
+    const iconClass = `w-4 h-4 ${
+      status === 'completed' ? 'text-green-600' :
+      status === 'current' ? 'text-blue-600' :
+      status === 'pending' ? 'text-gray-400' :
+      status === 'rejected' ? 'text-red-600' :
+      'text-gray-400'
+    }`;
+
+    switch (iconType) {
+      case 'submit':
+        return (
+          <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        );
+      case 'selected':
+        return (
+          <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        );
+      case 'pending':
+        return (
+          <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        );
+      case 'payment':
+        return (
+          <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+          </svg>
+        );
+      case 'confirmed':
+        return (
+          <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        );
+      case 'paid':
+        return (
+          <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+          </svg>
+        );
+      case 'rejected':
+        return (
+          <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        );
+      default:
+        return (
+          <div className={`w-2 h-2 rounded-full ${
+            status === 'completed' ? 'bg-green-500' :
+            status === 'current' ? 'bg-blue-500' :
+            status === 'pending' ? 'bg-gray-300' :
+            status === 'rejected' ? 'bg-red-500' :
+            'bg-gray-300'
+          }`}></div>
+        );
+    }
+  };
+
+  const timelineSteps = getTimelineSteps();
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+        <h3 className="text-sm font-semibold text-gray-900 flex items-center">
+          <svg className="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          Booking Timeline
+        </h3>
+      </div>
+      
+      <div className="p-4">
+        <div className="space-y-4">
+          {timelineSteps.map((step, index) => (
+            <div key={index} className="flex items-start">
+              <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 mr-3">
+                {getStepIcon(step.icon, step.status)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className={`text-sm font-medium ${
+                  step.status === 'completed' ? 'text-gray-900' :
+                  step.status === 'current' ? 'text-blue-900' :
+                  step.status === 'pending' ? 'text-gray-500' :
+                  step.status === 'rejected' ? 'text-red-900' :
+                  'text-gray-500'
+                }`}>
+                  {step.title}
+                </div>
+                <div className="text-xs text-gray-600">
+                  {step.timestamp || 
+                   (step.status === 'pending' ? step.description || 'Pending' : 
+                    step.status === 'unknown' ? 'Status transition occurred' : 
+                    'No timestamp available')}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Legacy PaymentTimeline Component (kept for backward compatibility)
+ * Use BookingTimeline for new implementations
+ */
+export const PaymentTimeline = ({ booking, userType }) => {
+  // Redirect to the new BookingTimeline component
+  return <BookingTimeline booking={booking} userType={userType} />;
 };
 
 // Icon components

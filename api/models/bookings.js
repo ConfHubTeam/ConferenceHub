@@ -70,6 +70,43 @@ const Booking = sequelize.define('Booking', {
     allowNull: false,
     defaultValue: false,
     comment: 'Flag to track if notifications were sent for this booking'
+  },
+  paidToHost: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+    field: 'paid_to_host',
+    comment: 'Whether agent has paid the host for this approved booking'
+  },
+  paidToHostAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    field: 'paid_to_host_at',
+    comment: 'Timestamp when agent marked payment to host as complete'
+  },
+  selectedAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    field: 'selected_at',
+    comment: 'Timestamp when booking was selected for payment'
+  },
+  approvedAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    field: 'approved_at',
+    comment: 'Timestamp when booking was approved'
+  },
+  rejectedAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    field: 'rejected_at',
+    comment: 'Timestamp when booking was rejected'
+  },
+  cancelledAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    field: 'cancelled_at',
+    comment: 'Timestamp when booking was cancelled'
   }
 }, {
   timestamps: true

@@ -29,8 +29,8 @@ export default function SelectedTimeSlots({
             </p>
             <p className="text-amber-700 mt-1">
               {isAuthorized 
-                ? "Use the calendar above to select individual dates and time slots. This allows for precise booking and may qualify for full-day discounts."
-                : "Use the calendar above to select individual dates and time slots to see the total cost."
+                ? "Use the calendar to select individual dates and time slots. This allows for precise booking and may qualify for full-day discounts."
+                : "Use the calendar to select individual dates and time slots to see the total cost."
               }
             </p>
           </div>

@@ -376,6 +376,14 @@ export default function NotificationsPage() {
 function NotificationItem({ notification, onClick }) {
   const { id, icon, title, message, excerpt, relativeTime, isRead, link, metadata } = notification;
 
+  // Check if this is a booking notification
+  const isBookingNotification = notification.type && notification.type.startsWith('booking_');
+  
+  // For booking notifications, show only booking ID in the message/excerpt area
+  const displayExcerpt = isBookingNotification && metadata?.bookingReference 
+    ? `Booking #${metadata.bookingReference}`
+    : excerpt;
+
   const content = (
     <div
       className={`p-4 border rounded-lg transition-colors duration-200 cursor-pointer ${
@@ -403,7 +411,7 @@ function NotificationItem({ notification, onClick }) {
           </div>
           
           <p className="text-sm text-gray-600 mb-2 break-words whitespace-normal leading-relaxed">
-            {excerpt}
+            {displayExcerpt}
           </p>
 
           {/* Metadata - Enhanced for booking notifications */}
@@ -418,8 +426,20 @@ function NotificationItem({ notification, onClick }) {
             </div>
           )}
           
-          {/* Booking-specific metadata */}
-          {(metadata?.bookingReference || metadata?.dateTimeWindow) && (
+          {/* Booking-specific metadata - Show full details in bottom section */}
+          {isBookingNotification && (metadata?.placeName || metadata?.dateTimeWindow) && (
+            <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 break-words">
+              {metadata.placeName && (
+                <span className="break-words">{metadata.placeName}</span>
+              )}
+              {metadata.dateTimeWindow && (
+                <span className="break-words">• {metadata.dateTimeWindow}</span>
+              )}
+            </div>
+          )}
+          
+          {/* Non-booking metadata (for review notifications) */}
+          {!isBookingNotification && (metadata?.bookingReference || metadata?.dateTimeWindow) && (
             <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 break-words">
               {metadata.bookingReference && (
                 <span className="break-words">Booking #{metadata.bookingReference}</span>

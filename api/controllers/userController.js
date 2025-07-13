@@ -699,6 +699,676 @@ const getAdminContact = async (req, res) => {
   }
 };
 
+/**
+ * Get host-specific statistics
+ */
+const getHostStatistics = async (req, res) => {
+  try {
+    const userData = await req.getUserDataFromToken();
+    
+    // Verify user is a host
+    if (userData.userType !== 'host') {
+      return res.status(403).json({ error: "Only hosts can access host statistics" });
+    }
+
+    // Get host's places with more details
+    const hostPlaces = await Place.findAll({
+      where: { ownerId: userData.id },
+      attributes: ['id', 'title', 'price', 'maxGuests', 'createdAt', 'address', 'averageRating']
+    });
+
+    const placeIds = hostPlaces.map(place => place.id);
+
+    // Count host's places by availability status
+    const placesStats = {
+      total: hostPlaces.length,
+      active: hostPlaces.length, // Assuming all places are active for now
+      averagePrice: hostPlaces.length > 0 
+        ? Math.round(hostPlaces.reduce((sum, place) => sum + parseFloat(place.price || 0), 0) / hostPlaces.length)
+        : 0
+    };
+
+    // Count ALL bookings for host's places by status (initialize with zeros)
+    let bookingStats = {
+      pending: 0,
+      approved: 0,
+      rejected: 0,
+      cancelled: 0,
+      selected: 0,
+      total: 0
+    };
+
+    if (placeIds.length > 0) {
+      // Get total bookings count - only count paid_to_host bookings
+      const totalBookings = await Booking.count({
+        where: {
+          placeId: {
+            [Op.in]: placeIds
+          },
+          paid_to_host: true
+        }
+      });
+
+      bookingStats.total = totalBookings;
+
+      // Get bookings by status
+      const bookingCounts = await Booking.findAll({
+        attributes: [
+          'status',
+          [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+        ],
+        where: {
+          placeId: {
+            [Op.in]: placeIds
+          }
+        },
+        group: ['status']
+      });
+
+      // Update bookingStats with actual counts
+      bookingCounts.forEach(item => {
+        const status = item.status;
+        const count = parseInt(item.dataValues.count);
+        if (bookingStats.hasOwnProperty(status)) {
+          bookingStats[status] = count;
+        }
+      });
+    }
+
+    // Calculate total revenue from paid_to_host bookings only
+    let totalRevenue = 0;
+    let monthlyRevenue = [];
+    if (placeIds.length > 0) {
+      const revenueResult = await Booking.findOne({
+        attributes: [
+          [sequelize.fn('SUM', sequelize.col('totalPrice')), 'totalRevenue']
+        ],
+        where: {
+          placeId: {
+            [Op.in]: placeIds
+          },
+          paid_to_host: true
+        }
+      });
+
+      totalRevenue = parseFloat(revenueResult?.dataValues?.totalRevenue || 0);
+
+      // Monthly revenue for the last 12 months
+      const twelveMonthsAgo = new Date();
+      twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+      
+      const monthlyRevenueData = await Booking.findAll({
+        attributes: [
+          [sequelize.fn('DATE_PART', 'month', sequelize.col('createdAt')), 'month'],
+          [sequelize.fn('DATE_PART', 'year', sequelize.col('createdAt')), 'year'],
+          [sequelize.fn('SUM', sequelize.col('totalPrice')), 'revenue']
+        ],
+        where: {
+          placeId: {
+            [Op.in]: placeIds
+          },
+          paid_to_host: true,
+          createdAt: {
+            [Op.gte]: twelveMonthsAgo
+          }
+        },
+        group: [
+          sequelize.fn('DATE_PART', 'month', sequelize.col('createdAt')),
+          sequelize.fn('DATE_PART', 'year', sequelize.col('createdAt'))
+        ],
+        order: [
+          [sequelize.fn('DATE_PART', 'year', sequelize.col('createdAt')), 'ASC'],
+          [sequelize.fn('DATE_PART', 'month', sequelize.col('createdAt')), 'ASC']
+        ]
+      });
+
+      monthlyRevenue = monthlyRevenueData.map(item => ({
+        month: `${item.dataValues.year}-${String(item.dataValues.month).padStart(2, '0')}`,
+        revenue: parseFloat(item.dataValues.revenue || 0)
+      }));
+    }
+
+    // Get recent bookings (last 10) with user and place details
+    let recentBookings = [];
+    if (placeIds.length > 0) {
+      recentBookings = await Booking.findAll({
+        where: {
+          placeId: {
+            [Op.in]: placeIds
+          }
+        },
+        include: [
+          {
+            model: User,
+            as: 'user',
+            attributes: ['name', 'email']
+          },
+          {
+            model: Place,
+            as: 'place',
+            attributes: ['title']
+          }
+        ],
+        attributes: ['id', 'checkInDate', 'checkOutDate', 'totalPrice', 'status', 'createdAt'],
+        order: [['createdAt', 'DESC']],
+        limit: 10
+      });
+    }
+
+    // Get reviews for host's places with detailed information
+    let reviewStats = {
+      total: 0,
+      averageRating: "0.0",
+      ratingDistribution: {},
+      reviewsThisMonth: 0,
+      reviewsLastMonth: 0,
+      recentReviews: []
+    };
+
+    if (placeIds.length > 0) {
+      const reviewCount = await Review.count({
+        where: {
+          placeId: {
+            [Op.in]: placeIds
+          },
+          status: 'approved'
+        }
+      });
+
+      const averageRating = await Review.findOne({
+        attributes: [
+          [sequelize.fn('AVG', sequelize.col('rating')), 'avgRating']
+        ],
+        where: {
+          placeId: {
+            [Op.in]: placeIds
+          },
+          status: 'approved'
+        }
+      });
+
+      // Rating distribution
+      const ratingDistribution = await Review.findAll({
+        attributes: [
+          'rating',
+          [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+        ],
+        where: {
+          placeId: {
+            [Op.in]: placeIds
+          },
+          status: 'approved'
+        },
+        group: ['rating'],
+        order: [['rating', 'DESC']]
+      });
+
+      // Calculate rating distribution with percentages
+      const totalApprovedReviews = reviewCount;
+      const ratingBreakdown = {};
+      for (let i = 1; i <= 5; i++) {
+        ratingBreakdown[i] = { count: 0, percentage: 0 };
+      }
+      
+      ratingDistribution.forEach(item => {
+        const rating = item.rating;
+        const count = parseInt(item.dataValues.count);
+        ratingBreakdown[rating] = {
+          count: count,
+          percentage: totalApprovedReviews > 0 ? Math.round((count / totalApprovedReviews) * 100) : 0
+        };
+      });
+
+      // Reviews this month and last month
+      const now = new Date();
+      const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+
+      const reviewsThisMonth = await Review.count({
+        where: {
+          placeId: {
+            [Op.in]: placeIds
+          },
+          status: 'approved',
+          created_at: {
+            [Op.gte]: thisMonthStart
+          }
+        }
+      });
+
+      const reviewsLastMonth = await Review.count({
+        where: {
+          placeId: {
+            [Op.in]: placeIds
+          },
+          status: 'approved',
+          created_at: {
+            [Op.gte]: lastMonthStart,
+            [Op.lte]: lastMonthEnd
+          }
+        }
+      });
+
+      const recentReviews = await Review.findAll({
+        where: {
+          placeId: {
+            [Op.in]: placeIds
+          },
+          status: 'approved'
+        },
+        include: [
+          {
+            model: User,
+            as: 'User',
+            attributes: ['name']
+          },
+          {
+            model: Place,
+            as: 'Place',
+            attributes: ['title']
+          }
+        ],
+        attributes: ['id', 'rating', 'comment', 'created_at'],
+        order: [['created_at', 'DESC']],
+        limit: 10
+      });
+
+      reviewStats = {
+        total: reviewCount,
+        averageRating: averageRating?.dataValues?.avgRating 
+          ? parseFloat(averageRating.dataValues.avgRating).toFixed(1) 
+          : "0.0",
+        ratingDistribution: ratingBreakdown,
+        reviewsThisMonth: reviewsThisMonth,
+        reviewsLastMonth: reviewsLastMonth,
+        recentReviews: recentReviews,
+        placeSpecificStats: []
+      };
+
+      // Get place-specific review statistics
+      const placeSpecificStats = await Promise.all(hostPlaces.map(async (place) => {
+        // Get review count for this place
+        const placeReviewCount = await Review.count({
+          where: {
+            placeId: place.id,
+            status: 'approved'
+          }
+        });
+
+        // Get average rating for this place
+        const placeAvgRating = await Review.findOne({
+          attributes: [
+            [sequelize.fn('AVG', sequelize.col('rating')), 'avgRating']
+          ],
+          where: {
+            placeId: place.id,
+            status: 'approved'
+          }
+        });
+
+        // Get rating distribution for this place
+        const placeRatingDistribution = await Review.findAll({
+          attributes: [
+            'rating',
+            [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+          ],
+          where: {
+            placeId: place.id,
+            status: 'approved'
+          },
+          group: ['rating'],
+          order: [['rating', 'DESC']]
+        });
+
+        // Calculate rating breakdown for this place
+        const placeRatingBreakdown = {};
+        for (let i = 1; i <= 5; i++) {
+          placeRatingBreakdown[i] = { count: 0, percentage: 0 };
+        }
+        
+        placeRatingDistribution.forEach(item => {
+          const rating = item.rating;
+          const count = parseInt(item.dataValues.count);
+          placeRatingBreakdown[rating] = {
+            count: count,
+            percentage: placeReviewCount > 0 ? Math.round((count / placeReviewCount) * 100) : 0
+          };
+        });
+
+        // Get reviews this month for this place
+        const placeReviewsThisMonth = await Review.count({
+          where: {
+            placeId: place.id,
+            status: 'approved',
+            created_at: {
+              [Op.gte]: thisMonthStart
+            }
+          }
+        });
+
+        // Get reviews last month for this place
+        const placeReviewsLastMonth = await Review.count({
+          where: {
+            placeId: place.id,
+            status: 'approved',
+            created_at: {
+              [Op.gte]: lastMonthStart,
+              [Op.lte]: lastMonthEnd
+            }
+          }
+        });
+
+        // Calculate review quality metrics
+        const positiveReviews = (placeRatingBreakdown[5]?.count || 0) + (placeRatingBreakdown[4]?.count || 0);
+        const criticalReviews = (placeRatingBreakdown[1]?.count || 0) + (placeRatingBreakdown[2]?.count || 0);
+        const positivePercentage = placeReviewCount > 0 ? Math.round((positiveReviews / placeReviewCount) * 100) : 0;
+        const criticalPercentage = placeReviewCount > 0 ? Math.round((criticalReviews / placeReviewCount) * 100) : 0;
+
+        // Calculate review velocity (reviews per month average over last 6 months)
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        
+        const reviewsLast6Months = await Review.count({
+          where: {
+            placeId: place.id,
+            status: 'approved',
+            created_at: {
+              [Op.gte]: sixMonthsAgo
+            }
+          }
+        });
+        
+        const averageReviewsPerMonth = Math.round(reviewsLast6Months / 6);
+
+        // Determine performance category
+        let performanceCategory = 'No Data';
+        const avgRating = parseFloat(placeAvgRating?.dataValues?.avgRating || 0);
+        if (avgRating >= 4.5 && placeReviewCount >= 5) {
+          performanceCategory = 'Excellent';
+        } else if (avgRating >= 4.0 && placeReviewCount >= 3) {
+          performanceCategory = 'Great';
+        } else if (avgRating >= 3.5) {
+          performanceCategory = 'Good';
+        } else if (avgRating >= 3.0) {
+          performanceCategory = 'Fair';
+        } else if (avgRating > 0) {
+          performanceCategory = 'Poor';
+        }
+
+        return {
+          placeId: place.id,
+          placeTitle: place.title,
+          totalReviews: placeReviewCount,
+          averageRating: placeAvgRating?.dataValues?.avgRating 
+            ? parseFloat(placeAvgRating.dataValues.avgRating).toFixed(1) 
+            : "0.0",
+          ratingDistribution: placeRatingBreakdown,
+          reviewsThisMonth: placeReviewsThisMonth,
+          reviewsLastMonth: placeReviewsLastMonth,
+          trend: placeReviewsThisMonth - placeReviewsLastMonth,
+          positivePercentage: positivePercentage,
+          criticalPercentage: criticalPercentage,
+          averageReviewsPerMonth: averageReviewsPerMonth,
+          performanceCategory: performanceCategory,
+          // Remove individual reviews to improve performance and scalability
+          hasRecentActivity: placeReviewsThisMonth > 0
+        };
+      }));
+
+      reviewStats.placeSpecificStats = placeSpecificStats;
+    }
+
+    // Calculate occupancy rate for the last 30 days
+    let occupancyRate = 0;
+    let totalBookingDays = 0;
+
+    if (placeIds.length > 0) {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      // Get all approved bookings in the last 30 days
+      const bookingsInPeriod = await Booking.findAll({
+        where: {
+          placeId: {
+            [Op.in]: placeIds
+          },
+          status: {
+            [Op.in]: ['approved', 'selected']
+          },
+          checkInDate: {
+            [Op.gte]: thirtyDaysAgo
+          }
+        },
+        attributes: ['checkInDate', 'checkOutDate']
+      });
+
+      // Calculate total booked days
+      totalBookingDays = bookingsInPeriod.reduce((total, booking) => {
+        const checkIn = new Date(booking.checkInDate);
+        const checkOut = new Date(booking.checkOutDate);
+        const days = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+        return total + Math.max(0, days);
+      }, 0);
+
+      const totalPossibleDays = hostPlaces.length * 30; // Last 30 days
+      occupancyRate = totalPossibleDays > 0 
+        ? Math.round((totalBookingDays / totalPossibleDays) * 100) 
+        : 0;
+    }
+
+    // Calculate space performance metrics
+    const spacePerformance = await Promise.all(hostPlaces.map(async (place) => {
+      // Get total bookings for this specific place - only paid_to_host bookings
+      const totalBookings = await Booking.count({
+        where: {
+          placeId: place.id,
+          paid_to_host: true
+        }
+      });
+
+      // Get total reviews for this specific place
+      const totalReviews = await Review.count({
+        where: {
+          placeId: place.id,
+          status: 'approved'
+        }
+      });
+
+      // Get average rating for this specific place
+      const avgRatingResult = await Review.findOne({
+        attributes: [
+          [sequelize.fn('AVG', sequelize.col('rating')), 'avgRating']
+        ],
+        where: {
+          placeId: place.id,
+          status: 'approved'
+        }
+      });
+
+      const averageRating = avgRatingResult?.dataValues?.avgRating 
+        ? parseFloat(avgRatingResult.dataValues.avgRating).toFixed(1) 
+        : "0.0";
+
+      // Get total revenue for this specific place - only paid_to_host bookings
+      const revenueResult = await Booking.findOne({
+        attributes: [
+          [sequelize.fn('SUM', sequelize.col('totalPrice')), 'totalRevenue']
+        ],
+        where: {
+          placeId: place.id,
+          paid_to_host: true
+        }
+      });
+
+      const revenue = parseFloat(revenueResult?.dataValues?.totalRevenue || 0);
+      
+      return {
+        id: place.id,
+        title: place.title,
+        totalBookings: totalBookings,
+        totalReviews: totalReviews,
+        averageRating: averageRating,
+        revenue: revenue
+      };
+    }));
+
+    res.json({
+      places: placesStats,
+      bookings: bookingStats,
+      revenue: {
+        total: totalRevenue,
+        monthly: monthlyRevenue
+      },
+      reviews: reviewStats,
+      occupancyRate: occupancyRate,
+      totalBookingDays: totalBookingDays,
+      recentBookings: recentBookings,
+      hostPlaces: hostPlaces,
+      spacePerformance: spacePerformance
+    });
+
+  } catch (error) {
+    console.error("Error fetching host statistics:", error);
+    res.status(422).json({ error: error.message });
+  }
+};
+
+/**
+ * Get all reviews for places owned by the host
+ */
+const getHostReviews = async (req, res) => {
+  try {
+    const userData = await req.getUserDataFromToken();
+
+    // Get all places owned by this user
+    const hostPlaces = await Place.findAll({
+      where: { ownerId: userData.id },
+      attributes: ['id', 'title']
+    });
+
+    if (hostPlaces.length === 0) {
+      return res.json({
+        reviews: [],
+        totalReviews: 0,
+        averageRating: "0.0",
+        places: []
+      });
+    }
+
+    const placeIds = hostPlaces.map(place => place.id);
+
+    // Get all reviews for these places with pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    
+    // Filter options
+    const rating = req.query.rating;
+    const placeId = req.query.placeId;
+    const sortBy = req.query.sortBy || 'created_at';
+    const sortOrder = req.query.sortOrder || 'DESC';
+
+    const whereClause = {
+      place_id: {
+        [Op.in]: placeIds
+      }
+    };
+
+    if (rating && rating !== 'all') {
+      whereClause.rating = parseInt(rating);
+    }
+
+    if (placeId && placeId !== 'all') {
+      whereClause.place_id = parseInt(placeId);
+    }
+
+    const { count, rows: reviews } = await Review.findAndCountAll({
+      where: whereClause,
+      include: [
+        {
+          model: User,
+          as: 'User',
+          attributes: ['name']
+        },
+        {
+          model: Place,
+          as: 'Place',
+          attributes: ['title']
+        },
+        {
+          model: Booking,
+          as: 'Booking',
+          attributes: ['id', 'checkInDate', 'checkOutDate'],
+          required: false
+        }
+      ],
+      attributes: ['id', 'rating', 'comment', 'created_at', 'place_id', 'user_id', 'booking_id'],
+      order: [[sortBy, sortOrder]],
+      limit: limit,
+      offset: offset
+    });
+
+    // Calculate average rating
+    const averageRatingResult = await Review.findOne({
+      where: {
+        place_id: {
+          [Op.in]: placeIds
+        }
+      },
+      attributes: [
+        [sequelize.fn('AVG', sequelize.col('rating')), 'avgRating']
+      ]
+    });
+
+    const averageRating = averageRatingResult?.dataValues?.avgRating 
+      ? parseFloat(averageRatingResult.dataValues.avgRating).toFixed(1) 
+      : "0.0";
+
+    // Rating breakdown
+    const ratingBreakdown = await Review.findAll({
+      where: {
+        place_id: {
+          [Op.in]: placeIds
+        }
+      },
+      attributes: [
+        'rating',
+        [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+      ],
+      group: ['rating'],
+      order: [['rating', 'DESC']]
+    });
+
+    const breakdown = {};
+    for (let i = 1; i <= 5; i++) {
+      breakdown[i] = 0;
+    }
+    ratingBreakdown.forEach(item => {
+      breakdown[item.rating] = parseInt(item.dataValues.count);
+    });
+
+    res.json({
+      reviews: reviews,
+      totalReviews: count,
+      averageRating: averageRating,
+      ratingBreakdown: breakdown,
+      places: hostPlaces,
+      pagination: {
+        page: page,
+        limit: limit,
+        totalPages: Math.ceil(count / limit),
+        hasNext: page < Math.ceil(count / limit),
+        hasPrev: page > 1
+      }
+    });
+
+  } catch (error) {
+    console.error("Error fetching host reviews:", error);
+    res.status(422).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -707,5 +1377,7 @@ module.exports = {
   deleteOwnAccount,
   getStatistics,
   updateUser,
-  getAdminContact
+  getAdminContact,
+  getHostStatistics,
+  getHostReviews
 };

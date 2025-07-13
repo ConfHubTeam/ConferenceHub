@@ -108,6 +108,12 @@ export default function BookingCard({bookingDetail, onBookingUpdate, competingBo
               <div className={`px-3 py-1 rounded-full border ${getStatusColor(bookingDetail.status)}`}>
                 {bookingDetail.status.charAt(0).toUpperCase() + bookingDetail.status.slice(1)}
               </div>
+              {/* Paid to Host Indicator */}
+              {bookingDetail.status === 'approved' && bookingDetail.paidToHost && (
+                <div className="px-3 py-1 rounded-full border bg-blue-50 text-blue-700 border-blue-200">
+                  Paid
+                </div>
+              )}
             </div>
           </div>
 

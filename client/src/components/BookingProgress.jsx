@@ -61,63 +61,107 @@ export default function BookingProgress({ booking, userType }) {
       }
     ];
 
+    // Add "Paid to Host" step only for HOST and AGENT users
+    if (userType === 'host' || userType === 'agent') {
+      steps.push({
+        id: "paid_to_host",
+        label: "Paid to Host",
+        icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+          </svg>
+        ),
+        description: booking.paidToHost 
+          ? "Agent has paid the host" 
+          : userType === 'agent' 
+            ? "Ready to mark payment complete" 
+            : "Awaiting payment from agent"
+      });
+    }
+
     return steps;
   };
 
   // Get step status and timestamp information
   const getStepInfo = (stepId) => {
     const currentStatus = booking.status;
-    const createdAt = new Date(booking.createdAt);
-    const updatedAt = new Date(booking.updatedAt);
     
-    // Determine if step is completed, current, or pending
+    // Determine if step is completed, current, or pending using dedicated timestamp fields
     let status = "pending";
     let timestamp = null;
     let completedByAgent = false;
     
-    // Simple heuristic: if user viewing is agent and action happened recently, likely agent action
-    // In future, this should be tracked in database
-    const isRecentAction = (Date.now() - updatedAt.getTime()) < 300000; // 5 minutes
-    
     switch (stepId) {
       case "pending":
+        // Always completed as booking exists
         status = "completed";
-        timestamp = createdAt;
+        timestamp = booking.createdAt ? new Date(booking.createdAt) : null;
         break;
         
       case "selected":
-        if (currentStatus === "selected" || currentStatus === "approved") {
+        if (booking.selectedAt || currentStatus === "selected" || currentStatus === "approved") {
           status = "completed";
-          timestamp = updatedAt;
-          // Agent actions are typically immediate status changes from pending to selected/approved
-          completedByAgent = userType === "agent" && isRecentAction;
-        } else if (currentStatus === "pending") {
-          status = "current";
+          timestamp = booking.selectedAt ? new Date(booking.selectedAt) : null;
+          // Check if selection was done by agent (heuristic: if approved without client payment)
+          completedByAgent = userType === 'agent' && booking.selectedAt;
+        } else {
+          status = "pending";
         }
         break;
         
       case "payment_pending":
         if (currentStatus === "selected") {
           status = "current";
+          timestamp = booking.selectedAt ? new Date(booking.selectedAt) : null;
         } else if (currentStatus === "approved") {
           status = "completed";
-          // For payment_pending, we use the selected timestamp if available
-          timestamp = updatedAt;
+          timestamp = booking.selectedAt ? new Date(booking.selectedAt) : null;
+        } else {
+          status = "pending";
         }
         break;
         
       case "payment_complete":
         if (currentStatus === "approved") {
           status = "completed";
-          timestamp = updatedAt;
+          timestamp = booking.approvedAt ? new Date(booking.approvedAt) : null;
+          // Check if approval was done by agent (heuristic: if approved quickly after selection)
+          if (booking.selectedAt && booking.approvedAt) {
+            const timeDiff = new Date(booking.approvedAt) - new Date(booking.selectedAt);
+            completedByAgent = userType === 'agent' && timeDiff < 60000; // Within 1 minute suggests agent approval
+          }
+        } else {
+          status = "pending";
         }
         break;
         
       case "approved":
         if (currentStatus === "approved") {
           status = "completed";
-          timestamp = updatedAt;
-          completedByAgent = userType === "agent" && isRecentAction;
+          timestamp = booking.approvedAt ? new Date(booking.approvedAt) : null;
+          // Same logic as payment_complete for agent indicator
+          if (booking.selectedAt && booking.approvedAt) {
+            const timeDiff = new Date(booking.approvedAt) - new Date(booking.selectedAt);
+            completedByAgent = userType === 'agent' && timeDiff < 60000;
+          }
+        } else {
+          status = "pending";
+        }
+        break;
+        
+      case "paid_to_host":
+        // Only show for approved bookings and only for hosts/agents
+        if (currentStatus === "approved" && (userType === 'host' || userType === 'agent')) {
+          if (booking.paidToHost) {
+            status = "completed";
+            timestamp = booking.paidToHostAt ? new Date(booking.paidToHostAt) : null;
+            completedByAgent = userType === 'agent';
+          } else {
+            status = "pending";
+            // No timestamp for pending paid to host
+          }
+        } else {
+          status = "pending";
         }
         break;
     }
@@ -179,10 +223,10 @@ export default function BookingProgress({ booking, userType }) {
             <div className="text-sm">
               <div className="font-semibold text-red-900">Request Declined</div>
               <div className="text-gray-500">
-                {format(new Date(booking.updatedAt), "MMM d, yyyy")}
+                {format(new Date(booking.rejectedAt || booking.updatedAt), "MMM d, yyyy")}
               </div>
               <div className="text-xs text-gray-400">
-                {format(new Date(booking.updatedAt), "h:mm a")}
+                {format(new Date(booking.rejectedAt || booking.updatedAt), "h:mm a")}
               </div>
             </div>
           </div>
@@ -364,9 +408,6 @@ export default function BookingProgress({ booking, userType }) {
               <h4 className="text-sm font-medium text-green-800">
                 Booking Confirmed
               </h4>
-              <p className="mt-1 text-sm text-green-700">
-                Your booking is confirmed! You'll receive further details about your reservation via email.
-              </p>
             </div>
           </div>
         </div>

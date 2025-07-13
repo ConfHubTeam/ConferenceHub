@@ -40,7 +40,8 @@ const Notification = sequelize.define(
         "booking_approved",
         "booking_selected",
         "booking_rejected",
-        "booking_confirmed"
+        "booking_confirmed",
+        "booking_paid_to_host"
       ),
       allowNull: false,
       validate: {
@@ -53,7 +54,8 @@ const Notification = sequelize.define(
           "booking_approved",
           "booking_selected",
           "booking_rejected",
-          "booking_confirmed"
+          "booking_confirmed",
+          "booking_paid_to_host"
         ]]
       }
     },

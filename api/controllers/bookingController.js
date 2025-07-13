@@ -44,7 +44,7 @@ const createBooking = async (req, res) => {
 const getBookings = async (req, res) => {
   try {
     const userData = await getUserDataFromToken(req);
-    const { userId } = req.query;
+    const { userId, paidFilter } = req.query;
     
     // For agents with userId parameter - get bookings for a specific user
     if (userData.userType === 'agent' && userId) {
@@ -52,8 +52,8 @@ const getBookings = async (req, res) => {
       return res.json(userBookings);
     }
     
-    // Get bookings based on user type
-    const bookings = await BookingService.getBookings(userData);
+    // Get bookings based on user type with optional paid filter
+    const bookings = await BookingService.getBookings(userData, { paidFilter });
     res.json(bookings);
   } catch (error) {
     console.error("Error fetching bookings:", error);
@@ -345,6 +345,25 @@ const getBookingById = async (req, res) => {
   }
 };
 
+/**
+ * Mark booking as paid to host (Agent-only action)
+ */
+const markPaidToHost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userData = await getUserDataFromToken(req);
+    
+    // Mark booking as paid to host using service
+    const result = await BookingService.markPaidToHost(id, userData);
+    
+    res.json(result);
+  } catch (error) {
+    console.error("Error marking booking as paid to host:", error);
+    const statusCode = error.statusCode || 422;
+    res.status(statusCode).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createBooking,
   getBookings,
@@ -353,5 +372,6 @@ module.exports = {
   checkAvailability,
   checkTimezoneAwareAvailability,
   getCompetingBookings,
-  getBookingById
+  getBookingById,
+  markPaidToHost
 };
