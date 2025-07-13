@@ -658,13 +658,12 @@ export default function PlacesFormPage() {
         
         {preInput(
           "Title",
-          "title for your conference room. It's better to have a short and catchy title.",
           true // Required field
         )}
         <input
           id="place-title"
           type="text"
-          placeholder="title, for example: Executive Conference Room"
+          placeholder="Title, for example: Executive Conference Room"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
           className="w-full border my-2 py-2 px-3 rounded-2xl"
@@ -687,7 +686,7 @@ export default function PlacesFormPage() {
           placeId={id} // Pass the place ID to determine if this is creation or editing
         />
         
-        {preInput("Photos", "more is better. ")}
+        {preInput("Photos")}
         <PhotoUploader
           addedPhotos={addedPhotos}
           setAddedPhotos={setAddedPhotos}
@@ -699,7 +698,7 @@ export default function PlacesFormPage() {
           preInput={preInput}
         />
         
-        {preInput("Description", "description of the conference room. ")}
+        {preInput("Description")}
         <textarea
           value={description}
           onChange={(event) => setDescription(event.target.value)}
@@ -707,9 +706,9 @@ export default function PlacesFormPage() {
           rows={5}
           placeholder="Describe your conference room's features, ambiance, available resources, etc."
         />
-        {preInput("Perks", "select all the perks of your conference room.")}
+        {preInput("Perks")}
         <PerkSelections selectedPerks={perks} setPerks={setPerks} />
-        {preInput("Extra info", "house rules, etc. ")}
+        {preInput("Extra info")}
         <textarea
           value={extraInfo}
           onChange={(event) => setExtraInfo(event.target.value)}

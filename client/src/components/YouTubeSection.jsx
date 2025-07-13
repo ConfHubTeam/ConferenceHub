@@ -26,7 +26,7 @@ function extractYouTubeVideoId(url) {
 export default function YouTubeSection({ youtubeLink, setYoutubeLink, preInput }) {
   return (
     <div id="youtube-section">
-      {preInput("YouTube Video", "add a YouTube link showcasing your conference room.")}
+      {preInput("YouTube Video")}
       <input
         type="text"
         placeholder="https://www.youtube.com/watch?v=example"
