@@ -33,7 +33,7 @@ const DateAvailability = ({
         }}
         blockedDates={blockedDates}
         blockedWeekdays={blockedWeekdays}
-        minDate={getMinimumBookingDate(startDate)} // Use Uzbekistan timezone for minimum date
+        minDate={getMinimumBookingDate()} // Fix: Don't pass startDate - use today as minimum
         // For place editing/creation, don't use strict timezone validation
         // This allows hosts to set availability starting from today
         // No onBlockedDateClick prop here - this is the main calendar for selecting available dates
