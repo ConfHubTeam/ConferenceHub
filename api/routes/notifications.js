@@ -15,7 +15,8 @@ const {
   getUnreadCount,
   getUserNotifications,
   markAsRead,
-  markAllAsRead
+  markAllAsRead,
+  testSMS
 } = require("../controllers/notificationController");
 
 const router = express.Router();
@@ -47,5 +48,11 @@ router.put("/:notificationId/read", markAsRead);
  * Mark all notifications as read (US-R011)
  */
 router.put("/mark-all-read", markAllAsRead);
+
+/**
+ * POST /api/notifications/test-sms
+ * Test SMS notification service (development/testing purposes)
+ */
+router.post("/test-sms", testSMS);
 
 module.exports = router;
