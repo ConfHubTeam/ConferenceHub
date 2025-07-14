@@ -13,6 +13,7 @@
 
 const { Notification, User, Place, Review } = require("../models");
 const { Op } = require("sequelize");
+const UnifiedNotificationService = require("./unifiedNotificationService");
 
 class ReviewNotificationService {
   /**
@@ -45,14 +46,14 @@ class ReviewNotificationService {
       }
 
       // Create notification for place owner
-      const notification = await Notification.create({
+      const result = await UnifiedNotificationService.createReviewNotification({
         userId: place.owner.id,
         type: "review_created",
         title: "New Review Received",
         message: `${review.User.name} left a ${review.rating}-star review for "${place.title}": "${this._getReviewExcerpt(review.comment)}"`,
-        metadata: {
-          reviewId: review.id,
-          placeId: review.placeId,
+        reviewId: review.id,
+        placeId: review.placeId,
+        additionalMetadata: {
           placeName: place.title,
           reviewerName: review.User.name,
           rating: review.rating,
@@ -60,7 +61,7 @@ class ReviewNotificationService {
         }
       });
 
-      return notification;
+      return result.notification;
 
     } catch (error) {
       console.error("Error creating review notification:", error);
@@ -110,22 +111,22 @@ class ReviewNotificationService {
       }
 
       // Create notification for original reviewer
-      const notification = await Notification.create({
+      const result = await UnifiedNotificationService.createReviewNotification({
         userId: review.User.id,
         type: "review_reply",
         title: "Host Replied to Your Review",
         message: `${review.Place.owner.name} replied to your review of "${review.Place.title}": "${this._getReviewExcerpt(reply.replyText)}"`,
-        metadata: {
-          reviewId: review.id,
+        reviewId: review.id,
+        placeId: review.placeId,
+        additionalMetadata: {
           replyId: reply.id,
-          placeId: review.placeId,
           placeName: review.Place.title,
           hostName: review.Place.owner.name,
           replyExcerpt: this._getReviewExcerpt(reply.replyText)
         }
       });
 
-      return notification;
+      return result.notification;
 
     } catch (error) {
       console.error("Error creating reply notification:", error);
@@ -191,21 +192,21 @@ class ReviewNotificationService {
       }
 
       // Create notification for reply author (host)
-      const notification = await Notification.create({
+      const result = await UnifiedNotificationService.createReviewNotification({
         userId: review.Reply.userId,
         type: "reply_helpful",
         title: "Your Reply Was Marked Helpful",
         message: `${voter.name} found your reply helpful on "${review.Place.title}"`,
-        metadata: {
-          reviewId: review.id,
+        reviewId: review.id,
+        placeId: review.placeId,
+        additionalMetadata: {
           replyId: review.Reply.id,
-          placeId: review.placeId,
           placeName: review.Place.title,
           voterName: voter.name
         }
       });
 
-      return notification;
+      return result.notification;
 
     } catch (error) {
       console.error("Error creating reply helpful notification:", error);

@@ -98,6 +98,27 @@ const Notification = sequelize.define(
       defaultValue: false,
       field: "is_email_sent"
     },
+    isSMSSent: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      field: "is_sms_sent"
+    },
+    smsDeliveredAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      field: "sms_delivered_at"
+    },
+    smsError: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      field: "sms_error"
+    },
+    smsRequestId: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      field: "sms_request_id"
+    },
     readAt: {
       type: DataTypes.DATE,
       allowNull: true,
@@ -120,10 +141,19 @@ const Notification = sequelize.define(
         fields: ["is_read"]
       },
       {
+        fields: ["is_sms_sent"]
+      },
+      {
         fields: ["created_at"]
       },
       {
+        fields: ["sms_delivered_at"]
+      },
+      {
         fields: ["user_id", "is_read"]
+      },
+      {
+        fields: ["user_id", "is_sms_sent"]
       }
     ]
   }
