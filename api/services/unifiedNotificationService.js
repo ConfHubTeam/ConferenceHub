@@ -23,28 +23,28 @@ class UnifiedNotificationService {
    * Following DRY principle by centralizing template definitions
    */
   static SMS_TEMPLATES = {
-    booking_requested: (data) => 
-      `New booking request #${data.bookingReference} for ${data.placeName} on ${data.dates}`,
+    booking_requested: ({ bookingReference, placeName, dates }) => 
+      `New booking request #${bookingReference} for ${placeName} on ${dates}`,
     
-    booking_selected: (data) => 
-      `Your booking #${data.bookingReference} for ${data.placeName} has been selected! Complete payment to confirm.`,
+    booking_selected: ({ bookingReference, placeName }) => 
+      `Your booking #${bookingReference} for ${placeName} has been selected! Complete payment to confirm.`,
     
-    booking_approved: (data) => 
-      `Booking #${data.bookingReference} for ${data.placeName} has been approved. Please proceed with payment.`,
+    booking_approved: ({ bookingReference, placeName }) => 
+      `Booking #${bookingReference} for ${placeName} has been approved. Please proceed with payment.`,
     
-    booking_confirmed: (data) => 
-      data.isHost 
-        ? `Booking #${data.bookingReference} for ${data.placeName} confirmed - payment received from ${data.clientName}`
-        : `Great news! Your booking #${data.bookingReference} for ${data.placeName} is confirmed.`,
+    booking_confirmed: ({ bookingReference, placeName, isHost, clientName }) => 
+      isHost 
+        ? `Booking #${bookingReference} for ${placeName} confirmed - payment received from ${clientName}`
+        : `Great news! Your booking #${bookingReference} for ${placeName} is confirmed.`,
     
-    booking_paid: (data) => 
-      `Payment received for booking #${data.bookingReference}. Payout to host ${data.hostName} required.`,
+    booking_paid: ({ bookingReference, hostName }) => 
+      `Payment received for booking #${bookingReference}. Payout to host ${hostName} required.`,
     
-    booking_rejected: (data) => 
-      `Your booking #${data.bookingReference} for ${data.placeName} was declined.`,
+    booking_rejected: ({ bookingReference, placeName }) => 
+      `Your booking #${bookingReference} for ${placeName} was declined.`,
     
-    booking_paid_to_host: (data) => 
-      `Payout of ${data.amount} has been processed for booking #${data.bookingReference}`
+    booking_paid_to_host: ({ bookingReference, amount }) => 
+      `Payout of ${amount} has been processed for booking #${bookingReference}`
   };
 
   /**
