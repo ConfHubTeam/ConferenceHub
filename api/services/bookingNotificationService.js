@@ -13,6 +13,7 @@
 
 const { Notification, User, Place, Booking } = require("../models");
 const AgentService = require("./agentService");
+const UnifiedNotificationService = require("./unifiedNotificationService");
 
 class BookingNotificationService {
   /**
@@ -54,24 +55,25 @@ class BookingNotificationService {
         ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
         : '';
       
-      const dateRange = booking.checkInDate === booking.checkOutDate 
+      const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
         ? this._formatDate(booking.checkInDate)
         : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
       // Include unique booking ID and detailed date/time window in message
       const bookingReference = booking.uniqueRequestId || booking.id;
       
-      const notification = await Notification.create({
+      const result = await UnifiedNotificationService.createBookingNotification({
         userId: place.owner.id,
         type: "booking_requested",
         title: "New Booking Request",
         message: `Booking #${bookingReference} requested for "${place.title}" on ${dateRange}${timeSlotInfo}`,
-        metadata: {
-          bookingId: booking.id,
+        bookingId: booking.id,
+        placeId: booking.placeId,
+        additionalMetadata: {
           uniqueRequestId: booking.uniqueRequestId,
           bookingReference,
-          placeId: booking.placeId,
           placeName: place.title,
+          dates: dateRange, // Add this for SMS template
           checkInDate: booking.checkInDate,
           checkOutDate: booking.checkOutDate,
           totalPrice: booking.totalPrice,
@@ -81,7 +83,7 @@ class BookingNotificationService {
         }
       });
 
-      return notification;
+      return result.notification;
 
     } catch (error) {
       console.error("Error creating booking request notification:", error);
@@ -131,23 +133,23 @@ class BookingNotificationService {
         ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
         : '';
       
-      const dateRange = booking.checkInDate === booking.checkOutDate 
+      const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
         ? this._formatDate(booking.checkInDate)
         : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
       // Create notifications for all agents
       const notifications = [];
       for (const agent of agents) {
-        const notification = await Notification.create({
+        const result = await UnifiedNotificationService.createBookingNotification({
           userId: agent.id,
           type: "booking_paid",
           title: "Payment Received",
           message: `Payment received for booking #${bookingReference} of "${place.title}" on ${dateRange}${timeSlotInfo}. Payout to host required.`,
-          metadata: {
-            bookingId: booking.id,
+          bookingId: booking.id,
+          placeId: booking.placeId,
+          additionalMetadata: {
             uniqueRequestId: booking.uniqueRequestId,
             bookingReference,
-            placeId: booking.placeId,
             placeName: place.title,
             hostId: place.owner.id,
             hostName: place.owner.name,
@@ -159,7 +161,7 @@ class BookingNotificationService {
             notificationType: "agent_payment"
           }
         });
-        notifications.push(notification);
+        notifications.push(result.notification);
       }
 
       return notifications;
@@ -200,23 +202,23 @@ class BookingNotificationService {
         ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
         : '';
       
-      const dateRange = booking.checkInDate === booking.checkOutDate 
+      const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
         ? this._formatDate(booking.checkInDate)
         : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
       const approverText = isAgentApproval ? "by an agent" : "by the host";
       
       // Create notification for booking user (client)
-      const notification = await Notification.create({
+      const result = await UnifiedNotificationService.createBookingNotification({
         userId: booking.userId,
         type: "booking_approved",
         title: "Booking Approved",
         message: `Booking #${bookingReference} for "${place.title}" on ${dateRange}${timeSlotInfo} has been approved ${approverText}. Please proceed with payment.`,
-        metadata: {
-          bookingId: booking.id,
+        bookingId: booking.id,
+        placeId: booking.placeId,
+        additionalMetadata: {
           uniqueRequestId: booking.uniqueRequestId,
           bookingReference,
-          placeId: booking.placeId,
           placeName: place.title,
           checkInDate: booking.checkInDate,
           checkOutDate: booking.checkOutDate,
@@ -226,7 +228,7 @@ class BookingNotificationService {
         }
       });
 
-      return notification;
+      return result.notification;
 
     } catch (error) {
       console.error("Error creating booking approved notification:", error);
@@ -273,21 +275,21 @@ class BookingNotificationService {
         ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
         : '';
       
-      const dateRange = booking.checkInDate === booking.checkOutDate 
+      const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
         ? this._formatDate(booking.checkInDate)
         : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
       // Create notification for place owner (host)
-      const notification = await Notification.create({
+      const result = await UnifiedNotificationService.createBookingNotification({
         userId: place.owner.id,
         type: "booking_confirmed",
         title: "Booking Confirmed",
-        message: `Booking #${bookingReference} for "${place.title}" on ${dateRange}${timeSlotInfo} has been confirmed. Payment completed by ${bookingUser.name}.`,
-        metadata: {
-          bookingId: booking.id,
+        message: `Booking #${bookingReference} for "${place.title}" on ${dateRange}${timeSlotInfo} has been confirmed.`,
+        bookingId: booking.id,
+        placeId: booking.placeId,
+        additionalMetadata: {
           uniqueRequestId: booking.uniqueRequestId,
           bookingReference,
-          placeId: booking.placeId,
           placeName: place.title,
           clientId: booking.userId,
           clientName: bookingUser.name,
@@ -296,11 +298,12 @@ class BookingNotificationService {
           checkOutDate: booking.checkOutDate,
           timeSlots: booking.timeSlots,
           dateTimeWindow: `${dateRange}${timeSlotInfo}`,
-          notificationType: "host_confirmation"
+          notificationType: "host_confirmation",
+          isHost: true
         }
       });
 
-      return notification;
+      return result.notification;
 
     } catch (error) {
       console.error("Error creating booking confirmed notification:", error);
@@ -346,21 +349,21 @@ class BookingNotificationService {
         ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
         : '';
       
-      const dateRange = booking.checkInDate === booking.checkOutDate 
+      const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
         ? this._formatDate(booking.checkInDate)
         : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
       // Create notification for client (booking user)
-      const notification = await Notification.create({
+      const result = await UnifiedNotificationService.createBookingNotification({
         userId: booking.userId,
         type: "booking_confirmed",
         title: "Booking Confirmed",
-        message: `Your booking #${bookingReference} for "${place.title}" on ${dateRange}${timeSlotInfo} has been confirmed! Payment processed successfully.`,
-        metadata: {
-          bookingId: booking.id,
+        message: `Your booking #${bookingReference} for "${place.title}" on ${dateRange}${timeSlotInfo} has been confirmed!`,
+        bookingId: booking.id,
+        placeId: booking.placeId,
+        additionalMetadata: {
           uniqueRequestId: booking.uniqueRequestId,
           bookingReference,
-          placeId: booking.placeId,
           placeName: place.title,
           hostId: place.owner.id,
           hostName: place.owner.name,
@@ -369,11 +372,12 @@ class BookingNotificationService {
           checkOutDate: booking.checkOutDate,
           timeSlots: booking.timeSlots,
           dateTimeWindow: `${dateRange}${timeSlotInfo}`,
-          notificationType: "client_confirmation"
+          notificationType: "client_confirmation",
+          isHost: false
         }
       });
 
-      return notification;
+      return result.notification;
 
     } catch (error) {
       console.error("Error creating booking confirmed notification for client:", error);
@@ -406,21 +410,21 @@ class BookingNotificationService {
         ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
         : '';
       
-      const dateRange = booking.checkInDate === booking.checkOutDate 
+      const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
         ? this._formatDate(booking.checkInDate)
         : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
       // Create notification for booking user (client)
-      const notification = await Notification.create({
+      const result = await UnifiedNotificationService.createBookingNotification({
         userId: booking.userId,
         type: "booking_selected",
         title: "Booking Selected",
         message: `Booking #${bookingReference} for "${place.title}" on ${dateRange}${timeSlotInfo} has been selected. Please proceed with payment.`,
-        metadata: {
-          bookingId: booking.id,
+        bookingId: booking.id,
+        placeId: booking.placeId,
+        additionalMetadata: {
           uniqueRequestId: booking.uniqueRequestId,
           bookingReference,
-          placeId: booking.placeId,
           placeName: place.title,
           checkInDate: booking.checkInDate,
           checkOutDate: booking.checkOutDate,
@@ -430,7 +434,7 @@ class BookingNotificationService {
         }
       });
 
-      return notification;
+      return result.notification;
 
     } catch (error) {
       console.error("Error creating booking selected notification:", error);
@@ -463,21 +467,21 @@ class BookingNotificationService {
         ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
         : '';
       
-      const dateRange = booking.checkInDate === booking.checkOutDate 
+      const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
         ? this._formatDate(booking.checkInDate)
         : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
       // Create notification for booking user (client)
-      const notification = await Notification.create({
+      const result = await UnifiedNotificationService.createBookingNotification({
         userId: booking.userId,
         type: "booking_rejected",
         title: "Booking Rejected",
         message: `Booking #${bookingReference} for "${place.title}" on ${dateRange}${timeSlotInfo} has been rejected.`,
-        metadata: {
-          bookingId: booking.id,
+        bookingId: booking.id,
+        placeId: booking.placeId,
+        additionalMetadata: {
           uniqueRequestId: booking.uniqueRequestId,
           bookingReference,
-          placeId: booking.placeId,
           placeName: place.title,
           checkInDate: booking.checkInDate,
           checkOutDate: booking.checkOutDate,
@@ -486,7 +490,7 @@ class BookingNotificationService {
         }
       });
 
-      return notification;
+      return result.notification;
 
     } catch (error) {
       console.error("Error creating booking rejected notification:", error);
@@ -524,21 +528,21 @@ class BookingNotificationService {
         ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
         : '';
       
-      const dateRange = booking.checkInDate === booking.checkOutDate 
+      const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
         ? this._formatDate(booking.checkInDate)
         : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
       // Create notification for host about payment received
-      const notification = await Notification.create({
+      const result = await UnifiedNotificationService.createBookingNotification({
         userId: place.owner.id,
         type: "booking_paid_to_host",
         title: "Payment Received",
         message: `Payment received for booking #${bookingReference} of "${place.title}" on ${dateRange}${timeSlotInfo}.`,
-        metadata: {
-          bookingId: booking.id,
+        bookingId: booking.id,
+        placeId: booking.placeId,
+        additionalMetadata: {
           uniqueRequestId: booking.uniqueRequestId,
           bookingReference,
-          placeId: booking.placeId,
           placeName: place.title,
           totalPrice: booking.totalPrice,
           checkInDate: booking.checkInDate,
@@ -546,11 +550,12 @@ class BookingNotificationService {
           timeSlots: booking.timeSlots,
           dateTimeWindow: `${dateRange}${timeSlotInfo}`,
           notificationType: "host_payment_received",
-          paidAt: new Date().toISOString()
+          paidAt: new Date().toISOString(),
+          amount: booking.totalPrice
         }
       });
 
-      return notification;
+      return result.notification;
 
     } catch (error) {
       console.error("Error creating booking paid to host notification:", error);
@@ -576,6 +581,25 @@ class BookingNotificationService {
     } catch (error) {
       console.error("Error formatting date:", error);
       return "Unknown";
+    }
+  }
+
+  /**
+   * Check if two dates are the same day
+   * @param {Date|string} date1 - First date
+   * @param {Date|string} date2 - Second date
+   * @returns {boolean} True if same day
+   */
+  static _isSameDay(date1, date2) {
+    if (!date1 || !date2) return false;
+    
+    try {
+      const d1 = new Date(date1);
+      const d2 = new Date(date2);
+      return d1.getTime() === d2.getTime();
+    } catch (error) {
+      console.error("Error comparing dates:", error);
+      return false;
     }
   }
 }

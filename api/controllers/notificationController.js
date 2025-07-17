@@ -11,6 +11,7 @@
  */
 
 const ReviewNotificationService = require("../services/reviewNotificationService");
+const UnifiedNotificationService = require("../services/unifiedNotificationService");
 
 /**
  * Get user's unread notification count
@@ -122,9 +123,63 @@ const markAllAsRead = async (req, res) => {
   }
 };
 
+/**
+ * Test SMS service connectivity and send test SMS
+ * POST /api/notifications/test-sms
+ * Authenticated users only (development/testing purposes)
+ */
+const testSMS = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { phoneNumber, message } = req.body;
+
+    // Test SMS service connectivity first
+    const connectionTest = await UnifiedNotificationService.testSMSService();
+    
+    if (!connectionTest.success) {
+      return res.status(503).json({
+        ok: false,
+        error: "SMS service unavailable",
+        details: connectionTest.message
+      });
+    }
+
+    // Create test notification with SMS
+    const testMessage = message || "Test SMS from Airbnb Clone Platform";
+    const result = await UnifiedNotificationService.createNotification({
+      userId,
+      type: "booking_confirmed",
+      title: "SMS Test",
+      message: testMessage,
+      metadata: {
+        bookingReference: "TEST-123",
+        placeName: "Test Property",
+        isTest: true
+      },
+      sendSMS: true
+    });
+
+    res.json({
+      ok: true,
+      message: "Test SMS sent successfully",
+      notification: result.notification,
+      smsService: connectionTest
+    });
+
+  } catch (error) {
+    console.error("Error testing SMS:", error);
+    res.status(500).json({
+      ok: false,
+      error: "Failed to test SMS service",
+      details: error.message
+    });
+  }
+};
+
 module.exports = {
   getUnreadCount,
   getUserNotifications,
   markAsRead,
-  markAllAsRead
+  markAllAsRead,
+  testSMS
 };
