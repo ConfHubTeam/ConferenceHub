@@ -32,32 +32,16 @@ const Notification = sequelize.define(
     },
     type: {
       type: DataTypes.ENUM(
-        "review_created",
-        "review_reply", 
-        "reply_helpful",
         "booking_requested",
         "booking_paid",
         "booking_approved",
         "booking_selected",
         "booking_rejected",
         "booking_confirmed",
-        "booking_paid_to_host"
+        "booking_paid_to_host",
+        "booking_payment_pending"
       ),
-      allowNull: false,
-      validate: {
-        isIn: [[
-          "review_created", 
-          "review_reply", 
-          "reply_helpful",
-          "booking_requested",
-          "booking_paid",
-          "booking_approved",
-          "booking_selected",
-          "booking_rejected",
-          "booking_confirmed",
-          "booking_paid_to_host"
-        ]]
-      }
+      allowNull: false
     },
     title: {
       type: DataTypes.STRING(255),

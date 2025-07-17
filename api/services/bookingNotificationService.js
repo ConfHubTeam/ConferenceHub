@@ -55,7 +55,7 @@ class BookingNotificationService {
         ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
         : '';
       
-      const dateRange = booking.checkInDate === booking.checkOutDate 
+      const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
         ? this._formatDate(booking.checkInDate)
         : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
@@ -73,6 +73,7 @@ class BookingNotificationService {
           uniqueRequestId: booking.uniqueRequestId,
           bookingReference,
           placeName: place.title,
+          dates: dateRange, // Add this for SMS template
           checkInDate: booking.checkInDate,
           checkOutDate: booking.checkOutDate,
           totalPrice: booking.totalPrice,
@@ -132,7 +133,7 @@ class BookingNotificationService {
         ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
         : '';
       
-      const dateRange = booking.checkInDate === booking.checkOutDate 
+      const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
         ? this._formatDate(booking.checkInDate)
         : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
@@ -201,7 +202,7 @@ class BookingNotificationService {
         ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
         : '';
       
-      const dateRange = booking.checkInDate === booking.checkOutDate 
+      const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
         ? this._formatDate(booking.checkInDate)
         : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
@@ -274,7 +275,7 @@ class BookingNotificationService {
         ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
         : '';
       
-      const dateRange = booking.checkInDate === booking.checkOutDate 
+      const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
         ? this._formatDate(booking.checkInDate)
         : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
@@ -348,7 +349,7 @@ class BookingNotificationService {
         ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
         : '';
       
-      const dateRange = booking.checkInDate === booking.checkOutDate 
+      const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
         ? this._formatDate(booking.checkInDate)
         : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
@@ -409,7 +410,7 @@ class BookingNotificationService {
         ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
         : '';
       
-      const dateRange = booking.checkInDate === booking.checkOutDate 
+      const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
         ? this._formatDate(booking.checkInDate)
         : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
@@ -466,7 +467,7 @@ class BookingNotificationService {
         ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
         : '';
       
-      const dateRange = booking.checkInDate === booking.checkOutDate 
+      const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
         ? this._formatDate(booking.checkInDate)
         : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
@@ -527,7 +528,7 @@ class BookingNotificationService {
         ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
         : '';
       
-      const dateRange = booking.checkInDate === booking.checkOutDate 
+      const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
         ? this._formatDate(booking.checkInDate)
         : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
@@ -580,6 +581,25 @@ class BookingNotificationService {
     } catch (error) {
       console.error("Error formatting date:", error);
       return "Unknown";
+    }
+  }
+
+  /**
+   * Check if two dates are the same day
+   * @param {Date|string} date1 - First date
+   * @param {Date|string} date2 - Second date
+   * @returns {boolean} True if same day
+   */
+  static _isSameDay(date1, date2) {
+    if (!date1 || !date2) return false;
+    
+    try {
+      const d1 = new Date(date1);
+      const d2 = new Date(date2);
+      return d1.getTime() === d2.getTime();
+    } catch (error) {
+      console.error("Error comparing dates:", error);
+      return false;
     }
   }
 }
