@@ -40,6 +40,9 @@ class UnifiedNotificationService {
     booking_paid: ({ bookingReference, hostName }) => 
       `Payment received for booking #${bookingReference}. Payout to host ${hostName} required.`,
     
+    booking_payment_pending: ({ bookingReference, hostName }) => 
+      `Payment received for booking #${bookingReference}. Payout to host ${hostName} required.`,
+    
     booking_rejected: ({ bookingReference, placeName }) => 
       `Your booking #${bookingReference} for ${placeName} was declined.`,
     
@@ -61,6 +64,9 @@ class UnifiedNotificationService {
     sendSMS = true
   }) {
     try {
+      console.log(`🔔 CREATING NOTIFICATION - User: ${userId}, Type: ${type}, SendSMS: ${sendSMS}`);
+      console.log(`📝 Message: ${message}`);
+      
       // Create in-app notification first (primary channel)
       const notification = await Notification.create({
         userId,
@@ -73,19 +79,24 @@ class UnifiedNotificationService {
         isSMSSent: false
       });
 
-      console.log(`Notification created for user ${userId}, type: ${type}`);
+      console.log(`✅ In-app notification created - ID: ${notification.id}, User: ${userId}, Type: ${type}`);
 
       // Only send SMS for booking-related notifications to reduce costs
       const isBookingNotification = type.startsWith('booking_');
       
+      console.log(`📱 SMS Check - IsBooking: ${isBookingNotification}, SendSMS: ${sendSMS}, Type: ${type}`);
+      
       if (sendSMS && isBookingNotification) {
+        console.log(`🚀 TRIGGERING ASYNC SMS - NotificationID: ${notification.id}, UserID: ${userId}`);
         // Don't await SMS to avoid blocking in-app notification
         this.sendSMSNotification(notification.id, userId, type, metadata)
           .catch(error => {
-            console.error(`SMS notification failed for notification ${notification.id}:`, error.message);
+            console.error(`❌ SMS notification failed for notification ${notification.id}:`, error.message);
           });
       } else if (sendSMS && !isBookingNotification) {
-        console.log(`Skipping SMS for ${type} - only booking notifications sent via SMS`);
+        console.log(`⏭️ SKIPPING SMS - Not a booking notification (${type})`);
+      } else {
+        console.log(`⏭️ SKIPPING SMS - SendSMS disabled or not booking type`);
       }
 
       return {
@@ -100,7 +111,7 @@ class UnifiedNotificationService {
   }
 
   /**
-   * Send SMS notification
+   * Send SMS notification using in-app notification message (single source of truth)
    * @param {number} notificationId - Notification database ID
    * @param {number} userId - Target user ID
    * @param {string} type - Notification type
@@ -109,39 +120,51 @@ class UnifiedNotificationService {
    */
   static async sendSMSNotification(notificationId, userId, type, metadata = {}) {
     try {
+      console.log(`📱 SMS PROCESSING STARTED - NotificationID: ${notificationId}, UserID: ${userId}, Type: ${type}`);
+      
       // Get user's phone number
       const user = await User.findByPk(userId, {
         attributes: ["id", "phoneNumber", "name"]
       });
 
       if (!user || !user.phoneNumber) {
-        console.log(`User ${userId} has no phone number, skipping SMS`);
+        console.log(`❌ SMS SKIPPED - User ${userId} has no phone number`);
         return { success: false, reason: "No phone number" };
       }
 
-      // Generate SMS message based on type and metadata
-      const smsMessage = await this.generateSMSMessage(type, metadata, user);
+      console.log(`👤 User found - ID: ${user.id}, Name: ${user.name}, Phone: ${user.phoneNumber}`);
 
-      if (!smsMessage) {
-        console.log(`No SMS template for notification type: ${type}`);
-        return { success: false, reason: "No SMS template" };
+      // Get the in-app notification message to use as SMS text (single source of truth)
+      const notification = await Notification.findByPk(notificationId, {
+        attributes: ["message"]
+      });
+
+      if (!notification || !notification.message) {
+        console.log(`❌ SMS FAILED - No notification message found for ID: ${notificationId}`);
+        return { success: false, reason: "No notification message" };
       }
+
+      const smsMessage = notification.message;
+      console.log(`📞 SENDING SMS - User: ${userId} (${user.phoneNumber}), NotificationID: ${notificationId}`);
+      console.log(`📄 SMS Message: "${smsMessage}"`);
 
       // Send SMS via Eskiz service
       const smsResult = await eskizSMSService.sendSMS(user.phoneNumber, smsMessage);
+
+      console.log(`📱 SMS RESULT - Success: ${smsResult.success}, RequestID: ${smsResult.requestId}, Error: ${smsResult.error || 'None'}`);
 
       // Update notification record with SMS status
       await this.updateNotificationSMSStatus(notificationId, smsResult);
 
       if (smsResult.success) {
-        console.log(`SMS sent successfully to user ${userId} (${user.phoneNumber})`);
+        console.log(`✅ SMS COMPLETED SUCCESSFULLY - User: ${userId} (${user.phoneNumber}), RequestID: ${smsResult.requestId}`);
         return {
           success: true,
           requestId: smsResult.requestId,
           message: "SMS sent successfully"
         };
       } else {
-        console.error(`SMS failed for user ${userId}:`, smsResult.error);
+        console.error(`❌ SMS FAILED - User: ${userId}, Error: ${smsResult.error}`);
         return {
           success: false,
           error: smsResult.error,
@@ -149,7 +172,7 @@ class UnifiedNotificationService {
         };
       }
     } catch (error) {
-      console.error(`SMS notification error for user ${userId}:`, error.message);
+      console.error(`💥 SMS EXCEPTION - User: ${userId}, NotificationID: ${notificationId}, Error: ${error.message}`);
       
       // Update notification with error status
       try {
@@ -206,7 +229,7 @@ class UnifiedNotificationService {
 
     try {
       // Add user information
-      enriched.userName = `${user.firstName} ${user.lastName}`.trim();
+      enriched.userName = user.name;
 
       // Enrich booking-related data
       if (metadata.bookingId) {
@@ -219,13 +242,8 @@ class UnifiedNotificationService {
             },
             {
               model: User,
-              as: "client",
-              attributes: ["id", "firstName", "lastName"]
-            },
-            {
-              model: User,
-              as: "host",
-              attributes: ["id", "firstName", "lastName"]
+              as: "user", // Correct alias for booking owner (client)
+              attributes: ["id", "name"]
             }
           ]
         });
@@ -233,8 +251,7 @@ class UnifiedNotificationService {
         if (booking) {
           enriched.bookingReference = booking.reference || booking.id;
           enriched.placeName = booking.place ? booking.place.title : "Property";
-          enriched.clientName = booking.client ? `${booking.client.firstName} ${booking.client.lastName}`.trim() : "Guest";
-          enriched.hostName = booking.host ? `${booking.host.firstName} ${booking.host.lastName}`.trim() : "Host";
+          enriched.clientName = booking.user ? booking.user.name : "Guest";
           enriched.amount = booking.totalAmount;
           
           // Format dates

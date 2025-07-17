@@ -319,6 +319,19 @@ class EskizSMSService {
     } catch (error) {
       console.error("Eskiz SMS sending failed:", error.message);
       
+      // Log detailed error information for debugging
+      if (error.response) {
+        console.error("📋 Full API Error Response:");
+        console.error("Status:", error.response.status);
+        console.error("Status Text:", error.response.statusText);
+        console.error("Headers:", error.response.headers);
+        console.error("Data:", JSON.stringify(error.response.data, null, 2));
+      } else if (error.request) {
+        console.error("📋 No response received:", error.request);
+      } else {
+        console.error("📋 Error setting up request:", error.message);
+      }
+      
       // Handle token expiry with robust retry logic
       if (this.isTokenExpiredError(error) && retryCount < 2) {
         console.log(`Token expired error detected, attempting refresh (attempt ${retryCount + 1}/2)`);
