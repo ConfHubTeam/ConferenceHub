@@ -33,9 +33,7 @@ class UnifiedNotificationService {
       `Booking #${bookingReference} for ${placeName} has been approved. Please proceed with payment.`,
     
     booking_confirmed: ({ bookingReference, placeName, isHost, clientName }) => 
-      isHost 
-        ? `Booking #${bookingReference} for ${placeName} confirmed - payment received from ${clientName}`
-        : `Great news! Your booking #${bookingReference} for ${placeName} is confirmed.`,
+      `Booking #${bookingReference} for ${placeName} has been confirmed.`,
     
     booking_paid: ({ bookingReference, hostName }) => 
       `Payment received for booking #${bookingReference}. Payout to host ${hostName} required.`,

@@ -284,7 +284,7 @@ class BookingNotificationService {
         userId: place.owner.id,
         type: "booking_confirmed",
         title: "Booking Confirmed",
-        message: `Booking #${bookingReference} for "${place.title}" on ${dateRange}${timeSlotInfo} has been confirmed. Payment completed by ${bookingUser.name}.`,
+        message: `Booking #${bookingReference} for "${place.title}" on ${dateRange}${timeSlotInfo} has been confirmed.`,
         bookingId: booking.id,
         placeId: booking.placeId,
         additionalMetadata: {
