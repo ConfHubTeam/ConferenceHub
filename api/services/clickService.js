@@ -32,10 +32,11 @@ class ClickService {
     } = data;
 
     const booking = await this._getBookingContext(merchant_trans_id);
+    console.log('Booking:', booking);
     if (booking.error) return booking;
 
-    const userId = booking.userId;
-    const bookingId = booking.id;
+    const userId = booking.booking.userId;
+    const bookingId = booking.booking.id;
 
     const signatureData = {
       click_trans_id,
@@ -63,18 +64,22 @@ class ClickService {
         error_note: "Action not found",
       };
     }
-
+    
+    console.log("Amount from click:", amount);
+    console.log("Booking price:", booking.totalPrice);
     // ------------------- TRANSACTION CHECK -------------------
     const validationError = await this._validationTransaction({
       click_trans_id,
       bookingId,
       userId,
     });
+    console.log(validationError)
     if (validationError) return validationError;
 
     // ------------------- TRANSACTION CREATE -------------------
     const time = new Date().getTime();
 
+    try{
     await transactionService.createClick({
       clickTransId: click_trans_id,
       performDate: null,
@@ -86,7 +91,10 @@ class ClickService {
       amount: amount,
       userId: userId,
     });
-
+  console.log("Transaction written to DB");
+  } catch (err) {
+    console.error("Transaction save error:", err);
+  }
     return {
       click_trans_id,
       merchant_trans_id,
@@ -115,8 +123,8 @@ class ClickService {
     const booking = await this._getBookingContext(merchant_trans_id);
     if (booking.error) return booking;
 
-    const userId = booking.userId;
-    const bookingId = booking.id;
+    const userId = booking.booking.userId;
+    const bookingId = booking.booking.id;
 
     const signatureData = {
       click_trans_id,
@@ -212,7 +220,6 @@ class ClickService {
     const { bookingId, amount, serviceId, merchantId, baseUrl } = data;
 
     const url = `${baseUrl}/services/pay?service_id=${serviceId}&merchant_id=${merchantId}&amount=${amount}&transaction_param=${bookingId}`;
-
     return url;
   }
 
@@ -220,7 +227,7 @@ class ClickService {
    * Retrieves the booking context based on the booking ID.
    */
   static async _getBookingContext(bookingId) {
-    const booking = await Booking.findById(bookingId);
+    const booking = await Booking.findByPk(bookingId);
     if (!booking) {
       return {
         error: ClickError.TransactionNotFound,
@@ -228,12 +235,12 @@ class ClickService {
       };
     }
 
-    const user = await User.findById(booking.userId);
+    const user = await User.findByPk(booking.userId);
     if (!user) {
       return { error: ClickError.UserNotFound, error_note: "User not found" };
     }
 
-    const place = await Place.findById(booking.placeId);
+    const place = await Place.findByPk(booking.placeId);
     if (!place) {
       return { error: ClickError.BadRequest, error_note: "Place not found" };
     }

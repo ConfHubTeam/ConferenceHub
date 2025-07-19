@@ -8,8 +8,9 @@ const { User, Booking } = require("../models");
 const prepare = async (req, res) => {
   try {
     const data = req.body;
+    console.log("Click complete request:", data);
     const result = await clickService.prepare(data);
-
+    console.log("Click complete result:", result);
     res
       .set({
         headers: {
@@ -31,7 +32,10 @@ const prepare = async (req, res) => {
 const complete = async (req, res) => {
   try {
     const data = req.body;
+    console.log("Click complete result:", data);
     const result = await clickService.complete(data);
+
+    console.log("Click complete result:", result);
     res
       .set({
         headers: {
@@ -51,14 +55,15 @@ const complete = async (req, res) => {
  * Generates a Click payment link for the booking.
  */
 const checkout = async (req, res) => {
-  const userData = await getUserDataFromToken(req);
-  const { bookingId, amount } = data;
-
+  //const userData = await getUserDataFromToken(req);
+  const { amount } = req.body;
+  const bookingId = 2;
+  const userId = 31;
   const MERCHANT_ID = process.env.CLICK_MERCHANT_ID;
   const SERVICE_ID = process.env.CLICK_SERVICE_ID;
   const CHECKOUT_LINK = process.env.CLICK_CHECKOUT_LINK;
 
-  const user = await User.findByPk(userData.id);
+  const user = await User.findByPk(userId);
   if (!user) {
     return res.status(404).json({ error: "User not found" });
   }
@@ -68,9 +73,11 @@ const checkout = async (req, res) => {
     return res.status(404).json({ error: "Booking not found" });
   }
 
+  const fixedAmount = parseFloat(amount).toFixed(2);
+
   const clickPaymentLink = await clickService.makeClickPaymentLink({
     bookingId: bookingId,
-    amount: amount,
+    amount: fixedAmount,
     serviceId: SERVICE_ID,
     merchantId: MERCHANT_ID,
     baseUrl: CHECKOUT_LINK,
