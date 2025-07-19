@@ -338,8 +338,8 @@ export default function Calendar({
             // Red: completely unbookable due to constraints OR 100% booked
             classNames += "bg-red-100 text-red-800 hover:bg-red-200 border border-red-200 ";
           } else if (bookingPercentage === 0) {
-            // Green: 0% booked and has available slots
-            classNames += "bg-green-100 text-green-800 hover:bg-green-200 border border-green-200 ";
+            // Available dates: no background color, just hover effect
+            classNames += "hover:bg-blue-50 hover:border hover:border-blue-200 ";
           } else if (bookingPercentage > 0) {
             // Orange: partially booked but still has available slots
             classNames += "bg-orange-100 text-orange-800 hover:bg-orange-200 border border-orange-200 ";
@@ -574,7 +574,7 @@ export default function Calendar({
           <p className="text-xs text-gray-600 mb-2 font-medium">Availability Legend:</p>
           <div className="flex flex-wrap gap-2 justify-center">
             <div className="flex items-center">
-              <div className="h-3 w-3 bg-green-100 border border-green-200 rounded mr-1"></div>
+              <div className="h-3 w-3 bg-white border border-gray-300 rounded mr-1"></div>
               <span className="text-xs text-gray-600">Available</span>
             </div>
             <div className="flex items-center">
