@@ -20,10 +20,26 @@ const DateAvailability = ({
 }) => {
   return (
     <div id="date-availability" className="bg-white p-1 rounded-xl shadow-sm border border-gray-100">
-      <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
-        📅 Available dates
-        <span className="text-red-500 ml-1">*</span>
-      </h3>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+          📅 Available dates
+          <span className="text-red-500 ml-1">*</span>
+        </h3>
+        {/* Clear Button near calendar */}
+        {(startDate || endDate) && (
+          <button
+            type="button"
+            onClick={() => {
+              setStartDate("");
+              setEndDate("");
+            }}
+            className="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
+            title="Clear selected period"
+          >
+            Clear selected period
+          </button>
+        )}
+      </div>
       <Calendar 
         startDate={startDate}
         endDate={endDate}
