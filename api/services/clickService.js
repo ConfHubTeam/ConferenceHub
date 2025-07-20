@@ -46,6 +46,8 @@ class ClickService {
       action,
       sign_time,
     };
+    
+    console.log('📝 Prepare - Checking signature:', signatureData);
     const checkSignature = clickCheckToken(signatureData, sign_string);
     if (!checkSignature) {
       return { error: ClickError.SignFailed, error_note: "Invalid sign" };
@@ -136,6 +138,7 @@ class ClickService {
       sign_time,
     };
 
+    console.log('📝 Complete - Checking signature:', signatureData);
     const checkSignature = clickCheckToken(signatureData, sign_string);
 
     if (!checkSignature) {
