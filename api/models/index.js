@@ -3,6 +3,7 @@ const User = require('./users');
 const Place = require('./places');
 const Booking = require('./bookings');
 const Currency = require('./currency');
+const Transaction = require('./transaction');
 const Review = require('./review');
 const ReviewReply = require('./reviewReply');
 const ReviewHelpful = require('./reviewHelpful');
@@ -12,8 +13,10 @@ const Notification = require('./notification');
 // Additional associations for existing models
 User.hasMany(Place, { foreignKey: 'ownerId', as: 'places' });
 User.hasMany(Booking, { foreignKey: 'userId', as: 'bookings' });
+User.hasMany(Transaction, { foreignKey: 'userId', as: 'transactions' });
 Place.hasMany(Booking, { foreignKey: 'placeId', as: 'bookings' });
 Currency.hasMany(Place, { foreignKey: 'currencyId', as: 'places' });
+Booking.hasMany(Transaction, { foreignKey: 'bookingId', as: 'transactions' });
 
 // Review system associations
 User.hasMany(Review, { foreignKey: 'userId', as: 'reviews' });
@@ -48,6 +51,7 @@ module.exports = {
   Place,
   Booking,
   Currency,
+  Transaction
   Review,
   ReviewReply,
   ReviewHelpful,

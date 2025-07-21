@@ -25,6 +25,8 @@ const userRoutes = require('./routes/users');
 const placeRoutes = require('./routes/places');
 const bookingRoutes = require('./routes/bookings');
 const currencyRoutes = require('./routes/currency');
+const clickRoutes = require('./routes/click');
+const paymeRoutes = require('./routes/payme');
 const reviewRoutes = require('./routes/reviews');
 const notificationRoutes = require('./routes/notifications');
 
@@ -155,6 +157,8 @@ app.use('/api/telegram-auth', telegramAuthRoutes);
 app.use('/api/places', placeRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/currency', currencyRoutes);
+app.use('/api/click', clickRoutes);
+app.use('/api/payme', paymeRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/notifications', notificationRoutes);
 
