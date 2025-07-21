@@ -66,7 +66,15 @@ services:
         sync: false
       - key: ESKIZ_FROM
         sync: false
-      
+      - key: CLICK_MERCHANT_ID
+        sync: false
+      - key: CLICK_SERVICE_ID
+        sync: false
+      - key: CLICK_CHECKOUT_LINK
+        sync: false
+      - key: CLICK_SECRET_KEY
+        sync: false
+
 databases:
   - name: conferencehub-db
     plan: free

@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import { UserContext } from "../components/UserContext";
 import { useNotification } from "../components/NotificationContext";
 import AccountNav from "../components/AccountNav";
@@ -55,6 +55,7 @@ export default function BookingDetailsPage() {
   const { user } = useContext(UserContext);
   const { notify } = useNotification();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   
   const [booking, setBooking] = useState(null);
   const [competingBookings, setCompetingBookings] = useState([]);
@@ -67,6 +68,53 @@ export default function BookingDetailsPage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [modalConfig, setModalConfig] = useState({});
+
+  /**
+   * Handles return from Click payment page
+   */
+  const handlePaymentReturn = async (paymentStatus, transactionId, error) => {
+    try {
+      if (error) {
+        notify(`Payment failed: ${error}`, "error");
+        return;
+      }
+
+      if (paymentStatus === 'success' || transactionId) {
+        notify("Payment completed! Refreshing booking status...", "success");
+        
+        // Refresh booking data to get updated status
+        const { data } = await api.get(`/bookings/${bookingId}`);
+        setBooking(data);
+        
+        // Show success message
+        setTimeout(() => {
+          notify("Booking status updated successfully!", "success");
+        }, 1000);
+      } else if (paymentStatus === 'failed') {
+        notify("Payment was not completed. You can try again.", "warning");
+      } else if (paymentStatus === 'cancelled') {
+        notify("Payment was cancelled. You can try again when ready.", "info");
+      }
+    } catch (error) {
+      console.error('Error handling payment return:', error);
+      notify("Error updating booking status. Please refresh the page.", "error");
+    }
+  };
+
+  // Check for payment return parameters
+  useEffect(() => {
+    const paymentStatus = searchParams.get('payment_status');
+    const transactionId = searchParams.get('transaction_id');
+    const error = searchParams.get('error');
+
+    if (paymentStatus || transactionId || error) {
+      // Handle payment completion return
+      handlePaymentReturn(paymentStatus, transactionId, error);
+      
+      // Clean up URL parameters
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams, bookingId, notify]);
 
   // Fetch booking details
   useEffect(() => {
@@ -286,21 +334,62 @@ export default function BookingDetailsPage() {
     return canPerformBookingAction(user, booking, "pay");
   };
 
-  // Handle payment provider selection (placeholder for future implementation)
-  const handlePaymentClick = (provider) => {
+  // Handle payment provider selection
+  const handlePaymentClick = async (provider) => {
     if (!isPaymentAvailable()) {
       notify("Payment is only available for selected bookings", "warning");
       return;
     }
 
-    // Placeholder for future payment integration
-    notify(`Payment with ${provider.charAt(0).toUpperCase() + provider.slice(1)} will be implemented soon`, "info");
-    
-    // Future implementation will:
-    // 1. Redirect to third-party payment service
-    // 2. Handle success/failure response
-    // 3. Save non-sensitive payment transaction data to database
-    // 4. Update booking status and show payment transaction info
+    if (provider === 'click') {
+      try {
+        setLoading(true);
+        notify("Generating payment link...", "info");
+        
+        const response = await api.post('/click/checkout', {
+          bookingId: booking.id
+        });
+
+        if (response.data.success && response.data.url) {
+          // Open Click payment page in new tab
+          window.open(response.data.url, '_blank', 'noopener,noreferrer');
+          
+          notify("Payment window opened or allow window pop up. Complete payment to confirm booking.", "success");
+          
+          // Optionally refresh booking details after a delay to check for payment updates
+          setTimeout(() => {
+            fetchBookingDetails();
+            
+            // Set up periodic checking for payment status updates
+            const paymentCheckInterval = setInterval(() => {
+              fetchBookingDetails();
+            }, 10000); // Check every 10 seconds
+            
+            // Clear interval after 5 minutes (30 checks)
+            setTimeout(() => {
+              clearInterval(paymentCheckInterval);
+            }, 300000);
+          }, 5000);
+        } else {
+          throw new Error("Failed to generate payment link");
+        }
+      } catch (error) {
+        console.error("Payment error:", error);
+        const errorMessage = error.response?.data?.error || error.message || "Failed to initiate payment";
+        notify(`Payment Error: ${errorMessage}`, "error");
+      } finally {
+        setLoading(false);
+      }
+    } else if (provider === 'payme') {
+      // Placeholder for Payme integration
+      notify("Payme integration will be implemented soon", "info");
+    } else if (provider === 'octo') {
+      // Placeholder for Octo integration 
+      notify("Octo integration will be implemented soon", "info");
+    } else {
+      // Generic fallback
+      notify(`${provider.charAt(0).toUpperCase() + provider.slice(1)} integration will be implemented soon`, "info");
+    }
     
     console.log(`Payment initiated with provider: ${provider} for booking ${booking.id}`);
   };

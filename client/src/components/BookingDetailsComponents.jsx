@@ -331,14 +331,27 @@ export const PaymentSection = ({ isPaymentAvailable, paymentProviders, onPayment
         </div>
 
         {/* Payment Status Messages */}
-        {isPaymentAvailable && (
+        {isPaymentAvailable ? (
           <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
             <div className="flex items-center">
               <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span className="text-sm font-medium text-green-800">
-                Your booking has been selected! You can now proceed with payment.
+              <div className="text-sm">
+                <div className="font-medium text-green-800 mb-1">
+                  Your booking has been selected! You can now proceed with payment.
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 text-amber-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 18.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+              <span className="text-sm text-amber-800">
+                Payment options will be available once your booking is selected by the host.
               </span>
             </div>
           </div>
@@ -668,16 +681,35 @@ export const FullDayBookingCard = () => {
  * Payment button component
  */
 export const PaymentButton = ({ provider, isAvailable, onClick, iconSrc, alt }) => {
+  const getProviderSpecificMessage = (providerId) => {
+    if (providerId === 'click') {
+      return isAvailable ? 'Pay with Click' : 'Click Pay - Available after selection';
+    }
+    if (providerId === 'payme') {
+      return isAvailable ? 'Pay with Payme' : 'Payme - Available after selection';
+    }
+    if (providerId === 'octo') {
+      return isAvailable ? 'Pay with Octo' : 'Octo Pay - Available after selection';
+    }
+    return isAvailable ? `Pay with ${alt}` : 'Available after booking selection';
+  };
+
+  const getButtonStyles = () => {
+    if (provider === 'click' && isAvailable) {
+      return 'border-blue-500 hover:border-blue-600 hover:shadow-lg hover:bg-blue-50 cursor-pointer transform hover:scale-105';
+    }
+    if (isAvailable) {
+      return 'border-blue-300 hover:border-blue-500 hover:shadow-md cursor-pointer';
+    }
+    return 'border-gray-200 cursor-not-allowed opacity-50';
+  };
+
   return (
     <button
       onClick={() => isAvailable && onClick(provider)}
       disabled={!isAvailable}
-      className={`p-4 border-2 rounded-lg transition-all duration-200 ${
-        isAvailable 
-          ? 'border-blue-300 hover:border-blue-500 hover:shadow-md cursor-pointer' 
-          : 'border-gray-200 cursor-not-allowed opacity-50'
-      }`}
-      title={isAvailable ? `Pay with ${alt}` : 'Available after booking selection'}
+      className={`p-4 border-2 rounded-lg transition-all duration-200 ${getButtonStyles()}`}
+      title={getProviderSpecificMessage(provider)}
     >
       <div className="flex flex-col items-center">
         <img 
