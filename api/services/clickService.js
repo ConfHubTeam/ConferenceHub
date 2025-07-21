@@ -53,10 +53,15 @@ class ClickService {
       return { error: ClickError.SignFailed, error_note: "Invalid sign" };
     }
 
-    if (parseInt(amount) !== booking.totalPrice) {
+    // Get the correct total amount (same logic as in controller)
+    const bookingAmount = booking.booking.finalTotal
+    const expectedAmount = parseFloat(bookingAmount).toFixed(2);
+    const receivedAmount = parseFloat(amount).toFixed(2);
+
+    if (receivedAmount !== expectedAmount) {
       return {
         error: ClickError.InvalidAmount,
-        error_note: "Incorrect parameter amount",
+        error_note: `Incorrect parameter amount. Expected: ${expectedAmount}, Received: ${receivedAmount}`,
       };
     }
 
@@ -97,6 +102,22 @@ class ClickService {
   } catch (err) {
     console.error("Transaction save error:", err);
   }
+
+    // Capture prepare response for testing/debugging
+    const prepareResponse = {
+      timestamp: new Date(),
+      action: 'prepare',
+      click_response: data,
+      status: 'prepared'
+    };
+
+    // Update booking with prepare response (this will overwrite previous responses)
+    await booking.booking.update({
+      paymentResponse: prepareResponse
+    });
+
+    console.log('📝 Prepare response captured for booking:', booking.booking.id, prepareResponse);
+
     return {
       click_trans_id,
       merchant_trans_id,
@@ -145,10 +166,15 @@ class ClickService {
       return { error: ClickError.SignFailed, error_note: "Invalid sign" };
     }
 
-    if (parseInt(amount) !== booking.totalPrice) {
+    // Get the correct total amount (same logic as in controller and prepare)
+    const bookingAmount = booking.booking.finalTotal || booking.booking.totalPrice;
+    const expectedAmount = parseFloat(bookingAmount).toFixed(2);
+    const receivedAmount = parseFloat(amount).toFixed(2);
+
+    if (receivedAmount !== expectedAmount) {
       return {
         error: ClickError.InvalidAmount,
-        error_note: "Incorrect parameter amount",
+        error_note: `Incorrect parameter amount. Expected: ${expectedAmount}, Received: ${receivedAmount}`,
       };
     }
 
@@ -195,6 +221,22 @@ class ClickService {
           });
       }
 
+      // Capture failed payment response for testing/debugging
+      const failedPaymentResponse = {
+        timestamp: new Date(),
+        action: 'complete',
+        click_response: data,
+        status: 'failed',
+        error_code: error
+      };
+
+      // Update booking with failed payment response
+      await booking.booking.update({
+        paymentResponse: failedPaymentResponse
+      });
+
+      console.log('❌ Failed payment response captured for booking:', booking.booking.id, failedPaymentResponse);
+
       return {
         error: ClickError.TransactionNotFound,
         error_note: "Transaction not found",
@@ -207,6 +249,21 @@ class ClickService {
       state: TransactionState.Paid,
     });
 
+    // Capture payment response for testing/debugging
+    const paymentResponse = {
+      timestamp: new Date(),
+      action: 'complete',
+      click_response: data,
+      status: 'success'
+    };
+
+    // Update booking with payment response
+    await booking.booking.update({
+      paymentResponse: paymentResponse
+    });
+
+    console.log('💰 Payment response captured for booking:', booking.booking.id, paymentResponse);
+
     return {
       click_trans_id,
       merchant_trans_id,
@@ -216,22 +273,63 @@ class ClickService {
     };
   }
 
-  /**
+    /**
    * Generates a Click payment link for the booking.
    */
   static async makeClickPaymentLink(data) {
-    const { bookingId, amount, serviceId, merchantId, baseUrl } = data;
+    const { bookingId, bookingReference, amount, serviceId, merchantId, baseUrl, clientBaseUrl } = data;
 
-    const url = `${baseUrl}/services/pay?service_id=${serviceId}&merchant_id=${merchantId}&amount=${amount}&transaction_param=${bookingId}`;
+    console.log(`🔗 Generating Click payment link:`, {
+      bookingId,
+      bookingReference,
+      amount,
+      serviceId,
+      merchantId,
+      baseUrl,
+      clientBaseUrl
+    });
+
+    // Validate that amount is not NaN
+    if (!amount || isNaN(parseFloat(amount))) {
+      console.error('❌ Invalid amount for payment link:', amount);
+      throw new Error(`Invalid amount: ${amount}`);
+    }
+
+    // Validate that bookingReference exists
+    if (!bookingReference) {
+      console.error('❌ Missing unique booking reference:', bookingReference);
+      throw new Error('Booking reference (uniqueRequestId) is required');
+    }
+
+    // Validate that bookingId exists for return URL
+    if (!bookingId) {
+      console.error('❌ Missing booking ID for return URL:', bookingId);
+      throw new Error('Booking ID is required for return URL');
+    }
+
+    // Build the payment URL with return_url parameter
+    const returnUrl = `${clientBaseUrl || process.env.CLIENT_BASE_URL}/account/bookings/${bookingId}`;
+    const url = `${baseUrl}/services/pay?service_id=${serviceId}&merchant_id=${merchantId}&amount=${amount}&transaction_param=${bookingReference}&return_url=${encodeURIComponent(returnUrl)}`;
+    
+    console.log(`✅ Generated Click payment URL with return URL: ${url}`);
+    console.log(`📍 Return URL: ${returnUrl}`);
+    
     return url;
   }
 
   /**
-   * Retrieves the booking context based on the booking ID.
+   * Retrieves the booking context based on unique request ID only.
    */
-  static async _getBookingContext(bookingId) {
-    const booking = await Booking.findByPk(bookingId);
+  static async _getBookingContext(identifier) {
+    // Find booking only by uniqueRequestId
+    const booking = await Booking.findOne({
+      where: {
+        uniqueRequestId: identifier
+      }
+    });
+
     if (!booking) {
+      console.error(`❌ Booking not found for unique request ID: ${identifier}`);
       return {
         error: ClickError.TransactionNotFound,
         error_note: "Transaction not found",
@@ -248,6 +346,7 @@ class ClickService {
       return { error: ClickError.BadRequest, error_note: "Place not found" };
     }
 
+    console.log(`✅ Found booking: ID=${booking.id}, UniqueID=${booking.uniqueRequestId}, Status=${booking.status}`);
     return { booking };
   }
 

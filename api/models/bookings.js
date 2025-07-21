@@ -107,6 +107,12 @@ const Booking = sequelize.define('Booking', {
     allowNull: true,
     field: 'cancelled_at',
     comment: 'Timestamp when booking was cancelled'
+  },
+  paymentResponse: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    field: 'payment_response',
+    comment: 'Full payment response from payment provider'
   }
 }, {
   timestamps: true
