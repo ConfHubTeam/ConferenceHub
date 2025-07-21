@@ -3,15 +3,12 @@ const User = require('./users');
 const Place = require('./places');
 const Booking = require('./bookings');
 const Currency = require('./currency');
-<<<<<<< HEAD
 const Transaction = require('./transaction');
-=======
 const Review = require('./review');
 const ReviewReply = require('./reviewReply');
 const ReviewHelpful = require('./reviewHelpful');
 const ReviewReport = require('./reviewReport');
 const Notification = require('./notification');
->>>>>>> d88382d (bell icon update)
 
 // Additional associations for existing models
 User.hasMany(Place, { foreignKey: 'ownerId', as: 'places' });
@@ -54,13 +51,10 @@ module.exports = {
   Place,
   Booking,
   Currency,
-<<<<<<< HEAD
-  Transaction
-=======
+  Transaction,
   Review,
   ReviewReply,
   ReviewHelpful,
   ReviewReport,
   Notification
->>>>>>> d88382d (bell icon update)
 };
