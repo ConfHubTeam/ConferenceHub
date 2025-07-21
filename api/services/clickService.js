@@ -102,6 +102,22 @@ class ClickService {
   } catch (err) {
     console.error("Transaction save error:", err);
   }
+
+    // Capture prepare response for testing/debugging
+    const prepareResponse = {
+      timestamp: new Date(),
+      action: 'prepare',
+      click_response: data,
+      status: 'prepared'
+    };
+
+    // Update booking with prepare response (this will overwrite previous responses)
+    await booking.booking.update({
+      paymentResponse: prepareResponse
+    });
+
+    console.log('📝 Prepare response captured for booking:', booking.booking.id, prepareResponse);
+
     return {
       click_trans_id,
       merchant_trans_id,
@@ -205,6 +221,22 @@ class ClickService {
           });
       }
 
+      // Capture failed payment response for testing/debugging
+      const failedPaymentResponse = {
+        timestamp: new Date(),
+        action: 'complete',
+        click_response: data,
+        status: 'failed',
+        error_code: error
+      };
+
+      // Update booking with failed payment response
+      await booking.booking.update({
+        paymentResponse: failedPaymentResponse
+      });
+
+      console.log('❌ Failed payment response captured for booking:', booking.booking.id, failedPaymentResponse);
+
       return {
         error: ClickError.TransactionNotFound,
         error_note: "Transaction not found",
@@ -216,6 +248,21 @@ class ClickService {
       performDate: new Date(time),
       state: TransactionState.Paid,
     });
+
+    // Capture payment response for testing/debugging
+    const paymentResponse = {
+      timestamp: new Date(),
+      action: 'complete',
+      click_response: data,
+      status: 'success'
+    };
+
+    // Update booking with payment response
+    await booking.booking.update({
+      paymentResponse: paymentResponse
+    });
+
+    console.log('💰 Payment response captured for booking:', booking.booking.id, paymentResponse);
 
     return {
       click_trans_id,

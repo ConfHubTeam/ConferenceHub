@@ -8,6 +8,7 @@ import CloudinaryImage from "../components/CloudinaryImage";
 import ConfirmationModal from "../components/ConfirmationModal";
 import LoadingSpinner from "../components/LoadingSpinner";
 import BookingProgress from "../components/BookingProgress";
+import PaymentResponseDisplay from "../components/PaymentResponseDisplay";
 import { 
   SectionCard, 
   InfoCard, 
@@ -580,6 +581,14 @@ export default function BookingDetailsPage() {
                 </>
               );
             })()}
+
+            {/* Show if payment response exists */}
+            {booking?.paymentResponse && (
+              <PaymentResponseDisplay 
+                paymentResponse={booking.paymentResponse}
+                bookingId={booking.id}
+              />
+            )}
             </div>
           </div>
         </div>
