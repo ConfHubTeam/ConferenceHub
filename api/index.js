@@ -27,8 +27,6 @@ const bookingRoutes = require('./routes/bookings');
 const currencyRoutes = require('./routes/currency');
 const clickRoutes = require('./routes/click');
 const paymeRoutes = require('./routes/payme');
-const clickRoutes = require('./routes/click');
-const paymeRoutes = require('./routes/payme');
 const reviewRoutes = require('./routes/reviews');
 const notificationRoutes = require('./routes/notifications');
 
