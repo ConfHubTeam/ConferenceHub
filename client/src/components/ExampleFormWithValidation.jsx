@@ -55,7 +55,6 @@ export default function ExampleFormWithValidation() {
 
     // If validation passes, process the form
     alert('Form submitted successfully!');
-    console.log({ name, email, phone, message });
   };
 
   return (

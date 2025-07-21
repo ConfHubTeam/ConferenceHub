@@ -144,7 +144,7 @@ export default function HostSelector({ selectedHost, onHostSelect, compact = fal
         <div 
           id="host-listbox"
           role="listbox"
-          className={`absolute z-50 mt-1 w-full bg-white border rounded-md shadow-lg max-h-60 overflow-auto`}
+          className={`absolute z-[65] mt-1 w-full bg-white border rounded-md shadow-lg max-h-60 overflow-auto`}
           style={{ 
             borderRadius: "0.75rem"
           }}

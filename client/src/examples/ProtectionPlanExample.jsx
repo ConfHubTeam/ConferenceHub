@@ -7,9 +7,6 @@
 
 import { PROTECTION_PLAN_CONFIG } from '../utils/refundPolicyUtils.js';
 
-console.log('Protection Rate:', PROTECTION_PLAN_CONFIG.PROTECTION_RATE); // 0.2
-console.log('Protection Percentage:', PROTECTION_PLAN_CONFIG.PROTECTION_PERCENTAGE); // 20
-
 // Usage examples:
 // - For calculations: totalPrice * PROTECTION_PLAN_CONFIG.PROTECTION_RATE
 // - For display: `${PROTECTION_PLAN_CONFIG.PROTECTION_PERCENTAGE}% protection plan`

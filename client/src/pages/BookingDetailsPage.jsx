@@ -233,18 +233,46 @@ export default function BookingDetailsPage() {
     }
   };
 
+  // Handle paid to host action
+  const handlePaidToHost = async () => {
+    setIsUpdating(true);
+    try {
+      const { data } = await api.post(`/bookings/${bookingId}/paid-to-host`);
+      
+      setBooking(data.booking);
+      notify(data.message || "Payment to host marked successfully", "success");
+      setShowModal(false);
+    } catch (error) {
+      notify(`Error: ${error.response?.data?.error || error.message}`, "error");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   // Show confirmation modal for booking actions
   const showConfirmationModal = (actionButton) => {
     const { label, action, description, requiresPaymentCheck, agentApproval } = actionButton;
     
-    setModalConfig({
-      title: `${label} Booking`,
-      message: description || `Are you sure you want to ${label.toLowerCase()} this booking?`,
-      status: action,
-      action: label.toLowerCase(),
-      requiresPaymentCheck: requiresPaymentCheck || false,
-      agentApproval: agentApproval || false
-    });
+    // Handle paid to host action differently
+    if (action === 'paid_to_host') {
+      setModalConfig({
+        title: `${label}`,
+        message: description || `Are you sure you want to mark payment to host as complete?`,
+        status: action,
+        action: 'paid_to_host',
+        requiresPaymentCheck: false,
+        agentApproval: false
+      });
+    } else {
+      setModalConfig({
+        title: `${label} Booking`,
+        message: description || `Are you sure you want to ${label.toLowerCase()} this booking?`,
+        status: action,
+        action: label.toLowerCase(),
+        requiresPaymentCheck: requiresPaymentCheck || false,
+        agentApproval: agentApproval || false
+      });
+    }
     setShowModal(true);
   };
 
@@ -423,10 +451,11 @@ export default function BookingDetailsPage() {
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Pricing */}
+          <div className="lg:col-span-2">
+            <div className="sticky top-24 space-y-6">
+              {/* Pricing */}
             <PricingSection booking={booking} user={user}>
-              <PaymentStatusIndicator status={booking.status} userType={user?.userType} />
+              <PaymentStatusIndicator status={booking.status} userType={user?.userType} booking={booking} />
             </PricingSection>
 
             {/* Payment Section - Only for clients */}
@@ -462,6 +491,7 @@ export default function BookingDetailsPage() {
                 </>
               );
             })()}
+            </div>
           </div>
         </div>
       </div>
@@ -474,11 +504,14 @@ export default function BookingDetailsPage() {
             isOpen={showModal}
             onClose={() => setShowModal(false)}
             onConfirm={() => {
-              if (modalConfig.requiresPaymentCheck && !modalConfig.agentApproval) {
+              if (modalConfig.action === 'paid_to_host') {
+                handlePaidToHost();
+              } else if (modalConfig.requiresPaymentCheck && !modalConfig.agentApproval) {
                 // Show payment confirmation options for non-agent approvals
                 return;
+              } else {
+                handleStatusUpdate(modalConfig.status);
               }
-              handleStatusUpdate(modalConfig.status);
             }}
             title={modalProps.title}
             message={modalProps.message}

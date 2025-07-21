@@ -61,8 +61,6 @@ export default function AvailabilitySection({
   return (
     <>
       {preInput(
-        "Availability times",
-        "add available times, remember to have some time for cleaning the room between bookings. Both date range and time slots are required.",
         true // Required field
       )}
       

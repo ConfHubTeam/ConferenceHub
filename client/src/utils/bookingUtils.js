@@ -226,6 +226,9 @@ export const getBookingActionButtons = (booking, user, competingBookings = []) =
         disabled: true,
         description: "Cannot approve - another booking is already selected for this time slot"
       });
+    } else if (isPending && isHost) {
+      // For hosts on pending bookings: Approve button is not visible (no payment yet)
+      // Don't add approve button for hosts until payment is made
     } else if (isSelected && isHost) {
       // For hosts on selected bookings: Approve button is disabled (waiting for payment)
       buttons.push({
@@ -247,8 +250,8 @@ export const getBookingActionButtons = (booking, user, competingBookings = []) =
         agentApproval: true, 
         description: "Approve booking (marks payment and approval complete)"
       });
-    } else if (isPending) {
-      // For pending bookings without selected competitors: Normal approval
+    } else if (isPending && isAgent) {
+      // For agents on pending bookings: Approve button is always available
       buttons.push({
         label: "Approve",
         action: "approved",
@@ -278,6 +281,17 @@ export const getBookingActionButtons = (booking, user, competingBookings = []) =
       variant: "danger",
       icon: "x",
       description: "Cancel your booking request"
+    });
+  }
+
+  // Paid to Host button for agents on approved unpaid bookings
+  if (canMarkPaidToHost(user, booking)) {
+    buttons.push({
+      label: "Mark Paid to Host",
+      action: "paid_to_host",
+      variant: "primary",
+      icon: "dollar-sign",
+      description: "Mark payment to host as complete"
     });
   }
   
@@ -390,4 +404,31 @@ export const validateStatusTransition = (currentStatus, newStatus) => {
       ? "Status transition is valid"
       : `Cannot transition from ${currentStatus} to ${newStatus}`
   };
+};
+
+/**
+ * Check if user can mark booking as paid to host
+ * @param {Object} user - Current user object
+ * @param {Object} booking - Booking object
+ * @returns {boolean} True if user can mark as paid to host
+ */
+export const canMarkPaidToHost = (user, booking) => {
+  return (
+    user?.userType === 'agent' &&
+    booking.status === 'approved' &&
+    !booking.paidToHost
+  );
+};
+
+/**
+ * Check if booking shows paid to host status (for display purposes)
+ * @param {Object} user - Current user object
+ * @param {Object} booking - Booking object
+ * @returns {boolean} True if paid to host status should be shown
+ */
+export const shouldShowPaidToHostStatus = (user, booking) => {
+  return (
+    (user?.userType === 'agent' || user?.userType === 'host') &&
+    booking.status === 'approved'
+  );
 };

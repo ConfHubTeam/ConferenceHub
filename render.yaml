@@ -52,9 +52,21 @@ services:
         sync: false
       - key: APP_URL
         sync: false
-      - key: VITE_FLAT_RATE_FEE_UZS
+      - key: VITE_YANDEX_GEOCODER_API_KEY
         sync: false
-
+      - key: VITE_PROTECTION_PLAN_PERCENTAGE
+        sync: false
+      - key: PROTECTION_PLAN_PERCENTAGE
+        sync: false
+      - key: ESKIZ_EMAIL
+        sync: false
+      - key: ESKIZ_SECRET_CODE
+        sync: false
+      - key: ESKIZ_BASE_URL
+        sync: false
+      - key: ESKIZ_FROM
+        sync: false
+      
 databases:
   - name: conferencehub-db
     plan: free

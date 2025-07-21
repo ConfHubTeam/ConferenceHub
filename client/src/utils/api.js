@@ -54,3 +54,28 @@ export const getPasswordRequirements = async () => {
     };
   }
 };
+
+// Host review reply functions - US-R007 implementation
+export const createReviewReply = async (reviewId, replyText) => {
+  try {
+    const response = await api.post(`/reviews/${reviewId}/reply`, {
+      replyText
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating review reply:', error);
+    throw error;
+  }
+};
+
+export const updateReviewReply = async (reviewId, replyText) => {
+  try {
+    const response = await api.put(`/reviews/${reviewId}/reply`, {
+      replyText
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating review reply:', error);
+    throw error;
+  }
+};

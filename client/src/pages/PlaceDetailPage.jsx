@@ -13,6 +13,7 @@ import WeeklyAvailabilityDisplay from "../components/WeeklyAvailabilityDisplay";
 import PlaceAvailabilityCalendar from "../components/PlaceAvailabilityCalendar";
 import PlacePerks from "../components/PlacePerks";
 import RefundPolicyDisplay from "../components/RefundPolicyDisplay";
+import PlaceReviews from "../components/PlaceReviews";
 
 export default function PlaceDetailPage() {
   const { placeId, bookingId } = useParams();
@@ -238,7 +239,6 @@ export default function PlaceDetailPage() {
             {/* Refund Policy Section - Only for owners and agents */}
             {canManage && (
               <div className="mb-8">
-                <h2 className="text-xl md:text-2xl font-semibold mb-4">Refund Policy</h2>
                 <RefundPolicyDisplay 
                   refundPolicy={placeDetail.refundPolicy}
                   placeId={placeDetail.id}
@@ -247,12 +247,20 @@ export default function PlaceDetailPage() {
                 />
               </div>
             )}
+
+            {/* Reviews Section - Hidden on mobile, shown on desktop */}
+            <div className="hidden lg:block">
+              <PlaceReviews 
+                placeId={placeDetail.id} 
+                placeOwnerId={placeDetail.ownerId} 
+              />
+            </div>
           </div>
         </div>
 
         {/* Right side - Booking widget or management options */}
         <div className="lg:col-span-1">
-          <div className="sticky top-4">
+          <div className="sticky top-24">
             {/* Show booking widget only for clients or if viewing a booking */}
             {(!user || user.userType === 'client' || bookingId) && (
               <BookingWidget
@@ -275,7 +283,7 @@ export default function PlaceDetailPage() {
                     Edit Conference Room
                   </a>
                   <button 
-                    className="bg-red-500 py-2 px-5 rounded-2xl text-white"
+                    className="bg-orange-500 py-2 px-5 rounded-2xl text-white"
                     onClick={handleDeleteClick}
                     disabled={isDeleting}
                   >
@@ -286,6 +294,14 @@ export default function PlaceDetailPage() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Reviews Section - Shown on mobile after price section, hidden on desktop */}
+      <div className="block lg:hidden mt-8">
+        <PlaceReviews 
+          placeId={placeDetail.id} 
+          placeOwnerId={placeDetail.ownerId} 
+        />
       </div>
 
       {/* Delete Confirmation Modal */}

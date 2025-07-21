@@ -1,10 +1,10 @@
 /**
  * Custom cluster renderer for Google Maps MarkerClusterer
- * Creates cluster icons that match the website's reddish theme
+ * Creates cluster icons that match the website's main theme color (#f38129)
  */
 
 /**
- * Create a custom cluster icon with reddish theme
+ * Create a custom cluster icon with main theme color
  * @param {number} count - Number of markers in the cluster
  * @param {string} size - Size category ('small', 'medium', 'large')
  * @returns {string} Data URL of the cluster icon
@@ -16,25 +16,25 @@ export const createClusterIcon = (count, size = 'medium') => {
   // Device pixel ratio for high DPI screens
   const dpr = window.devicePixelRatio || 1;
   
-  // Size configurations based on cluster size
+  // Size configurations based on cluster size for optimal UX
   const sizeConfigs = {
     small: {
-      width: 40,
-      height: 40,
+      width: 42,
+      height: 42,
       fontSize: 12,
-      borderRadius: 20
+      borderRadius: 21
     },
     medium: {
-      width: 50,
-      height: 50,
+      width: 52,
+      height: 52,
       fontSize: 14,
-      borderRadius: 25
+      borderRadius: 26
     },
     large: {
-      width: 60,
-      height: 60,
+      width: 62,
+      height: 62,
       fontSize: 16,
-      borderRadius: 30
+      borderRadius: 31
     }
   };
   
@@ -52,52 +52,53 @@ export const createClusterIcon = (count, size = 'medium') => {
   canvas.style.width = `${width}px`;
   canvas.style.height = `${height}px`;
   
-  // Apply anti-aliasing
+  // Apply anti-aliasing for smooth rendering
   context.imageSmoothingEnabled = true;
   context.imageSmoothingQuality = 'high';
   
-  // Add shadow
-  context.shadowColor = 'rgba(0, 0, 0, 0.3)';
-  context.shadowBlur = 4;
+  // Add subtle shadow for depth perception
+  context.shadowColor = 'rgba(0, 0, 0, 0.25)';
+  context.shadowBlur = 6;
   context.shadowOffsetX = 0;
-  context.shadowOffsetY = 2;
+  context.shadowOffsetY = 3;
   
-  // Draw circle
+  // Draw perfect circle
   context.beginPath();
   context.arc(width / 2, height / 2, borderRadius, 0, 2 * Math.PI);
   
-  // Fill with gradient matching the website theme
+  // Fill with gradient using main theme colors
   const gradient = context.createRadialGradient(
     width / 2, height / 2, 0,
     width / 2, height / 2, borderRadius
   );
-  gradient.addColorStop(0, '#ff5a73'); // Lighter center
-  gradient.addColorStop(0.7, '#ff385c'); // Primary color
-  gradient.addColorStop(1, '#e31c5f'); // Darker edge
+  gradient.addColorStop(0, '#f59e5e'); // Lighter center for visual depth
+  gradient.addColorStop(0.5, '#f38129'); // Main theme color
+  gradient.addColorStop(1, '#d66d1c'); // Darker edge for definition
   
   context.fillStyle = gradient;
   context.fill();
   
-  // Add subtle inner border
-  context.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-  context.lineWidth = 1;
+  // Add subtle border for enhanced visual definition
+  context.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+  context.lineWidth = 1.5;
   context.stroke();
   
-  // Reset shadow for text
+  // Reset shadow for text rendering
   context.shadowColor = 'transparent';
   
-  // Draw count text
+  // Draw count text with optimal readability
   context.fillStyle = 'white';
   context.textAlign = 'center';
   context.textBaseline = 'middle';
   context.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`;
   
-  // Add text stroke for better readability
-  context.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-  context.lineWidth = 0.5;
-  context.strokeText(count.toString(), width / 2, height / 2);
+  // Add text shadow for enhanced legibility
+  context.shadowColor = 'rgba(0, 0, 0, 0.3)';
+  context.shadowBlur = 1;
+  context.shadowOffsetX = 0;
+  context.shadowOffsetY = 1;
   
-  // Fill text
+  // Draw the count text
   context.fillText(count.toString(), width / 2, height / 2);
   
   // Convert canvas to image URL with maximum quality

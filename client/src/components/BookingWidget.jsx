@@ -56,8 +56,8 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
     }
   }, [placeDetail]);
 
-  const pricingData = calculateBookingPricing(selectedCalendarDates, placeDetail, null, protectionPlanSelected);
-  const { totalHours, totalPrice, breakdown, serviceFee, protectionPlanFee: calculatedProtectionFee, finalTotal } = pricingData;
+  const pricingData = calculateBookingPricing(selectedCalendarDates, placeDetail, protectionPlanSelected);
+  const { totalHours, totalPrice, breakdown, protectionPlanFee: calculatedProtectionFee, finalTotal } = pricingData;
 
   // Handle protection plan selection
   const handleProtectionPlanChange = (selected, fee) => {
@@ -203,7 +203,6 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
         guestName,
         guestPhone,
         totalPrice: totalPrice, // Base booking price
-        serviceFee,
         protectionPlanSelected,
         protectionPlanFee: protectionPlanSelected ? calculatedProtectionFee : 0,
         finalTotal: finalTotal, // Total including all fees
@@ -311,7 +310,6 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
             totalPrice={totalPrice}
             breakdown={breakdown}
             placeDetail={placeDetail}
-            serviceFee={serviceFee}
             protectionPlanFee={calculatedProtectionFee}
             finalTotal={finalTotal}
           />
@@ -497,7 +495,6 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
             totalPrice={totalPrice}
             breakdown={breakdown}
             placeDetail={placeDetail}
-            serviceFee={serviceFee}
             protectionPlanFee={calculatedProtectionFee}
             finalTotal={finalTotal}
           />

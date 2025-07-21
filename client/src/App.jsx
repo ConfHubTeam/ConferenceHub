@@ -7,11 +7,16 @@ import LandingPage from "./pages/LandingPage.jsx";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import Layout from "./components/Layout";
-import AuthenticatedRoute from "./components/AuthenticatedRoute";
 import { UserContextProvider } from "./components/UserContext";
 import { NotificationProvider } from "./components/NotificationContext";
-import { BookingNotificationProvider } from "./contexts/BookingNotificationContext";
+import { ReviewNotificationProvider } from "./contexts/ReviewNotificationContext";
 import { CurrencyProvider } from "./contexts/CurrencyContext";
+import { DateTimeFilterProvider } from "./contexts/DateTimeFilterContext";
+import { PriceFilterProvider } from "./contexts/PriceFilterContext";
+import { AttendeesFilterProvider } from "./contexts/AttendeesFilterContext";
+import { SizeFilterProvider } from "./contexts/SizeFilterContext";
+import { PerksFilterProvider } from "./contexts/PerksFilterContext";
+import { PoliciesFilterProvider } from "./contexts/PoliciesFilterContext";
 import PlacesPage from "./pages/PlacesPage";
 import ProfilePage from "./pages/ProfilePage";
 import PlacesFormPage from "./pages/PlacesFormPage";
@@ -19,8 +24,12 @@ import BookingsPage from "./pages/BookingsPage";
 import BookingDetailsPage from "./pages/BookingDetailsPage";
 import PlaceDetailPage from "./pages/PlaceDetailPage";
 import DashboardPage from "./pages/DashboardPage";
+import HostDashboardPage from "./pages/HostDashboardPage";
+import HostReviewsPage from "./pages/HostReviewsPage";
 import UsersPage from "./pages/UsersPage";
 import AllPlacesPage from "./pages/AllPlacesPage";
+import AgentReviewsPage from "./pages/AgentReviewsPage";
+import NotificationsPage from "./pages/NotificationsPage";
 import HostBookingManagementPage from "./pages/HostBookingManagementPage";
 import TelegramAuth from "./components/TelegramAuth";
 import TelegramCallbackHandler from "./components/TelegramCallbackHandler";
@@ -42,10 +51,17 @@ function App() {
     <UserContextProvider>
       <CurrencyProvider>
         <NotificationProvider>
-          <BookingNotificationProvider>
-            <Routes>
+          <ReviewNotificationProvider>
+              <DateTimeFilterProvider>
+              <PriceFilterProvider>
+                <AttendeesFilterProvider>
+                  <SizeFilterProvider>
+                    <PerksFilterProvider>
+                      <PoliciesFilterProvider>
+                  <Routes>
           <Route path="/" element={<Layout />}>
-            <Route index element={<AuthenticatedRoute />} />
+            <Route index element={<LandingPage />} />
+            <Route path="/landing" element={<LandingPage />} />
             <Route path="/landingpage" element={<LandingPage />} />
             <Route path="/places" element={<IndexPage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -62,16 +78,28 @@ function App() {
             <Route path="/place/:placeId/:bookingId" element={<PlaceDetailPage />}/>
             <Route path="/account/bookings" element={<BookingsPage />}/>
             <Route path="/account/bookings/:bookingId" element={<BookingDetailsPage />}/>
+            <Route path="/account/notifications" element={<NotificationsPage />}/>
             <Route path="/account/host-management" element={<HostBookingManagementPage />}/>
             
             {/* Agent-specific routes */}
             <Route path="/account/dashboard" element={<DashboardPage />}/>
+            
+            {/* Host-specific routes */}
+            <Route path="/account/hostdashboard" element={<HostDashboardPage />}/>
+            
             <Route path="/account/users" element={<UsersPage />}/>
             <Route path="/account/all-places" element={<AllPlacesPage />}/>
+            <Route path="/account/reviews" element={<AgentReviewsPage />}/>
           </Route>
         </Routes>
-        </BookingNotificationProvider>
-      </NotificationProvider>
+                      </PoliciesFilterProvider>
+                    </PerksFilterProvider>
+                  </SizeFilterProvider>
+                </AttendeesFilterProvider>
+              </PriceFilterProvider>
+            </DateTimeFilterProvider>
+          </ReviewNotificationProvider>
+        </NotificationProvider>
       </CurrencyProvider>
     </UserContextProvider>
   );

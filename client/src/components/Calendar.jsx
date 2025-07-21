@@ -53,9 +53,9 @@ export default function Calendar({
   const max = maxDate ? (typeof maxDate === "string" ? parseISO(maxDate) : maxDate) : null;
 
   // Generate calendar days for the current month
-  const generateDays = useCallback(() => {
-    const monthStart = startOfMonth(currentMonth);
-    const monthEnd = endOfMonth(currentMonth);
+  const generateDays = useCallback((month) => {
+    const monthStart = startOfMonth(month);
+    const monthEnd = endOfMonth(month);
     const startDate = startOfWeek(monthStart);
     const endDate = endOfWeek(monthEnd);
 
@@ -68,14 +68,19 @@ export default function Calendar({
     }
 
     return days;
-  }, [currentMonth]);
+  }, []);
   
   // Reset selection state when external dates change
   useEffect(() => {
     if (!startDate && !endDate) {
       setSelectingStart(true);
+      setHoverDate(null);
     } else if (startDate && !endDate) {
       setSelectingStart(false);
+    } else if (startDate && endDate) {
+      // Both dates are selected, ready to start fresh on next click
+      setSelectingStart(true);
+      setHoverDate(null);
     }
     
     // If both dates are set, prioritize showing the start date's month
@@ -129,10 +134,16 @@ export default function Calendar({
     }
     
     // Normal date selection behavior for the main calendar
-    if (selectingStart) {
+    // If both dates are already selected, start fresh with new start date
+    if (startDate && endDate) {
+      onDateChange(formattedDate, null);
+      setSelectingStart(false);
+    } else if (selectingStart) {
+      // Setting start date
       onDateChange(formattedDate, null);
       setSelectingStart(false);
     } else {
+      // Setting end date
       // If clicked date is before start date, swap them
       if (start && isBefore(day, start)) {
         onDateChange(formattedDate, format(start, "yyyy-MM-dd"));
@@ -145,7 +156,8 @@ export default function Calendar({
   
   // Handle hover effect for range selection
   const handleDateHover = (day) => {
-    if (!selectingStart && start) {
+    // Only show hover effect when selecting end date (not when both dates are already selected)
+    if (!selectingStart && start && !endDate) {
       setHoverDate(day);
     }
   };
@@ -262,7 +274,7 @@ export default function Calendar({
   };
 
   // Get class names for a calendar day
-  const getDayClass = (day) => {
+  const getDayClass = (day, monthToCheck) => {
     const formattedDay = format(day, "yyyy-MM-dd");
     
     // Determine if today based on timezone validation setting
@@ -281,7 +293,7 @@ export default function Calendar({
     const isEndDate = end && isSameDay(day, end);
     const isWithinRange = isInRange(day);
     const isDisabledDate = isDisabled(day);
-    const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
+    const isCurrentMonth = day.getMonth() === monthToCheck.getMonth();
     const isIndividualSelected = isIndividuallySelected(day);
     
     // Check if this date is blocked (for visual indication in blocking calendar)
@@ -326,8 +338,8 @@ export default function Calendar({
             // Red: completely unbookable due to constraints OR 100% booked
             classNames += "bg-red-100 text-red-800 hover:bg-red-200 border border-red-200 ";
           } else if (bookingPercentage === 0) {
-            // Green: 0% booked and has available slots
-            classNames += "bg-green-100 text-green-800 hover:bg-green-200 border border-green-200 ";
+            // Available dates: no background color, just hover effect
+            classNames += "hover:bg-blue-50 hover:border hover:border-blue-200 ";
           } else if (bookingPercentage > 0) {
             // Orange: partially booked but still has available slots
             classNames += "bg-orange-100 text-orange-800 hover:bg-orange-200 border border-orange-200 ";
@@ -353,7 +365,7 @@ export default function Calendar({
   };
 
   // Generate horizontal connection line between start and end dates
-  const renderDateRangeConnection = (day, idx) => {
+  const renderDateRangeConnection = (day, idx, monthToCheck) => {
     if (!start || (!end && !hoverDate) || isDisabled(day)) return null;
     
     // Skip rendering connections in individual date mode or date blocking calendar
@@ -364,7 +376,7 @@ export default function Calendar({
     const isWithinRange = isInRange(day);
     
     // Only render connections for visible range dates in current month
-    if ((isStartDate || isEndDate || isWithinRange) && day.getMonth() === currentMonth.getMonth()) {
+    if ((isStartDate || isEndDate || isWithinRange) && day.getMonth() === monthToCheck.getMonth()) {
       return (
         <div className="absolute inset-0 flex items-center pointer-events-none">
           {/* Left connecting line - enhanced styling */}
@@ -387,8 +399,110 @@ export default function Calendar({
     return null;
   };
 
-  const days = generateDays();
+  const days = generateDays(currentMonth);
+  const nextMonthDays = generateDays(addMonths(currentMonth, 1));
   const weekDays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+
+  // Render a single month grid
+  const renderMonthGrid = (month, daysArray) => {
+    return (
+      <div className="flex-1 min-w-0">
+        {/* Month title - Only show on desktop when there are two months */}
+        <div className="text-center mb-4 hidden lg:block">
+          <h3 className="text-lg font-semibold text-gray-800">
+            {format(month, "MMMM yyyy")}
+          </h3>
+        </div>
+        
+        {/* Weekday headers */}
+        <div className="grid grid-cols-7 gap-1 mb-3">
+          {weekDays.map((day) => (
+            <div key={day} className="h-10 flex items-center justify-center text-sm font-semibold text-gray-600 uppercase tracking-wide">
+              {day}
+            </div>
+          ))}
+        </div>
+        
+        {/* Calendar grid */}
+        <div className="grid grid-cols-7 gap-1.5">
+          {daysArray.map((day, idx) => {
+            const formattedDay = format(day, "yyyy-MM-dd");
+            const isDateBlocked = blockedDates.some(blockedDate => {
+              if (typeof blockedDate === "string") {
+                return formattedDay === blockedDate;
+              } else {
+                return isSameDay(day, blockedDate);
+              }
+            });
+            
+            // Determine isToday based on timezone validation setting
+            let isToday;
+            if (useTimezoneValidation) {
+              const formattedDay = format(day, "yyyy-MM-dd");
+              const currentDateUzbekistan = getCurrentDateInUzbekistan();
+              isToday = formattedDay === currentDateUzbekistan;
+            } else {
+              isToday = isSameDay(day, getCurrentDateObjectInUzbekistan()); // Use Uzbekistan time as default
+            }
+            
+            return (
+              <div
+                key={idx}
+                className={getDayClass(day, month)}
+                onClick={() => !isDisabled(day) && day.getMonth() === month.getMonth() && handleDateClick(day)}
+                onMouseEnter={() => handleDateHover(day)}
+                aria-disabled={isDisabled(day)}
+              >
+                {/* Date range connection background */}
+                {renderDateRangeConnection(day, idx, month)}
+                
+                {/* Show square indicators for start/end dates */}
+                {isStartOrEnd(day) && !individualDateMode && (
+                  <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <span className="h-8 w-8 rounded-lg bg-blue-600 shadow-lg border-2 border-white"></span>
+                  </span>
+                )}
+
+                {/* Show indicators for individually selected dates */}
+                {individualDateMode && isIndividuallySelected(day) && day.getMonth() === month.getMonth() && (
+                  <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <span className="h-8 w-8 rounded-lg bg-green-600 shadow-lg border-2 border-white"></span>
+                  </span>
+                )}
+                
+                {/* Show blocked indicator for blocked dates in the blocking calendar */}
+                {onBlockedDateClick && isDateBlocked && day.getMonth() === month.getMonth() && (
+                  <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <span className="h-8 w-8 rounded-lg bg-red-100 border-2 border-red-400 shadow-sm"></span>
+                  </span>
+                )}
+                
+                <span className="text-sm relative z-10 font-medium">{format(day, "d")}</span>
+                
+                {/* Display X for disabled dates with improved styling */}
+                {isDisabled(day) && day.getMonth() === month.getMonth() && !onBlockedDateClick && (
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 opacity-60" viewBox="0 0 20 20" fill="currentColor" style={{ zIndex: 5 }}>
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </span>
+                )}
+                
+                {/* Special indicator for blocked dates in the blocking calendar with improved styling */}
+                {onBlockedDateClick && isDateBlocked && day.getMonth() === month.getMonth() && (
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-red-600 z-10 drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div 
@@ -410,7 +524,12 @@ export default function Calendar({
         </button>
         
         <h2 className="text-xl font-semibold text-gray-800">
-          {format(currentMonth, "MMMM yyyy")}
+          <span className="hidden lg:block">
+            {format(currentMonth, "MMMM yyyy")} - {format(addMonths(currentMonth, 1), "MMMM yyyy")}
+          </span>
+          <span className="lg:hidden">
+            {format(currentMonth, "MMMM yyyy")}
+          </span>
         </h2>
         
         <button 
@@ -424,91 +543,15 @@ export default function Calendar({
         </button>
       </div>
       
-      {/* Weekday headers - improved styling */}
-      <div className="grid grid-cols-7 gap-1 mb-3">
-        {weekDays.map((day) => (
-          <div key={day} className="h-10 flex items-center justify-center text-sm font-semibold text-gray-600 uppercase tracking-wide">
-            {day}
-          </div>
-        ))}
-      </div>
-      
-      {/* Calendar grid - improved spacing */}
-      <div className="grid grid-cols-7 gap-1.5">
-        {days.map((day, idx) => {
-          const formattedDay = format(day, "yyyy-MM-dd");
-          const isDateBlocked = blockedDates.some(blockedDate => {
-            if (typeof blockedDate === "string") {
-              return formattedDay === blockedDate;
-            } else {
-              return isSameDay(day, blockedDate);
-            }
-          });
-          
-          // Determine isToday based on timezone validation setting
-          let isToday;
-          if (useTimezoneValidation) {
-            const formattedDay = format(day, "yyyy-MM-dd");
-            const currentDateUzbekistan = getCurrentDateInUzbekistan();
-            isToday = formattedDay === currentDateUzbekistan;
-          } else {
-            isToday = isSameDay(day, getCurrentDateObjectInUzbekistan()); // Use Uzbekistan time as default
-          }
-          
-          return (
-            <div
-              key={idx}
-              className={getDayClass(day)}
-              onClick={() => !isDisabled(day) && day.getMonth() === currentMonth.getMonth() && handleDateClick(day)}
-              onMouseEnter={() => handleDateHover(day)}
-              aria-disabled={isDisabled(day)}
-            >
-              {/* Date range connection background */}
-              {renderDateRangeConnection(day, idx)}
-              
-              {/* Show square indicators for start/end dates */}
-              {isStartOrEnd(day) && !individualDateMode && (
-                <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <span className="h-8 w-8 rounded-lg bg-blue-600 shadow-lg border-2 border-white"></span>
-                </span>
-              )}
-
-              {/* Show indicators for individually selected dates */}
-              {individualDateMode && isIndividuallySelected(day) && day.getMonth() === currentMonth.getMonth() && (
-                <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <span className="h-8 w-8 rounded-lg bg-green-600 shadow-lg border-2 border-white"></span>
-                </span>
-              )}
-              
-              {/* Show blocked indicator for blocked dates in the blocking calendar */}
-              {onBlockedDateClick && isDateBlocked && day.getMonth() === currentMonth.getMonth() && (
-                <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <span className="h-8 w-8 rounded-lg bg-red-100 border-2 border-red-400 shadow-sm"></span>
-                </span>
-              )}
-              
-              <span className="text-sm relative z-10 font-medium">{format(day, "d")}</span>
-              
-              {/* Display X for disabled dates with improved styling */}
-              {isDisabled(day) && day.getMonth() === currentMonth.getMonth() && !onBlockedDateClick && (
-                <span className="absolute inset-0 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 opacity-60" viewBox="0 0 20 20" fill="currentColor" style={{ zIndex: 5 }}>
-                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </span>
-              )}
-              
-              {/* Special indicator for blocked dates in the blocking calendar with improved styling */}
-              {onBlockedDateClick && isDateBlocked && day.getMonth() === currentMonth.getMonth() && (
-                <span className="absolute inset-0 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-red-600 z-10 drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </span>
-              )}
-            </div>
-          );
-        })}
+      {/* Two months side by side on desktop, single month on mobile */}
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+        {/* Current Month */}
+        {renderMonthGrid(currentMonth, days)}
+        
+        {/* Next Month - Only show on desktop */}
+        <div className="hidden lg:block lg:flex-1 lg:min-w-0">
+          {renderMonthGrid(addMonths(currentMonth, 1), nextMonthDays)}
+        </div>
       </div>
       
       {/* Selection guidance text - improved styling */}
@@ -531,7 +574,7 @@ export default function Calendar({
           <p className="text-xs text-gray-600 mb-2 font-medium">Availability Legend:</p>
           <div className="flex flex-wrap gap-2 justify-center">
             <div className="flex items-center">
-              <div className="h-3 w-3 bg-green-100 border border-green-200 rounded mr-1"></div>
+              <div className="h-3 w-3 bg-white border border-gray-300 rounded mr-1"></div>
               <span className="text-xs text-gray-600">Available</span>
             </div>
             <div className="flex items-center">

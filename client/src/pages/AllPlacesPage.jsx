@@ -3,6 +3,13 @@ import AccountNav from "../components/AccountNav";
 import api from "../utils/api";
 import { UserContext } from "../components/UserContext";
 import { Navigate, useLocation, useNavigate, Link } from "react-router-dom";
+import { usePriceFilter } from "../contexts/PriceFilterContext";
+import { useCurrency } from "../contexts/CurrencyContext";
+import { useAttendeesFilter } from "../contexts/AttendeesFilterContext";
+import { useSizeFilter } from "../contexts/SizeFilterContext";
+import { usePerksFilter } from "../contexts/PerksFilterContext";
+import { usePoliciesFilter } from "../contexts/PoliciesFilterContext";
+import { convertCurrency } from "../utils/currencyUtils";
 import CloudinaryImage from "../components/CloudinaryImage";
 import PriceDisplay from "../components/PriceDisplay";
 import Pagination from "../components/Pagination";
@@ -16,6 +23,24 @@ export default function AllPlacesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
+  
+  // Price filter context
+  const { minPrice, maxPrice, hasActivePriceFilter, selectedCurrency: priceFilterCurrency } = usePriceFilter();
+  
+  // Currency context
+  const { selectedCurrency } = useCurrency();
+  
+  // Attendees filter context
+  const { filterPlacesByAttendees, hasActiveAttendeesFilter } = useAttendeesFilter();
+  
+  // Size filter context
+  const { filterPlacesBySize, hasActiveSizeFilter } = useSizeFilter();
+  
+  // Perks filter context
+  const { filterPlacesByPerks, hasSelectedPerks } = usePerksFilter();
+  
+  // Policies filter context
+  const { filterPlacesByPolicies, hasSelectedPolicies } = usePoliciesFilter();
   
   // Agent-specific state for user filtering
   const [allUsers, setAllUsers] = useState([]);
@@ -141,20 +166,109 @@ export default function AllPlacesPage() {
     }
   }, [user, selectedUserId, currentPage]);
 
-  // Filter places by search term (client-side for current page)
+  // Filter places by search term and price range (client-side for current page)
   useEffect(() => {
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      const filtered = places.filter(place => 
-        place.title.toLowerCase().includes(term) || 
-        place.address.toLowerCase().includes(term) ||
-        (place.owner && place.owner.name.toLowerCase().includes(term))
-      );
+    const applyFilters = async () => {
+      let filtered = [...places];
+      
+      // Apply search term filter
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        filtered = filtered.filter(place => 
+          place.title.toLowerCase().includes(term) || 
+          place.address.toLowerCase().includes(term) ||
+          (place.owner && place.owner.name.toLowerCase().includes(term))
+        );
+      }
+      
+      // Apply attendees filter
+      if (hasActiveAttendeesFilter) {
+        filtered = filterPlacesByAttendees(filtered);
+      }
+      
+      // Apply size filter
+      if (hasActiveSizeFilter) {
+        filtered = filterPlacesBySize(filtered);
+      }
+      
+      // Apply perks filter
+      if (hasSelectedPerks) {
+        filtered = filterPlacesByPerks(filtered);
+      }
+      
+      // Apply policies filter
+      if (hasSelectedPolicies) {
+        filtered = filterPlacesByPolicies(filtered);
+      }
+      
+      // Apply price filter
+      if (hasActivePriceFilter && filtered.length > 0) {
+        try {
+          // Get the currency to filter in (from price filter context or current currency context)
+          const filterCurrency = priceFilterCurrency || selectedCurrency;
+          
+          if (filterCurrency) {
+            const priceFiltered = [];
+            
+            for (const place of filtered) {
+              // Get place price and currency
+              const placePrice = place.price;
+              const placeCurrency = place.currency;
+              
+              // Skip places without price or currency info
+              if (!placePrice || !placeCurrency) {
+                continue;
+              }
+              
+              let convertedPrice = placePrice;
+              
+              // Convert place price to filter currency if they're different
+              if (placeCurrency.charCode !== filterCurrency.charCode) {
+                try {
+                  convertedPrice = await convertCurrency(
+                    placePrice, 
+                    placeCurrency.charCode, 
+                    filterCurrency.charCode
+                  );
+                } catch (error) {
+                  // If conversion fails, skip this place from filtering
+                  continue;
+                }
+              }
+              
+              // Apply price range filter
+              let passesFilter = true;
+              
+              if (minPrice !== null && minPrice !== undefined) {
+                if (convertedPrice < minPrice) {
+                  passesFilter = false;
+                }
+              }
+              
+              if (maxPrice !== null && maxPrice !== undefined) {
+                if (convertedPrice > maxPrice) {
+                  passesFilter = false;
+                }
+              }
+              
+              if (passesFilter) {
+                priceFiltered.push(place);
+              }
+            }
+            
+            filtered = priceFiltered;
+          }
+        } catch (error) {
+          console.error("Error applying price filter:", error);
+          // On error, don't apply price filter
+        }
+      }
+      
       setFilteredPlaces(filtered);
-    } else {
-      setFilteredPlaces(places);
-    }
-  }, [searchTerm, places]);
+    };
+
+    applyFilters();
+  }, [searchTerm, places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency, hasActiveAttendeesFilter, filterPlacesByAttendees, hasActiveSizeFilter, filterPlacesBySize, hasSelectedPerks, filterPlacesByPerks, hasSelectedPolicies, filterPlacesByPolicies]);
 
   // Redirect non-agents away from this page
   if (user && user.userType !== 'agent') {
@@ -223,12 +337,12 @@ export default function AllPlacesPage() {
         
         {/* Page header with Create Place button for agents */}
         <div className="mb-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-center">
             
             {/* Create Place button for agents */}
             {user && user.userType === 'agent' && (
               <Link
-                className="inline-flex items-center gap-2 bg-primary text-white py-3 px-6 rounded-lg hover:bg-primary-dark transition-colors font-medium"
+                className="inline-flex items-center gap-2 bg-primary text-white py-2 px-4 rounded-full hover:bg-primary-dark transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
                 to={"/account/places/new"}
               >
                 <svg
@@ -330,21 +444,39 @@ export default function AllPlacesPage() {
                       )}
                     </div>
                     <div className="p-4">
-                      <h3 className="text-lg font-semibold mb-1 truncate">{place.title}</h3>
-                      <p className="text-sm text-gray-500 mb-2 truncate">{place.address}</p>
+                      <h3 className="text-xl font-semibold mb-1 truncate">{place.address}</h3>
+                      <p className="text-base text-gray-500 mb-2 truncate">{place.title}</p>
+                      
+                      {/* Rating and max guests row */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-3">
+                          {/* Rating display */}
+                          <div className="flex items-center text-base text-gray-600">
+                            <svg className="w-5 h-5 mr-1 fill-current text-yellow-400" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <span className="font-medium">{place.averageRating || 'New'}</span>
+                            {place.totalReviews > 0 && (
+                              <span className="ml-1">({place.totalReviews})</span>
+                            )}
+                          </div>
+                          
+                          {/* Max guests */}
+                          {place.maxGuests && (
+                            <div className="flex items-center text-base text-gray-600">
+                              <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                              </svg>
+                              {place.maxGuests} guests
+                            </div>
+                          )}
+                        </div>
+                      </div>
                       
                       {/* Additional details */}
                       <div className="space-y-2 mb-3">
-                        {place.maxGuests && (
-                          <div className="flex items-center text-xs text-gray-600">
-                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                            Up to {place.maxGuests} guests
-                          </div>
-                        )}
                         {place.squareMeters && (
-                          <div className="flex items-center text-xs text-gray-600">
+                          <div className="flex items-center text-sm text-gray-600">
                             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                             </svg>
@@ -355,15 +487,15 @@ export default function AllPlacesPage() {
                       
                       {place.owner && (
                         <div className="flex items-center justify-between mt-3 pt-3 border-t">
-                          <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                          <span className="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full">
                             Host: {place.owner.name}
                           </span>
-                          <span className="text-sm text-primary font-semibold">
+                          <span className="text-base text-primary font-semibold">
                             <PriceDisplay 
                               price={place.price} 
                               currency={place.currency}
-                              suffix="/hour"
-                              priceClassName="text-sm"
+                              suffix="/hr"
+                              priceClassName="text-base"
                             />
                           </span>
                         </div>

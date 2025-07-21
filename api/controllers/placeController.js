@@ -2,6 +2,8 @@ const { Place, Booking, User } = require('../models');
 const { getUserDataFromToken } = require('../middleware/auth');
 const Currency = require('../models/currency');
 const { validateRefundOptions, processRefundOptions } = require('../services/refundOptionsService');
+const PlaceAvailabilityService = require('../services/placeAvailabilityService');
+const PlaceRatingService = require('../services/placeRatingService');
 
 /**
  * Create a new place
@@ -182,12 +184,20 @@ const getUserPlaces = async (req, res) => {
 const getPlaceById = async (req, res) => {
   const {id} = req.params;
   try {
-    // Include currency and owner relations to get full details
+    // Include currency and owner relations to get full details plus rating data (US-R010)
     const place = await Place.findByPk(id, {
       include: [
         { model: Currency, as: 'currency' },
         { model: User, as: 'owner' }
-      ]
+      ],
+      attributes: {
+        include: [
+          'averageRating',
+          'totalReviews',
+          'ratingBreakdown',
+          'ratingUpdatedAt'
+        ]
+      }
     });
     res.json(place);
   } catch (error) {
@@ -359,14 +369,22 @@ const updatePlace = async (req, res) => {
 };
 
 /**
- * Get all places
+ * Get all places with optional date and time availability filtering and pagination
+ * Supports filtering by multiple dates and time ranges
  */
 const getHomePlaces = async (req, res) => {
   try {
     const { Op } = require('sequelize');
     
-    // Get all places with currency information
-    const places = await Place.findAll({
+    // Get query parameters for pagination
+    const { page = 1, limit = 20 } = req.query;
+    const offset = (page - 1) * limit;
+    
+    // Parse availability filters from query parameters
+    const availabilityFilters = PlaceAvailabilityService.parseAvailabilityFilters(req.query);
+    
+    // Get all places with currency information first
+    let { count, rows: allPlaces } = await Place.findAndCountAll({
       include: [
         {
           model: Currency,
@@ -374,10 +392,58 @@ const getHomePlaces = async (req, res) => {
           attributes: ['id', 'name', 'code', 'charCode']
         }
       ],
+      attributes: {
+        include: [
+          'averageRating',
+          'totalReviews',
+          'ratingBreakdown'
+        ]
+      },
       order: [['createdAt', 'DESC']] // Show newest places first
     });
     
-    res.json(places);
+    // Apply availability filtering if date/time filters are present
+    if (availabilityFilters.hasDateFilter || availabilityFilters.hasTimeFilter) {
+      // Pass full place objects instead of just IDs for comprehensive filtering
+      const availablePlaceIds = await PlaceAvailabilityService.filterAvailablePlaces(
+        allPlaces, // Pass full place objects
+        availabilityFilters
+      );
+      
+      // Filter the places to only include available ones
+      allPlaces = allPlaces.filter(place => 
+        availablePlaceIds.includes(place.id)
+      );
+      
+      // Update count to reflect filtered results
+      count = allPlaces.length;
+    }
+    
+    // Apply pagination to filtered results
+    const paginatedPlaces = allPlaces.slice(offset, offset + parseInt(limit));
+    
+    // Calculate pagination info based on filtered results
+    const totalPages = Math.ceil(count / limit);
+    const hasNextPage = parseInt(page) < totalPages;
+    const hasPrevPage = parseInt(page) > 1;
+    
+    // For backwards compatibility, return just the places array if no pagination params are provided
+    // Otherwise return paginated response format
+    if (!req.query.page && !req.query.limit) {
+      res.json(paginatedPlaces);
+    } else {
+      res.json({
+        places: paginatedPlaces,
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages,
+          totalItems: count,
+          itemsPerPage: parseInt(limit),
+          hasNextPage,
+          hasPrevPage
+        }
+      });
+    }
   } catch (error) {
     console.error("Error fetching places:", error);
     res.status(422).json({ error: error.message });
@@ -438,7 +504,8 @@ const deletePlace = async (req, res) => {
 };
 
 /**
- * Get all places (for agents only)
+ * Get all places with optional availability filtering (for agents only)
+ * Supports filtering by multiple dates and time ranges
  */
 const getAllPlaces = async (req, res) => {
   try {
@@ -452,6 +519,9 @@ const getAllPlaces = async (req, res) => {
     // Get query parameters for filtering and pagination
     const { userId, page = 1, limit = 50 } = req.query;
     const offset = (page - 1) * limit;
+    
+    // Parse availability filters from query parameters
+    const availabilityFilters = PlaceAvailabilityService.parseAvailabilityFilters(req.query);
     
     // Build query options
     const queryOptions = {
@@ -467,28 +537,50 @@ const getAllPlaces = async (req, res) => {
           attributes: ['id', 'name', 'code', 'charCode']
         }
       ],
-      order: [['createdAt', 'DESC']],
-      limit: parseInt(limit),
-      offset: parseInt(offset)
+      attributes: {
+        include: [
+          'averageRating',
+          'totalReviews',
+          'ratingBreakdown'
+        ]
+      },
+      order: [['createdAt', 'DESC']]
     };
     
     // Add userId filter if provided
     if (userId) {
       queryOptions.where = {
-        owner: userId
+        ownerId: userId
       };
     }
     
     // Get places with count for pagination
-    const { count, rows: places } = await Place.findAndCountAll(queryOptions);
+    let { count, rows: places } = await Place.findAndCountAll(queryOptions);
     
-    // Calculate pagination info
+    // Apply availability filtering if date/time filters are present
+    if (availabilityFilters.hasDateFilter || availabilityFilters.hasTimeFilter) {
+      const availablePlaceIds = await PlaceAvailabilityService.filterAvailablePlaces(
+        places, // Pass full place objects
+        availabilityFilters
+      );
+      
+      // Filter places to only include available ones
+      places = places.filter(place => availablePlaceIds.includes(place.id));
+      
+      // Update count to reflect filtered results
+      count = places.length;
+    }
+    
+    // Apply pagination to filtered results
+    const paginatedPlaces = places.slice(offset, offset + parseInt(limit));
+    
+    // Calculate pagination info based on filtered results
     const totalPages = Math.ceil(count / limit);
     const hasNextPage = page < totalPages;
     const hasPrevPage = page > 1;
     
     res.json({
-      places,
+      places: paginatedPlaces,
       pagination: {
         currentPage: parseInt(page),
         totalPages,

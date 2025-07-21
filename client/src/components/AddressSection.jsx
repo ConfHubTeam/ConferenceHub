@@ -5,7 +5,9 @@ import MapPicker from "./MapPicker";
  * AddressSection Component
  * 
  * Handles address input with geocoding validation and map integration.
- * Now supports manual address editing while preserving map coordinates.
+ * Uses hybrid approach:
+ * - Yandex geocoding API for address search (better regional data)
+ * - Google Maps for visualization only
  */
 export default function AddressSection({
   // Address state
@@ -31,7 +33,10 @@ export default function AddressSection({
   handleAddressUpdate,
   
   // UI helper functions
-  preInput
+  preInput,
+  
+  // Place ID for determining if this is creation or editing (kept for future extensibility)
+  placeId = null
 }) {
   // Track whether the address was manually edited after pin placement
   const [addressManuallyEdited, setAddressManuallyEdited] = useState(false);
@@ -74,20 +79,15 @@ export default function AddressSection({
     }
   };
   
-  // Handle address suggestions from the map
+  // Handle address suggestions from the map (when marker is dragged)
   const handleMapAddressUpdate = (suggestedAddress) => {
-    // We received an address suggestion from the map
-    // But we won't automatically update the address field anymore
-    // This keeps the address completely independent from the coordinates
-    
-    // If the user wants to update the address field programmatically,
-    // they can uncomment this:
-    /*
-    if (!addressManuallyEdited || !address.trim()) {
+    // When the user drags the marker, we get a Yandex-derived address
+    // Update the address field with this suggested address
+    if (suggestedAddress && suggestedAddress.trim()) {
       handleAddressUpdate(suggestedAddress);
+      // Mark that the address was updated from map interaction (not manually typed)
       setAddressManuallyEdited(false);
     }
-    */
   };
   
   // Handle toggling full screen mode
@@ -120,12 +120,12 @@ export default function AddressSection({
 
   return (
     <>
-      {preInput("Address", "name or description of this location. You can enter any name you want, independently of the map coordinates.")}
+      {preInput("Address")}
       <div className="relative">
         <input
           id="place-address"
           type="text"
-          placeholder="address"
+          placeholder="Uzbekistan, Tashkent, Tashkent City Park Street, 1"
           value={address}
           onChange={handleAddressInputChange}
           className={`w-full border my-2 py-2 px-3 rounded-2xl ${
@@ -208,6 +208,7 @@ export default function AddressSection({
       
       {showMap && (
         <div className="mb-4">
+          {/* Use Google Maps for visualization, Yandex geocoding happens in address input field */}
           <MapPicker 
             initialCoordinates={lat && lng ? { lat: parseFloat(lat), lng: parseFloat(lng) } : null}
             onLocationSelect={handleLocationSelect}
@@ -215,20 +216,6 @@ export default function AddressSection({
             isFullScreen={isFullScreen}
             onToggleFullScreen={toggleFullScreen}
           />
-          <div className="bg-blue-50 p-3 mt-2 rounded-md text-sm text-gray-700 border border-blue-200">
-            <div className="font-semibold mb-1 flex items-center text-blue-700">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Map and Address Usage:
-            </div>
-            <ul className="list-disc list-inside space-y-1 ml-1">
-              <li><span className="font-medium">Address field:</span> Enter any name or description you want for your location</li>
-              <li><span className="font-medium">Map pin:</span> Drag or click to set the exact coordinates</li>
-              <li><span className="font-medium">Independence:</span> Address name and map location work separately - you can have a custom name with precise coordinates</li>
-              <li><span className="font-medium">Tip:</span> Type an address first to get close, then fine-tune with the map pin</li>
-            </ul>
-          </div>
         </div>
       )}
     </>

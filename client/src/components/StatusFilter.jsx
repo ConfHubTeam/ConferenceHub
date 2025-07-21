@@ -19,12 +19,14 @@ const STATUS_CONFIG = {
     pending: { label: "Pending", color: "yellow" },
     approved: { label: "Approved", color: "green" },
     rejected: { label: "Rejected", color: "red" },
+    paid_to_host: { label: "Paid", color: "blue" },
     all: { label: "All", color: "gray" }
   },
   agent: {
     pending: { label: "Pending", color: "yellow" },
     approved: { label: "Approved", color: "green" },
     rejected: { label: "Rejected", color: "red" },
+    paid_to_host: { label: "Paid", color: "blue" },
     all: { label: "All", color: "gray" }
   }
 };
@@ -42,9 +44,14 @@ const COLOR_THEMES = {
     badge: "bg-green-100 text-green-800"
   },
   red: {
-    active: "bg-red-500 text-white border-red-500",
-    inactive: "bg-white text-red-600 border-red-300 hover:bg-red-50",
-    badge: "bg-red-100 text-red-800"
+    active: "bg-orange-500 text-white border-orange-500",
+    inactive: "bg-white text-orange-600 border-orange-300 hover:bg-orange-50",
+    badge: "bg-orange-100 text-orange-800"
+  },
+  blue: {
+    active: "bg-blue-500 text-white border-blue-500",
+    inactive: "bg-white text-blue-600 border-blue-300 hover:bg-blue-50",
+    badge: "bg-blue-100 text-blue-800"
   },
   gray: {
     active: "bg-gray-500 text-white border-gray-500",
@@ -109,7 +116,9 @@ export default function StatusFilter({
   const statusConfig = STATUS_CONFIG[userType] || STATUS_CONFIG.client;
   
   // Define the order of status buttons
-  const statusOrder = ["pending", "approved", "rejected", "all"];
+  const statusOrder = userType === 'client' 
+    ? ["pending", "approved", "rejected", "all"]
+    : ["pending", "approved", "paid_to_host", "rejected", "all"];
   
   // Size variants for different use cases
   const sizeClasses = {
@@ -132,7 +141,9 @@ export default function StatusFilter({
         // Calculate count - for "all", sum all status counts
         let count;
         if (status === "all") {
-          count = (stats.pending || 0) + (stats.approved || 0) + (stats.rejected || 0);
+          count = (stats.pending || 0) + (stats.approved || 0) + (stats.rejected || 0) + (stats.paidToHostCount || 0);
+        } else if (status === "paid_to_host") {
+          count = stats.paidToHostCount || 0;
         } else {
           count = stats[status] || 0;
         }

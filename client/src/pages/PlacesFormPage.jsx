@@ -67,6 +67,9 @@ export default function PlacesFormPage() {
 
   // Track the source of coordinate updates to prevent circular geocoding
   const coordinateUpdateSource = useRef('address'); // 'address' or 'map'
+  
+  // Track the last successfully geocoded address to prevent repeated API calls
+  const lastGeocodedAddress = useRef('');
 
   // Redirect if user is not a host or agent
   if (user && user.userType !== 'host' && user.userType !== 'agent') {
@@ -234,21 +237,24 @@ export default function PlacesFormPage() {
     // Skip geocoding if address is empty or too short
     if (!address || address.length < 5) {
       setGeocodingSuccess(null);
+      lastGeocodedAddress.current = '';
       return;
     }
 
     // We're editing an existing place with coordinates
     if (id && lat && lng) {
-      // Don't geocode address when editing places with coordinates - keep the original coordinates
-      console.log("Skipping geocoding for existing place with coordinates:", { lat, lng });
       return;
     }
 
     // Skip geocoding if coordinates were just updated via map interaction
     // This prevents circular updates between address field and map coordinates
     if (coordinateUpdateSource.current === 'map') {
-      console.log("Skipping geocoding - coordinates were just updated via map interaction");
       coordinateUpdateSource.current = 'address'; // Reset for next update
+      return;
+    }
+
+    // Skip geocoding if we already geocoded this exact address successfully
+    if (lastGeocodedAddress.current === address && geocodingSuccess === true && lat && lng) {
       return;
     }
 
@@ -258,7 +264,7 @@ export default function PlacesFormPage() {
     }, 1000); // Wait 1 second after typing stops
 
     return () => clearTimeout(timer); // Clean up the timer
-  }, [address, id, lat, lng, geocodingSuccess]);
+  }, [address, id, lat, lng]); // Removed geocodingSuccess from dependencies to prevent repeated calls
 
   // Function to geocode the address
   async function handleGeocodeAddress() {
@@ -274,12 +280,16 @@ export default function PlacesFormPage() {
         setLng(coordinates.lng);
         setGeocodingSuccess(true);
         setShowMap(true);
+        // Track the successfully geocoded address to prevent repeated calls
+        lastGeocodedAddress.current = address;
       } else {
         setGeocodingSuccess(false);
+        lastGeocodedAddress.current = ''; // Reset on failure
       }
     } catch (error) {
       console.error("Error geocoding address:", error);
       setGeocodingSuccess(false);
+      lastGeocodedAddress.current = ''; // Reset on error
     } finally {
       setIsGeocodingAddress(false);
     }
@@ -314,6 +324,53 @@ export default function PlacesFormPage() {
         setGeocodingSuccess(true);
       }
     }
+  }
+
+  // Handle manual address input changes
+  function handleAddressInputChange(newAddress) {
+    // If the user significantly changes the address, reset the geocoding tracking
+    if (lastGeocodedAddress.current && newAddress !== lastGeocodedAddress.current) {
+      const similarity = calculateSimilarity(newAddress, lastGeocodedAddress.current);
+      if (similarity < 0.7) { // If less than 70% similar, allow new geocoding
+        lastGeocodedAddress.current = '';
+        setGeocodingSuccess(null);
+      }
+    }
+    setAddress(newAddress);
+  }
+
+  // Simple similarity function to check if address has changed significantly
+  function calculateSimilarity(str1, str2) {
+    if (!str1 || !str2) return 0;
+    const longer = str1.length > str2.length ? str1 : str2;
+    const shorter = str1.length > str2.length ? str2 : str1;
+    if (longer.length === 0) return 1.0;
+    return (longer.length - editDistance(longer, shorter)) / longer.length;
+  }
+
+  // Simple edit distance calculation
+  function editDistance(str1, str2) {
+    const matrix = [];
+    for (let i = 0; i <= str2.length; i++) {
+      matrix[i] = [i];
+    }
+    for (let j = 0; j <= str1.length; j++) {
+      matrix[0][j] = j;
+    }
+    for (let i = 1; i <= str2.length; i++) {
+      for (let j = 1; j <= str1.length; j++) {
+        if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1,
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j] + 1
+          );
+        }
+      }
+    }
+    return matrix[str2.length][str1.length];
   }
 
   function preInput(header, description, isRequired = false) {
@@ -577,7 +634,7 @@ export default function PlacesFormPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-8xl mx-auto">
       <form onSubmit={savePlace} className="px-4 md:px-8 lg:px-14">
         {error && (
           <div className="bg-red-100 text-red-800 p-4 mb-4 rounded-lg">
@@ -601,13 +658,12 @@ export default function PlacesFormPage() {
         
         {preInput(
           "Title",
-          "title for your conference room. It's better to have a short and catchy title.",
           true // Required field
         )}
         <input
           id="place-title"
           type="text"
-          placeholder="title, for example: Executive Conference Room"
+          placeholder="Title, for example: Executive Conference Room"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
           className="w-full border my-2 py-2 px-3 rounded-2xl"
@@ -615,7 +671,7 @@ export default function PlacesFormPage() {
         
         <AddressSection
           address={address}
-          setAddress={setAddress}
+          setAddress={handleAddressInputChange}
           lat={lat}
           setLat={setLat}
           lng={lng}
@@ -627,9 +683,10 @@ export default function PlacesFormPage() {
           handleLocationSelect={handleLocationSelect}
           handleAddressUpdate={handleAddressUpdate}
           preInput={preInput}
+          placeId={id} // Pass the place ID to determine if this is creation or editing
         />
         
-        {preInput("Photos", "more is better. ")}
+        {preInput("Photos")}
         <PhotoUploader
           addedPhotos={addedPhotos}
           setAddedPhotos={setAddedPhotos}
@@ -641,7 +698,7 @@ export default function PlacesFormPage() {
           preInput={preInput}
         />
         
-        {preInput("Description", "description of the conference room. ")}
+        {preInput("Description")}
         <textarea
           value={description}
           onChange={(event) => setDescription(event.target.value)}
@@ -649,9 +706,9 @@ export default function PlacesFormPage() {
           rows={5}
           placeholder="Describe your conference room's features, ambiance, available resources, etc."
         />
-        {preInput("Perks", "select all the perks of your conference room.")}
+        {preInput("Perks")}
         <PerkSelections selectedPerks={perks} setPerks={setPerks} />
-        {preInput("Extra info", "house rules, etc. ")}
+        {preInput("Extra info")}
         <textarea
           value={extraInfo}
           onChange={(event) => setExtraInfo(event.target.value)}
@@ -706,7 +763,17 @@ export default function PlacesFormPage() {
           isRequired={true}
         />
         
-        <div className="flex justify-center md:justify-start">
+        <div className="flex justify-center md:justify-start gap-4">
+          <button 
+            type="button"
+            onClick={() => navigate("/account/user-places")}
+            className="bg-gray-500 hover:bg-gray-600 text-white p-2 w-full max-w-xs rounded-2xl my-5 flex items-center justify-center transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Cancel
+          </button>
           <button 
             type="submit"
             className="primary my-5 max-w-xs flex items-center justify-center"

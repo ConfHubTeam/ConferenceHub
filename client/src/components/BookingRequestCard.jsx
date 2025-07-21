@@ -68,6 +68,12 @@ export default function BookingRequestCard({ booking, competingBookings = [] }) 
             <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusBadge(booking.status)}`}>
               {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
             </span>
+            {/* Paid to Host Indicator */}
+            {booking.status === 'approved' && booking.paidToHost && (
+              <span className="px-2 py-1 text-xs font-medium rounded-full border bg-blue-50 text-blue-700 border-blue-200">
+                Paid
+              </span>
+            )}
           </div>
         </div>
         <span className="text-xs text-gray-500">

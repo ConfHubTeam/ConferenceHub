@@ -53,4 +53,12 @@ When suggesting new files, include proper folder structure: src/controllers, src
 - Regularly audit and update dependencies, and follow OWASP Top Ten guidelines to protect against common vulnerabilities in npm packages :contentReference[oaicite:18]{index=18}.  
 - Implement graceful shutdown logic (close server, drain connections, cleanup resources) to maintain stability during deployments and crashes :contentReference[oaicite:19]{index=19}.  
 
+ALWAYS FOLLOW: 
 
+- Single responsibility
+- Open/Closed Principles
+- Liskov substitution principles
+- Intefrace segration principles
+- Dependency inversion principles 
+
+DRY (Do not repeat yourself)

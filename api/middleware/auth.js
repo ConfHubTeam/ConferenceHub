@@ -57,6 +57,7 @@ const isAuthenticated = async (req, res, next) => {
     req.userId = decodedToken.id;
     req.userEmail = decodedToken.email;
     req.userType = decodedToken.userType;
+    req.user = decodedToken; // Add this for controllers expecting req.user
     
     // Continue to the next middleware/route handler
     next();
@@ -145,10 +146,43 @@ const optionalAuth = async (req, res, next) => {
   }
 };
 
+/**
+ * Middleware to check if user has admin role (userType: 'agent')
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next function
+ */
+const isAdmin = async (req, res, next) => {
+  try {
+    // Check if user is authenticated and has admin role
+    if (!req.user) {
+      return res.status(401).json({
+        ok: false,
+        error: 'Authentication required'
+      });
+    }
+    
+    if (req.user.userType !== 'agent') {
+      return res.status(403).json({
+        ok: false,
+        error: 'Admin access required'
+      });
+    }
+    
+    next();
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      error: 'Authorization check failed'
+    });
+  }
+};
+
 module.exports = {
   getUserDataFromToken,
   isAuthenticated,
   authenticateToken: isAuthenticated, // Alias for consistency
   hasRole,
-  optionalAuth
+  optionalAuth,
+  isAdmin
 };
