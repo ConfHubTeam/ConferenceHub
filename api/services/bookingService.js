@@ -1,6 +1,7 @@
 const { Booking, Place, User, Currency } = require("../models");
 const { Op } = require("sequelize");
 const { validateBookingTimeSlots, findConflictingBookings, cleanupExpiredBookings, findCompetingBookings } = require("../utils/bookingUtils");
+const BookingNotificationService = require("./bookingNotificationService");
 
 /**
  * Booking Service - Handles core booking business logic
@@ -85,6 +86,14 @@ class BookingService {
       timeSlots: selectedTimeSlots || [],
       uniqueRequestId
     });
+
+    // Create notification for booking request (US-R011)
+    try {
+      await BookingNotificationService.createBookingRequestNotification(booking);
+    } catch (error) {
+      console.error("Error creating booking request notification:", error);
+      // Don't fail the booking creation if notification fails
+    }
 
     return this.getBookingWithAssociations(booking.id);
   }
@@ -187,9 +196,20 @@ class BookingService {
       await this._handleBookingConflicts(booking);
     }
     
+    // Store previous status for notification logic
+    const previousStatus = booking.status;
+    
     // Update booking status
     booking.status = status;
     await booking.save();
+
+    // Create notifications based on status change (US-R011)
+    try {
+      await this._createStatusChangeNotification(booking, status, previousStatus, agentApproval);
+    } catch (error) {
+      console.error("Error creating status change notification:", error);
+      // Don't fail the status update if notification fails
+    }
 
     // Reload with associations
     const updatedBooking = await this.getBookingWithAssociations(booking.id);
@@ -197,7 +217,7 @@ class BookingService {
     return {
       success: true, 
       booking: updatedBooking,
-      message: this._generateStatusMessage(status, booking.status, agentApproval)
+      message: this._generateStatusMessage(status, previousStatus, agentApproval)
     };
   }
 
@@ -526,6 +546,45 @@ class BookingService {
       },
       order: [['createdAt', 'DESC']]
     });
+  }
+
+  /**
+   * Create notifications based on booking status changes (US-R011)
+   * @param {Object} booking - The booking object
+   * @param {string} newStatus - New status
+   * @param {string} previousStatus - Previous status
+   * @param {boolean} agentApproval - Whether approval was done by agent
+   */
+  static async _createStatusChangeNotification(booking, newStatus, previousStatus, agentApproval = false) {
+    // Only create notifications for specific status transitions
+    switch (newStatus) {
+      case 'selected':
+        if (previousStatus === 'pending') {
+          await BookingNotificationService.createBookingSelectedNotification(booking);
+        }
+        break;
+        
+      case 'approved':
+        if (previousStatus === 'selected') {
+          // This means payment was confirmed and booking was approved
+          await BookingNotificationService.createBookingPaidNotification(booking);
+          await BookingNotificationService.createBookingApprovedNotification(booking, agentApproval);
+        } else if (previousStatus === 'pending') {
+          // Direct approval without selection (rare case)
+          await BookingNotificationService.createBookingApprovedNotification(booking, agentApproval);
+        }
+        break;
+        
+      case 'rejected':
+        if (previousStatus === 'pending' || previousStatus === 'selected') {
+          await BookingNotificationService.createBookingRejectedNotification(booking);
+        }
+        break;
+        
+      default:
+        // No notification needed for other status changes
+        break;
+    }
   }
 }
 

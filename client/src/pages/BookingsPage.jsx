@@ -6,8 +6,6 @@ import BookingRequestCard from "../components/BookingRequestCard";
 import Pagination from "../components/Pagination";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useNotification } from "../components/NotificationContext";
-import { useBookingNotifications } from "../contexts/BookingNotificationContext";
-import BookingNotificationBanner from "../components/BookingNotificationBanner";
 import BookingFilters from "../components/BookingFilters";
 
 export default function BookingsPage() {
@@ -21,32 +19,8 @@ export default function BookingsPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { notify } = useNotification();
-  const { markAsViewed, markAllAsViewed, loadNotificationCounts } = useBookingNotifications();
   
-  // Track when user visits the page to dismiss notifications
-  useEffect(() => {
-    if (!user || user.userType !== 'client' || !bookings.length) return;
-    
-    // For clients, mark notifications as viewed when they switch to viewing those statuses
-    // Add a small delay to prevent race conditions
-    const timeoutId = setTimeout(() => {
-      if (statusFilter === 'approved') {
-        markAsViewed('approved');
-      } else if (statusFilter === 'rejected') {
-        markAsViewed('rejected');
-      } else if (statusFilter === 'all') {
-        // When viewing all, mark both as viewed if there are any bookings
-        if (bookings.some(b => b.status === 'approved')) {
-          markAsViewed('approved');
-        }
-        if (bookings.some(b => b.status === 'rejected')) {
-          markAsViewed('rejected');
-        }
-      }
-    }, 100); // Small delay to prevent race conditions
-
-    return () => clearTimeout(timeoutId);
-  }, [user?.userType, statusFilter, bookings.length]); // Use bookings.length instead of filteredBookings
+  // Notification tracking is now handled by the unified notification system
   
   // Extract any query params if needed
   const params = new URLSearchParams(location.search);
@@ -250,9 +224,6 @@ export default function BookingsPage() {
     
     // Update stats for all user types
     calculateStats(updatedBookings);
-    
-    // Refresh notification counts after booking update
-    loadNotificationCounts();
   };
 
   // Get current page items for all user types with pagination
@@ -305,9 +276,6 @@ export default function BookingsPage() {
     <div>
       <AccountNav />
       <div className="px-8 py-4">
-        {/* Notification Banner */}
-        <BookingNotificationBanner />
-        
         {/* Agent view - Production-level booking management */}
         {user?.userType === 'agent' && (
           <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">

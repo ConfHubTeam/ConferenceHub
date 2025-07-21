@@ -9,7 +9,7 @@ import RegisterPage from "./pages/RegisterPage";
 import Layout from "./components/Layout";
 import { UserContextProvider } from "./components/UserContext";
 import { NotificationProvider } from "./components/NotificationContext";
-import { BookingNotificationProvider } from "./contexts/BookingNotificationContext";
+import { ReviewNotificationProvider } from "./contexts/ReviewNotificationContext";
 import { CurrencyProvider } from "./contexts/CurrencyContext";
 import { DateTimeFilterProvider } from "./contexts/DateTimeFilterContext";
 import { PriceFilterProvider } from "./contexts/PriceFilterContext";
@@ -26,6 +26,8 @@ import PlaceDetailPage from "./pages/PlaceDetailPage";
 import DashboardPage from "./pages/DashboardPage";
 import UsersPage from "./pages/UsersPage";
 import AllPlacesPage from "./pages/AllPlacesPage";
+import AgentReviewsPage from "./pages/AgentReviewsPage";
+import NotificationsPage from "./pages/NotificationsPage";
 import HostBookingManagementPage from "./pages/HostBookingManagementPage";
 import TelegramAuth from "./components/TelegramAuth";
 import TelegramCallbackHandler from "./components/TelegramCallbackHandler";
@@ -47,8 +49,8 @@ function App() {
     <UserContextProvider>
       <CurrencyProvider>
         <NotificationProvider>
-          <BookingNotificationProvider>
-            <DateTimeFilterProvider>
+          <ReviewNotificationProvider>
+              <DateTimeFilterProvider>
               <PriceFilterProvider>
                 <AttendeesFilterProvider>
                   <SizeFilterProvider>
@@ -74,12 +76,14 @@ function App() {
             <Route path="/place/:placeId/:bookingId" element={<PlaceDetailPage />}/>
             <Route path="/account/bookings" element={<BookingsPage />}/>
             <Route path="/account/bookings/:bookingId" element={<BookingDetailsPage />}/>
+            <Route path="/account/notifications" element={<NotificationsPage />}/>
             <Route path="/account/host-management" element={<HostBookingManagementPage />}/>
             
             {/* Agent-specific routes */}
             <Route path="/account/dashboard" element={<DashboardPage />}/>
             <Route path="/account/users" element={<UsersPage />}/>
             <Route path="/account/all-places" element={<AllPlacesPage />}/>
+            <Route path="/account/reviews" element={<AgentReviewsPage />}/>
           </Route>
         </Routes>
                       </PoliciesFilterProvider>
@@ -88,8 +92,8 @@ function App() {
                 </AttendeesFilterProvider>
               </PriceFilterProvider>
             </DateTimeFilterProvider>
-        </BookingNotificationProvider>
-      </NotificationProvider>
+          </ReviewNotificationProvider>
+        </NotificationProvider>
       </CurrencyProvider>
     </UserContextProvider>
   );

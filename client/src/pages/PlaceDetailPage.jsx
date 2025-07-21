@@ -13,6 +13,7 @@ import WeeklyAvailabilityDisplay from "../components/WeeklyAvailabilityDisplay";
 import PlaceAvailabilityCalendar from "../components/PlaceAvailabilityCalendar";
 import PlacePerks from "../components/PlacePerks";
 import RefundPolicyDisplay from "../components/RefundPolicyDisplay";
+import PlaceReviews from "../components/PlaceReviews";
 
 export default function PlaceDetailPage() {
   const { placeId, bookingId } = useParams();
@@ -246,6 +247,12 @@ export default function PlaceDetailPage() {
                 />
               </div>
             )}
+
+            {/* Reviews Section */}
+            <PlaceReviews 
+              placeId={placeDetail.id} 
+              placeOwnerId={placeDetail.ownerId} 
+            />
           </div>
         </div>
 
