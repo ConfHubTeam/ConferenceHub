@@ -10,6 +10,8 @@ const prepare = async (req, res) => {
   try {
     const data = req.body;
     console.log("📥 Click PREPARE request:", JSON.stringify(data, null, 2));
+    console.log("📥 Click PREPARE headers:", JSON.stringify(req.headers, null, 2));
+    console.log("📥 Click PREPARE IP:", req.ip || req.connection.remoteAddress);
     
     // Validate required fields for PREPARE
     const requiredFields = ['click_trans_id', 'service_id', 'merchant_trans_id', 'amount', 'action', 'sign_time', 'sign_string'];
@@ -56,6 +58,8 @@ const complete = async (req, res) => {
   try {
     const data = req.body;
     console.log("📥 Click COMPLETE request:", JSON.stringify(data, null, 2));
+    console.log("📥 Click COMPLETE headers:", JSON.stringify(req.headers, null, 2));
+    console.log("📥 Click COMPLETE IP:", req.ip || req.connection.remoteAddress);
     
     // Validate required fields for COMPLETE
     const requiredFields = ['click_trans_id', 'service_id', 'merchant_trans_id', 'merchant_prepare_id', 'amount', 'action', 'sign_time', 'sign_string', 'error'];

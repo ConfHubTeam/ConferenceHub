@@ -257,12 +257,15 @@ class ClickService {
       status: 'success'
     };
 
-    // Update booking with payment response
+    // Update booking status to approved after successful payment
     await booking.booking.update({
+      status: 'approved',
+      paymentStatus: 'paid',
+      approvedAt: new Date(),
       paymentResponse: paymentResponse
     });
 
-    console.log('💰 Payment response captured for booking:', booking.booking.id, paymentResponse);
+    console.log('💰 Payment successful! Booking status updated to approved:', booking.booking.id, paymentResponse);
 
     return {
       click_trans_id,
