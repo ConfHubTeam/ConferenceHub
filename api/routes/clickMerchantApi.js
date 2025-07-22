@@ -1,18 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const clickController = require("../controllers/clickController");
 const { authenticateToken } = require("../middleware/auth");
 const ClickMerchantApiService = require("../services/clickMerchantApiService");
 const PaymentStatusPoller = require("../services/paymentStatusPoller");
 
-// Click.uz webhook endpoints (no auth needed for external service calls)
-router.post("/prepare", clickController.prepare);
-router.post("/complete", clickController.complete);
-
-// Client checkout endpoint (requires authentication)
-router.post("/checkout", authenticateToken, clickController.checkout);
-
-// Test Click.uz Merchant API connection
+/**
+ * Test Click.uz Merchant API connection
+ * GET /api/click/test-merchant-api?merchantTransId=REQ-MDEKEZCM-PL1R2
+ */
 router.get("/test-merchant-api", authenticateToken, async (req, res) => {
   try {
     const { merchantTransId, paymentDate } = req.query;
@@ -26,12 +21,24 @@ router.get("/test-merchant-api", authenticateToken, async (req, res) => {
     console.log(`🧪 Testing Click.uz Merchant API for: ${merchantTransId}`);
     
     const clickApi = new ClickMerchantApiService();
-    const result = await clickApi.checkPaymentStatusMultipleDates(merchantTransId, 3);
+    
+    // Test single date check
+    const result = await clickApi.checkPaymentStatusByMerchantTransId(
+      merchantTransId, 
+      paymentDate
+    );
+    
+    // Also test multiple dates check
+    const multiDateResult = await clickApi.checkPaymentStatusMultipleDates(
+      merchantTransId, 
+      3
+    );
 
     res.json({
       success: true,
       merchantTransId,
-      result,
+      singleDateCheck: result,
+      multipleDateCheck: multiDateResult,
       timestamp: new Date()
     });
 
@@ -44,7 +51,11 @@ router.get("/test-merchant-api", authenticateToken, async (req, res) => {
   }
 });
 
-// Force payment status check for a booking
+/**
+ * Force payment status check for a booking
+ * POST /api/click/force-payment-check
+ * Body: { bookingId: 28 }
+ */
 router.post("/force-payment-check", authenticateToken, async (req, res) => {
   try {
     const { bookingId } = req.body;

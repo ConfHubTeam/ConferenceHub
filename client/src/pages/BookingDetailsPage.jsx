@@ -69,6 +69,44 @@ export default function BookingDetailsPage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [modalConfig, setModalConfig] = useState({});
+  const [pollingInterval, setPollingInterval] = useState(null); // MINIMAL: single state for polling
+
+  // MINIMAL DRY: Payment polling functions
+  const startPaymentPolling = () => {
+    if (pollingInterval) return;
+    
+    const interval = setInterval(async () => {
+      try {
+        const response = await api.post(`/bookings/${bookingId}/check-payment`);
+        if (response.data.success && response.data.isPaid) {
+          clearInterval(interval);
+          setPollingInterval(null);
+          setBooking(response.data.booking);
+          notify("Payment successful! Booking approved.", "success");
+        }
+      } catch (error) {
+        console.error('Payment polling error:', error);
+      }
+    }, 30000);
+    
+    setPollingInterval(interval);
+    setTimeout(() => { // Auto-stop after 10min
+      if (interval) {
+        clearInterval(interval);
+        setPollingInterval(null);
+      }
+    }, 600000);
+  };
+
+  const stopPaymentPolling = () => {
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+      setPollingInterval(null);
+    }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => () => pollingInterval && clearInterval(pollingInterval), [pollingInterval]);
 
   /**
    * Handles return from Click payment page
@@ -81,16 +119,17 @@ export default function BookingDetailsPage() {
       }
 
       if (paymentStatus === 'success' || transactionId) {
-        notify("Payment completed! Refreshing booking status...", "success");
+        notify("Payment completed! Verifying status...", "success");
         
-        // Refresh booking data to get updated status
+        // MINIMAL: Start polling if booking still selected
         const { data } = await api.get(`/bookings/${bookingId}`);
         setBooking(data);
         
-        // Show success message
-        setTimeout(() => {
+        if (data.status === 'selected') {
+          startPaymentPolling();
+        } else {
           notify("Booking status updated successfully!", "success");
-        }, 1000);
+        }
       } else if (paymentStatus === 'failed') {
         notify("Payment was not completed. You can try again.", "warning");
       } else if (paymentStatus === 'cancelled') {
@@ -355,22 +394,12 @@ export default function BookingDetailsPage() {
           // Open Click payment page in new tab
           window.open(response.data.url, '_blank', 'noopener,noreferrer');
           
-          notify("Payment window opened or allow window pop up. Complete payment to confirm booking.", "success");
+          notify("Payment window opened. Complete payment to confirm booking.", "success");
           
-          // Optionally refresh booking details after a delay to check for payment updates
-          setTimeout(() => {
-            fetchBookingDetails();
-            
-            // Set up periodic checking for payment status updates
-            const paymentCheckInterval = setInterval(() => {
-              fetchBookingDetails();
-            }, 10000); // Check every 10 seconds
-            
-            // Clear interval after 5 minutes (30 checks)
-            setTimeout(() => {
-              clearInterval(paymentCheckInterval);
-            }, 300000);
-          }, 5000);
+          // MINIMAL: Start polling for selected bookings only
+          if (booking.status === 'selected') {
+            startPaymentPolling();
+          }
         } else {
           throw new Error("Failed to generate payment link");
         }
