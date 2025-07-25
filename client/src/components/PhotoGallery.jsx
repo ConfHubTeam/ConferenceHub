@@ -28,6 +28,48 @@ export default function PhotoGallery({placeDetail}) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
   
+  // Auto-scroll to the selected slide when fullscreen gallery opens
+  useEffect(() => {
+    if (showAllPhotos && scrollRef.current) {
+      // Small delay to ensure the DOM is ready
+      const timer = setTimeout(() => {
+        if (scrollRef.current) {
+          const { current } = scrollRef;
+          const scrollAmount = current.offsetWidth * currentSlide;
+          
+          current.scrollTo({
+            left: scrollAmount,
+            behavior: 'instant' // Use instant for initial positioning
+          });
+        }
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [showAllPhotos]);
+  
+  // Separate useEffect to handle scroll synchronization
+  useEffect(() => {
+    if (showAllPhotos && scrollRef.current) {
+      const handleScroll = () => {
+        if (scrollRef.current) {
+          const { scrollLeft, offsetWidth } = scrollRef.current;
+          const newSlide = Math.round(scrollLeft / offsetWidth);
+          if (newSlide !== currentSlide) {
+            setCurrentSlide(newSlide);
+          }
+        }
+      };
+      
+      const current = scrollRef.current;
+      current.addEventListener('scroll', handleScroll, { passive: true });
+      
+      return () => {
+        current.removeEventListener('scroll', handleScroll);
+      };
+    }
+  }, [showAllPhotos, currentSlide]);
+  
   // Function to scroll to next or previous image/video
   const scroll = (direction) => {
     if (scrollRef.current) {
@@ -41,11 +83,7 @@ export default function PhotoGallery({placeDetail}) {
         behavior: 'smooth'
       });
       
-      // Update current slide indicator
-      const newSlide = direction === 'left' 
-        ? Math.max(0, currentSlide - 1)
-        : Math.min(totalSlides - 1, currentSlide + 1);
-      setCurrentSlide(newSlide);
+      // Don't manually update currentSlide - let the scroll event listener handle it
     }
   };
   
@@ -60,7 +98,7 @@ export default function PhotoGallery({placeDetail}) {
         behavior: 'smooth'
       });
       
-      setCurrentSlide(index);
+      // Don't manually update currentSlide - let the scroll event listener handle it
     }
   };
 
