@@ -14,7 +14,7 @@ const createPlace = async (req, res) => {
     description, perks, extraInfo, 
     checkIn, checkOut, maxGuests, 
     price, startDate, endDate,
-    youtubeLink, lat, lng, currencyId, cooldown,
+    youtubeLink, matterportLink, lat, lng, currencyId, cooldown,
     fullDayHours, fullDayDiscountPrice, minimumHours,
     blockedWeekdays, blockedDates, weekdayTimeSlots,
     squareMeters, isHotel, hostId, refundOptions
@@ -126,6 +126,7 @@ const createPlace = async (req, res) => {
       startDate: startDate || null,
       endDate: endDate || null,
       youtubeLink: youtubeLink || null, // Add the YouTube link field
+      matterportLink: matterportLink || null, // Add the Matterport link field
       lat: lat ? parseFloat(lat) : null,
       lng: lng ? parseFloat(lng) : null,
       currencyId: validatedCurrencyId,
@@ -226,7 +227,7 @@ const updatePlace = async (req, res) => {
   const {
     id, title, address, photos, description,
     perks, extraInfo, checkIn, checkOut, maxGuests,
-    price, startDate, endDate, youtubeLink, lat, lng,
+    price, startDate, endDate, youtubeLink, matterportLink, lat, lng,
     currencyId, cooldown, fullDayHours, fullDayDiscountPrice,
     minimumHours, blockedWeekdays, blockedDates, weekdayTimeSlots,
     squareMeters, isHotel, refundOptions
@@ -311,6 +312,7 @@ const updatePlace = async (req, res) => {
     place.startDate = startDate;
     place.endDate = endDate;
     place.youtubeLink = youtubeLink || null; // Add the YouTube link
+    place.matterportLink = matterportLink || null; // Add the Matterport link
     place.lat = lat ? parseFloat(lat) : null;
     place.lng = lng ? parseFloat(lng) : null;
     place.blockedWeekdays = processedBlockedWeekdays;

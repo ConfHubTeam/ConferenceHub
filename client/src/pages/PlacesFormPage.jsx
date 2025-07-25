@@ -9,6 +9,7 @@ import { validateFormWithScrolling, scrollToAndHighlightField } from "../utils/f
 import AddressSection from "../components/AddressSection";
 import AvailabilitySection from "../components/AvailabilitySection";
 import YouTubeSection, { extractYouTubeVideoId } from "../components/YouTubeSection";
+import MatterportSection from "../components/MatterportSection";
 import HostSelector from "../components/HostSelector";
 import RefundOptions from "../components/RefundOptions";
 
@@ -32,6 +33,7 @@ export default function PlacesFormPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [youtubeLink, setYoutubeLink] = useState("");
+  const [matterportLink, setMatterportLink] = useState("");
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [isGeocodingAddress, setIsGeocodingAddress] = useState(false);
@@ -144,6 +146,7 @@ export default function PlacesFormPage() {
         setMinimumHours(data.minimumHours || 1);
         console.log("Loaded minimumHours from database:", data.minimumHours, "Setting to:", data.minimumHours || 1);
         setYoutubeLink(data.youtubeLink || "");
+        setMatterportLink(data.matterportLink || "");
         
         // Load currency if it exists
         if (data.currencyId) {
@@ -550,6 +553,7 @@ export default function PlacesFormPage() {
       startDate: startDate || null,
       endDate: endDate || null,
       youtubeLink: cleanedYouTubeLink,
+      matterportLink: matterportLink || null,
       lat: coordinates.lat,
       lng: coordinates.lng,
       // Include time slot management data
@@ -695,6 +699,12 @@ export default function PlacesFormPage() {
         <YouTubeSection
           youtubeLink={youtubeLink}
           setYoutubeLink={setYoutubeLink}
+          preInput={preInput}
+        />
+        
+        <MatterportSection
+          matterportLink={matterportLink}
+          setMatterportLink={setMatterportLink}
           preInput={preInput}
         />
         

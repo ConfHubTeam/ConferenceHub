@@ -67,6 +67,19 @@ const Place = sequelize.define('Place', {
       isUrl: true
     }
   },
+  matterportLink: {
+    type: DataTypes.STRING(500),
+    allowNull: true,
+    field: 'matterport_link',
+    validate: {
+      isUrl: true,
+      isMatterportUrl(value) {
+        if (value && !value.includes('matterport.com')) {
+          throw new Error('Must be a valid Matterport URL');
+        }
+      }
+    }
+  },
   lat: {
     type: DataTypes.FLOAT,
     allowNull: true,
