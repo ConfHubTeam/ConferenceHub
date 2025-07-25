@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import CloudinaryImage from "./CloudinaryImage";
 import YouTubeEmbed from "./YouTubeEmbed";
+import MatterportEmbed from "./MatterportEmbed";
 
 export default function PhotoGallery({placeDetail}) {
   const [showAllPhotos, setShowAllPhotos] = useState(false);
@@ -8,9 +9,12 @@ export default function PhotoGallery({placeDetail}) {
   const [isMobile, setIsMobile] = useState(false);
   const scrollRef = useRef(null);
   const hasYoutubeVideo = !!placeDetail.youtubeLink;
+  const hasMatterport = !!placeDetail.matterportLink;
   
-  // Compute total slide count (photos + video if present)
-  const totalSlides = hasYoutubeVideo ? placeDetail.photos.length + 1 : placeDetail.photos.length;
+  // Compute total slide count (photos + video + 3D if present)
+  let totalSlides = placeDetail.photos.length;
+  if (hasMatterport) totalSlides += 1;
+  if (hasYoutubeVideo) totalSlides += 1;
   
   // Check if device is mobile
   useEffect(() => {
@@ -113,7 +117,36 @@ export default function PhotoGallery({placeDetail}) {
               className="flex overflow-x-auto snap-x snap-mandatory w-full h-full"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
             >
-              {/* YouTube Video (if available) - always first */}
+              {/* Photos - first in order */}
+              {placeDetail.photos?.map((photo, index) => (
+                <div 
+                  key={`photo-${index}`} 
+                  className="flex-shrink-0 w-full h-full flex items-center justify-center snap-center"
+                >
+                  <CloudinaryImage 
+                    photo={photo} 
+                    alt={`${placeDetail.title} - photo ${index+1}`} 
+                    className="max-h-[80vh] max-w-full object-contain" 
+                  />
+                </div>
+              ))}
+              
+              {/* 3D Matterport (if available) - second in order */}
+              {hasMatterport && (
+                <div 
+                  className="flex-shrink-0 w-full h-full flex items-center justify-center snap-center"
+                >
+                  <div className="w-full h-full max-h-[80vh] flex justify-center items-center">
+                    <MatterportEmbed 
+                      url={placeDetail.matterportLink} 
+                      title={placeDetail.title}
+                      className="w-full max-w-4xl h-full"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {/* YouTube Video (if available) - last in order */}
               {hasYoutubeVideo && (
                 <div 
                   className="flex-shrink-0 w-full h-full flex items-center justify-center snap-center"
@@ -127,20 +160,6 @@ export default function PhotoGallery({placeDetail}) {
                   </div>
                 </div>
               )}
-              
-              {/* Photos */}
-              {placeDetail.photos?.map((photo, index) => (
-                <div 
-                  key={index} 
-                  className="flex-shrink-0 w-full h-full flex items-center justify-center snap-center"
-                >
-                  <CloudinaryImage 
-                    photo={photo} 
-                    alt={`${placeDetail.title} - photo ${index+1}`} 
-                    className="max-h-[80vh] max-w-full object-contain" 
-                  />
-                </div>
-              ))}
             </div>
             
             {totalSlides > 1 && (
@@ -186,67 +205,91 @@ export default function PhotoGallery({placeDetail}) {
   return (
     <div className="relative rounded-xl overflow-hidden">
       {/* Main photo/video layout */}
-      {(hasYoutubeVideo || placeDetail.photos?.length > 0) ? (
+      {(placeDetail.photos?.length > 0 || hasMatterport || hasYoutubeVideo) ? (
         <div className="flex flex-col">
-          {/* Main image or video - always larger */}
+          {/* Main image - always show the first photo if available */}
           <div className="w-full h-[250px] sm:h-[300px] md:h-[450px] overflow-hidden">
-            {hasYoutubeVideo ? (
-              <YouTubeEmbed
-                url={placeDetail.youtubeLink}
-                title={placeDetail.title}
-                className="w-full h-full"
-              />
-            ) : (
+            {placeDetail.photos?.length > 0 ? (
               <CloudinaryImage
                 photo={placeDetail.photos[0]}
                 alt={placeDetail.title}
                 className="w-full h-full object-cover cursor-pointer"
                 onClick={() => {setShowAllPhotos(true); setCurrentSlide(0);}}
               />
-            )}
+            ) : hasMatterport ? (
+              <MatterportEmbed
+                url={placeDetail.matterportLink}
+                title={placeDetail.title}
+                className="w-full h-full"
+              />
+            ) : hasYoutubeVideo ? (
+              <YouTubeEmbed
+                url={placeDetail.youtubeLink}
+                title={placeDetail.title}
+                className="w-full h-full"
+              />
+            ) : null}
           </div>
           
           {/* Scrollable thumbnails for additional photos and video */}
           {totalSlides > 1 && (
             <div className="relative mt-2">
               <div className="flex overflow-x-auto gap-2 py-2 px-1 snap-x scrollbar-hide">
+                {/* Photo thumbnails */}
+                {placeDetail.photos.map((photo, index) => (
+                  <div 
+                    key={`photo-${index}`} 
+                    className={`flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 cursor-pointer snap-start rounded-lg overflow-hidden ${
+                      index === currentSlide ? 'ring-2 ring-primary' : ''
+                    }`}
+                    onClick={() => {setShowAllPhotos(true); setCurrentSlide(index);}}
+                  >
+                    <CloudinaryImage
+                      photo={photo}
+                      alt={`${placeDetail.title} thumbnail ${index+1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+                
+                {/* 3D Matterport thumbnail (if available) */}
+                {hasMatterport && (
+                  <div 
+                    className={`flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 cursor-pointer snap-start rounded-lg overflow-hidden relative ${
+                      currentSlide === placeDetail.photos.length ? 'ring-2 ring-primary' : ''
+                    }`}
+                    onClick={() => {setShowAllPhotos(true); setCurrentSlide(placeDetail.photos.length);}}
+                  >
+                    <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center relative">
+                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 sm:w-8 sm:h-8 text-white">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+                        </svg>
+                      </div>
+                      <div className="absolute bottom-1 left-1 right-1">
+                        <div className="text-white text-xs font-medium text-center bg-black/40 rounded px-1">3D</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 {/* YouTube video thumbnail (if available) */}
                 {hasYoutubeVideo && (
                   <div 
                     className={`flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 cursor-pointer snap-start rounded-lg overflow-hidden relative ${
-                      currentSlide === 0 ? 'ring-2 ring-primary' : ''
+                      currentSlide === (placeDetail.photos.length + (hasMatterport ? 1 : 0)) ? 'ring-2 ring-primary' : ''
                     }`}
-                    onClick={() => {setShowAllPhotos(true); setCurrentSlide(0);}}
+                    onClick={() => {setShowAllPhotos(true); setCurrentSlide(placeDetail.photos.length + (hasMatterport ? 1 : 0));}}
                   >
                     <div className="w-full h-full bg-gray-800 flex items-center justify-center relative">
                       <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 sm:w-8 sm:h-8 text-white">
                           <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
                         </svg>
                       </div>
                     </div>
                   </div>
                 )}
-                
-                {/* Photo thumbnails */}
-                {placeDetail.photos.map((photo, index) => {
-                  const slideIndex = hasYoutubeVideo ? index + 1 : index;
-                  return (
-                    <div 
-                      key={index} 
-                      className={`flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 cursor-pointer snap-start rounded-lg overflow-hidden ${
-                        slideIndex === currentSlide ? 'ring-2 ring-primary' : ''
-                      }`}
-                      onClick={() => {setShowAllPhotos(true); setCurrentSlide(slideIndex);}}
-                    >
-                      <CloudinaryImage
-                        photo={photo}
-                        alt={`${placeDetail.title} thumbnail ${index+1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  );
-                })}
               </div>
               
               {/* Left/right scroll buttons for thumbnails - hidden on small mobile */}
