@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 import { usePerksFilter } from "../contexts/PerksFilterContext";
 
 /**
@@ -10,13 +11,14 @@ import { usePerksFilter } from "../contexts/PerksFilterContext";
  * DRY: Reuses perks data and logic from context
  */
 const PerksFilterModal = ({ isOpen, onClose }) => {
+  const { t } = useTranslation();
   const {
     selectedPerks,
     togglePerk,
     clearAllPerks,
     isPerkSelected,
     relevantPerksWithLabels,
-    allPerksByCategory,
+    allPerksByCategoryWithLabels,
     hasSelectedPerks,
     selectedPerksCount
   } = usePerksFilter();
@@ -119,7 +121,7 @@ const PerksFilterModal = ({ isOpen, onClose }) => {
         {/* Modal Header */}
         <div className="flex items-center justify-between p-3 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-semibold text-gray-900">Filter by Perks</h2>
+            <h2 className="text-xl font-semibold text-gray-900">{t("search:filters.modals.perks.title")}</h2>
             {hasSelectedPerks && (
               <span className="bg-primary text-white text-sm px-2 py-1 rounded-full">
                 {selectedPerksCount}
@@ -129,7 +131,7 @@ const PerksFilterModal = ({ isOpen, onClose }) => {
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            aria-label="Close modal"
+            aria-label={t("search:filters.modals.perks.actions.close")}
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -148,7 +150,7 @@ const PerksFilterModal = ({ isOpen, onClose }) => {
                     onClick={clearAllPerks}
                     className="text-sm text-orange-600 hover:text-orange-800 transition-colors"
                   >
-                    Clear all
+                    {t("search:filters.modals.perks.clearAll")}
                   </button>
                 )}
               </div>
@@ -180,7 +182,7 @@ const PerksFilterModal = ({ isOpen, onClose }) => {
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                   </svg>
-                  <span className="font-medium">Show all perks</span>
+                  <span className="font-medium">{t("search:filters.modals.perks.showAllPerks")}</span>
                 </button>
               </div>
             </div>
@@ -195,21 +197,21 @@ const PerksFilterModal = ({ isOpen, onClose }) => {
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
                   </svg>
-                  <span className="font-medium">Back to popular perks</span>
+                  <span className="font-medium">{t("search:filters.modals.perks.backToPopular")}</span>
                 </button>
                 {hasSelectedPerks && (
                   <button
                     onClick={clearAllPerks}
                     className="text-sm text-orange-600 hover:text-orange-800 transition-colors"
                   >
-                    Clear all ({selectedPerksCount})
+                    {t("search:filters.modals.perks.clearAll")} ({selectedPerksCount})
                   </button>
                 )}
               </div>
 
               {/* All Perks by Category */}
               <div className="space-y-4">
-                {Object.entries(allPerksByCategory).map(([categoryName, perks]) => (
+                {Object.entries(allPerksByCategoryWithLabels).map(([categoryName, perks]) => (
                   <div key={categoryName} className="border rounded-xl overflow-hidden">
                     {/* Category Header */}
                     <button
@@ -220,7 +222,7 @@ const PerksFilterModal = ({ isOpen, onClose }) => {
                         <div className="text-primary">
                           {getCategoryIcon(categoryName)}
                         </div>
-                        <span className="font-medium text-gray-900">{categoryName}</span>
+                        <span className="font-medium text-gray-900">{t(`search:filters.modals.perks.categories.${categoryName}`)}</span>
                         {/* Show selected count for this category */}
                         {(() => {
                           const selectedInCategory = perks.filter(perk => isPerkSelected(perk.name)).length;
@@ -274,9 +276,9 @@ const PerksFilterModal = ({ isOpen, onClose }) => {
           <div className="flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center">
             <div className="text-sm text-gray-600">
               {hasSelectedPerks ? (
-                `${selectedPerksCount} perk${selectedPerksCount === 1 ? "" : "s"} selected`
+                t("search:filters.modals.perks.perksSelected", { count: selectedPerksCount })
               ) : (
-                "No perks selected"
+                t("search:filters.modals.perks.noPerksSelected")
               )}
             </div>
             <div className="flex gap-3">
@@ -284,13 +286,13 @@ const PerksFilterModal = ({ isOpen, onClose }) => {
                 onClick={onClose}
                 className="flex-1 sm:flex-none px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
               >
-                Cancel
+                {t("search:filters.modals.perks.actions.cancel")}
               </button>
               <button
                 onClick={onClose}
                 className="flex-1 sm:flex-none px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
               >
-                Apply Filters
+                {t("search:filters.modals.perks.actions.apply")}
               </button>
             </div>
           </div>

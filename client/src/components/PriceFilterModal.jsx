@@ -97,7 +97,7 @@ export default function PriceFilterModal({ isOpen, onClose }) {
           if (convertedMax) convertedMax = Math.round(convertedMax / 10) * 10; // Round to nearest $10
           
           if (basePreset.id === "up-to-1mln") {
-            label = t("filters.modals.price.upToFormat", { value: "$100" });
+            label = t("filters.modals.price.upToFormat", { amount: "$100" });
             convertedMin = null; // No minimum for "up to" filter
             convertedMax = 100; // Display value for better UX
           } else if (basePreset.id === "1mln-3mln") {
@@ -114,7 +114,7 @@ export default function PriceFilterModal({ isOpen, onClose }) {
           if (convertedMax) convertedMax = Math.round(convertedMax / 100) * 100; // Round to nearest 100 RUB
           
           if (basePreset.id === "up-to-1mln") {
-            label = t("filters.modals.price.upToFormat", { value: "8,000 ₽" });
+            label = t("filters.modals.price.upToFormat", { amount: "8,000 ₽" });
             convertedMin = null; // No minimum for "up to" filter
             convertedMax = 8000; // Display value for better UX
           } else if (basePreset.id === "1mln-3mln") {
@@ -141,7 +141,7 @@ export default function PriceFilterModal({ isOpen, onClose }) {
           // For other currencies, use generic formatting
           const symbol = getCurrencySymbol(currency);
           if (basePreset.id === "up-to-1mln") {
-            label = t("filters.modals.price.upToFormat", { value: `${formatCurrency(convertedMax, currency)} ${symbol}` });
+            label = t("filters.modals.price.upToFormat", { amount: `${formatCurrency(convertedMax, currency)} ${symbol}` });
           } else {
             label = `${formatCurrency(convertedMin, currency)} – ${formatCurrency(convertedMax, currency)} ${symbol}`;
           }
@@ -478,7 +478,7 @@ export default function PriceFilterModal({ isOpen, onClose }) {
                         ? `${formatPlaceholder(parseFloat(tempMinPrice))} - ${formatPlaceholder(parseFloat(tempMaxPrice))}`
                         : tempMinPrice
                         ? `${formatPlaceholder(parseFloat(tempMinPrice))}+`
-                        : t("filters.modals.price.upToFormat", { value: formatPlaceholder(parseFloat(tempMaxPrice)) })
+                        : t("filters.modals.price.upToFormat", { amount: formatPlaceholder(parseFloat(tempMaxPrice)) })
                       } {selectedCurrency && getCurrencySymbol(selectedCurrency)}
                     </span>
                   </span>

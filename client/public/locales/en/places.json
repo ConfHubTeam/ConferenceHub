@@ -109,5 +109,9 @@
     "pool": "Pool",
     "petFriendly": "Pet friendly",
     "smokingAllowed": "Smoking allowed"
+  },
+  "search_results": {
+    "no_results": "No properties found",
+    "no_results_description": "Try adjusting your search filters or dates to find more options"
   }
 }

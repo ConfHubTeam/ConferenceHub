@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { VALID_REFUND_OPTIONS, REFUND_POLICY_METADATA, isProtectionPlanAvailable, getPrimaryRefundPolicy } from "../utils/refundPolicyConfig";
 
 // Context for managing policies filter state
@@ -15,6 +16,8 @@ export const usePoliciesFilter = () => {
 
 // Provider component following Single Responsibility Principle
 export const PoliciesFilterProvider = ({ children }) => {
+  const { t } = useTranslation();
+  
   // State management - Single source of truth for policy filter state
   const [selectedPolicies, setSelectedPolicies] = useState([]);
   const [showAllPolicies, setShowAllPolicies] = useState(false);
@@ -65,9 +68,12 @@ export const PoliciesFilterProvider = ({ children }) => {
   const relevantPoliciesWithLabels = useMemo(() => {
     return VALID_REFUND_OPTIONS.map(policyKey => ({
       key: policyKey,
-      ...REFUND_POLICY_METADATA[policyKey]
+      ...REFUND_POLICY_METADATA[policyKey],
+      label: t(`search:filters.modals.policy.policies.${policyKey}`) || REFUND_POLICY_METADATA[policyKey]?.label || policyKey,
+      description: t(`search:filters.modals.policy.descriptions.${policyKey}`) || REFUND_POLICY_METADATA[policyKey]?.description || '',
+      detailedDescription: t(`search:filters.modals.policy.descriptions.${policyKey}`) || REFUND_POLICY_METADATA[policyKey]?.detailedDescription || REFUND_POLICY_METADATA[policyKey]?.description || ''
     }));
-  }, []);
+  }, [t]);
 
   // Most commonly used policies for default display
   const popularPolicies = useMemo(() => [

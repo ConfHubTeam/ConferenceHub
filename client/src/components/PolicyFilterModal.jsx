@@ -1,9 +1,12 @@
 import React from "react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 import { usePoliciesFilter } from "../contexts/PoliciesFilterContext";
 
 // Policy Filter Modal Component following Single Responsibility Principle
 export default function PolicyFilterModal({ isOpen, onClose }) {
+  const { t } = useTranslation();
+  
   // Get policy filter state and actions from context
   const {
     selectedPolicies,
@@ -50,11 +53,11 @@ export default function PolicyFilterModal({ isOpen, onClose }) {
             </div>
             <div>
               <h2 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900">
-                Refund Policies
+                {t("search:filters.modals.policy.title")}
               </h2>
               {hasSelectedPolicies && (
                 <p className="text-xs text-gray-600">
-                  {selectedPoliciesCount} {selectedPoliciesCount === 1 ? 'policy' : 'policies'} selected
+                  {t("search:filters.modals.policy.policiesSelected", { count: selectedPoliciesCount })}
                 </p>
               )}
             </div>
@@ -110,8 +113,8 @@ export default function PolicyFilterModal({ isOpen, onClose }) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No policies available</h3>
-              <p className="text-sm text-gray-500">No policies found.</p>
+              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">{t("search:filters.modals.policy.noPoliciesAvailable")}</h3>
+              <p className="text-sm text-gray-500">{t("search:filters.modals.policy.noPoliciesFound")}</p>
             </div>
           )}
         </div>
@@ -124,14 +127,14 @@ export default function PolicyFilterModal({ isOpen, onClose }) {
                 onClick={handleClearAll}
                 className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors font-medium text-sm"
               >
-                Clear all ({selectedPoliciesCount})
+                {t("search:filters.modals.policy.clearAll")} ({selectedPoliciesCount})
               </button>
             )}
             <button
               onClick={handleClose}
               className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-medium text-sm"
             >
-              Apply Filters
+              {t("search:filters.modals.policy.actions.apply")}
             </button>
           </div>
         </div>

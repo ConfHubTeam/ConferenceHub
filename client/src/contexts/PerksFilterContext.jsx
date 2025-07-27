@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 // Context for managing perks filter state
 const PerksFilterContext = createContext();
@@ -36,64 +37,64 @@ const MOST_RELEVANT_PERKS = [
 // All available perks grouped by category (from PerkSelections.jsx)
 const ALL_PERKS_BY_CATEGORY = {
   "Audio Equipment": [
-    { name: "speakerMic", label: "Speaker microphone" },
-    { name: "backupMic", label: "Backup microphone" },
-    { name: "speaker", label: "Speaker" },
-    { name: "mixer", label: "Mixer" },
-    { name: "soundControl", label: "Sound control panel" },
-    { name: "amplifier", label: "Amplifier" },
-    { name: "acoustic", label: "Room acoustic treatment" }
+    { name: "speakerMic", labelKey: "search:filters.modals.perks.items.speakerMic" },
+    { name: "backupMic", labelKey: "search:filters.modals.perks.items.backupMic" },
+    { name: "speaker", labelKey: "search:filters.modals.perks.items.speaker" },
+    { name: "mixer", labelKey: "search:filters.modals.perks.items.mixer" },
+    { name: "soundControl", labelKey: "search:filters.modals.perks.items.soundControl" },
+    { name: "amplifier", labelKey: "search:filters.modals.perks.items.amplifier" },
+    { name: "acoustic", labelKey: "search:filters.modals.perks.items.acoustic" }
   ],
   "Visual Equipment": [
-    { name: "projector", label: "Projector" },
-    { name: "ledScreen", label: "LED screen" },
-    { name: "projectorScreen", label: "Projector screen" },
-    { name: "hdmiCable", label: "HDMI cable" },
-    { name: "vgaCable", label: "VGA cable" },
-    { name: "adapters", label: "Adapters and converters" },
-    { name: "clicker", label: "Presentation clicker" },
-    { name: "laserPointer", label: "Laser pointer" },
-    { name: "stageLighting", label: "Stage lighting" }
+    { name: "projector", labelKey: "search:filters.modals.perks.items.projector" },
+    { name: "ledScreen", labelKey: "search:filters.modals.perks.items.ledScreen" },
+    { name: "projectorScreen", labelKey: "search:filters.modals.perks.items.projectorScreen" },
+    { name: "hdmiCable", labelKey: "search:filters.modals.perks.items.hdmiCable" },
+    { name: "vgaCable", labelKey: "search:filters.modals.perks.items.vgaCable" },
+    { name: "adapters", labelKey: "search:filters.modals.perks.items.adapters" },
+    { name: "clicker", labelKey: "search:filters.modals.perks.items.clicker" },
+    { name: "laserPointer", labelKey: "search:filters.modals.perks.items.laserPointer" },
+    { name: "stageLighting", labelKey: "search:filters.modals.perks.items.stageLighting" }
   ],
   "Technical Equipment": [
-    { name: "laptop", label: "Laptop" },
-    { name: "desktop", label: "Desktop computer" },
-    { name: "extensionCords", label: "Extension cords" },
-    { name: "chargers", label: "Chargers" },
-    { name: "wiredInternet", label: "Wired internet" },
-    { name: "wifi", label: "Wi-Fi" },
-    { name: "router", label: "Router" },
-    { name: "wifiAccessPoint", label: "Wi-Fi access point" }
+    { name: "laptop", labelKey: "search:filters.modals.perks.items.laptop" },
+    { name: "desktop", labelKey: "search:filters.modals.perks.items.desktop" },
+    { name: "extensionCords", labelKey: "search:filters.modals.perks.items.extensionCords" },
+    { name: "chargers", labelKey: "search:filters.modals.perks.items.chargers" },
+    { name: "wiredInternet", labelKey: "search:filters.modals.perks.items.wiredInternet" },
+    { name: "wifi", labelKey: "search:filters.modals.perks.items.wifi" },
+    { name: "router", labelKey: "search:filters.modals.perks.items.router" },
+    { name: "wifiAccessPoint", labelKey: "search:filters.modals.perks.items.wifiAccessPoint" }
   ],
   "Furniture": [
-    { name: "speakerPodium", label: "Speaker podium" },
-    { name: "speakerTable", label: "Table for speakers" },
-    { name: "speakerChair", label: "Chair for speakers" },
-    { name: "participantChairs", label: "Chairs for participants" },
-    { name: "participantDesks", label: "Desk for participants" },
-    { name: "bottledWater", label: "Water 0.5L" },
-    { name: "waterCooler", label: "Water from cooler" },
-    { name: "cups", label: "Cups" }
+    { name: "speakerPodium", labelKey: "search:filters.modals.perks.items.speakerPodium" },
+    { name: "speakerTable", labelKey: "search:filters.modals.perks.items.speakerTable" },
+    { name: "speakerChair", labelKey: "search:filters.modals.perks.items.speakerChair" },
+    { name: "participantChairs", labelKey: "search:filters.modals.perks.items.participantChairs" },
+    { name: "participantDesks", labelKey: "search:filters.modals.perks.items.participantDesks" },
+    { name: "bottledWater", labelKey: "search:filters.modals.perks.items.bottledWater" },
+    { name: "waterCooler", labelKey: "search:filters.modals.perks.items.waterCooler" },
+    { name: "cups", labelKey: "search:filters.modals.perks.items.cups" }
   ],
   "Miscellaneous": [
-    { name: "nameTags", label: "Name tags" },
-    { name: "flipChart", label: "Flip chart" },
-    { name: "markers", label: "Markers" },
-    { name: "paper", label: "Paper" },
-    { name: "airConditioner", label: "Air conditioner" },
-    { name: "ventilation", label: "Ventilation system" },
-    { name: "signage", label: "Directional signage" },
-    { name: "registrationDesk", label: "Registration desk" }
+    { name: "nameTags", labelKey: "search:filters.modals.perks.items.nameTags" },
+    { name: "flipChart", labelKey: "search:filters.modals.perks.items.flipChart" },
+    { name: "markers", labelKey: "search:filters.modals.perks.items.markers" },
+    { name: "paper", labelKey: "search:filters.modals.perks.items.paper" },
+    { name: "airConditioner", labelKey: "search:filters.modals.perks.items.airConditioner" },
+    { name: "ventilation", labelKey: "search:filters.modals.perks.items.ventilation" },
+    { name: "signage", labelKey: "search:filters.modals.perks.items.signage" },
+    { name: "registrationDesk", labelKey: "search:filters.modals.perks.items.registrationDesk" }
   ],
   "Safety": [
-    { name: "fireExtinguisher", label: "Fire extinguisher" },
-    { name: "firstAidKit", label: "First aid kit" },
-    { name: "evacuationSigns", label: "Evacuation signs" }
+    { name: "fireExtinguisher", labelKey: "search:filters.modals.perks.items.fireExtinguisher" },
+    { name: "firstAidKit", labelKey: "search:filters.modals.perks.items.firstAidKit" },
+    { name: "evacuationSigns", labelKey: "search:filters.modals.perks.items.evacuationSigns" }
   ],
   "Services": [
-    { name: "catering", label: "Catering Available" },
-    { name: "coffee", label: "Coffee Service" },
-    { name: "parking", label: "On-site Parking" }
+    { name: "catering", labelKey: "search:filters.modals.perks.items.catering" },
+    { name: "coffee", labelKey: "search:filters.modals.perks.items.coffee" },
+    { name: "parking", labelKey: "search:filters.modals.perks.items.parking" }
   ]
 };
 
@@ -105,6 +106,8 @@ const ALL_PERKS_BY_CATEGORY = {
  * DRY: Centralized perks data and filtering logic
  */
 export const PerksFilterProvider = ({ children }) => {
+  const { t } = useTranslation();
+  
   // State for selected perks filter
   const [selectedPerks, setSelectedPerks] = useState([]);
   
@@ -151,9 +154,28 @@ export const PerksFilterProvider = ({ children }) => {
     const allPerks = Object.values(ALL_PERKS_BY_CATEGORY).flat();
     return MOST_RELEVANT_PERKS.map(perkName => {
       const perk = allPerks.find(p => p.name === perkName);
-      return perk || { name: perkName, label: perkName };
+      return perk ? {
+        ...perk,
+        label: t(perk.labelKey) || perk.name
+      } : { 
+        name: perkName, 
+        labelKey: `search:filters.modals.perks.items.${perkName}`,
+        label: t(`search:filters.modals.perks.items.${perkName}`) || perkName
+      };
     });
-  }, []);
+  }, [t]);
+
+  // Memoized all perks by category with translated labels
+  const allPerksByCategoryWithLabels = useMemo(() => {
+    const translatedCategories = {};
+    Object.entries(ALL_PERKS_BY_CATEGORY).forEach(([categoryName, perks]) => {
+      translatedCategories[categoryName] = perks.map(perk => ({
+        ...perk,
+        label: t(perk.labelKey) || perk.name
+      }));
+    });
+    return translatedCategories;
+  }, [t]);
 
   // Memoized filter function for places based on selected perks
   const filterPlacesByPerks = useCallback((places) => {
@@ -188,6 +210,7 @@ export const PerksFilterProvider = ({ children }) => {
     
     // Data
     relevantPerksWithLabels,
+    allPerksByCategoryWithLabels,
     allPerksByCategory: ALL_PERKS_BY_CATEGORY,
     mostRelevantPerks: MOST_RELEVANT_PERKS,
     
