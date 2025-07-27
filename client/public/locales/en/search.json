@@ -1,0 +1,215 @@
+{
+  "form": {
+    "when": "When?",
+    "price": "Price",
+    "attendees": "Attendees",
+    "size": "Size",
+    "search": "Search",
+    "placeholders": {
+      "when": "Anytime",
+      "price": "Any price",
+      "attendees": "Number of attendees",
+      "size": "Conference size"
+    },
+    "aria_labels": {
+      "select_dates": "Select dates and times",
+      "select_price": "Select price range",
+      "select_attendees": "Select attendees range",
+      "select_size": "Select size range",
+      "search": "Search"
+    },
+    "multiple_dates": "{{count}} dates selected",
+    "multiple_dates_short": "{{count}} dates"
+  },
+  "title": "Search Results",
+  "subtitle": "Find your perfect stay",
+  "noResults": "No results found",
+  "resultsCount": "{{count}} places found",
+  "resultsCount_plural": "{{count}} places found",
+  "searchPlaceholder": "Where are you going?",
+  "filters": {
+    "title": "Filters",
+    "priceRange": "Price range",
+    "propertyType": "Property type",
+    "amenities": "Amenities",
+    "guestCount": "Guest count",
+    "bedrooms": "Bedrooms",
+    "bathrooms": "Bathrooms",
+    "instantBook": "Instant booking",
+    "superhost": "Superhost",
+    "clearAll": "Clear all",
+    "apply": "Apply filters",
+    "modals": {
+      "dateTime": {
+        "title": "Select Dates & Times",
+        "startTime": "Start time",
+        "endTime": "End time",
+        "clearAll": "Clear all",
+        "apply": "Apply"
+      },
+      "price": {
+        "title": "Price Range",
+        "subtitle": "Total before taxes",
+        "min": "Minimum",
+        "max": "Maximum",
+        "range": "Price range",
+        "current": "Current filter",
+        "upTo": "Up to",
+        "upToFormat": "Up to {{amount}}",
+        "customRange": "Custom range",
+        "presets": {
+          "upTo1M": "Up to 1M",
+          "1M_3M": "1M - 3M",
+          "3M_5M": "3M - 5M",
+          "5M_10M": "5M - 10M",
+          "above10M": "10M+"
+        },
+        "placeholder": {
+          "min": "Min",
+          "max": "Max"
+        },
+        "validation": {
+          "minNegative": "Minimum price cannot be negative",
+          "maxNegative": "Maximum price cannot be negative",
+          "minGreaterThanMax": "Minimum price cannot be greater than maximum price",
+          "invalidRange": "Maximum must be greater than minimum",
+          "required": "Please enter valid price values"
+        },
+        "actions": {
+          "clear": "Clear",
+          "cancel": "Cancel",
+          "apply": "Done",
+          "close": "Close modal"
+        }
+      },
+      "attendees": {
+        "title": "Number of Attendees",
+        "subtitle": "How many people will be attending?",
+        "min": "Minimum attendees",
+        "max": "Maximum attendees",
+        "range": "Attendees range",
+        "current": "Current filter",
+        "upTo": "Up to",
+        "over": "Over",
+        "people": "people",
+        "upToFormat": "Up to {{count}} people",
+        "overFormat": "{{count}}+ people",
+        "rangeFormat": "{{min}} - {{max}} people",
+        "customRange": "Custom range",
+        "presets": {
+          "1_10": "1-10 people",
+          "11_25": "11-25 people",
+          "26_50": "26-50 people",
+          "51_100": "51-100 people",
+          "100plus": "Over 100 people"
+        },
+        "placeholder": {
+          "min": "Min",
+          "max": "Max"
+        },
+        "validation": {
+          "minNegative": "Minimum attendees cannot be less than 1",
+          "maxNegative": "Maximum attendees cannot be less than 1",
+          "minGreaterThanMax": "Minimum attendees cannot be greater than maximum attendees",
+          "invalidRange": "Maximum must be greater than minimum",
+          "required": "Please enter valid attendee values"
+        },
+        "actions": {
+          "clear": "Clear",
+          "cancel": "Cancel",
+          "apply": "Done",
+          "close": "Close modal"
+        }
+      },
+      "size": {
+        "title": "Conference Size",
+        "subtitle": "Choose the space size you need",
+        "min": "Minimum size",
+        "max": "Maximum size",
+        "range": "Size range",
+        "current": "Current filter",
+        "upToFormat": "Up to {{size}} m²",
+        "overFormat": "{{size}}+ m²",
+        "rangeFormat": "{{min}} - {{max}} m²",
+        "customRange": "Custom range",
+        "presets": {
+          "small": "Small • ~50 m²",
+          "medium": "Medium • 50–100 m²",
+          "large": "Large • 100–300 m²",
+          "extraLarge": "Extra‑Large • 300–700 m²"
+        },
+        "placeholder": {
+          "min": "Min",
+          "max": "Max"
+        },
+        "validation": {
+          "minNegative": "Minimum size cannot be negative",
+          "maxNegative": "Maximum size cannot be negative",
+          "minGreaterThanMax": "Minimum size cannot be greater than maximum size",
+          "invalidRange": "Maximum must be greater than minimum",
+          "required": "Please enter valid size values"
+        },
+        "actions": {
+          "clear": "Clear",
+          "cancel": "Cancel",
+          "apply": "Done",
+          "close": "Close modal"
+        }
+      },
+      "perks": {
+        "title": "Amenities & Perks",
+        "subtitle": "What amenities do you need?",
+        "categories": {
+          "basic": "Basic amenities",
+          "tech": "Technology",
+          "comfort": "Comfort",
+          "accessibility": "Accessibility"
+        },
+        "clearAll": "Clear all",
+        "apply": "Apply"
+      },
+      "policy": {
+        "title": "Booking Policies",
+        "subtitle": "Choose your preferred policies",
+        "instantBook": "Instant booking",
+        "instantBookDesc": "Book immediately without waiting for approval",
+        "flexibleCancellation": "Flexible cancellation",
+        "flexibleCancellationDesc": "Cancel up to 24 hours before",
+        "verified": "Verified hosts only",
+        "verifiedDesc": "Only show verified property hosts",
+        "clearAll": "Clear all",
+        "apply": "Apply"
+      }
+    }
+  },
+  "sorting": {
+    "title": "Sort by",
+    "recommended": "Recommended",
+    "priceAsc": "Price: Low to High",
+    "priceDesc": "Price: High to Low",
+    "rating": "Highest Rated",
+    "newest": "Newest First"
+  },
+  "map": {
+    "showMap": "Show Map",
+    "hideMap": "Hide Map",
+    "listView": "List View",
+    "mapView": "Map View"
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {{page}}",
+    "loadMore": "Load More Results"
+  },
+  "error": {
+    "loadFailed": "Failed to load search results",
+    "retry": "Try Again",
+    "noConnection": "Check your internet connection"
+  },
+  "loading": {
+    "searching": "Searching...",
+    "loadingMore": "Loading more results...",
+    "applying": "Applying filters..."
+  }
+}

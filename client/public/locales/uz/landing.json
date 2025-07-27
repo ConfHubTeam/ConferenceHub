@@ -1,0 +1,36 @@
+{
+  "hero": {
+    "title_line_1": "Joy Topish",
+    "title_line_2": "Yanada Onson",
+    "subtitle": "Keyingi tadbiringiz uchun mukammal joyni toping va bron qiling",
+    "loading": "GetSpace yuklanmoqda..."
+  },
+  "search": {
+    "placeholder": "Joylarni qidiring...",
+    "button": "Qidirish",
+    "filters": {
+      "dates": "Sanalar",
+      "time": "Vaqt",
+      "price": "Narx",
+      "attendees": "Ishtirokchilar",
+      "size": "O'lcham"
+    }
+  },
+  "features": {
+    "instant_booking": "Tezkor bron qilish",
+    "verified_venues": "Tasdiqlangan joylar",
+    "secure_payments": "Xavfsiz to'lovlar",
+    "24_7_support": "24/7 qo'llab-quvvatlash"
+  },
+  "cta": {
+    "explore_venues": "Joylarni o'rganish",
+    "get_started": "Boshlash",
+    "learn_more": "Ko'proq o'rganish"
+  },
+  "stats": {
+    "venues": "joylar",
+    "cities": "shaharlar",
+    "events": "tadbirlar o'tkazildi",
+    "satisfied_customers": "mamnun mijozlar"
+  }
+}

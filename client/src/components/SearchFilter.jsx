@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useDateTimeFilter } from "../contexts/DateTimeFilterContext";
 import { usePriceFilter } from "../contexts/PriceFilterContext";
 import { useAttendeesFilter } from "../contexts/AttendeesFilterContext";
@@ -18,19 +19,10 @@ import SizeFilterModal from "./SizeFilterModal";
 export default function SearchFilter({ 
   onSearch, 
   className = "",
-  placeholder = {
-    when: "Anytime",
-    price: "Any price",
-    attendees: "Number of attendees",
-    size: "Conference size"
-  },
-  initialValues = {
-    when: "Anytime",
-    price: "Any price",
-    attendees: "",
-    size: ""
-  }
+  placeholder = {},
+  initialValues = {}
 }) {
+  const { t } = useTranslation("search");
   const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
   const [isDateTimeModalOpen, setIsDateTimeModalOpen] = useState(false);
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
@@ -108,7 +100,7 @@ export default function SearchFilter({
           {/* When? - Date/Time Filter Button */}
           <div className="flex-1 px-4 sm:px-4 lg:px-5 py-2 sm:py-2 lg:py-2.5 hover:bg-gray-50 transition-colors duration-200 bg-white">
             <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              When?
+              {t("form.when")}
             </label>
             <button
               type="button"
@@ -116,16 +108,16 @@ export default function SearchFilter({
               className={`w-full text-left text-sm sm:text-base lg:text-lg bg-transparent outline-none focus:ring-0 border-0 font-medium pt-0 pl-0 hover:text-brand-purple transition-colors truncate ${
                 hasActiveDateTimeFilter ? 'text-orange-500' : 'text-gray-400'
               }`}
-              aria-label="Select dates and times"
+              aria-label={t("form.aria_labels.select_dates")}
             >
-              {getFormattedDateTime() || placeholder.when}
+              {getFormattedDateTime() || t("form.placeholders.when")}
             </button>
           </div>
 
           {/* Price - Price Filter Button */}
           <div className="flex-1 px-4 sm:px-4 lg:px-5 py-2 sm:py-2 lg:py-2.5 hover:bg-gray-50 transition-colors duration-200 bg-white border-t lg:border-t-0 lg:border-l border-gray-100">
             <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              Price
+              {t("form.price")}
             </label>
             <button
               type="button"
@@ -133,16 +125,16 @@ export default function SearchFilter({
               className={`w-full text-left text-sm sm:text-base lg:text-lg bg-transparent outline-none focus:ring-0 border-0 font-medium pt-0 pl-0 hover:text-brand-purple transition-colors truncate ${
                 hasActivePriceFilter ? 'text-orange-500' : 'text-gray-400'
               }`}
-              aria-label="Select price range"
+              aria-label={t("form.aria_labels.select_price")}
             >
-              {getFormattedPriceRange() || placeholder.price}
+              {getFormattedPriceRange() || t("form.placeholders.price")}
             </button>
           </div>
 
           {/* Attendees - Attendees Filter Button */}
           <div className="flex-1 px-4 sm:px-4 lg:px-5 py-2 sm:py-2 lg:py-2.5 hover:bg-gray-50 transition-colors duration-200 bg-white border-t lg:border-t-0 lg:border-l border-gray-100">
             <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              Attendees
+              {t("form.attendees")}
             </label>
             <button
               type="button"
@@ -150,16 +142,16 @@ export default function SearchFilter({
               className={`w-full text-left text-sm sm:text-base lg:text-lg bg-transparent outline-none focus:ring-0 border-0 font-medium pt-0 pl-0 hover:text-brand-purple transition-colors truncate ${
                 hasActiveAttendeesFilter ? 'text-orange-500' : 'text-gray-400'
               }`}
-              aria-label="Select attendees range"
+              aria-label={t("form.aria_labels.select_attendees")}
             >
-              {getFormattedAttendeesRange() || placeholder.attendees}
+              {getFormattedAttendeesRange() || t("form.placeholders.attendees")}
             </button>
           </div>
 
           {/* Size - Size Filter Button */}
           <div className="flex-1 px-4 sm:px-4 lg:px-5 py-2 sm:py-2 lg:py-2.5 hover:bg-gray-50 transition-colors duration-200 bg-white border-t lg:border-t-0 lg:border-l border-gray-100">
             <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              Size
+              {t("form.size")}
             </label>
             <button
               type="button"
@@ -167,9 +159,9 @@ export default function SearchFilter({
               className={`w-full text-left text-sm sm:text-base lg:text-lg bg-transparent outline-none focus:ring-0 border-0 font-medium pt-0 pl-0 hover:text-brand-purple transition-colors truncate ${
                 hasActiveSizeFilter ? 'text-orange-500' : 'text-gray-400'
               }`}
-              aria-label="Select size range"
+              aria-label={t("form.aria_labels.select_size")}
             >
-              {getFormattedSizeRange() || placeholder.size}
+              {getFormattedSizeRange() || t("form.placeholders.size")}
             </button>
           </div>
 
@@ -178,9 +170,9 @@ export default function SearchFilter({
             <button
               type="submit"
               className="w-full lg:w-auto bg-black hover:bg-gray-800 text-white px-5 lg:px-5 py-2 sm:py-2 lg:py-2.5 rounded-lg font-semibold text-sm sm:text-base transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 flex items-center justify-center space-x-2 shadow-md"
-              aria-label="Search"
+              aria-label={t("form.aria_labels.search")}
             >
-              <span>Search</span>
+              <span>{t("form.search")}</span>
               <svg 
                 className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" 
                 fill="none" 

@@ -25,11 +25,11 @@ export const useSizeFilter = () => {
  * Predefined size ranges in square meters
  */
 export const SIZE_RANGES = [
-  { id: "small", label: "Small • ~50 m²", min: 0, max: 50 },
-  { id: "medium", label: "Medium • 50–100 m²", min: 50, max: 100 },
-  { id: "large", label: "Large • 100–300 m²", min: 100, max: 300 },
-  { id: "extra-large", label: "Extra‑Large • 300–700 m²", min: 300, max: 700 },
-  { id: "custom", label: "Custom", min: null, max: null }
+  { id: "small", labelKey: "filters.modals.size.presets.small", min: 0, max: 50 },
+  { id: "medium", labelKey: "filters.modals.size.presets.medium", min: 50, max: 100 },
+  { id: "large", labelKey: "filters.modals.size.presets.large", min: 100, max: 300 },
+  { id: "extra-large", labelKey: "filters.modals.size.presets.extraLarge", min: 300, max: 700 },
+  { id: "custom", labelKey: "filters.modals.size.customRange", min: null, max: null, isCustom: true }
 ];
 
 /**
@@ -151,7 +151,16 @@ export const SizeFilterProvider = ({ children }) => {
     );
 
     if (matchingRange && matchingRange.id !== "custom") {
-      return matchingRange.label;
+      // Return a basic range format since this context doesn't have access to translations
+      if (matchingRange.id === "small") {
+        return "Small • ~50 m²";
+      } else if (matchingRange.id === "medium") {
+        return "Medium • 50–100 m²";
+      } else if (matchingRange.id === "large") {
+        return "Large • 100–300 m²";
+      } else if (matchingRange.id === "extra-large") {
+        return "Extra‑Large • 300–700 m²";
+      }
     }
 
     // Custom formatting

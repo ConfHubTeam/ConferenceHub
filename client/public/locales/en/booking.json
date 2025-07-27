@@ -1,0 +1,82 @@
+{
+  "form": {
+    "checkIn": "Check in",
+    "checkOut": "Check out",
+    "guests": "Guests",
+    "adults": "Adults",
+    "children": "Children",
+    "infants": "Infants",
+    "selectDates": "Select dates",
+    "selectGuests": "Select guests",
+    "instantBook": "Instant Book",
+    "reserve": "Reserve",
+    "requestToBook": "Request to book",
+    "bookingFee": "Booking fee",
+    "serviceFee": "Service fee",
+    "cleaningFee": "Cleaning fee",
+    "taxes": "Taxes",
+    "total": "Total",
+    "totalBefore": "Total before taxes",
+    "pricePerNight": "{{price, currency}} per night",
+    "priceRange": "{{minPrice, currency}} - {{maxPrice, currency}} per night",
+    "guestCount": "{{count}} guest",
+    "guestCount_plural": "{{count}} guests",
+    "nightCount": "{{count}} night",
+    "nightCount_plural": "{{count}} nights",
+    "adultCount": "{{count}} adult",
+    "adultCount_plural": "{{count}} adults",
+    "childCount": "{{count}} child",
+    "childCount_plural": "{{count}} children",
+    "infantCount": "{{count}} infant",
+    "infantCount_plural": "{{count}} infants"
+  },
+  "status": {
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "cancelled": "Cancelled",
+    "completed": "Completed",
+    "declined": "Declined"
+  },
+  "details": {
+    "bookingId": "Booking ID: {{id}}",
+    "hostName": "Host: {{name}}",
+    "propertyName": "Property: {{name}}",
+    "bookingDate": "Booked on {{date, datetime}}",
+    "checkInDate": "Check-in: {{date, datetime(weekday: long; month: long; day: numeric)}}",
+    "checkOutDate": "Check-out: {{date, datetime(weekday: long; month: long; day: numeric)}}",
+    "duration": "{{nights}} night stay",
+    "duration_plural": "{{nights}} nights stay",
+    "totalAmount": "Total: {{amount, currency}}",
+    "paidAmount": "Paid: {{amount, currency}}",
+    "remainingAmount": "Remaining: {{amount, currency}}",
+    "rating": "Rating: {{rating, rating}}",
+    "distance": "{{distance, distance(unit: km)}} from city center"
+  },
+  "actions": {
+    "viewDetails": "View details",
+    "editBooking": "Edit booking",
+    "cancelBooking": "Cancel booking",
+    "contactHost": "Contact host",
+    "leaveReview": "Leave a review",
+    "reportIssue": "Report an issue",
+    "downloadReceipt": "Download receipt",
+    "addToCalendar": "Add to calendar"
+  },
+  "notifications": {
+    "bookingConfirmed": "Your booking has been confirmed!",
+    "bookingCancelled": "Your booking has been cancelled",
+    "bookingDeclined": "Your booking request was declined",
+    "paymentRequired": "Payment is required to complete your booking",
+    "checkInReminder": "Check-in is in {{hours, duration(unit: hour)}}",
+    "checkOutReminder": "Check-out is in {{hours, duration(unit: hour)}}",
+    "reviewReminder": "Don't forget to review your stay"
+  },
+  "errors": {
+    "unavailableDates": "Selected dates are not available",
+    "maxGuestsExceeded": "Maximum {{max}} guests allowed",
+    "minStayRequired": "Minimum {{nights}} night stay required",
+    "maxStayExceeded": "Maximum {{nights}} nights stay allowed",
+    "paymentFailed": "Payment failed. Please try again.",
+    "bookingFailed": "Booking failed. Please contact support."
+  }
+}

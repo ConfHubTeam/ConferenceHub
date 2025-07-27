@@ -1,0 +1,82 @@
+{
+  "form": {
+    "checkIn": "Заезд",
+    "checkOut": "Выезд",
+    "guests": "Гости",
+    "adults": "Взрослые",
+    "children": "Дети",
+    "infants": "Младенцы",
+    "selectDates": "Выберите даты",
+    "selectGuests": "Выберите гостей",
+    "instantBook": "Мгновенное бронирование",
+    "reserve": "Забронировать",
+    "requestToBook": "Запросить бронирование",
+    "bookingFee": "Сбор за бронирование",
+    "serviceFee": "Сервисный сбор",
+    "cleaningFee": "Сбор за уборку",
+    "taxes": "Налоги",
+    "total": "Итого",
+    "totalBefore": "Итого до налогов",
+    "pricePerNight": "{{price, currency}} за ночь",
+    "priceRange": "{{minPrice, currency}} - {{maxPrice, currency}} за ночь",
+    "guestCount": "{{count}} гость",
+    "guestCount_plural": "{{count}} гостей",
+    "nightCount": "{{count}} ночь",
+    "nightCount_plural": "{{count}} ночей",
+    "adultCount": "{{count}} взрослый",
+    "adultCount_plural": "{{count}} взрослых",
+    "childCount": "{{count}} ребёнок",
+    "childCount_plural": "{{count}} детей",
+    "infantCount": "{{count}} младенец",
+    "infantCount_plural": "{{count}} младенцев"
+  },
+  "status": {
+    "pending": "В ожидании",
+    "confirmed": "Подтверждено",
+    "cancelled": "Отменено",
+    "completed": "Завершено",
+    "declined": "Отклонено"
+  },
+  "details": {
+    "bookingId": "ID бронирования: {{id}}",
+    "hostName": "Хозяин: {{name}}",
+    "propertyName": "Жильё: {{name}}",
+    "bookingDate": "Забронировано {{date, datetime}}",
+    "checkInDate": "Заезд: {{date, datetime(weekday: long; month: long; day: numeric)}}",
+    "checkOutDate": "Выезд: {{date, datetime(weekday: long; month: long; day: numeric)}}",
+    "duration": "Проживание {{nights}} ночь",
+    "duration_plural": "Проживание {{nights}} ночей",
+    "totalAmount": "Итого: {{amount, currency}}",
+    "paidAmount": "Оплачено: {{amount, currency}}",
+    "remainingAmount": "Осталось: {{amount, currency}}",
+    "rating": "Рейтинг: {{rating, rating}}",
+    "distance": "{{distance, distance(unit: km)}} от центра города"
+  },
+  "actions": {
+    "viewDetails": "Подробности",
+    "editBooking": "Изменить бронирование",
+    "cancelBooking": "Отменить бронирование",
+    "contactHost": "Связаться с хозяином",
+    "leaveReview": "Оставить отзыв",
+    "reportIssue": "Сообщить о проблеме",
+    "downloadReceipt": "Скачать чек",
+    "addToCalendar": "Добавить в календарь"
+  },
+  "notifications": {
+    "bookingConfirmed": "Ваше бронирование подтверждено!",
+    "bookingCancelled": "Ваше бронирование отменено",
+    "bookingDeclined": "Ваш запрос на бронирование отклонён",
+    "paymentRequired": "Для завершения бронирования требуется оплата",
+    "checkInReminder": "Заезд через {{hours, duration(unit: hour)}}",
+    "checkOutReminder": "Выезд через {{hours, duration(unit: hour)}}",
+    "reviewReminder": "Не забудьте оставить отзыв о проживании"
+  },
+  "errors": {
+    "unavailableDates": "Выбранные даты недоступны",
+    "maxGuestsExceeded": "Максимум {{max}} гостей разрешено",
+    "minStayRequired": "Минимальное проживание {{nights}} ночей",
+    "maxStayExceeded": "Максимальное проживание {{nights}} ночей",
+    "paymentFailed": "Оплата не прошла. Попробуйте ещё раз.",
+    "bookingFailed": "Бронирование не удалось. Обратитесь в поддержку."
+  }
+}

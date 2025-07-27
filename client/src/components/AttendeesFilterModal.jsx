@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useSearchParams as useRouterSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAttendeesFilter, ATTENDEES_RANGES } from "../contexts/AttendeesFilterContext";
 
 /**
@@ -14,6 +15,7 @@ import { useAttendeesFilter, ATTENDEES_RANGES } from "../contexts/AttendeesFilte
  * @param {Function} props.onClose - Function to call when closing the modal
  */
 export default function AttendeesFilterModal({ isOpen, onClose }) {
+  const { t } = useTranslation("search");
   const {
     minAttendees,
     maxAttendees,
@@ -139,17 +141,17 @@ export default function AttendeesFilterModal({ isOpen, onClose }) {
     
     // Validate inputs
     if (min !== null && min < 1) {
-      alert("Minimum attendees cannot be less than 1");
+      alert(t("filters.modals.attendees.validation.minNegative"));
       return;
     }
     
     if (max !== null && max < 1) {
-      alert("Maximum attendees cannot be less than 1");
+      alert(t("filters.modals.attendees.validation.maxNegative"));
       return;
     }
     
     if (min !== null && max !== null && min > max) {
-      alert("Minimum attendees cannot be greater than maximum attendees");
+      alert(t("filters.modals.attendees.validation.minGreaterThanMax"));
       return;
     }
     
@@ -224,7 +226,7 @@ export default function AttendeesFilterModal({ isOpen, onClose }) {
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
             </svg>
-            Attendees Range
+            {t("filters.modals.attendees.title")}
           </h2>
           <button 
             onClick={onClose}
@@ -258,11 +260,11 @@ export default function AttendeesFilterModal({ isOpen, onClose }) {
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-2 text-gray-600">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
                     </svg>
-                    {range.label}
+                    {range.labelKey ? t(range.labelKey) : range.label}
                   </div>
                   {!range.isCustom && range.id !== "custom" && (
                     <div className="text-xs sm:text-sm text-gray-500 mt-1">
-                      {range.max ? `Up to ${range.max} people` : `${range.min}+ people`}
+                      {range.max ? t("filters.modals.attendees.upToFormat", { count: range.max }) : t("filters.modals.attendees.overFormat", { count: range.min })}
                     </div>
                   )}
                 </button>
@@ -277,14 +279,14 @@ export default function AttendeesFilterModal({ isOpen, onClose }) {
                 {/* Minimum Attendees Input */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Minimum attendees
+                    {t("filters.modals.attendees.min")}
                   </label>
                   <div className="relative">
                     <input
                       type="text"
                       value={tempMinAttendees}
                       onChange={(e) => handleAttendeesInput(e.target.value, "min")}
-                      placeholder="Min"
+                      placeholder={t("filters.modals.attendees.placeholder.min")}
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
                     />
                     <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
@@ -298,14 +300,14 @@ export default function AttendeesFilterModal({ isOpen, onClose }) {
                 {/* Maximum Attendees Input */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Maximum attendees
+                    {t("filters.modals.attendees.max")}
                   </label>
                   <div className="relative">
                     <input
                       type="text"
                       value={tempMaxAttendees}
                       onChange={(e) => handleAttendeesInput(e.target.value, "max")}
-                      placeholder="Max"
+                      placeholder={t("filters.modals.attendees.placeholder.max")}
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
                     />
                     <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
@@ -321,13 +323,13 @@ export default function AttendeesFilterModal({ isOpen, onClose }) {
               {(tempMinAttendees || tempMaxAttendees) && (
                 <div className="p-3 bg-gray-50 rounded-lg">
                   <span className="text-sm text-gray-600">
-                    Attendees range: {" "}
+                    {t("filters.modals.attendees.range")}: {" "}
                     <span className="font-medium">
                       {tempMinAttendees && tempMaxAttendees
-                        ? `${tempMinAttendees} - ${tempMaxAttendees} attendees`
+                        ? t("filters.modals.attendees.rangeFormat", { min: tempMinAttendees, max: tempMaxAttendees })
                         : tempMinAttendees
-                        ? `${tempMinAttendees}+ attendees`
-                        : `Up to ${tempMaxAttendees} attendees`
+                        ? t("filters.modals.attendees.overFormat", { count: tempMinAttendees })
+                        : t("filters.modals.attendees.upToFormat", { count: tempMaxAttendees })
                       }
                     </span>
                   </span>
@@ -340,7 +342,7 @@ export default function AttendeesFilterModal({ isOpen, onClose }) {
           {hasActiveAttendeesFilter && !showCustomRange && (
             <div className="p-3 bg-blue-50 rounded-lg">
               <span className="text-sm text-blue-800">
-                Current filter: <span className="font-medium">{getFormattedAttendeesRange()}</span>
+                {t("filters.modals.attendees.current")}: <span className="font-medium">{getFormattedAttendeesRange()}</span>
               </span>
             </div>
           )}
@@ -352,20 +354,20 @@ export default function AttendeesFilterModal({ isOpen, onClose }) {
             onClick={handleClear}
             className="text-brand-purple font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-brand-purple px-2 py-1 rounded-md text-sm sm:text-base"
           >
-            Clear
+            {t("filters.modals.attendees.actions.clear")}
           </button>
           <div className="flex gap-3">
             <button 
               onClick={onClose}
               className="px-4 sm:px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-purple transition-colors text-sm sm:text-base"
             >
-              Cancel
+              {t("filters.modals.attendees.actions.cancel")}
             </button>
             <button 
               onClick={handleApply}
               className="bg-brand-orange text-white rounded-lg px-4 sm:px-6 py-2 font-medium hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-orange transition-colors text-sm sm:text-base"
             >
-              Done
+              {t("filters.modals.attendees.actions.apply")}
             </button>
           </div>
         </div>

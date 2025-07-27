@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useSearchParams as useRouterSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { usePriceFilter } from "../contexts/PriceFilterContext";
 import { useCurrency } from "../contexts/CurrencyContext";
 import { formatCurrency, getCurrencySymbol, convertCurrency } from "../utils/currencyUtils";
@@ -17,6 +18,7 @@ import { formatCurrency, getCurrencySymbol, convertCurrency } from "../utils/cur
  * @param {Function} props.onClose - Function to call when closing the modal
  */
 export default function PriceFilterModal({ isOpen, onClose }) {
+  const { t } = useTranslation("search");
   const {
     minPrice,
     maxPrice,
@@ -95,7 +97,7 @@ export default function PriceFilterModal({ isOpen, onClose }) {
           if (convertedMax) convertedMax = Math.round(convertedMax / 10) * 10; // Round to nearest $10
           
           if (basePreset.id === "up-to-1mln") {
-            label = `Up to $100`;
+            label = t("filters.modals.price.upToFormat", { value: "$100" });
             convertedMin = null; // No minimum for "up to" filter
             convertedMax = 100; // Display value for better UX
           } else if (basePreset.id === "1mln-3mln") {
@@ -112,7 +114,7 @@ export default function PriceFilterModal({ isOpen, onClose }) {
           if (convertedMax) convertedMax = Math.round(convertedMax / 100) * 100; // Round to nearest 100 RUB
           
           if (basePreset.id === "up-to-1mln") {
-            label = `Up to 8,000 ₽`;
+            label = t("filters.modals.price.upToFormat", { value: "8,000 ₽" });
             convertedMin = null; // No minimum for "up to" filter
             convertedMax = 8000; // Display value for better UX
           } else if (basePreset.id === "1mln-3mln") {
@@ -125,13 +127,13 @@ export default function PriceFilterModal({ isOpen, onClose }) {
             convertedMax = 47000;
           }
         } else if (currency.charCode === "UZS") {
-          // Keep original UZS values and formatting
+          // Keep original UZS values and use preset translation keys
           if (basePreset.id === "up-to-1mln") {
-            label = "Up to 1 mln so'm";
+            label = t("filters.modals.price.presets.upTo1M");
           } else if (basePreset.id === "1mln-3mln") {
-            label = "1 mln – 3 mln so'm";
+            label = t("filters.modals.price.presets.1M_3M");
           } else if (basePreset.id === "3mln-6mln") {
-            label = "3 mln – 6 mln so'm";
+            label = t("filters.modals.price.presets.3M_5M");
           }
           convertedMin = basePreset.baseMin || null; // Use null if baseMin doesn't exist
           convertedMax = basePreset.baseMax;
@@ -139,7 +141,7 @@ export default function PriceFilterModal({ isOpen, onClose }) {
           // For other currencies, use generic formatting
           const symbol = getCurrencySymbol(currency);
           if (basePreset.id === "up-to-1mln") {
-            label = `Up to ${formatCurrency(convertedMax, currency)} ${symbol}`;
+            label = t("filters.modals.price.upToFormat", { value: `${formatCurrency(convertedMax, currency)} ${symbol}` });
           } else {
             label = `${formatCurrency(convertedMin, currency)} – ${formatCurrency(convertedMax, currency)} ${symbol}`;
           }
@@ -157,7 +159,7 @@ export default function PriceFilterModal({ isOpen, onClose }) {
       // Add custom range option
       presets.push({
         id: "custom",
-        label: "Custom range",
+        label: t("filters.modals.price.customRange"),
         min: null,
         max: null,
         currency: null,
@@ -171,7 +173,7 @@ export default function PriceFilterModal({ isOpen, onClose }) {
       return [
         {
           id: "custom",
-          label: "Custom range",
+          label: t("filters.modals.price.customRange"),
           min: null,
           max: null,
           currency: null,
@@ -179,7 +181,7 @@ export default function PriceFilterModal({ isOpen, onClose }) {
         }
       ];
     }
-  }, []);
+  }, [t]);
 
   // Update dynamic presets when currency changes
   useEffect(() => {
@@ -294,17 +296,17 @@ export default function PriceFilterModal({ isOpen, onClose }) {
     
     // Validate inputs
     if (min !== null && min < 0) {
-      alert("Minimum price cannot be negative");
+      alert(t("filters.modals.price.validation.minNegative"));
       return;
     }
     
     if (max !== null && max < 0) {
-      alert("Maximum price cannot be negative");
+      alert(t("filters.modals.price.validation.maxNegative"));
       return;
     }
     
     if (min !== null && max !== null && min > max) {
-      alert("Minimum price cannot be greater than maximum price");
+      alert(t("filters.modals.price.validation.minGreaterThanMax"));
       return;
     }
     
@@ -377,11 +379,11 @@ export default function PriceFilterModal({ isOpen, onClose }) {
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b flex-shrink-0 bg-gray-50">
-          <h2 className="text-lg sm:text-xl font-semibold text-brand-purple">Price Range</h2>
+          <h2 className="text-lg sm:text-xl font-semibold text-brand-purple">{t("filters.modals.price.title")}</h2>
           <button 
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-200 transition-colors"
-            aria-label="Close modal"
+            aria-label={t("filters.modals.price.actions.close")}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -426,14 +428,14 @@ export default function PriceFilterModal({ isOpen, onClose }) {
                 {/* Minimum Price Input */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Minimum price
+                    {t("filters.modals.price.min")}
                   </label>
                   <div className="relative">
                     <input
                       type="text"
                       value={tempMinPrice}
                       onChange={(e) => handlePriceInput(e.target.value, "min")}
-                      placeholder="Min"
+                      placeholder={t("filters.modals.price.placeholder.min")}
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
                     />
                     {selectedCurrency && (
@@ -447,14 +449,14 @@ export default function PriceFilterModal({ isOpen, onClose }) {
                 {/* Maximum Price Input */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Maximum price
+                    {t("filters.modals.price.max")}
                   </label>
                   <div className="relative">
                     <input
                       type="text"
                       value={tempMaxPrice}
                       onChange={(e) => handlePriceInput(e.target.value, "max")}
-                      placeholder="Max"
+                      placeholder={t("filters.modals.price.placeholder.max")}
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
                     />
                     {selectedCurrency && (
@@ -470,13 +472,13 @@ export default function PriceFilterModal({ isOpen, onClose }) {
               {(tempMinPrice || tempMaxPrice) && (
                 <div className="p-3 bg-gray-50 rounded-lg">
                   <span className="text-sm text-gray-600">
-                    Price range: {" "}
+                    {t("filters.modals.price.range")}: {" "}
                     <span className="font-medium">
                       {tempMinPrice && tempMaxPrice
                         ? `${formatPlaceholder(parseFloat(tempMinPrice))} - ${formatPlaceholder(parseFloat(tempMaxPrice))}`
                         : tempMinPrice
                         ? `${formatPlaceholder(parseFloat(tempMinPrice))}+`
-                        : `Up to ${formatPlaceholder(parseFloat(tempMaxPrice))}`
+                        : t("filters.modals.price.upToFormat", { value: formatPlaceholder(parseFloat(tempMaxPrice)) })
                       } {selectedCurrency && getCurrencySymbol(selectedCurrency)}
                     </span>
                   </span>
@@ -489,7 +491,7 @@ export default function PriceFilterModal({ isOpen, onClose }) {
           {hasActivePriceFilter && !showCustomRange && (
             <div className="p-3 bg-blue-50 rounded-lg">
               <span className="text-sm text-blue-800">
-                Current filter: <span className="font-medium">{getFormattedPriceRange()}</span>
+                {t("filters.modals.price.current")}: <span className="font-medium">{getFormattedPriceRange()}</span>
               </span>
             </div>
           )}
@@ -501,20 +503,20 @@ export default function PriceFilterModal({ isOpen, onClose }) {
             onClick={handleClear}
             className="text-brand-purple font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-brand-purple px-2 py-1 rounded-md text-sm sm:text-base"
           >
-            Clear
+            {t("filters.modals.price.actions.clear")}
           </button>
           <div className="flex gap-3">
             <button 
               onClick={onClose}
               className="px-4 sm:px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-purple transition-colors text-sm sm:text-base"
             >
-              Cancel
+              {t("filters.modals.price.actions.cancel")}
             </button>
             <button 
               onClick={handleApply}
               className="bg-brand-orange text-white rounded-lg px-4 sm:px-6 py-2 font-medium hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-orange transition-colors text-sm sm:text-base"
             >
-              Done
+              {t("filters.modals.price.actions.apply")}
             </button>
           </div>
         </div>

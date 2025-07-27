@@ -4,6 +4,7 @@ import { UserContext } from "./UserContext";
 import { useCurrency } from "../contexts/CurrencyContext";
 import CurrencySelector from "./CurrencySelector";
 import NotificationBell from "./NotificationBell";
+import LanguageSelector from "./LanguageSelector/LanguageSelector";
 
 export default function Header() {
   const {user} = useContext(UserContext);
@@ -86,6 +87,16 @@ export default function Header() {
           />
         </div>
         
+        {/* Language Selector - clearly separated from currency */}
+        <div className="hidden md:block">
+          <LanguageSelector 
+            variant="compact"
+            showFlag={true}
+            showText={false}
+            className="border-l border-gray-300 pl-2 ml-2"
+          />
+        </div>
+        
         {/* Hamburger menu button - only shown on mobile */}
         <button 
           ref={menuButtonRef}
@@ -158,6 +169,18 @@ export default function Header() {
                   selectedCurrency={selectedCurrency}
                   onChange={changeCurrency}
                   availableCurrencies={availableCurrencies}
+                />
+              </div>
+            </div>
+            
+            {/* Language selector */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Language</label>
+              <div className="max-w-full">
+                <LanguageSelector 
+                  variant="dropdown"
+                  showFlag={true}
+                  showText={true}
                 />
               </div>
             </div>

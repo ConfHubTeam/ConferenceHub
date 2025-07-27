@@ -25,12 +25,12 @@ export const useAttendeesFilter = () => {
  * Predefined attendees ranges
  */
 export const ATTENDEES_RANGES = [
-  { id: "1-10", label: "1 to 10", min: 1, max: 10 },
-  { id: "11-25", label: "11 to 25", min: 11, max: 25 },
-  { id: "26-50", label: "26 to 50", min: 26, max: 50 },
-  { id: "51-100", label: "51 to 100", min: 51, max: 100 },
-  { id: "100+", label: "Over 100", min: 101, max: null },
-  { id: "custom", label: "Custom", min: null, max: null }
+  { id: "1-10", labelKey: "filters.modals.attendees.presets.1_10", min: 1, max: 10 },
+  { id: "11-25", labelKey: "filters.modals.attendees.presets.11_25", min: 11, max: 25 },
+  { id: "26-50", labelKey: "filters.modals.attendees.presets.26_50", min: 26, max: 50 },
+  { id: "51-100", labelKey: "filters.modals.attendees.presets.51_100", min: 51, max: 100 },
+  { id: "100+", labelKey: "filters.modals.attendees.presets.100plus", min: 101, max: null },
+  { id: "custom", labelKey: "filters.modals.attendees.customRange", min: null, max: null, isCustom: true }
 ];
 
 /**
@@ -152,7 +152,12 @@ export const AttendeesFilterProvider = ({ children }) => {
     );
 
     if (matchingRange && matchingRange.id !== "custom") {
-      return matchingRange.label;
+      // Return a basic range format since this context doesn't have access to translations
+      if (matchingRange.max === null) {
+        return `${matchingRange.min}+ attendees`;
+      } else {
+        return `${matchingRange.min}-${matchingRange.max} attendees`;
+      }
     }
 
     // Custom formatting

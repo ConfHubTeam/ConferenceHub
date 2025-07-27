@@ -1,0 +1,215 @@
+{
+  "form": {
+    "when": "Qachon?",
+    "price": "Narx",
+    "attendees": "Ishtirokchilar",
+    "size": "O'lcham",
+    "search": "Qidirish",
+    "placeholders": {
+      "when": "Har qanday vaqt",
+      "price": "Har qanday narx",
+      "attendees": "Ishtirokchilar soni",
+      "size": "Konferentsiya o'lchami"
+    },
+    "aria_labels": {
+      "select_dates": "Sana va vaqtni tanlang",
+      "select_price": "Narx oralig'ini tanlang",
+      "select_attendees": "Ishtirokchilar sonini tanlang",
+      "select_size": "O'lchamni tanlang",
+      "search": "Qidirish"
+    },
+    "multiple_dates": "{{count}} ta sana tanlandi",
+    "multiple_dates_short": "{{count}} ta sana"
+  },
+  "title": "Qidiruv natijalari",
+  "subtitle": "Dam olish uchun mukammal joy toping",
+  "noResults": "Hech narsa topilmadi",
+  "resultsCount": "{{count}} ta joy topildi",
+  "resultsCount_plural": "{{count}} ta joy topildi",
+  "searchPlaceholder": "Qayerga bormoqchisiz?",
+  "filters": {
+    "title": "Filtrlar",
+    "priceRange": "Narx oralig'i",
+    "propertyType": "Mulk turi",
+    "amenities": "Qulayliklar",
+    "guestCount": "Mehmonlar soni",
+    "bedrooms": "Yotoq xonalari",
+    "bathrooms": "Hammomlar",
+    "instantBook": "Zudlik bilan band qilish",
+    "superhost": "Super uy egasi",
+    "clearAll": "Hammasini tozalash",
+    "apply": "Filtrlarni qo'llash",
+    "modals": {
+      "dateTime": {
+        "title": "Sana va vaqtni tanlang",
+        "startTime": "Boshlanish vaqti",
+        "endTime": "Tugash vaqti",
+        "clearAll": "Hammasini tozalash",
+        "apply": "Qo'llash"
+      },
+      "price": {
+        "title": "Narx oralig'i",
+        "subtitle": "Soliqlardan oldingi umumiy summa",
+        "min": "Minimum",
+        "max": "Maksimum",
+        "range": "Narx oralig'i",
+        "current": "Joriy filtr",
+        "upTo": "Gacha",
+        "upToFormat": "{{amount}} gacha",
+        "customRange": "Maxsus oraliq",
+        "presets": {
+          "upTo1M": "1 mln gacha",
+          "1M_3M": "1 mln - 3 mln",
+          "3M_5M": "3 mln - 5 mln",
+          "5M_10M": "5 mln - 10 mln",
+          "above10M": "10 mln dan yuqori"
+        },
+        "placeholder": {
+          "min": "Min",
+          "max": "Maks"
+        },
+        "validation": {
+          "minNegative": "Minimal narx manfiy bo'lishi mumkin emas",
+          "maxNegative": "Maksimal narx manfiy bo'lishi mumkin emas",
+          "minGreaterThanMax": "Minimal narx maksimal narxdan katta bo'lishi mumkin emas",
+          "invalidRange": "Maksimum minimumdan katta bo'lishi kerak",
+          "required": "Iltimos, to'g'ri narx qiymatlarini kiriting"
+        },
+        "actions": {
+          "clear": "Tozalash",
+          "cancel": "Bekor qilish",
+          "apply": "Tayyor",
+          "close": "Modalni yopish"
+        }
+      },
+      "attendees": {
+        "title": "Ishtirokchilar soni",
+        "subtitle": "Necha kishi ishtirok etadi?",
+        "min": "Minimal ishtirokchilar",
+        "max": "Maksimal ishtirokchilar",
+        "range": "Ishtirokchilar oralig'i",
+        "current": "Joriy filtr",
+        "upTo": "Gacha",
+        "over": "Dan ko'p",
+        "people": "kishi",
+        "upToFormat": "{{count}} kishi gacha",
+        "overFormat": "{{count}}+ kishi",
+        "rangeFormat": "{{min}} - {{max}} kishi",
+        "customRange": "Maxsus oraliq",
+        "presets": {
+          "1_10": "1-10 kishi",
+          "11_25": "11-25 kishi",
+          "26_50": "26-50 kishi",
+          "51_100": "51-100 kishi",
+          "100plus": "100 dan ortiq kishi"
+        },
+        "placeholder": {
+          "min": "Min",
+          "max": "Maks"
+        },
+        "validation": {
+          "minNegative": "Minimal ishtirokchilar 1 dan kam bo'lishi mumkin emas",
+          "maxNegative": "Maksimal ishtirokchilar 1 dan kam bo'lishi mumkin emas",
+          "minGreaterThanMax": "Minimal ishtirokchilar maksimaldan ko'p bo'lishi mumkin emas",
+          "invalidRange": "Maksimum minimumdan katta bo'lishi kerak",
+          "required": "Iltimos, to'g'ri ishtirokchilar sonini kiriting"
+        },
+        "actions": {
+          "clear": "Tozalash",
+          "cancel": "Bekor qilish",
+          "apply": "Tayyor",
+          "close": "Modalni yopish"
+        }
+      },
+      "size": {
+        "title": "Konferentsiya o'lchami",
+        "subtitle": "Kerakli joy o'lchamini tanlang",
+        "min": "Minimal o'lcham",
+        "max": "Maksimal o'lcham",
+        "range": "O'lcham oralig'i",
+        "current": "Joriy filtr",
+        "upToFormat": "{{size}} kv.m gacha",
+        "overFormat": "{{size}}+ kv.m",
+        "rangeFormat": "{{min}} - {{max}} kv.m",
+        "customRange": "Maxsus oraliq",
+        "presets": {
+          "small": "Kichik • ~50 kv.m",
+          "medium": "O'rta • 50–100 kv.m",
+          "large": "Katta • 100–300 kv.m",
+          "extraLarge": "Juda katta • 300–700 kv.m"
+        },
+        "placeholder": {
+          "min": "Min",
+          "max": "Maks"
+        },
+        "validation": {
+          "minNegative": "Minimal o'lcham manfiy bo'lishi mumkin emas",
+          "maxNegative": "Maksimal o'lcham manfiy bo'lishi mumkin emas",
+          "minGreaterThanMax": "Minimal o'lcham maksimal o'lchamdan katta bo'lishi mumkin emas",
+          "invalidRange": "Maksimum minimumdan katta bo'lishi kerak",
+          "required": "Iltimos, to'g'ri o'lcham qiymatlarini kiriting"
+        },
+        "actions": {
+          "clear": "Tozalash",
+          "cancel": "Bekor qilish",
+          "apply": "Tayyor",
+          "close": "Modalni yopish"
+        }
+      },
+      "perks": {
+        "title": "Qulayliklar va imtiyozlar",
+        "subtitle": "Qanday qulayliklar kerak?",
+        "categories": {
+          "basic": "Asosiy qulayliklar",
+          "tech": "Texnologiya",
+          "comfort": "Qulaylik",
+          "accessibility": "Kirish imkoniyati"
+        },
+        "clearAll": "Hammasini tozalash",
+        "apply": "Qo'llash"
+      },
+      "policy": {
+        "title": "Bron qilish siyosati",
+        "subtitle": "Afzal ko'rgan shartlarni tanlang",
+        "instantBook": "Zudlik bilan bron qilish",
+        "instantBookDesc": "Tasdiqlashni kutmasdan darhol bron qiling",
+        "flexibleCancellation": "Moslashuvchan bekor qilish",
+        "flexibleCancellationDesc": "24 soat oldin bekor qilish",
+        "verified": "Faqat tasdiqlangan uy egalari",
+        "verifiedDesc": "Faqat tasdiqlangan mulk egalarini ko'rsatish",
+        "clearAll": "Hammasini tozalash",
+        "apply": "Qo'llash"
+      }
+    }
+  },
+  "sorting": {
+    "title": "Saralash",
+    "recommended": "Tavsiya etilgan",
+    "priceAsc": "Narx: Pastdan yuqoriga",
+    "priceDesc": "Narx: Yuqoridan pastga",
+    "rating": "Eng yuqori baholi",
+    "newest": "Eng yangi"
+  },
+  "map": {
+    "showMap": "Xaritani ko'rsatish",
+    "hideMap": "Xaritani yashirish",
+    "listView": "Ro'yxat ko'rinishi",
+    "mapView": "Xarita ko'rinishi"
+  },
+  "pagination": {
+    "previous": "Oldingi",
+    "next": "Keyingi",
+    "page": "{{page}} sahifa",
+    "loadMore": "Ko'proq natijalar yuklash"
+  },
+  "error": {
+    "loadFailed": "Qidiruv natijalarini yuklashda xatolik",
+    "retry": "Qayta urinish",
+    "noConnection": "Internet aloqangizni tekshiring"
+  },
+  "loading": {
+    "searching": "Qidirmoqda...",
+    "loadingMore": "Ko'proq natijalar yuklanmoqda...",
+    "applying": "Filtrlar qo'llanmoqda..."
+  }
+}

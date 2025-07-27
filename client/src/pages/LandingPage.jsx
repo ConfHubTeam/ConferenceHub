@@ -1,9 +1,11 @@
 import { useContext, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { UserContext } from "../components/UserContext";
 import BackgroundCarousel from "../components/BackgroundCarousel";
 import LandingHeader from "../components/LandingHeader";
 import SearchFilter from "../components/SearchFilter";
+import { withTranslationLoading } from "../i18n/hoc/withTranslationLoading";
 import "../styles/landing.css";
 
 // Configuration for event space images
@@ -14,22 +16,25 @@ const SPACE_IMAGES = [
 ];
 
 /**
- * Landing Page Component
+ * Landing Page Component with Robust Translation
  * Follows SOLID principles - Dependency Inversion and Open/Closed Principle
  * Enhanced with custom styling and better UX
  */
-export default function LandingPage() {
+function LandingPageBase() {
   const { user, isReady } = useContext(UserContext);
   const navigate = useNavigate();
+  const { t, ready } = useTranslation(["landing", "common"]);
 
   // Loading state with enhanced styling
-  if (!isReady) {
+  if (!isReady || !ready) {
     return (
       <div className="h-screen relative overflow-hidden flex flex-col items-center justify-center bg-gradient-to-br from-brand-orange to-brand-purple">
         <div className="loading-gradient rounded-full h-16 w-16 relative">
           <div className="absolute inset-2 bg-white rounded-full"></div>
         </div>
-        <p className="text-white mt-4 text-lg font-medium">Loading GetSpace...</p>
+        <p className="text-white mt-4 text-lg font-medium">
+          {ready ? t("landing:hero.loading") : "Loading GetSpace..."}
+        </p>
       </div>
     );
   }
@@ -84,7 +89,7 @@ export default function LandingPage() {
               textShadow: '0 4px 20px rgba(0,0,0,0.5)'
             }}
           >
-            Find a space.
+            {t("landing:hero.title_line_1")}
           </h1>
           <h2 
             className="hero-title font-bold text-white leading-none tracking-tight mb-4 slide-up-animation delay-200"
@@ -93,7 +98,7 @@ export default function LandingPage() {
               textShadow: '0 4px 20px rgba(0,0,0,0.5)'
             }}
           >
-            Fulfill your vision.
+            {t("landing:hero.title_line_2")}
           </h2>
         </div>
         
@@ -133,7 +138,7 @@ export default function LandingPage() {
             textShadow: '0 4px 20px rgba(0,0,0,0.5)'
           }}
         >
-          Find a space.
+          {t("landing:hero.title_line_1")}
         </h1>
         <h2 
           className="hero-title font-bold text-white leading-none tracking-tight slide-up-animation delay-200"
@@ -142,10 +147,38 @@ export default function LandingPage() {
             textShadow: '0 4px 20px rgba(0,0,0,0.5)'
           }}
         >
-          Fulfill your vision.
+          {t("landing:hero.title_line_2")}
         </h2>
       </div>
       
     </div>
   );
 }
+
+// Enhanced LandingPage with route-based translation loading
+export default withTranslationLoading(LandingPageBase, {
+  namespaces: ["landing", "common", "navigation"],
+  preloadNamespaces: ["places", "search"],
+  loadingComponent: ({ children, ...props }) => (
+    <div className="h-screen relative overflow-hidden flex flex-col items-center justify-center bg-gradient-to-br from-brand-orange to-brand-purple">
+      <div className="loading-gradient rounded-full h-16 w-16 relative">
+        <div className="absolute inset-2 bg-white rounded-full animate-pulse"></div>
+      </div>
+      <p className="text-white mt-4 text-lg font-medium animate-pulse">Loading GetSpace...</p>
+    </div>
+  ),
+  errorComponent: ({ error, retry, ...props }) => (
+    <div className="h-screen relative overflow-hidden flex flex-col items-center justify-center bg-gradient-to-br from-brand-orange to-brand-purple">
+      <div className="text-center text-white">
+        <h2 className="text-2xl font-bold mb-4">Translation Error</h2>
+        <p className="mb-4">Failed to load translations</p>
+        <button 
+          onClick={retry}
+          className="bg-white text-brand-orange px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+        >
+          Retry
+        </button>
+      </div>
+    </div>
+  )
+});
