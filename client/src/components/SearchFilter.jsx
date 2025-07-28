@@ -3,8 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useDateTimeFilter } from "../contexts/DateTimeFilterContext";
 import { usePriceFilter } from "../contexts/PriceFilterContext";
-import { useAttendeesFilter } from "../contexts/AttendeesFilterContext";
-import { useSizeFilter } from "../contexts/SizeFilterContext";
+import { useAttendeesFilter, ATTENDEES_RANGES } from "../contexts/AttendeesFilterContext";
+import { useSizeFilter, SIZE_RANGES } from "../contexts/SizeFilterContext";
+import { useCurrency } from "../contexts/CurrencyContext";
+import { formatCurrency, getCurrencySymbol } from "../utils/currencyUtils";
+import { formatHourTo12 } from "../utils/TimeUtils";
+import { format } from "date-fns";
 import DateTimeFilterModal from "./DateTimeFilterModal";
 import PriceFilterModal from "./PriceFilterModal";
 import AttendeesFilterModal from "./AttendeesFilterModal";
@@ -22,7 +26,7 @@ export default function SearchFilter({
   placeholder = {},
   initialValues = {}
 }) {
-  const { t } = useTranslation("search");
+  const { t, i18n } = useTranslation("search");
   const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
   const [isDateTimeModalOpen, setIsDateTimeModalOpen] = useState(false);
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
@@ -30,16 +34,155 @@ export default function SearchFilter({
   const navigate = useNavigate();
   
   // Use the DateTimeFilter context for date/time state
-  const { getFormattedDateTime, getSerializedValues, hasActiveDateTimeFilter } = useDateTimeFilter();
+  const { 
+    selectedDates, 
+    startTime, 
+    endTime, 
+    getSerializedValues, 
+    hasActiveDateTimeFilter 
+  } = useDateTimeFilter();
   
   // Use the PriceFilter context for price state
-  const { getFormattedPriceRange, getSerializedValues: getPriceSerializedValues, hasActivePriceFilter } = usePriceFilter();
+  const { 
+    minPrice, 
+    maxPrice, 
+    getSerializedValues: getPriceSerializedValues, 
+    hasActivePriceFilter 
+  } = usePriceFilter();
   
   // Use the AttendeesFilter context for attendees state
-  const { getFormattedAttendeesRange, getSerializedValues: getAttendeesSerializedValues, hasActiveAttendeesFilter } = useAttendeesFilter();
+  const { 
+    minAttendees, 
+    maxAttendees, 
+    selectedRangeId: attendeesRangeId,
+    getSerializedValues: getAttendeesSerializedValues, 
+    hasActiveAttendeesFilter 
+  } = useAttendeesFilter();
 
   // Use the SizeFilter context for size state
-  const { getFormattedSizeRange, getSerializedValues: getSizeSerializedValues, hasActiveSizeFilter } = useSizeFilter();
+  const { 
+    minSize, 
+    maxSize, 
+    selectedRangeId: sizeRangeId,
+    getSerializedValues: getSizeSerializedValues, 
+    hasActiveSizeFilter 
+  } = useSizeFilter();
+
+  // Get currency from context
+  const { selectedCurrency } = useCurrency();
+
+  // Formatting functions with translation support
+  const getFormattedDateTime = () => {
+    if (selectedDates.length === 0) return "";
+    if (selectedDates.length === 1) {
+      const formattedDate = format(selectedDates[0], "MMM d");
+      // Include time information if available
+      if (startTime && endTime) {
+        return `${formattedDate}, ${formatHourTo12(startTime)}-${formatHourTo12(endTime)}`;
+      }
+      return formattedDate;
+    }
+    return t("filters.buttons.multiple_dates", { count: selectedDates.length });
+  };
+  
+  const getFormattedPriceRange = () => {
+    if (!selectedCurrency) return "";
+    
+    const symbol = getCurrencySymbol(selectedCurrency);
+    const hasMin = minPrice !== null && minPrice !== undefined && minPrice !== "";
+    const hasMax = maxPrice !== null && maxPrice !== undefined && maxPrice !== "";
+
+    if (!hasMin && !hasMax) return "";
+
+    if (hasMin && hasMax) {
+      const formattedMin = formatCurrency(minPrice, selectedCurrency);
+      const formattedMax = formatCurrency(maxPrice, selectedCurrency);
+      
+      if (selectedCurrency.charCode === "USD") {
+        return `${symbol}${formattedMin} - ${symbol}${formattedMax}`;
+      } else {
+        return `${formattedMin} - ${formattedMax} ${symbol}`;
+      }
+    } else if (hasMin) {
+      const formattedMin = formatCurrency(minPrice, selectedCurrency);
+      
+      if (selectedCurrency.charCode === "USD") {
+        return `${symbol}${formattedMin}+`;
+      } else {
+        return `${formattedMin}+ ${symbol}`;
+      }
+    } else if (hasMax) {
+      const formattedMax = formatCurrency(maxPrice, selectedCurrency);
+      
+      if (selectedCurrency.charCode === "USD") {
+        // Handle Uzbek word order: "amount gacha" instead of "Up to amount"
+        if (i18n.language === "uz") {
+          return `${symbol}${formattedMax} ${t("filters.buttons.up_to")}`;
+        } else {
+          return `${t("filters.buttons.up_to")} ${symbol}${formattedMax}`;
+        }
+      } else {
+        // Handle Uzbek word order: "amount gacha" instead of "Up to amount"
+        if (i18n.language === "uz") {
+          return `${formattedMax} ${symbol} ${t("filters.buttons.up_to")}`;
+        } else {
+          return `${t("filters.buttons.up_to")} ${formattedMax} ${symbol}`;
+        }
+      }
+    }
+
+    return "";
+  };
+  
+  const getFormattedAttendeesRange = () => {
+    const hasMin = minAttendees !== null && minAttendees !== undefined;
+    const hasMax = maxAttendees !== null && maxAttendees !== undefined;
+
+    if (!hasMin && !hasMax) return "";
+
+    // Check for predefined ranges with translation keys
+    if (attendeesRangeId && attendeesRangeId !== "custom") {
+      // Convert hyphen to underscore for translation keys
+      const translationKey = attendeesRangeId.replace(/-/g, "_").replace(/\+/g, "plus");
+      return t(`filters.modals.attendees.presets.${translationKey}`);
+    }
+
+    // Custom formatting with translations
+    if (hasMin && hasMax) {
+      return t("filters.buttons.attendees_range", { min: minAttendees, max: maxAttendees });
+    } else if (hasMin) {
+      return t("filters.buttons.attendees_min", { min: minAttendees });
+    } else if (hasMax) {
+      return t("filters.buttons.attendees_max", { max: maxAttendees });
+    }
+
+    return "";
+  };
+  
+  const getFormattedSizeRange = () => {
+    const hasMin = minSize !== null && minSize !== undefined;
+    const hasMax = maxSize !== null && maxSize !== undefined;
+
+    if (!hasMin && !hasMax) return "";
+
+    // Check for predefined ranges with translation keys
+    if (sizeRangeId && sizeRangeId !== "custom") {
+      // Convert "extra-large" to "extraLarge" for translation keys
+      const translationKey = sizeRangeId === "extra-large" ? "extraLarge" : sizeRangeId;
+      return t(`filters.modals.size.presets.${translationKey}`);
+    }
+
+    // Custom formatting with translations
+    if (hasMin && hasMax) {
+      return t("filters.buttons.size_range", { min: minSize, max: maxSize });
+    } else if (hasMin) {
+      return t("filters.buttons.size_min", { min: minSize });
+    } else if (hasMax) {
+      return t("filters.buttons.size_max", { max: maxSize });
+    }
+
+    return "";
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();

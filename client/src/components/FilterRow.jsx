@@ -23,7 +23,7 @@ export default function FilterRow({
   showMobileMap, 
   isMobileMapView 
 }) {
-  const { t } = useTranslation("search");
+  const { t, i18n } = useTranslation("search");
   
   // State for modal visibility
   const [isDateTimeModalOpen, setIsDateTimeModalOpen] = useState(false);
@@ -127,9 +127,19 @@ export default function FilterRow({
       const formattedMax = formatCurrency(maxPrice, selectedCurrency);
       
       if (selectedCurrency.charCode === "USD") {
-        return `${t("filters.buttons.up_to")} ${symbol}${formattedMax}`;
+        // Handle Uzbek word order: "amount gacha" instead of "Up to amount"
+        if (i18n.language === "uz") {
+          return `${symbol}${formattedMax} ${t("filters.buttons.up_to")}`;
+        } else {
+          return `${t("filters.buttons.up_to")} ${symbol}${formattedMax}`;
+        }
       } else {
-        return `${t("filters.buttons.up_to")} ${formattedMax} ${symbol}`;
+        // Handle Uzbek word order: "amount gacha" instead of "Up to amount"
+        if (i18n.language === "uz") {
+          return `${formattedMax} ${symbol} ${t("filters.buttons.up_to")}`;
+        } else {
+          return `${t("filters.buttons.up_to")} ${formattedMax} ${symbol}`;
+        }
       }
     }
 
