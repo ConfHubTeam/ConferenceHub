@@ -1,15 +1,63 @@
 {
-  "browse_spaces": "Просмотр мест",
-  "my_account": "Мой аккаунт",
-  "my_places": "Мои места",
-  "list_your_space": "Разместить жилье",
-  "toggle_menu": "Переключить мобильное меню",
-  "close_menu": "Закрыть мобильное меню",
-  "home": "Главная",
-  "about": "О нас",
-  "contact": "Контакты",
-  "help": "Помощь",
-  "support": "Поддержка",
-  "terms": "Условия использования",
-  "privacy": "Политика конфиденциальности"
+  "header": {
+    "logo": {
+      "alt": "GetSpace",
+      "title": "GetSpace - Найдите идеальное пространство"
+    },
+    "navigation": {
+      "browseSpaces": "Обзор пространств",
+      "myPlaces": "Мои помещения", 
+      "listYourSpace": "Разместить помещение",
+      "experiences": "Впечатления",
+      "home": "Главная"
+    },
+    "userMenu": {
+      "myAccount": "Мой аккаунт",
+      "login": "Войти",
+      "signup": "Регистрация",
+      "logOut": "Выйти",
+      "profile": "Профиль"
+    },
+    "mobileMenu": {
+      "currency": "Валюта",
+      "language": "Язык",
+      "toggleMenu": "Переключить меню",
+      "closeMenu": "Закрыть меню"
+    }
+  },
+  "accountNav": {
+    "profile": "Профиль",
+    "bookings": "Бронирования", 
+    "notifications": "Уведомления",
+    "spaces": "Помещения",
+    "hostDashboard": "Панель хоста",
+    "dashboard": "Панель управления",
+    "users": "Пользователи",
+    "places": "Места",
+    "reviews": "Отзывы",
+    "myListings": "Мои объявления",
+    "browseListings": "Обзор объявлений"
+  },
+  "mobileNavigation": {
+    "browseSpaces": "Обзор пространств",
+    "myAccount": "Мой аккаунт",
+    "myPlaces": "Мои помещения",
+    "login": "Войти",
+    "signup": "Регистрация"
+  },
+  "legacy": {
+    "browse_spaces": "Просмотр мест",
+    "my_account": "Мой аккаунт",
+    "my_places": "Мои места",
+    "list_your_space": "Разместить жилье",
+    "toggle_menu": "Переключить мобильное меню",
+    "close_menu": "Закрыть мобильное меню",
+    "home": "Главная",
+    "about": "О нас",
+    "contact": "Контакты",
+    "help": "Помощь",
+    "support": "Поддержка",
+    "terms": "Условия использования",
+    "privacy": "Политика конфиденциальности"
+  }
 }

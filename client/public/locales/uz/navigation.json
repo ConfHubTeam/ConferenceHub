@@ -1,15 +1,63 @@
 {
-  "browse_spaces": "Joy yerlarni ko'rish",
-  "my_account": "Mening hisobim",
-  "my_places": "Mening joylarim",
-  "list_your_space": "Joyingizni ro'yxatga oling",
-  "toggle_menu": "Mobil menyuni ochish",
-  "close_menu": "Mobil menyuni yopish",
-  "home": "Bosh sahifa",
-  "about": "Haqida",
-  "contact": "Aloqa",
-  "help": "Yordam",
-  "support": "Qo'llab-quvvatlash",
-  "terms": "Foydalanish shartlari",
-  "privacy": "Maxfiylik siyosati"
+  "header": {
+    "logo": {
+      "alt": "GetSpace",
+      "title": "GetSpace - Mukammal joyingizni toping"
+    },
+    "navigation": {
+      "browseSpaces": "Joylarni ko'rish",
+      "myPlaces": "Mening joylarim", 
+      "listYourSpace": "Joyingizni ro'yxatga oling",
+      "experiences": "Tajribalar",
+      "home": "Bosh sahifa"
+    },
+    "userMenu": {
+      "myAccount": "Mening hisobim",
+      "login": "Kirish",
+      "signup": "Ro'yxatdan o'tish",
+      "logOut": "Chiqish",
+      "profile": "Profil"
+    },
+    "mobileMenu": {
+      "currency": "Valyuta",
+      "language": "Til",
+      "toggleMenu": "Menyuni ochish",
+      "closeMenu": "Menyuni yopish"
+    }
+  },
+  "accountNav": {
+    "profile": "Profil",
+    "bookings": "Bronlar", 
+    "notifications": "Bildirishnomalar",
+    "spaces": "Joylar",
+    "hostDashboard": "Host paneli",
+    "dashboard": "Boshqaruv paneli",
+    "users": "Foydalanuvchilar",
+    "places": "Joylar",
+    "reviews": "Sharhlar",
+    "myListings": "Mening e'lonlarim",
+    "browseListings": "E'lonlarni ko'rish"
+  },
+  "mobileNavigation": {
+    "browseSpaces": "Joylarni ko'rish",
+    "myAccount": "Mening hisobim",
+    "myPlaces": "Mening joylarim",
+    "login": "Kirish",
+    "signup": "Ro'yxatdan o'tish"
+  },
+  "legacy": {
+    "browse_spaces": "Joy yerlarni ko'rish",
+    "my_account": "Mening hisobim",
+    "my_places": "Mening joylarim",
+    "list_your_space": "Joyingizni ro'yxatga oling",
+    "toggle_menu": "Mobil menyuni ochish",
+    "close_menu": "Mobil menyuni yopish",
+    "home": "Bosh sahifa",
+    "about": "Haqida",
+    "contact": "Aloqa",
+    "help": "Yordam",
+    "support": "Qo'llab-quvvatlash",
+    "terms": "Foydalanish shartlari",
+    "privacy": "Maxfiylik siyosati"
+  }
 }

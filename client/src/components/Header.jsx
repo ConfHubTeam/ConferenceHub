@@ -1,5 +1,6 @@
 import { useContext, useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { UserContext } from "./UserContext";
 import { useCurrency } from "../contexts/CurrencyContext";
 import CurrencySelector from "./CurrencySelector";
@@ -7,6 +8,7 @@ import NotificationBell from "./NotificationBell";
 import LanguageSelector from "./LanguageSelector/LanguageSelector";
 
 export default function Header() {
+  const { t } = useTranslation("navigation");
   const {user} = useContext(UserContext);
   const { selectedCurrency, changeCurrency, availableCurrencies } = useCurrency();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -64,7 +66,8 @@ export default function Header() {
         <Link to={user ? "/places" : "/"} className="logo flex items-center gap-1">
           <img 
             src="/getSpace_logo.png" 
-            alt="GetSpace" 
+            alt={t("header.logo.alt")}
+            title={t("header.logo.title")}
             className="h-8 sm:h-10 lg:h-12 w-auto object-contain"
           />
         </Link>
@@ -102,7 +105,7 @@ export default function Header() {
           ref={menuButtonRef}
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
           className="md:hidden border border-gray-300 rounded-full p-2 bg-white hover:shadow-md transition-shadow"
-          aria-label="Toggle mobile menu"
+          aria-label={t("header.mobileMenu.toggleMenu")}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -151,19 +154,19 @@ export default function Header() {
       
       {/* Semi-transparent overlay when menu is open */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-20" />
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[85]" />
       )}
       
       {/* Mobile menu with user sections */}
       {mobileMenuOpen && (
         <div 
           ref={menuRef}
-          className="absolute top-16 left-0 right-0 bg-white p-4 shadow-md z-20 md:hidden rounded-b-lg"
+          className="absolute top-16 left-0 right-0 bg-white p-4 shadow-md z-[90] md:hidden rounded-b-lg"
         >
           <div className="flex flex-col gap-4">
             {/* Currency selector */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("header.mobileMenu.currency")}</label>
               <div className="max-w-full">
                 <CurrencySelector
                   selectedCurrency={selectedCurrency}
@@ -175,7 +178,7 @@ export default function Header() {
             
             {/* Language selector */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Language</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("header.mobileMenu.language")}</label>
               <div className="max-w-full">
                 <LanguageSelector 
                   variant="dropdown"
@@ -199,7 +202,7 @@ export default function Header() {
                         <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                       </svg>
                     </span>
-                    My Account
+                    {t("accountNav.profile")}
                   </Link>
                   <Link 
                     to="/account/bookings" 
@@ -211,11 +214,11 @@ export default function Header() {
                         <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
                       </svg>
                     </span>
-                    My Bookings
+                    {t("accountNav.bookings")}
                     <NotificationBell isMobile={true} />
                   </Link>
                   <Link 
-                    to={user.userType === 'host' ? "/account/user-places" : "/"}
+                    to={(user.userType === 'host' || user.userType === 'agent') ? "/account/user-places" : "/"}
                     className="flex items-center py-3 px-2 hover:bg-gray-100 rounded-lg"
                     onClick={handleMenuLinkClick}
                   >
@@ -224,7 +227,7 @@ export default function Header() {
                         <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
                       </svg>
                     </span>
-                    {user.userType === 'host' ? 'My Listings' : 'Browse Listings'}
+                    {(user.userType === 'host' || user.userType === 'agent') ? t("accountNav.myListings") : t("accountNav.browseListings")}
                   </Link>
                 </>
               ) : (
@@ -239,7 +242,7 @@ export default function Header() {
                         <path fillRule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </span>
-                    Login
+                    {t("header.userMenu.login")}
                   </Link>
                   <Link 
                     to="/register" 
@@ -251,7 +254,7 @@ export default function Header() {
                         <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
                       </svg>
                     </span>
-                    Register
+                    {t("header.userMenu.signup")}
                   </Link>
                 </>
               )}

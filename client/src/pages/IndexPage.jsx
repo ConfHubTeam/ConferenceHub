@@ -19,7 +19,7 @@ import { convertCurrency } from "../utils/currencyUtils";
 import api from "../utils/api";
 
 function IndexPageBase() {
-  const { t, ready } = useTranslation(["places", "common"]);
+  const { t, ready } = useTranslation(["places", "common", "navigation"]);
   const [places, setPlaces] = useState([]);
   const [filteredPlaces, setFilteredPlaces] = useState([]);
   const [placesForMap, setPlacesForMap] = useState([]); // Places for map markers (without bounds filtering)
@@ -588,7 +588,7 @@ function IndexPageBase() {
 
 // Enhanced IndexPage with route-based translation loading
 export default withTranslationLoading(IndexPageBase, {
-  namespaces: ["places", "common"],
+  namespaces: ["places", "common", "navigation"],
   preloadNamespaces: ["search", "filters"],
   loadingComponent: ({ children, ...props }) => (
     <div className="flex flex-col h-full">

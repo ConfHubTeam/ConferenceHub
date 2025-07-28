@@ -40,12 +40,12 @@ function LandingHeaderBase({
     };
     
     return {
-      browseSpaces: t("navigation:browse_spaces", "Browse Spaces"),
-      myPlaces: t("navigation:my_places", "My Places"),
-      listYourSpace: t("navigation:list_your_space", "List Your Space"),
-      myAccount: t("navigation:my_account", "My Account"),
-      login: t("auth:loginAction", "Log In"),
-      signup: t("auth:signupAction", "Sign Up")
+      browseSpaces: t("navigation:header.navigation.browseSpaces", "Browse Spaces"),
+      myPlaces: t("navigation:accountNav.spaces", "My Places"),
+      listYourSpace: t("navigation:header.navigation.listYourSpace", "List Your Space"),
+      myAccount: t("navigation:header.userMenu.myAccount", "My Account"),
+      login: t("navigation:header.userMenu.login", "Log In"),
+      signup: t("navigation:header.userMenu.signup", "Sign Up")
     };
   }, [t, ready]);
 
@@ -79,21 +79,21 @@ function LandingHeaderBase({
             <span className="font-medium">{navigationItems.browseSpaces}</span>
             <ChevronDownIcon className="w-3 h-3 lg:w-4 lg:h-4" aria-hidden="true" />
           </Link>
-          {user ? (
+          {user && (user.userType === 'host' || user.userType === 'agent') ? (
             <Link 
               to="/account/user-places"
               className="text-white hover:text-brand-orange transition-colors duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg px-3 py-2 text-sm lg:text-base"
             >
               {navigationItems.myPlaces}
             </Link>
-          ) : (
+          ) : !user ? (
             <Link 
               to="/register"
               className="text-white hover:text-brand-orange transition-colors duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg px-3 py-2 text-sm lg:text-base"
             >
               {navigationItems.listYourSpace}
             </Link>
-          )}
+          ) : null}
         </nav>
       )}
 
