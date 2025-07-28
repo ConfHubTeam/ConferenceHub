@@ -1,0 +1,107 @@
+{
+  "title": "Profile",
+  "subtitle": "Manage your personal information and preferences",
+  "sections": {
+    "overview": {
+      "title": "Account Overview",
+      "memberSince": "Member Since",
+      "telegram": {
+        "status": "Telegram",
+        "connected": "Connected",
+        "notConnected": "Not Connected",
+        "username": "Username"
+      }
+    },
+    "profileInfo": {
+      "title": "Profile Information",
+      "subtitle": "Manage your personal information and contact details"
+    },
+    "accountSettings": {
+      "title": "Account Settings",
+      "subtitle": "Manage your account preferences and security"
+    }
+  },
+  "accountTypes": {
+    "client": {
+      "label": "Client Account",
+      "description": "Book conference rooms"
+    },
+    "host": {
+      "label": "Host Account", 
+      "description": "Manage conference rooms and bookings"
+    },
+    "agent": {
+      "label": "Agent Account",
+      "description": "System administration access"
+    }
+  },
+  "fields": {
+    "fullName": {
+      "label": "Full Name",
+      "placeholder": "Enter your full name",
+      "required": "Name is required"
+    },
+    "phoneNumber": {
+      "label": "Phone Number",
+      "placeholder": "Enter your phone number",
+      "help": "Enter phone number in international format (e.g., +998901234567). Leave empty to remove phone number.",
+      "validation": {
+        "invalid": "Please enter a valid phone number",
+        "invalidCountry": "Please enter a valid phone number for the selected country"
+      }
+    },
+    "email": {
+      "label": "Email Address",
+      "cannotChange": "Email cannot be changed",
+      "notProvided": "Not provided",
+      "noEmail": "No email"
+    }
+  },
+  "actions": {
+    "editProfile": "Edit Profile",
+    "saveChanges": "Save Changes",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "signOut": "Sign Out",
+    "loggingOut": "Logging out...",
+    "deleteAccount": "Delete Account"
+  },
+  "messages": {
+    "profileUpdated": "Profile updated successfully",
+    "logoutSuccess": "Successfully logged out",
+    "accountCreated": "Your conference hub account has been created successfully!",
+    "loginSuccess": "Login successful!",
+    "logoutError": "Error logging out. Please try again.",
+    "updateError": "Error updating profile",
+    "phoneNumberExists": "A user with this phone number already exists",
+    "invalidPhoneFormat": "Please enter a valid phone number in international format",
+    "deleteSuccess": "Your account has been deleted successfully",
+    "deleteError": "Error deleting account. Please try again."
+  },
+  "deleteConfirmation": {
+    "title": "Delete Account",
+    "consequences": {
+      "common": [
+        "Your account and profile information",
+        "All of your bookings"
+      ],
+      "host": [
+        "All conference rooms you own",
+        "All bookings associated with your rooms"
+      ],
+      "agent": [
+        "All administrative access to the system",
+        "Access to user and booking management"
+      ]
+    }
+  },
+  "editModal": {
+    "title": "Edit User",
+    "userId": "ID: {{id}}",
+    "userType": {
+      "host": "Host",
+      "agent": "Agent", 
+      "client": "Client"
+    }
+  }
+}

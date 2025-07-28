@@ -1,0 +1,107 @@
+{
+  "title": "Profil",
+  "subtitle": "Shaxsiy ma'lumotlaringiz va sozlamalarni boshqaring",
+  "sections": {
+    "overview": {
+      "title": "Hisob ko'rinishi",
+      "memberSince": "A'zo bo'lgan",
+      "telegram": {
+        "status": "Telegram",
+        "connected": "Ulangan",
+        "notConnected": "Ulanmagan",
+        "username": "Foydalanuvchi nomi"
+      }
+    },
+    "profileInfo": {
+      "title": "Profil ma'lumotlari",
+      "subtitle": "Shaxsiy ma'lumotlaringiz va aloqa ma'lumotlarini boshqaring"
+    },
+    "accountSettings": {
+      "title": "Hisob sozlamalari",
+      "subtitle": "Hisob sozlamalaringiz va xavfsizligini boshqaring"
+    }
+  },
+  "accountTypes": {
+    "client": {
+      "label": "Mijoz hisobi",
+      "description": "Konferens xonalarini band qilish"
+    },
+    "host": {
+      "label": "Mezbor hisobi", 
+      "description": "Konferens xonalari va bronlarni boshqarish"
+    },
+    "agent": {
+      "label": "Agent hisobi",
+      "description": "Tizim boshqaruvi ruxsati"
+    }
+  },
+  "fields": {
+    "fullName": {
+      "label": "To'liq ism",
+      "placeholder": "To'liq ismingizni kiriting",
+      "required": "Ism majburiy"
+    },
+    "phoneNumber": {
+      "label": "Telefon raqami",
+      "placeholder": "Telefon raqamingizni kiriting",
+      "help": "Telefon raqamini xalqaro formatda kiriting (masalan, +998901234567). Telefon raqamini olib tashlash uchun bo'sh qoldiring.",
+      "validation": {
+        "invalid": "Iltimos, to'g'ri telefon raqamini kiriting",
+        "invalidCountry": "Iltimos, tanlangan mamlakat uchun to'g'ri telefon raqamini kiriting"
+      }
+    },
+    "email": {
+      "label": "Elektron pochta manzili",
+      "cannotChange": "Emailni o'zgartirib bo'lmaydi",
+      "notProvided": "Ko'rsatilmagan",
+      "noEmail": "Email yo'q"
+    }
+  },
+  "actions": {
+    "editProfile": "Profilni tahrirlash",
+    "saveChanges": "O'zgarishlarni saqlash",
+    "cancel": "Bekor qilish",
+    "saving": "Saqlanyapti...",
+    "signOut": "Chiqish",
+    "loggingOut": "Chiqishda...",
+    "deleteAccount": "Hisobni o'chirish"
+  },
+  "messages": {
+    "profileUpdated": "Profil muvaffaqiyatli yangilandi",
+    "logoutSuccess": "Muvaffaqiyatli chiqish",
+    "accountCreated": "Sizning konferens hub hisobingiz muvaffaqiyatli yaratildi!",
+    "loginSuccess": "Muvaffaqiyatli kirish!",
+    "logoutError": "Chiqishda xatolik. Iltimos, qayta urinib ko'ring.",
+    "updateError": "Profilni yangilashda xatolik",
+    "phoneNumberExists": "Bunday telefon raqamiga ega foydalanuvchi allaqachon mavjud",
+    "invalidPhoneFormat": "Iltimos, to'g'ri telefon raqamini xalqaro formatda kiriting",
+    "deleteSuccess": "Sizning hisobingiz muvaffaqiyatli o'chirildi",
+    "deleteError": "Hisobni o'chirishda xatolik. Iltimos, qayta urinib ko'ring."
+  },
+  "deleteConfirmation": {
+    "title": "Hisobni o'chirish",
+    "consequences": {
+      "common": [
+        "Sizning hisobingiz va profil ma'lumotlaringiz",
+        "Barcha bronlaringiz"
+      ],
+      "host": [
+        "Sizga tegishli barcha konferens xonalari",
+        "Sizning xonalaringiz bilan bog'liq barcha bronlar"
+      ],
+      "agent": [
+        "Tizimga barcha administrativ ruxsat",
+        "Foydalanuvchilar va bronlarni boshqarishga ruxsat"
+      ]
+    }
+  },
+  "editModal": {
+    "title": "Foydalanuvchini tahrirlash",
+    "userId": "ID: {{id}}",
+    "userType": {
+      "host": "Mezbor",
+      "agent": "Agent", 
+      "client": "Mijoz"
+    }
+  }
+}
