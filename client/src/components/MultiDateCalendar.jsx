@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { 
   format, 
   startOfMonth, 
@@ -37,6 +38,28 @@ export default function MultiDateCalendar({
   minDate = getCurrentDateObjectInUzbekistan(),
   disabledDates = []
 }) {
+  const { t } = useTranslation("calendar");
+  
+  // Helper function to get translated month name
+  const getTranslatedMonth = useCallback((date) => {
+    const monthIndex = date.getMonth();
+    const monthKeys = [
+      "months.january",
+      "months.february", 
+      "months.march",
+      "months.april",
+      "months.may",
+      "months.june",
+      "months.july",
+      "months.august",
+      "months.september",
+      "months.october",
+      "months.november",
+      "months.december"
+    ];
+    return t(monthKeys[monthIndex]);
+  }, [t]);
+  
   // Current month being displayed in Uzbekistan timezone
   const [currentMonth, setCurrentMonth] = useState(getCurrentDateObjectInUzbekistan());
   
@@ -66,8 +89,18 @@ export default function MultiDateCalendar({
     ? parseISO(minDate) 
     : minDate;
   
-  // Array of day name headers
-  const weekDays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+  // Generate weekday headers using translation
+  const getWeekDays = useCallback(() => [
+    t("weekdays.short.sunday"),
+    t("weekdays.short.monday"),
+    t("weekdays.short.tuesday"),
+    t("weekdays.short.wednesday"),
+    t("weekdays.short.thursday"),
+    t("weekdays.short.friday"),
+    t("weekdays.short.saturday")
+  ], [t]);
+
+  const weekDays = getWeekDays();
   
   /**
    * Navigate to the previous month
@@ -251,9 +284,9 @@ export default function MultiDateCalendar({
         </button>
         
         <div className="text-base md:text-lg font-semibold text-gray-800">
-          {format(currentMonth, "MMMM yyyy")}
+          {getTranslatedMonth(currentMonth)} {format(currentMonth, "yyyy")}
           {!isMobileView && (
-            <span className="hidden md:inline"> - {format(secondMonth, "MMMM yyyy")}</span>
+            <span className="hidden md:inline"> - {getTranslatedMonth(secondMonth)} {format(secondMonth, "yyyy")}</span>
           )}
         </div>
         
@@ -286,7 +319,7 @@ export default function MultiDateCalendar({
       {/* Selected dates counter */}
       {selectedDates.length > 0 && (
         <div className="mt-4 text-center text-sm md:text-base font-medium text-brand-purple">
-          {selectedDates.length} {selectedDates.length === 1 ? "date" : "dates"} selected
+          {selectedDates.length} {selectedDates.length === 1 ? t("dateSelection.dateSelected") : t("dateSelection.datesSelected")}
         </div>
       )}
     </div>

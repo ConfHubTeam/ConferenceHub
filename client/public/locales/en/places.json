@@ -113,5 +113,31 @@
   "search_results": {
     "no_results": "No properties found",
     "no_results_description": "Try adjusting your search filters or dates to find more options"
+  },
+  "card": {
+    "up_to_guests": "Up to {{count}} guests",
+    "up_to_guests_single": "Up to {{count}} guest",
+    "square_meters": "{{size}} m²",
+    "check_in_out": "{{checkIn}} - {{checkOut}}",
+    "price_per_hour": "/hour",
+    "price_per_night": "/night",
+    "price_per_day": "/day",
+    "new_rating": "New",
+    "guests": "people",
+    "actions": {
+      "edit": "Edit",
+      "view": "View",
+      "book": "Book",
+      "details": "Details"
+    }
+  },
+  "list": {
+    "check_in": "Check in",
+    "check_out": "Check out",
+    "total_price": "Total price",
+    "actions": {
+      "edit": "Edit",
+      "view_details": "View Details"
+    }
   }
 }

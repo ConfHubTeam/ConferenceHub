@@ -113,5 +113,31 @@
   "search_results": {
     "no_results": "Joy topilmadi",
     "no_results_description": "Ko'proq variantlarni topish uchun qidiruv filtrlarini yoki sanalarni o'zgartirib ko'ring"
+  },
+  "card": {
+    "up_to_guests": "{{count}} mehmon gacha",
+    "up_to_guests_single": "{{count}} mehmon gacha",
+    "square_meters": "{{size}} m²",
+    "check_in_out": "{{checkIn}} - {{checkOut}}",
+    "price_per_hour": "/soat",
+    "price_per_night": "/kecha",
+    "price_per_day": "/kun",
+    "new_rating": "Yangi",
+    "guests": "kishi",
+    "actions": {
+      "edit": "Tahrirlash",
+      "view": "Ko'rish",
+      "book": "Bron qilish",
+      "details": "Tafsilotlar"
+    }
+  },
+  "list": {
+    "check_in": "Kelish",
+    "check_out": "Ketish",
+    "total_price": "Umumiy narx",
+    "actions": {
+      "edit": "Tahrirlash",
+      "view_details": "Tafsilotlar"
+    }
   }
 }

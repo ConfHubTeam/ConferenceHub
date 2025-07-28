@@ -113,5 +113,31 @@
   "search_results": {
     "no_results": "Жильё не найдено",
     "no_results_description": "Попробуйте изменить фильтры поиска или даты, чтобы найти больше вариантов"
+  },
+  "card": {
+    "up_to_guests": "До {{count}} гостей",
+    "up_to_guests_single": "До {{count}} гостя",
+    "square_meters": "{{size}} м²",
+    "check_in_out": "{{checkIn}} - {{checkOut}}",
+    "price_per_hour": "/час",
+    "price_per_night": "/ночь",
+    "price_per_day": "/день",
+    "new_rating": "Новый",
+    "guests": "чел.",
+    "actions": {
+      "edit": "Редактировать",
+      "view": "Посмотреть",
+      "book": "Забронировать",
+      "details": "Подробности"
+    }
+  },
+  "list": {
+    "check_in": "Заселение",
+    "check_out": "Выселение",
+    "total_price": "Общая стоимость",
+    "actions": {
+      "edit": "Редактировать",
+      "view_details": "Подробности"
+    }
   }
 }

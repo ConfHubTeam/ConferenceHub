@@ -1,0 +1,43 @@
+{
+  "months": {
+    "january": "Yanvar",
+    "february": "Fevral",
+    "march": "Mart",
+    "april": "Aprel",
+    "may": "May",
+    "june": "Iyun",
+    "july": "Iyul",
+    "august": "Avgust",
+    "september": "Sentyabr",
+    "october": "Oktyabr",
+    "november": "Noyabr",
+    "december": "Dekabr"
+  },
+  "weekdays": {
+    "short": {
+      "sunday": "Yak",
+      "monday": "Du", 
+      "tuesday": "Se",
+      "wednesday": "Cho",
+      "thursday": "Pa",
+      "friday": "Ju",
+      "saturday": "Sha"
+    }
+  },
+  "guidance": {
+    "blockingMode": "✨ Bloklangan/bloklanmagan holatni almashtirish uchun sanalarga bosing",
+    "individualMode": "🎯 Bronlash uchun alohida sanalarni tanlang",
+    "selectStart": "📅 Boshlanish sanasini tanlang",
+    "selectEnd": "📅 Yakunlanish sanasini tanlang (diapazonni oldindan ko'rish uchun kursorni olib boring)"
+  },
+  "legend": {
+    "title": "Mavjudlik belgilari:",
+    "available": "Mavjud",
+    "partiallyBooked": "Qisman bronlangan",
+    "fullyBooked": "To'liq bronlangan / Mavjud emas"
+  },
+  "dateSelection": {
+    "dateSelected": "sana tanlandi",
+    "datesSelected": "sana tanlandi"
+  }
+}

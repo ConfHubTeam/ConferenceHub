@@ -1,0 +1,43 @@
+{
+  "months": {
+    "january": "January",
+    "february": "February",
+    "march": "March",
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December"
+  },
+  "weekdays": {
+    "short": {
+      "sunday": "Su",
+      "monday": "Mo", 
+      "tuesday": "Tu",
+      "wednesday": "We",
+      "thursday": "Th",
+      "friday": "Fr",
+      "saturday": "Sa"
+    }
+  },
+  "guidance": {
+    "blockingMode": "✨ Click dates to toggle blocked/unblocked status",
+    "individualMode": "🎯 Select individual dates for booking",
+    "selectStart": "📅 Select your start date",
+    "selectEnd": "📅 Select your end date (hover to preview range)"
+  },
+  "legend": {
+    "title": "Availability Legend:",
+    "available": "Available",
+    "partiallyBooked": "Partially Booked",
+    "fullyBooked": "Fully Booked / Unavailable"
+  },
+  "dateSelection": {
+    "dateSelected": "date selected",
+    "datesSelected": "dates selected"
+  }
+}
