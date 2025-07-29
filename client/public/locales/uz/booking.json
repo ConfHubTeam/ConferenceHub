@@ -1,82 +1,120 @@
 {
-  "form": {
-    "checkIn": "Kelish",
-    "checkOut": "Ketish",
-    "guests": "Mehmonlar",
-    "adults": "Kattalar",
-    "children": "Bolalar",
-    "infants": "Chaqaloqlar",
-    "selectDates": "Sanalarni tanlang",
-    "selectGuests": "Mehmonlarni tanlang",
-    "instantBook": "Tezkor bron",
-    "reserve": "Bron qilish",
-    "requestToBook": "Bron so'rovi",
-    "bookingFee": "Bron to'lovi",
-    "serviceFee": "Xizmat to'lovi",
-    "cleaningFee": "Tozalash to'lovi",
-    "taxes": "Soliqlar",
-    "total": "Jami",
-    "totalBefore": "Soliqsiz jami",
-    "pricePerNight": "Kechasi {{price, currency}}",
-    "priceRange": "Kechasi {{minPrice, currency}} - {{maxPrice, currency}}",
-    "guestCount": "{{count}} mehmon",
-    "guestCount_plural": "{{count}} mehmon",
-    "nightCount": "{{count}} kecha",
-    "nightCount_plural": "{{count}} kecha",
-    "adultCount": "{{count}} katta",
-    "adultCount_plural": "{{count}} katta",
-    "childCount": "{{count}} bola",
-    "childCount_plural": "{{count}} bola",
-    "infantCount": "{{count}} chaqaloq",
-    "infantCount_plural": "{{count}} chaqaloq"
+  "widget": {
+    "title": "Booking Widget",
+    "pricing": {
+      "perHour": "soat uchun",
+      "fullDay": "To'liq kun",
+      "hours": "soat",
+      "priceBreakdown": "Narxning tafsiloti"
+    },
+    "timeSlots": {
+      "selectedTimeSlots": "Tanlangan vaqt oralig'i",
+      "selectTimeSlots": "Narx ko'rish uchun aniq vaqt oralig'ini tanlang",
+      "selectForBooking": "Yaxshi narx uchun aniq vaqt oralig'ini tanlang",
+      "useCalendar": "Alohida sanalar va vaqt oralig'ini tanlash uchun taqvimdan foydalaning. Bu aniq bron qilish imkonini beradi va to'liq kun chegirmasiga mos kelishi mumkin.",
+      "useCalendarGuest": "Umumiy xarajatni ko'rish uchun alohida sanalar va vaqt oralig'ini tanlash uchun taqvimdan foydalaning.",
+      "totalHours": "Jami soatlar"
+    },
+    "attendees": {
+      "label": "Ishtirokchilar",
+      "maximum": "Maksimal sig'im",
+      "people": "kishi",
+      "selectNumber": "⚠️ Iltimos, ishtirokchilar sonini belgilang"
+    },
+    "contactInfo": {
+      "title": "Sizning to'liq ismingiz",
+      "fullName": "To'liq ismingiz",
+      "phoneNumber": "Telefon raqami",
+      "required": "talab qilinadi"
+    },
+    "buttons": {
+      "notAvailable": "Bron qilish uchun mavjud emas",
+      "selectTimeSlots": "Bron qilish uchun vaqt oralig'ini tanlang",
+      "bookSelectedSlots": "Tanlangan vaqt oralig'ini bron qiling",
+      "login": "Tanlangan vaqt oralig'ini bron qilish uchun kirish",
+      "loginGeneral": "Ushbu anjuman xonasini bron qilish uchun kirish",
+      "signUp": "Bu yerdan ro'yxatdan o'ting"
+    },
+    "protectionPlan": {
+      "title": "Himoya rejasi",
+      "active": "Himoya rejasi faol",
+      "description": "Har qanday vaqtda bekor qiling va bron qilish summangizning to'liq pulini qaytarib oling.",
+      "ofBooking": "bron qilishning",
+      "coverage": {
+        "title": "Qamrab olinadigan:",
+        "fullRefund": "Bron narxining 100% qaytarilishi",
+        "noQuestions": "Savolsiz bekor qilish",
+        "feeNonRefundable": "Himoya to'lovi qaytarilmaydi"
+      },
+      "activeMessage": "Siz har qanday vaqtda bekor qiling va bron qilish summangizning to'liq pulini qaytarib olishingiz mumkin."
+    }
+  },
+  "timeSlotModal": {
+    "title": "Vaqt oralig'ini o'rnatish",
+    "dateLabel": "Sana",
+    "minimumBooking": "Minimal bron",
+    "hoursRequired": "soat talab qilinadi",
+    "cooldownPeriod": "Sovutish davri",
+    "afterEachBooking": "har bir bron qilishdan keyin",
+    "startTime": "Boshlanish vaqti",
+    "endTime": "Tugash vaqti",
+    "selectStartTime": "Boshlanish vaqtini tanlang",
+    "selectEndTime": "Tugash vaqtini tanlang",
+    "noAvailableStart": "Mavjud bron qilish va sovutish talablari tufayli boshlanish vaqti yo'q.",
+    "selectEndFirst": "Iltimos, avval tugash vaqtini tanlang",
+    "unavailable": "Mavjud emas",
+    "todaysAvailability": "Bugungi mavjudlik",
+    "legend": {
+      "booked": "Bron qilingan",
+      "cooldown": "Sovutish",
+      "unavailable": "Mavjud emas",
+      "available": "Mavjud"
+    },
+    "buttons": {
+      "cancel": "Bekor qilish",
+      "add": "Oralig'ni qo'shish",
+      "update": "Yangilash"
+    }
+  },
+  "pricing": {
+    "breakdown": {
+      "title": "Narxning tafsiloti",
+      "subtotal": "Oraliq jami",
+      "protectionPlan": "Himoya rejasi",
+      "total": "Jami",
+      "basePrice": "Asosiy narx",
+      "forGuests": "uchun"
+    }
+  },
+  "validation": {
+    "errors": {
+      "nameRequired": "Iltimos, ismingizni kiriting",
+      "phoneRequired": "Aloqa uchun telefon raqamingizni kiriting",
+      "phoneInvalid": "Iltimos, yaroqli telefon raqamini kiriting",
+      "attendeesRequired": "Iltimos, ishtirokchilar sonini belgilang (minimum 1)",
+      "attendeesMax": "Maksimal sig'im {maxGuests} kishi",
+      "timeSlotsRequired": "Iltimos, yuqoridagi taqvimdan sanalar va vaqt oralig'ini tanlang",
+      "timeSlotsUnavailable": "Tanlangan vaqt oralig'i mavjud emas. Iltimos, boshqa vaqtlarni tanlang.",
+      "loginRequired": "Anjuman xonasini bron qilish uchun tizimga kiring",
+      "cannotBookOwn": "Siz o'zingizning anjuman xonangizni bron qila olmaysiz",
+      "clientsOnly": "Faqat mijozlar anjuman xonalarini bron qilishlari mumkin. Uy egralari va agentlar bron qila olmaydi.",
+      "reservationFailed": "Bron qilishda xatolik yuz berdi. Iltimos, qaytadan urining."
+    }
+  },
+  "notifications": {
+    "success": "Bron qilish so'rovi muvaffaqiyatli yuborildi",
+    "processing": "Bron qilish jarayoni...",
+    "confirmed": "Bron qilish tasdiqlandi!"
   },
   "status": {
     "pending": "Kutilmoqda",
-    "confirmed": "Tasdiqlandi",
-    "cancelled": "Bekor qilindi",
-    "completed": "Yakunlandi",
-    "declined": "Rad etildi"
+    "confirmed": "Tasdiqlangan",
+    "cancelled": "Bekor qilingan",
+    "completed": "Yakunlangan"
   },
-  "details": {
-    "bookingId": "Bron ID: {{id}}",
-    "hostName": "Mezbon: {{name}}",
-    "propertyName": "Mulk: {{name}}",
-    "bookingDate": "{{date, datetime}} sanasida bron qilingan",
-    "checkInDate": "Kelish: {{date, datetime(weekday: long; month: long; day: numeric)}}",
-    "checkOutDate": "Ketish: {{date, datetime(weekday: long; month: long; day: numeric)}}",
-    "duration": "{{nights}} kecha qolish",
-    "duration_plural": "{{nights}} kecha qolish",
-    "totalAmount": "Jami: {{amount, currency}}",
-    "paidAmount": "To'langan: {{amount, currency}}",
-    "remainingAmount": "Qolgan: {{amount, currency}}",
-    "rating": "Reyting: {{rating, rating}}",
-    "distance": "Shahar markazidan {{distance, distance(unit: km)}}"
-  },
-  "actions": {
-    "viewDetails": "Batafsil ko'rish",
-    "editBooking": "Bronni tahrirlash",
-    "cancelBooking": "Bronni bekor qilish",
-    "contactHost": "Mezbon bilan aloqa",
-    "leaveReview": "Sharh qoldirish",
-    "reportIssue": "Muammo haqida xabar berish",
-    "downloadReceipt": "Kvitansiyani yuklab olish",
-    "addToCalendar": "Taqvimga qo'shish"
-  },
-  "notifications": {
-    "bookingConfirmed": "Bronlash tasdiqlandi!",
-    "bookingCancelled": "Bronlash bekor qilindi",
-    "bookingDeclined": "Bron so'rovi rad etildi",
-    "paymentRequired": "Bronni yakunlash uchun to'lov kerak",
-    "checkInReminder": "{{hours, duration(unit: hour)}} ichida kelish",
-    "checkOutReminder": "{{hours, duration(unit: hour)}} ichida ketish",
-    "reviewReminder": "Qolganingiz haqida sharh qoldirishni unutmang"
-  },
-  "errors": {
-    "unavailableDates": "Tanlangan sanalar mavjud emas",
-    "maxGuestsExceeded": "Maksimal {{max}} mehmon ruxsat etilgan",
-    "minStayRequired": "Minimum {{nights}} kecha qolish talab qilinadi",
-    "maxStayExceeded": "Maksimal {{nights}} kecha qolish ruxsat etilgan",
-    "paymentFailed": "To'lov muvaffaqiyatsiz. Iltimos, qayta urinib ko'ring.",
-    "bookingFailed": "Bron qilish muvaffaqiyatsiz. Iltimos, qo'llab-quvvatlash bilan bog'laning."
+  "userTypes": {
+    "client": "Mijoz",
+    "host": "Uy egasi",
+    "agent": "Agent"
   }
 }

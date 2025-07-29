@@ -1,5 +1,6 @@
 import { useMemo, useEffect } from "react";
 import { format, parseISO } from "date-fns";
+import { useTranslation } from "react-i18next";
 import { generateTimeOptions, generateStartTimeOptions, isTimeBlocked, isTimeRangeAvailableEnhanced, isValidStartTimeEnhanced } from "../utils/TimeUtils";
 import { generateTimezoneAwareTimeOptions, isTimeInPastUzbekistan, getFirstAvailableHour } from "../utils/uzbekistanTimezoneUtils";
 
@@ -24,6 +25,7 @@ export default function TimeSlotModal({
   bookedTimeSlots = [], // Array of existing bookings
   timezoneAvailableTimeSlots = [] // New prop for timezone-aware available time slots
 }) {
+  const { t } = useTranslation('booking');
   // Generate time options and mark blocked times
   const timeOptions = useMemo(() => {
     const minimumHours = placeDetail.minimumHours || 1;
@@ -265,7 +267,7 @@ export default function TimeSlotModal({
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2 text-blue-600">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            Set Time Slot
+            {t("timeSlotModal.title")}
           </h3>
           <button 
             onClick={onClose}
@@ -279,7 +281,7 @@ export default function TimeSlotModal({
 
         <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
           <p className="text-blue-900 font-medium text-sm">
-            {format(parseISO(currentEditingDate), "EEEE, MMM d, yyyy")}
+            {t("timeSlotModal.dateLabel")}: {format(parseISO(currentEditingDate), "EEEE, MMM d, yyyy")}
           </p>
         </div>
 
@@ -291,7 +293,7 @@ export default function TimeSlotModal({
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <p className="text-xs">
-                <strong>Minimum booking:</strong> {placeDetail.minimumHours} hour{placeDetail.minimumHours > 1 ? 's' : ''} required
+                <strong>{t("timeSlotModal.minimumBooking")}:</strong> {placeDetail.minimumHours} {t("timeSlotModal.hoursRequired")}
               </p>
             </div>
           </div>
@@ -305,7 +307,7 @@ export default function TimeSlotModal({
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <p className="text-xs">
-                <strong>Cooldown period:</strong> {placeDetail.cooldown >= 60 ? `${Math.floor(placeDetail.cooldown / 60)}h ${placeDetail.cooldown % 60 > 0 ? `${placeDetail.cooldown % 60}min` : ''}`.trim() : `${placeDetail.cooldown} min`} after each booking
+                <strong>{t("timeSlotModal.cooldownPeriod")}:</strong> {placeDetail.cooldown >= 60 ? `${Math.floor(placeDetail.cooldown / 60)}h ${placeDetail.cooldown % 60 > 0 ? `${placeDetail.cooldown % 60}min` : ''}`.trim() : `${placeDetail.cooldown} min`} {t("timeSlotModal.afterEachBooking")}
               </p>
             </div>
           </div>
@@ -315,14 +317,14 @@ export default function TimeSlotModal({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Start Time
+                {t("timeSlotModal.startTime")}
               </label>
               <select
                 value={selectedStartTime}
                 onChange={(e) => handleStartTimeChange(e.target.value)}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="">Select start time</option>
+                <option value="">{t("timeSlotModal.selectStartTime")}</option>
                 {startTimeOptions.map((option) => (
                   <option 
                     key={option.value} 
@@ -332,7 +334,7 @@ export default function TimeSlotModal({
                     className={option.isBlocked ? "text-gray-400 bg-gray-100" : ""}
                   >
                     {option.label}
-                    {option.isBlocked ? " (Unavailable)" : ""}
+                    {option.isBlocked ? ` (${t("timeSlotModal.unavailable")})` : ""}
                   </option>
                 ))}
               </select>
@@ -340,7 +342,7 @@ export default function TimeSlotModal({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                End Time
+                {t("timeSlotModal.endTime")}
               </label>
               <select
                 value={selectedEndTime}
@@ -348,7 +350,7 @@ export default function TimeSlotModal({
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 disabled={!selectedStartTime}
               >
-                <option value="">Select end time</option>
+                <option value="">{t("timeSlotModal.selectEndTime")}</option>
                 {timeOptions
                   .filter(option => {
                     if (!selectedStartTime) return false;
@@ -399,7 +401,7 @@ export default function TimeSlotModal({
                         }
                       >
                         {option.label}
-                        {isDisabled ? " (Unavailable)" : ""}
+                        {isDisabled ? ` (${t("timeSlotModal.unavailable")})` : ""}
                       </option>
                     );
                   })}
@@ -410,7 +412,7 @@ export default function TimeSlotModal({
           
           {/* Visual time slot availability indicator */}
           <div className="mt-4">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Today's Availability</h4>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">{t("timeSlotModal.todaysAvailability")}</h4>
             <div className="flex overflow-x-auto pb-2">
               {timeOptions.map(option => {
                 const hourParts = option.label.split(':');
@@ -513,19 +515,19 @@ export default function TimeSlotModal({
             <div className="flex flex-wrap items-center mt-3 text-xs text-gray-600 gap-4">
               <div className="flex items-center">
                 <div className="h-3 w-3 bg-red-100 rounded mr-1"></div>
-                <span>Booked</span>
+                <span>{t("timeSlotModal.legend.booked")}</span>
               </div>
               <div className="flex items-center">
                 <div className="h-3 w-3 bg-orange-100 rounded mr-1"></div>
-                <span>Cooldown</span>
+                <span>{t("timeSlotModal.legend.cooldown")}</span>
               </div>
               <div className="flex items-center">
                 <div className="h-3 w-3 bg-gray-300 rounded mr-1"></div>
-                <span>Unavailable</span>
+                <span>{t("timeSlotModal.legend.unavailable")}</span>
               </div>
               <div className="flex items-center">
                 <div className="h-3 w-3 bg-green-100 rounded mr-1"></div>
-                <span>Available</span>
+                <span>{t("timeSlotModal.legend.available")}</span>
               </div>
             </div>
           </div>
@@ -535,14 +537,14 @@ export default function TimeSlotModal({
               onClick={onClose}
               className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
             >
-              Cancel
+              {t("timeSlotModal.buttons.cancel")}
             </button>
             <button
               onClick={onConfirm}
               disabled={!selectedStartTime || !selectedEndTime}
               className="flex-1 py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
             >
-              {isEditMode ? 'Update' : 'Add'} Slot
+              {isEditMode ? t("timeSlotModal.buttons.update") : t("timeSlotModal.buttons.add")}
             </button>
           </div>
         </div>

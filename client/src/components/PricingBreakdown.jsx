@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import PriceDisplay from "./PriceDisplay";
 
 export default function PricingBreakdown({ 
@@ -16,6 +17,7 @@ export default function PricingBreakdown({
   title = "Pricing Breakdown",
   isBookingDetails = false // Flag to indicate this is showing saved booking data
 }) {
+  const { t } = useTranslation('booking');
   // Handle booking details display (showing saved data from database)
   if (isBookingDetails) {
     const displayCurrency = currency || placeDetail?.currency;
@@ -23,11 +25,11 @@ export default function PricingBreakdown({
     
     return (
       <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h3 className="font-semibold text-gray-900 mb-4">{title}</h3>
+        <h3 className="font-semibold text-gray-900 mb-4">{t("pricing.breakdown.title")}</h3>
         
         <div className="space-y-3">
           {/* Base Price */}
-          <div className="flex justify-between items-center">          <span className="text-gray-600">Base price</span>
+          <div className="flex justify-between items-center">          <span className="text-gray-600">{t("pricing.breakdown.basePrice")}</span>
           <PriceDisplay 
             price={basePrice || totalPrice} 
             currency={displayCurrency} 
@@ -38,7 +40,7 @@ export default function PricingBreakdown({
         {/* Protection Plan Fee */}
         {protectionPlanIncluded && protectionPlanFee > 0 && (
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Protection plan</span>
+              <span className="text-gray-600">{t("pricing.breakdown.protectionPlan")}</span>
               <PriceDisplay 
                 price={protectionPlanFee} 
                 currency={displayCurrency} 
@@ -50,7 +52,7 @@ export default function PricingBreakdown({
           {/* Total */}
           <div className="border-t pt-3">
             <div className="flex justify-between items-center">
-              <span className="font-semibold text-gray-900">Total</span>
+              <span className="font-semibold text-gray-900">{t("pricing.breakdown.total")}</span>
               <PriceDisplay 
                 price={displayTotal} 
                 currency={displayCurrency} 
@@ -63,7 +65,7 @@ export default function PricingBreakdown({
           {/* Additional Info */}
           {numOfGuests && (
             <div className="text-sm text-gray-500 pt-2">
-              For {numOfGuests} {numOfGuests === 1 ? 'guest' : 'guests'}
+              {t("pricing.breakdown.forGuests")} {numOfGuests} {numOfGuests === 1 ? 'guest' : 'guests'}
             </div>
           )}
         </div>
@@ -101,7 +103,7 @@ export default function PricingBreakdown({
               </div>
             ))}
             <div className="flex px-3 py-3 justify-between items-center text-gray-600 border-t">
-              <p className="underline font-medium">Subtotal ({totalHours} hours)</p>
+              <p className="underline font-medium">{t("pricing.breakdown.subtotal")} ({totalHours} {t("widget.pricing.hours")})</p>
               <p className="">
                 <PriceDisplay 
                   price={totalPrice} 
@@ -117,7 +119,7 @@ export default function PricingBreakdown({
           <div className="flex px-3 pb-4 justify-between items-center text-blue-600">
             <p className="underline flex items-center">
               <span className="mr-2">🛡️</span>
-              Protection Plan
+              {t("pricing.breakdown.protectionPlan")}
             </p>
             <p className="">
               <PriceDisplay 
@@ -131,7 +133,7 @@ export default function PricingBreakdown({
       </div>
       <div>
         <div className="flex px-3 py-4 justify-between items-center">
-          <p className="underline">Total</p>
+          <p className="underline">{t("pricing.breakdown.total")}</p>
           <p className="">
             <PriceDisplay 
               price={displayTotal} 

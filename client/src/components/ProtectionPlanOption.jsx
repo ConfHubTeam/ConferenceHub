@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { isProtectionPlanAvailable, calculateProtectionPlanFee, getProtectionPlanPercentage } from "../utils/refundPolicyUtils";
 import PriceDisplay from "./PriceDisplay";
 
@@ -13,6 +14,7 @@ export default function ProtectionPlanOption({
   onSelectionChange,
   className = "" 
 }) {
+  const { t } = useTranslation('booking');
   const [protectionSelected, setProtectionSelected] = useState(isSelected);
 
   // Check if protection plan is available for this place
@@ -60,7 +62,7 @@ export default function ProtectionPlanOption({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-lg">🛡️</span>
-              <span className="font-semibold text-gray-900">Protection Plan</span>
+              <span className="font-semibold text-gray-900">{t("widget.protectionPlan.title")}</span>
             </div>
             <div className="text-right">
               <div className="font-semibold text-gray-900">
@@ -71,21 +73,21 @@ export default function ProtectionPlanOption({
                 />
               </div>
               <div className="text-xs text-gray-500">
-                {protectionPercentage}% of booking
+                {protectionPercentage}% {t("widget.protectionPlan.ofBooking")}
               </div>
             </div>
           </div>
           
           <div className="mt-2 text-sm text-gray-600">
             <p className="mb-2">
-              Cancel anytime and get a <strong>full refund</strong> of your booking amount.
+              {t("widget.protectionPlan.description")}
             </p>
             <div className="bg-white border border-gray-200 rounded p-2">
-              <h5 className="font-medium text-gray-800 text-xs mb-1">What's covered:</h5>
+              <h5 className="font-medium text-gray-800 text-xs mb-1">{t("widget.protectionPlan.coverage.title")}</h5>
               <ul className="text-xs text-gray-600 space-y-0.5">
-                <li>✓ 100% refund of booking price</li>
-                <li>✓ No questions asked cancellation</li>
-                <li className="text-red-600">✗ Protection fee is non-refundable</li>
+                <li>✓ {t("widget.protectionPlan.coverage.fullRefund")}</li>
+                <li>✓ {t("widget.protectionPlan.coverage.noQuestions")}</li>
+                <li className="text-red-600">✗ {t("widget.protectionPlan.coverage.feeNonRefundable")}</li>
               </ul>
             </div>
           </div>
@@ -99,11 +101,11 @@ export default function ProtectionPlanOption({
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>
             <span className="text-sm font-medium text-green-800">
-              Protection Plan Active
+              {t("widget.protectionPlan.active")}
             </span>
           </div>
           <p className="text-xs text-green-700 mt-1">
-            You can cancel anytime and receive a full refund of your booking amount.
+            {t("widget.protectionPlan.activeMessage")}
           </p>
         </div>
       )}

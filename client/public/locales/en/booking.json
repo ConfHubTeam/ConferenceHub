@@ -1,82 +1,120 @@
 {
-  "form": {
-    "checkIn": "Check in",
-    "checkOut": "Check out",
-    "guests": "Guests",
-    "adults": "Adults",
-    "children": "Children",
-    "infants": "Infants",
-    "selectDates": "Select dates",
-    "selectGuests": "Select guests",
-    "instantBook": "Instant Book",
-    "reserve": "Reserve",
-    "requestToBook": "Request to book",
-    "bookingFee": "Booking fee",
-    "serviceFee": "Service fee",
-    "cleaningFee": "Cleaning fee",
-    "taxes": "Taxes",
-    "total": "Total",
-    "totalBefore": "Total before taxes",
-    "pricePerNight": "{{price, currency}} per night",
-    "priceRange": "{{minPrice, currency}} - {{maxPrice, currency}} per night",
-    "guestCount": "{{count}} guest",
-    "guestCount_plural": "{{count}} guests",
-    "nightCount": "{{count}} night",
-    "nightCount_plural": "{{count}} nights",
-    "adultCount": "{{count}} adult",
-    "adultCount_plural": "{{count}} adults",
-    "childCount": "{{count}} child",
-    "childCount_plural": "{{count}} children",
-    "infantCount": "{{count}} infant",
-    "infantCount_plural": "{{count}} infants"
+  "widget": {
+    "title": "Booking Widget",
+    "pricing": {
+      "perHour": "per hour",
+      "fullDay": "Full day",
+      "hours": "hours",
+      "priceBreakdown": "Pricing Breakdown"
+    },
+    "timeSlots": {
+      "selectedTimeSlots": "Selected Time Slots",
+      "selectTimeSlots": "Select specific time slots for pricing",
+      "selectForBooking": "Select specific time slots for better pricing",
+      "useCalendar": "Use the calendar to select individual dates and time slots. This allows for precise booking and may qualify for full-day discounts.",
+      "useCalendarGuest": "Use the calendar to select individual dates and time slots to see the total cost.",
+      "totalHours": "Total Hours"
+    },
+    "attendees": {
+      "label": "Attendees",
+      "maximum": "Maximum capacity",
+      "people": "people",
+      "selectNumber": "⚠️ Please specify the number of attendees"
+    },
+    "contactInfo": {
+      "title": "Your Full Name",
+      "fullName": "Your full name",
+      "phoneNumber": "Phone number",
+      "required": "required"
+    },
+    "buttons": {
+      "notAvailable": "Not available to book",
+      "selectTimeSlots": "Select Time Slots to Book",
+      "bookSelectedSlots": "Book Selected Time Slots",
+      "login": "Login to Book Selected Time Slots",
+      "loginGeneral": "Login to Book This Conference Room",
+      "signUp": "Sign up here"
+    },
+    "protectionPlan": {
+      "title": "Protection Plan",
+      "active": "Protection Plan Active",
+      "description": "Cancel anytime and get a full refund of your booking amount.",
+      "ofBooking": "of booking",
+      "coverage": {
+        "title": "What's covered:",
+        "fullRefund": "100% refund of booking price",
+        "noQuestions": "No questions asked cancellation",
+        "feeNonRefundable": "Protection fee is non-refundable"
+      },
+      "activeMessage": "You can cancel anytime and receive a full refund of your booking amount."
+    }
+  },
+  "timeSlotModal": {
+    "title": "Set Time Slot",
+    "dateLabel": "Date",
+    "minimumBooking": "Minimum booking",
+    "hoursRequired": "hours required",
+    "cooldownPeriod": "Cooldown period",
+    "afterEachBooking": "after each booking",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "selectStartTime": "Select start time",
+    "selectEndTime": "Select end time",
+    "noAvailableStart": "No available start times due to existing bookings and cooldown requirements.",
+    "selectEndFirst": "Please select end time first",
+    "unavailable": "Unavailable",
+    "todaysAvailability": "Today's Availability",
+    "legend": {
+      "booked": "Booked",
+      "cooldown": "Cooldown",
+      "unavailable": "Unavailable",
+      "available": "Available"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "add": "Add Slot",
+      "update": "Update"
+    }
+  },
+  "pricing": {
+    "breakdown": {
+      "title": "Pricing Breakdown",
+      "subtotal": "Subtotal",
+      "protectionPlan": "Protection Plan",
+      "total": "Total",
+      "basePrice": "Base price",
+      "forGuests": "for"
+    }
+  },
+  "validation": {
+    "errors": {
+      "nameRequired": "Please provide your name",
+      "phoneRequired": "Please provide your phone number for contact",
+      "phoneInvalid": "Please enter a valid phone number",
+      "attendeesRequired": "Please specify the number of attendees (minimum 1)",
+      "attendeesMax": "Maximum capacity is {maxGuests} people",
+      "timeSlotsRequired": "Please select dates and time slots from the calendar above",
+      "timeSlotsUnavailable": "Selected time slots are not available. Please choose different times.",
+      "loginRequired": "Please log in to book a conference room",
+      "cannotBookOwn": "You cannot book your own conference room",
+      "clientsOnly": "Only clients can book conference rooms. Hosts and agents cannot make bookings.",
+      "reservationFailed": "Failed to make reservation. Please try again."
+    }
+  },
+  "notifications": {
+    "success": "Booking request submitted successfully",
+    "processing": "Processing booking...",
+    "confirmed": "Booking confirmed!"
   },
   "status": {
     "pending": "Pending",
     "confirmed": "Confirmed",
     "cancelled": "Cancelled",
-    "completed": "Completed",
-    "declined": "Declined"
+    "completed": "Completed"
   },
-  "details": {
-    "bookingId": "Booking ID: {{id}}",
-    "hostName": "Host: {{name}}",
-    "propertyName": "Property: {{name}}",
-    "bookingDate": "Booked on {{date, datetime}}",
-    "checkInDate": "Check-in: {{date, datetime(weekday: long; month: long; day: numeric)}}",
-    "checkOutDate": "Check-out: {{date, datetime(weekday: long; month: long; day: numeric)}}",
-    "duration": "{{nights}} night stay",
-    "duration_plural": "{{nights}} nights stay",
-    "totalAmount": "Total: {{amount, currency}}",
-    "paidAmount": "Paid: {{amount, currency}}",
-    "remainingAmount": "Remaining: {{amount, currency}}",
-    "rating": "Rating: {{rating, rating}}",
-    "distance": "{{distance, distance(unit: km)}} from city center"
-  },
-  "actions": {
-    "viewDetails": "View details",
-    "editBooking": "Edit booking",
-    "cancelBooking": "Cancel booking",
-    "contactHost": "Contact host",
-    "leaveReview": "Leave a review",
-    "reportIssue": "Report an issue",
-    "downloadReceipt": "Download receipt",
-    "addToCalendar": "Add to calendar"
-  },
-  "notifications": {
-    "bookingConfirmed": "Your booking has been confirmed!",
-    "bookingCancelled": "Your booking has been cancelled",
-    "bookingDeclined": "Your booking request was declined",
-    "paymentRequired": "Payment is required to complete your booking",
-    "checkInReminder": "Check-in is in {{hours, duration(unit: hour)}}",
-    "checkOutReminder": "Check-out is in {{hours, duration(unit: hour)}}",
-    "reviewReminder": "Don't forget to review your stay"
-  },
-  "errors": {
-    "unavailableDates": "Selected dates are not available",
-    "maxGuestsExceeded": "Maximum {{max}} guests allowed",
-    "minStayRequired": "Minimum {{nights}} night stay required",
-    "maxStayExceeded": "Maximum {{nights}} nights stay allowed",
-    "paymentFailed": "Payment failed. Please try again.",
-    "bookingFailed": "Booking failed. Please contact support."
+  "userTypes": {
+    "client": "Client",
+    "host": "Host",
+    "agent": "Agent"
   }
 }

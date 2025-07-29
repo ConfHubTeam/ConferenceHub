@@ -1,82 +1,120 @@
 {
-  "form": {
-    "checkIn": "Заезд",
-    "checkOut": "Выезд",
-    "guests": "Гости",
-    "adults": "Взрослые",
-    "children": "Дети",
-    "infants": "Младенцы",
-    "selectDates": "Выберите даты",
-    "selectGuests": "Выберите гостей",
-    "instantBook": "Мгновенное бронирование",
-    "reserve": "Забронировать",
-    "requestToBook": "Запросить бронирование",
-    "bookingFee": "Сбор за бронирование",
-    "serviceFee": "Сервисный сбор",
-    "cleaningFee": "Сбор за уборку",
-    "taxes": "Налоги",
-    "total": "Итого",
-    "totalBefore": "Итого до налогов",
-    "pricePerNight": "{{price, currency}} за ночь",
-    "priceRange": "{{minPrice, currency}} - {{maxPrice, currency}} за ночь",
-    "guestCount": "{{count}} гость",
-    "guestCount_plural": "{{count}} гостей",
-    "nightCount": "{{count}} ночь",
-    "nightCount_plural": "{{count}} ночей",
-    "adultCount": "{{count}} взрослый",
-    "adultCount_plural": "{{count}} взрослых",
-    "childCount": "{{count}} ребёнок",
-    "childCount_plural": "{{count}} детей",
-    "infantCount": "{{count}} младенец",
-    "infantCount_plural": "{{count}} младенцев"
+  "widget": {
+    "title": "Виджет бронирования",
+    "pricing": {
+      "perHour": "в час",
+      "fullDay": "Полный день",
+      "hours": "часов",
+      "priceBreakdown": "Детализация стоимости"
+    },
+    "timeSlots": {
+      "selectedTimeSlots": "Выбранные временные слоты",
+      "selectTimeSlots": "Выберите конкретные временные слоты для расчёта стоимости",
+      "selectForBooking": "Выберите конкретные временные слоты для лучшей цены",
+      "useCalendar": "Используйте календарь для выбора отдельных дат и временных слотов. Это позволяет точно забронировать и может дать право на скидки полного дня.",
+      "useCalendarGuest": "Используйте календарь для выбора отдельных дат и временных слотов, чтобы увидеть общую стоимость.",
+      "totalHours": "Общее время"
+    },
+    "attendees": {
+      "label": "Участники",
+      "maximum": "Максимальная вместимость",
+      "people": "человек",
+      "selectNumber": "⚠️ Пожалуйста, укажите количество участников"
+    },
+    "contactInfo": {
+      "title": "Ваше полное имя",
+      "fullName": "Ваше полное имя",
+      "phoneNumber": "Номер телефона",
+      "required": "обязательно"
+    },
+    "buttons": {
+      "notAvailable": "Недоступно для бронирования",
+      "selectTimeSlots": "Выберите временные слоты для бронирования",
+      "bookSelectedSlots": "Забронировать выбранные временные слоты",
+      "login": "Войдите для бронирования выбранных временных слотов",
+      "loginGeneral": "Войдите для бронирования этого конференц-зала",
+      "signUp": "Зарегистрируйтесь здесь"
+    },
+    "protectionPlan": {
+      "title": "План защиты",
+      "active": "План защиты активен",
+      "description": "Отмените в любое время и получите полный возврат суммы бронирования.",
+      "ofBooking": "от бронирования",
+      "coverage": {
+        "title": "Что покрывается:",
+        "fullRefund": "100% возврат стоимости бронирования",
+        "noQuestions": "Отмена без вопросов",
+        "feeNonRefundable": "Плата за защиту не возвращается"
+      },
+      "activeMessage": "Вы можете отменить в любое время и получить полный возврат суммы бронирования."
+    }
+  },
+  "timeSlotModal": {
+    "title": "Установить временной слот",
+    "dateLabel": "Дата",
+    "minimumBooking": "Минимальное бронирование",
+    "hoursRequired": "часов требуется",
+    "cooldownPeriod": "Период охлаждения",
+    "afterEachBooking": "после каждого бронирования",
+    "startTime": "Время начала",
+    "endTime": "Время окончания",
+    "selectStartTime": "Выберите время начала",
+    "selectEndTime": "Выберите время окончания",
+    "noAvailableStart": "Нет доступного времени начала из-за существующих бронирований и требований периода охлаждения.",
+    "selectEndFirst": "Пожалуйста, сначала выберите время окончания",
+    "unavailable": "Недоступно",
+    "todaysAvailability": "Доступность на сегодня",
+    "legend": {
+      "booked": "Забронировано",
+      "cooldown": "Охлаждение",
+      "unavailable": "Недоступно",
+      "available": "Доступно"
+    },
+    "buttons": {
+      "cancel": "Отмена",
+      "add": "Добавить слот",
+      "update": "Обновить"
+    }
+  },
+  "pricing": {
+    "breakdown": {
+      "title": "Детализация стоимости",
+      "subtotal": "Промежуточный итог",
+      "protectionPlan": "План защиты",
+      "total": "Итого",
+      "basePrice": "Базовая цена",
+      "forGuests": "для"
+    }
+  },
+  "validation": {
+    "errors": {
+      "nameRequired": "Пожалуйста, укажите ваше имя",
+      "phoneRequired": "Пожалуйста, укажите ваш номер телефона для связи",
+      "phoneInvalid": "Пожалуйста, введите действительный номер телефона",
+      "attendeesRequired": "Пожалуйста, укажите количество участников (минимум 1)",
+      "attendeesMax": "Максимальная вместимость {maxGuests} человек",
+      "timeSlotsRequired": "Пожалуйста, выберите даты и временные слоты из календаря выше",
+      "timeSlotsUnavailable": "Выбранные временные слоты недоступны. Пожалуйста, выберите другое время.",
+      "loginRequired": "Пожалуйста, войдите в систему для бронирования конференц-зала",
+      "cannotBookOwn": "Вы не можете забронировать свой собственный конференц-зал",
+      "clientsOnly": "Только клиенты могут бронировать конференц-залы. Хозяева и агенты не могут делать бронирования.",
+      "reservationFailed": "Не удалось сделать бронирование. Пожалуйста, попробуйте ещё раз."
+    }
+  },
+  "notifications": {
+    "success": "Запрос на бронирование успешно отправлен",
+    "processing": "Обработка бронирования...",
+    "confirmed": "Бронирование подтверждено!"
   },
   "status": {
     "pending": "В ожидании",
     "confirmed": "Подтверждено",
     "cancelled": "Отменено",
-    "completed": "Завершено",
-    "declined": "Отклонено"
+    "completed": "Завершено"
   },
-  "details": {
-    "bookingId": "ID бронирования: {{id}}",
-    "hostName": "Хозяин: {{name}}",
-    "propertyName": "Жильё: {{name}}",
-    "bookingDate": "Забронировано {{date, datetime}}",
-    "checkInDate": "Заезд: {{date, datetime(weekday: long; month: long; day: numeric)}}",
-    "checkOutDate": "Выезд: {{date, datetime(weekday: long; month: long; day: numeric)}}",
-    "duration": "Проживание {{nights}} ночь",
-    "duration_plural": "Проживание {{nights}} ночей",
-    "totalAmount": "Итого: {{amount, currency}}",
-    "paidAmount": "Оплачено: {{amount, currency}}",
-    "remainingAmount": "Осталось: {{amount, currency}}",
-    "rating": "Рейтинг: {{rating, rating}}",
-    "distance": "{{distance, distance(unit: km)}} от центра города"
-  },
-  "actions": {
-    "viewDetails": "Подробности",
-    "editBooking": "Изменить бронирование",
-    "cancelBooking": "Отменить бронирование",
-    "contactHost": "Связаться с хозяином",
-    "leaveReview": "Оставить отзыв",
-    "reportIssue": "Сообщить о проблеме",
-    "downloadReceipt": "Скачать чек",
-    "addToCalendar": "Добавить в календарь"
-  },
-  "notifications": {
-    "bookingConfirmed": "Ваше бронирование подтверждено!",
-    "bookingCancelled": "Ваше бронирование отменено",
-    "bookingDeclined": "Ваш запрос на бронирование отклонён",
-    "paymentRequired": "Для завершения бронирования требуется оплата",
-    "checkInReminder": "Заезд через {{hours, duration(unit: hour)}}",
-    "checkOutReminder": "Выезд через {{hours, duration(unit: hour)}}",
-    "reviewReminder": "Не забудьте оставить отзыв о проживании"
-  },
-  "errors": {
-    "unavailableDates": "Выбранные даты недоступны",
-    "maxGuestsExceeded": "Максимум {{max}} гостей разрешено",
-    "minStayRequired": "Минимальное проживание {{nights}} ночей",
-    "maxStayExceeded": "Максимальное проживание {{nights}} ночей",
-    "paymentFailed": "Оплата не прошла. Попробуйте ещё раз.",
-    "bookingFailed": "Бронирование не удалось. Обратитесь в поддержку."
+  "userTypes": {
+    "client": "Клиент",
+    "host": "Хозяин",
+    "agent": "Агент"
   }
 }
