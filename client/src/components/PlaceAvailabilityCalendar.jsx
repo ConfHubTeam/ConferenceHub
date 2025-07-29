@@ -1,5 +1,7 @@
 import React, { useState, useContext, useEffect, useMemo } from "react";
 import { format, parseISO, addDays, startOfMonth, endOfMonth } from "date-fns";
+import { enUS, ru, uz } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 import Calendar from "./Calendar";
 import { UserContext } from "./UserContext";
 import TimeSlotModal from "./TimeSlotModal";
@@ -23,6 +25,17 @@ export default function PlaceAvailabilityCalendar({
   existingBookings = [] // Add prop to receive existing bookings data
 }) {
   const { user } = useContext(UserContext);
+  const { i18n } = useTranslation();
+  
+  // Get appropriate locale for date formatting
+  const getDateLocale = () => {
+    switch (i18n.language) {
+      case 'ru': return ru;
+      case 'uz': return uz;
+      default: return enUS;
+    }
+  };
+  
   const [selectedDates, setSelectedDates] = useState([]); // Array of selected dates with time slots
   const [showTimeSlotModal, setShowTimeSlotModal] = useState(false);
   const [currentEditingDate, setCurrentEditingDate] = useState("");
@@ -258,9 +271,8 @@ export default function PlaceAvailabilityCalendar({
     const newDateSlot = {
       date: currentEditingDate,
       startTime: selectedStartTime,
-      endTime: selectedEndTime,
-      formattedDate: format(parseISO(currentEditingDate), "MMM d, yyyy"),
-      dayOfWeek: format(parseISO(currentEditingDate), "EEEE")
+      endTime: selectedEndTime
+      // Removed formattedDate and dayOfWeek - these will be generated dynamically for display
     };
 
     // Calculate updated dates

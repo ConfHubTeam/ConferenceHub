@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { UserContext } from "../components/UserContext";
 import { useNotification } from "../components/NotificationContext";
 import AccountNav from "../components/AccountNav";
@@ -57,6 +58,7 @@ export default function BookingDetailsPage() {
   const { notify } = useNotification();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { t } = useTranslation('booking');
   
   const [booking, setBooking] = useState(null);
   const [competingBookings, setCompetingBookings] = useState([]);
@@ -76,12 +78,12 @@ export default function BookingDetailsPage() {
   const handlePaymentReturn = async (paymentStatus, transactionId, error) => {
     try {
       if (error) {
-        notify(`Payment failed: ${error}`, "error");
+        notify(t('notifications.paymentFailed', { error }), "error");
         return;
       }
 
       if (paymentStatus === 'success' || transactionId) {
-        notify("Payment completed! Refreshing booking status...", "success");
+        notify(t('notifications.paymentCompleted'), "success");
         
         // Refresh booking data to get updated status
         const { data } = await api.get(`/bookings/${bookingId}`);
@@ -89,16 +91,16 @@ export default function BookingDetailsPage() {
         
         // Show success message
         setTimeout(() => {
-          notify("Booking status updated successfully!", "success");
+          notify(t('notifications.statusUpdated'), "success");
         }, 1000);
       } else if (paymentStatus === 'failed') {
-        notify("Payment was not completed. You can try again.", "warning");
+        notify(t('notifications.paymentNotCompleted'), "warning");
       } else if (paymentStatus === 'cancelled') {
-        notify("Payment was cancelled. You can try again when ready.", "info");
+        notify(t('notifications.paymentCancelled'), "info");
       }
     } catch (error) {
       console.error('Error handling payment return:', error);
-      notify("Error updating booking status. Please refresh the page.", "error");
+      notify(t('notifications.errorUpdatingStatus'), "error");
     }
   };
 
@@ -141,7 +143,7 @@ export default function BookingDetailsPage() {
           await fetchLatestContactInfo(data);
         }
       } catch (error) {
-        notify("Error loading booking details", "error");
+        notify(t('notifications.errorLoadingDetails'), "error");
         navigate("/account/bookings");
       } finally {
         setLoading(false);
@@ -237,7 +239,7 @@ export default function BookingDetailsPage() {
       const { data } = await api.put(`/bookings/${bookingId}`, requestBody);
       
       if (data.deleted) {
-        notify("Booking cancelled successfully", "success");
+        notify(t('notifications.cancelledSuccessfully'), "success");
         navigate("/account/bookings");
       } else {
         setBooking(data.booking);
@@ -262,7 +264,7 @@ export default function BookingDetailsPage() {
           setCompetingBookings([]); // Clear competing bookings for non-pending/selected statuses or clients
         }
         
-        notify(data.message || `Booking ${newStatus} successfully`, "success");
+        notify(data.message || t('notifications.statusUpdatedSuccess', { status: newStatus }), "success");
       }
       setShowModal(false);
     } catch (error) {
@@ -289,7 +291,7 @@ export default function BookingDetailsPage() {
       const { data } = await api.post(`/bookings/${bookingId}/paid-to-host`);
       
       setBooking(data.booking);
-      notify(data.message || "Payment to host marked successfully", "success");
+      notify(data.message || t('notifications.paidToHostSuccess'), "success");
       setShowModal(false);
     } catch (error) {
       notify(`Error: ${error.response?.data?.error || error.message}`, "error");
@@ -338,14 +340,14 @@ export default function BookingDetailsPage() {
   // Handle payment provider selection
   const handlePaymentClick = async (provider) => {
     if (!isPaymentAvailable()) {
-      notify("Payment is only available for selected bookings", "warning");
+      notify(t('notifications.paymentOnlyAvailable'), "warning");
       return;
     }
 
     if (provider === 'click') {
       try {
         setLoading(true);
-        notify("Generating payment link...", "info");
+        notify(t('notifications.generatingPaymentLink'), "info");
         
         const response = await api.post('/click/checkout', {
           bookingId: booking.id
@@ -355,7 +357,7 @@ export default function BookingDetailsPage() {
           // Open Click payment page in new tab
           window.open(response.data.url, '_blank', 'noopener,noreferrer');
           
-          notify("Payment window opened or allow window pop up. Complete payment to confirm booking.", "success");
+          notify(t('notifications.paymentWindowOpened'), "success");
           
           // Optionally refresh booking details after a delay to check for payment updates
           setTimeout(() => {
@@ -372,24 +374,24 @@ export default function BookingDetailsPage() {
             }, 300000);
           }, 5000);
         } else {
-          throw new Error("Failed to generate payment link");
+          throw new Error(t('notifications.failedToGenerate'));
         }
       } catch (error) {
         console.error("Payment error:", error);
-        const errorMessage = error.response?.data?.error || error.message || "Failed to initiate payment";
-        notify(`Payment Error: ${errorMessage}`, "error");
+        const errorMessage = error.response?.data?.error || error.message || t('notifications.failedToInitiate');
+        notify(t('notifications.paymentError', { error: errorMessage }), "error");
       } finally {
         setLoading(false);
       }
     } else if (provider === 'payme') {
       // Placeholder for Payme integration
-      notify("Payme integration will be implemented soon", "info");
+      notify(t('notifications.paymeIntegration'), "info");
     } else if (provider === 'octo') {
       // Placeholder for Octo integration 
-      notify("Octo integration will be implemented soon", "info");
+      notify(t('notifications.octoIntegration'), "info");
     } else {
       // Generic fallback
-      notify(`${provider.charAt(0).toUpperCase() + provider.slice(1)} integration will be implemented soon`, "info");
+      notify(t('notifications.genericIntegration', { provider: provider.charAt(0).toUpperCase() + provider.slice(1) }), "info");
     }
     
     console.log(`Payment initiated with provider: ${provider} for booking ${booking.id}`);
@@ -411,9 +413,9 @@ export default function BookingDetailsPage() {
       <div>
         <AccountNav />
         <div className="text-center py-20">
-          <p className="text-gray-600">Booking not found</p>
+          <p className="text-gray-600">{t('details.bookingNotFound')}</p>
           <Link to="/account/bookings" className="text-blue-600 hover:underline mt-4 inline-block">
-            Back to Bookings
+            {t('details.backToBookings')}
           </Link>
         </div>
       </div>
@@ -436,9 +438,9 @@ export default function BookingDetailsPage() {
               </svg>
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Booking Details</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{t('details.title')}</h1>
               <p className="text-gray-600 font-mono text-sm">
-                {booking.uniqueRequestId || `REQ-${booking.id}`}
+                {booking.uniqueRequestId || t('card.requestId', { id: booking.id })}
               </p>
             </div>
           </div>
@@ -454,7 +456,7 @@ export default function BookingDetailsPage() {
             <PropertyDetailsSection place={booking.place} />
 
             {/* Booking Information */}
-            <SectionCard title="Booking Information">
+            <SectionCard title={t('details.sections.bookingInformation')}>
               {/* Booking Details Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 {getBookingInfoCards(booking).map((card, index) => (
@@ -473,7 +475,7 @@ export default function BookingDetailsPage() {
                   <svg className="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <h3 className="text-lg font-medium text-gray-900">Reserved Time Slots</h3>
+                  <h3 className="text-lg font-medium text-gray-900">{t('details.bookingInfo.timeSlots')}</h3>
                 </div>
                 {booking.timeSlots && booking.timeSlots.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -488,14 +490,14 @@ export default function BookingDetailsPage() {
             </SectionCard>
 
             {/* Contact Information */}
-            <SectionCard title="Contact Information">
+            <SectionCard title={t('details.sections.contactInformation')}>
               {/* Agent can see both client and host info */}
               {canViewContactInfo(user?.userType) && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Client Info for agents */}
                   {booking.user && (
                     <EnhancedContactInfoCard
-                      title="Client"
+                      title={t('details.contactInfo.titles.client')}
                       userType="client"
                       booking={booking}
                       latestContactInfo={latestContactInfo}
@@ -510,7 +512,7 @@ export default function BookingDetailsPage() {
                   {/* Host Info for agents */}
                   {booking.place?.owner && (
                     <EnhancedContactInfoCard
-                      title="Host"
+                      title={t('details.contactInfo.titles.host')}
                       userType="host"
                       booking={booking}
                       latestContactInfo={latestContactInfo}
@@ -559,7 +561,7 @@ export default function BookingDetailsPage() {
 
             {/* Actions */}
             {(() => {
-              const { buttons, note } = getBookingActionButtons(booking, user, competingBookings);
+              const { buttons, note } = getBookingActionButtons(booking, user, competingBookings, t);
               return (
                 <>
                   {note && (
@@ -577,6 +579,7 @@ export default function BookingDetailsPage() {
                     isUpdating={isUpdating}
                     onActionClick={showConfirmationModal}
                     getActionButtonClasses={getActionButtonClasses}
+                    title={t('details.sections.actions')}
                   />
                 </>
               );
@@ -626,14 +629,14 @@ export default function BookingDetailsPage() {
                   disabled={isUpdating}
                   className="w-full bg-green-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
                 >
-                  Payment Confirmed - Approve
+                  {t('details.actions.confirmations.paymentConfirmed')}
                 </button>
                 <button
                   onClick={() => handlePaymentConfirmation(false)}
                   disabled={isUpdating}
                   className="w-full bg-yellow-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-yellow-700 disabled:opacity-50 transition-colors"
                 >
-                  Approve Without Payment Confirmation
+                  {t('details.actions.confirmations.approveWithoutPayment')}
                 </button>
               </div>
             )}

@@ -1,4 +1,6 @@
 import { useTranslation } from "react-i18next";
+import { format, parseISO } from "date-fns";
+import { enUS, ru, uz } from "date-fns/locale";
 import PriceDisplay from "./PriceDisplay";
 
 export default function SelectedTimeSlots({ 
@@ -7,7 +9,27 @@ export default function SelectedTimeSlots({
   placeDetail,
   isAuthorized = true
 }) {
-  const { t } = useTranslation('booking');
+  const { t, i18n } = useTranslation('booking');
+  
+  // Get appropriate locale for date formatting
+  const getDateLocale = () => {
+    switch (i18n.language) {
+      case 'ru': return ru;
+      case 'uz': return uz;
+      default: return enUS;
+    }
+  };
+  
+  // Helper function to format date dynamically based on current language
+  const formatDateForDisplay = (dateString) => {
+    try {
+      return format(parseISO(dateString), "MMM d, yyyy", { locale: getDateLocale() });
+    } catch (error) {
+      console.warn("Error formatting date:", error);
+      return dateString;
+    }
+  };
+  
   // Helper function to format hour to 12-hour format
   const formatHourTo12 = (hour24) => {
     if (!hour24) return "";
@@ -52,7 +74,7 @@ export default function SelectedTimeSlots({
       <div className="space-y-1 text-sm text-blue-800">
         {selectedCalendarDates.map((dateSlot, index) => (
           <div key={index} className="flex justify-between">
-            <span>{dateSlot.formattedDate}</span>
+            <span>{formatDateForDisplay(dateSlot.date)}</span>
             <span>{formatHourTo12(dateSlot.startTime)} - {formatHourTo12(dateSlot.endTime)}</span>
           </div>
         ))}

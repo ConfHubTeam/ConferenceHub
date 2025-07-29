@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { format, parseISO } from "date-fns";
+import { enUS, ru, uz } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 import { 
   formatHourTo12, 
   getBookedTimeSlots, 
@@ -19,8 +21,18 @@ export default function DateAvailabilityDetails({
   date, 
   onClose, 
   bookedTimeSlots = [],
-  placeDetail
+  placeDetail = {} 
 }) {
+  const { i18n } = useTranslation();
+
+  // Get appropriate locale for date formatting
+  const getDateLocale = () => {
+    switch (i18n.language) {
+      case 'ru': return ru;
+      case 'uz': return uz;
+      default: return enUS;
+    }
+  };
   const [bookings, setBookings] = useState([]);
   const [allTimeSlots, setAllTimeSlots] = useState([]);
   const [timeRange, setTimeRange] = useState({ start: "09:00", end: "17:00" });
@@ -36,7 +48,7 @@ export default function DateAvailabilityDetails({
     // Ensure date is properly parsed
     const dateObj = typeof date === "string" ? new Date(date) : date;
     const dayOfWeek = dateObj.getDay(); // 0-6 (Sunday-Saturday)
-    const dayName = format(dateObj, 'EEEE');
+    const dayName = format(dateObj, 'EEEE', { locale: getDateLocale() });
     
     // Use getAvailableTimeSlots to get the correct time range for this day
     const availableTimeSlots = getAvailableTimeSlots(date, weekdayTimeSlots, checkIn, checkOut);
@@ -201,7 +213,7 @@ export default function DateAvailabilityDetails({
   if (!date) return null;
   
   const dateObj = typeof date === "string" ? parseISO(date) : date;
-  const formattedDate = format(dateObj, "EEEE, MMMM d, yyyy");
+  const formattedDate = format(dateObj, "EEEE, MMMM d, yyyy", { locale: getDateLocale() });
   
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70] p-4">

@@ -1,5 +1,6 @@
 import { useMemo, useEffect } from "react";
 import { format, parseISO } from "date-fns";
+import { enUS, ru, uz } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
 import { generateTimeOptions, generateStartTimeOptions, isTimeBlocked, isTimeRangeAvailableEnhanced, isValidStartTimeEnhanced } from "../utils/TimeUtils";
 import { generateTimezoneAwareTimeOptions, isTimeInPastUzbekistan, getFirstAvailableHour } from "../utils/uzbekistanTimezoneUtils";
@@ -25,7 +26,17 @@ export default function TimeSlotModal({
   bookedTimeSlots = [], // Array of existing bookings
   timezoneAvailableTimeSlots = [] // New prop for timezone-aware available time slots
 }) {
-  const { t } = useTranslation('booking');
+  const { t, i18n } = useTranslation('booking');
+  
+  // Get appropriate locale for date formatting
+  const getDateLocale = () => {
+    switch (i18n.language) {
+      case 'ru': return ru;
+      case 'uz': return uz;
+      default: return enUS;
+    }
+  };
+  
   // Generate time options and mark blocked times
   const timeOptions = useMemo(() => {
     const minimumHours = placeDetail.minimumHours || 1;
@@ -281,7 +292,7 @@ export default function TimeSlotModal({
 
         <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
           <p className="text-blue-900 font-medium text-sm">
-            {t("timeSlotModal.dateLabel")}: {format(parseISO(currentEditingDate), "EEEE, MMM d, yyyy")}
+            {t("timeSlotModal.dateLabel")}: {format(parseISO(currentEditingDate), "EEEE, MMM d, yyyy", { locale: getDateLocale() })}
           </p>
         </div>
 

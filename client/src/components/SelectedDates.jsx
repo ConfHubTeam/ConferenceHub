@@ -1,4 +1,7 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
+import { format, parseISO } from "date-fns";
+import { enUS, ru, uz } from "date-fns/locale";
 import { formatHourTo12 } from "../utils/TimeUtils";
 
 /**
@@ -13,6 +16,37 @@ export default function SelectedDates({
   onRemoveDate,
   onSelectedDatesChange 
 }) {
+  const { i18n } = useTranslation();
+  
+  // Get appropriate locale for date formatting
+  const getDateLocale = () => {
+    switch (i18n.language) {
+      case 'ru': return ru;
+      case 'uz': return uz;
+      default: return enUS;
+    }
+  };
+  
+  // Helper function to format date dynamically based on current language
+  const formatDateForDisplay = (dateString) => {
+    try {
+      return format(parseISO(dateString), "MMM d, yyyy", { locale: getDateLocale() });
+    } catch (error) {
+      console.warn("Error formatting date:", error);
+      return dateString;
+    }
+  };
+  
+  // Helper function to format day of week dynamically based on current language
+  const formatDayOfWeek = (dateString) => {
+    try {
+      return format(parseISO(dateString), "EEEE", { locale: getDateLocale() });
+    } catch (error) {
+      console.warn("Error formatting day of week:", error);
+      return "";
+    }
+  };
+
   if (selectedDates.length === 0) return null;
   
   return (
@@ -39,7 +73,7 @@ export default function SelectedDates({
           <div key={dateSlot.date} className="flex items-center justify-between bg-white p-3 rounded-lg border border-green-300">
             <div className="flex-1">
               <div className="font-medium text-green-800">
-                {dateSlot.formattedDate} ({dateSlot.dayOfWeek})
+                {formatDateForDisplay(dateSlot.date)} ({formatDayOfWeek(dateSlot.date)})
               </div>
               <div className="text-sm text-green-600">
                 {formatHourTo12(dateSlot.startTime)} - {formatHourTo12(dateSlot.endTime)}

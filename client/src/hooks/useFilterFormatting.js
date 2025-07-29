@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
+import { enUS, ru, uz } from "date-fns/locale";
 import { formatCurrency, getCurrencySymbol } from "../utils/currencyUtils";
 import { formatHourTo12 } from "../utils/TimeUtils";
 
@@ -12,7 +13,16 @@ import { formatHourTo12 } from "../utils/TimeUtils";
  * @returns {Object} Object containing all formatting functions
  */
 export const useFilterFormatting = () => {
-  const { t } = useTranslation("search");
+  const { t, i18n } = useTranslation("search");
+
+  // Get appropriate locale for date formatting
+  const getDateLocale = () => {
+    switch (i18n.language) {
+      case 'ru': return ru;
+      case 'uz': return uz;
+      default: return enUS;
+    }
+  };
 
   /**
    * Formats selected dates and times for display
@@ -25,7 +35,7 @@ export const useFilterFormatting = () => {
     if (!selectedDates || selectedDates.length === 0) return "";
     
     if (selectedDates.length === 1) {
-      const formattedDate = format(selectedDates[0], "MMM d");
+      const formattedDate = format(selectedDates[0], "MMM d", { locale: getDateLocale() });
       // Include time information if available
       if (startTime && endTime) {
         return `${formattedDate}, ${formatHourTo12(startTime)}-${formatHourTo12(endTime)}`;

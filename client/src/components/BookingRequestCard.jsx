@@ -70,8 +70,8 @@ export default function BookingRequestCard({ booking, competingBookings = [] }) 
             <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusBadge(booking.status)}`}>
               {t(`status.${booking.status}`)}
             </span>
-            {/* Paid to Host Indicator */}
-            {booking.status === 'approved' && booking.paidToHost && (
+            {/* Paid to Host Indicator - Only visible to agents and hosts */}
+            {booking.status === 'approved' && booking.paidToHost && (user?.userType === 'agent' || user?.userType === 'host') && (
               <span className="px-2 py-1 text-xs font-medium rounded-full border bg-blue-50 text-blue-700 border-blue-200">
                 {t("card.paid")}
               </span>
@@ -109,7 +109,10 @@ export default function BookingRequestCard({ booking, competingBookings = [] }) 
               />
             </div>
             <div className="text-xs text-gray-500">
-              {booking.numOfGuests} {t("card.guests", { count: booking.numOfGuests })}
+              {t("card.guests", { 
+                count: booking.numOfGuests,
+                plural: booking.numOfGuests > 1 ? "s" : ""
+              })}
             </div>
           </div>
         </div>

@@ -105,14 +105,24 @@ export default function BookingsPage() {
     const stats = bookingData.reduce(
       (acc, booking) => {
         acc.total++;
-        // Count "selected" bookings as "pending" for stats purposes since they're still awaiting payment
-        if (booking.status === 'selected') {
+        
+        // Count "selected" and "pending" bookings together as "pending" for stats purposes
+        if (booking.status === 'pending' || booking.status === 'selected') {
           acc.pending++;
+        } else if (booking.status === 'approved') {
+          // For clients: count ALL approved bookings (they don't see paid/unpaid distinction)
+          // For agents/hosts: only count unpaid approved bookings (paid ones go to "paid" tab)
+          if (user?.userType === 'client') {
+            acc.approved++;
+          } else if (!booking.paidToHost) {
+            acc.approved++;
+          }
         } else {
+          // For other statuses (rejected, cancelled, etc.)
           acc[booking.status]++;
         }
         
-        // Count paid to host bookings for agents and hosts
+        // Count paid to host bookings for agents and hosts (for "paid" tab)
         if (user?.userType === 'agent' || user?.userType === 'host') {
           if (booking.status === 'approved' && booking.paidToHost) {
             acc.paidToHostCount = (acc.paidToHostCount || 0) + 1;
@@ -130,22 +140,29 @@ export default function BookingsPage() {
   useEffect(() => {
     let filtered = [...bookings];
     
-    // Filter by status - "pending" includes both "pending" and "selected" for all user types
+    // Filter by status - different logic for different user types
     if (statusFilter !== 'all') {
       if (statusFilter === 'pending') {
         // For all user types, "pending" view includes both pending and selected bookings
         // Selected bookings are still considered pending until payment is complete
         filtered = filtered.filter(booking => booking.status === 'pending' || booking.status === 'selected');
-      } else if (statusFilter === 'paid_to_host') {
+      } else if (statusFilter === 'paid_to_host' || statusFilter === 'paid') {
         // Show only approved bookings that have been paid to host
         filtered = filtered.filter(booking => booking.status === 'approved' && booking.paidToHost);
-      } else {
-        // For other statuses, show only unpaid approved bookings or exact status matches
-        if (statusFilter === 'approved') {
+      } else if (statusFilter === 'approved') {
+        // For clients: don't show paid bookings in approved tab (they should see them as "completed" in all tab)
+        // For agents/hosts: show only unpaid approved bookings
+        if (user?.userType === 'client') {
+          // Clients: approved tab should only show approved bookings that are not yet paid to host
+          // But for clients, once approved+paid, these are "completed" and should only appear in "all" tab
           filtered = filtered.filter(booking => booking.status === 'approved' && !booking.paidToHost);
         } else {
-          filtered = filtered.filter(booking => booking.status === statusFilter);
+          // Agents/hosts: approved tab shows only unpaid approved bookings
+          filtered = filtered.filter(booking => booking.status === 'approved' && !booking.paidToHost);
         }
+      } else {
+        // For other statuses, show exact status matches (rejected, cancelled, etc.)
+        filtered = filtered.filter(booking => booking.status === statusFilter);
       }
     }
     

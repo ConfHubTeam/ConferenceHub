@@ -92,7 +92,7 @@
       "phoneRequired": "Please provide your phone number for contact",
       "phoneInvalid": "Please enter a valid phone number",
       "attendeesRequired": "Please specify the number of attendees (minimum 1)",
-      "attendeesMax": "Maximum capacity is {maxGuests} people",
+      "attendeesMax": "Maximum capacity is {{maxGuests}} people",
       "timeSlotsRequired": "Please select dates and time slots from the calendar above",
       "timeSlotsUnavailable": "Selected time slots are not available. Please choose different times.",
       "loginRequired": "Please log in to book a conference room",
@@ -104,7 +104,21 @@
   "notifications": {
     "success": "Booking request submitted successfully",
     "processing": "Processing booking...",
-    "confirmed": "Booking confirmed!"
+    "confirmed": "Booking confirmed!",
+    "paymentFailed": "Payment failed: {{error}}",
+    "paymentCompleted": "Payment completed successfully",
+    "paymentNotCompleted": "Payment was not completed",
+    "paymentCancelled": "Payment was cancelled",
+    "statusUpdated": "Booking status has been updated"
+  },
+  "common": {
+    "unavailable": "Unavailable",
+    "noImage": "No image",
+    "processing": "Processing...",
+    "buttons": {
+      "ok": "OK",
+      "cancel": "Cancel"
+    }
   },
   "status": {
     "pending": "Pending",
@@ -163,12 +177,12 @@
     "activeFilters": "Active filters:",
     "clearAllFilters": "Clear all filters",
     "filterLabels": {
-      "search": "Search: \"{searchTerm}\"",
-      "status": "Status: {status}",
-      "user": "User: {userName}",
-      "host": "Host: {hostName}"
+      "search": "Search: \"{{searchTerm}}\"",
+      "status": "Status: {{status}}",
+      "user": "User: {{userName}}",
+      "host": "Host: {{hostName}}"
     },
-    "removeFilter": "Remove {filterName} filter"
+    "removeFilter": "Remove {{filterName}} filter"
   },
   "pages": {
     "titles": {
@@ -205,25 +219,251 @@
       "findRooms": "Find Conference Rooms"
     },
     "statusIndicators": {
-      "pendingBookings": "{count} booking{plural} awaiting approval",
-      "pendingRequests": "{count} request{plural} {verb} attention",
+      "pendingBookings": "{{count}} booking{{plural}} awaiting approval",
+      "pendingRequests": "{{count}} request{{plural}} {{verb}} attention",
       "awaitingApproval": "awaiting approval"
     }
   },
   "card": {
-    "requestId": "REQ-{id}",
-    "guests": "{count} guest{plural}",
+    "requestId": "REQ-{{id}}",
+    "guests": "{{count}} guest{{plural}}",
     "timeSlots": "Time slots:",
     "viewDetails": "View Details",
     "paid": "Paid",
     "dateFormat": "MMM d, yyyy",
     "timeSlotFormat": "MMM d",
+    "dateFormatting": {
+      "at": "at",
+      "from": "from",
+      "to": "to",
+      "on": "on"
+    },
     "agentInfo": {
       "client": "Client",
       "host": "Host",
       "name": "Name:",
       "phone": "Phone:",
       "notAvailable": "N/A"
+    }
+  },
+  "details": {
+    "title": "Booking Details",
+    "backToBookings": "Back to Bookings",
+    "sections": {
+      "bookingProgress": "Booking Progress",
+      "propertyDetails": "Property Details",
+      "bookingInformation": "Booking Information",
+      "contactInformation": "Contact Information",
+      "cancellationRefund": "Cancellation & Refund Policy",
+      "pricing": "Pricing",
+      "payment": "Payment",
+      "actions": "Actions",
+      "supportContact": "Support Contact"
+    },
+    "bookingInfo": {
+      "guests": "Guests",
+      "guestsCount": "Number of Guests",
+      "bookedDate": "Booking Date", 
+      "requestId": "Request ID",
+      "timeSlots": "Reserved Time Slots",
+      "fullDayBooking": "Full Day Booking",
+      "fullDayDescription": "This booking covers the entire day"
+    },
+    "contactInfo": {
+      "titles": {
+        "client": "Client",
+        "host": "Host",
+        "agent": "Agent",
+        "supportContact": "Support Contact"
+      },
+      "labels": {
+        "name": "Name",
+        "email": "Email", 
+        "phone": "Phone",
+        "hours": "Hours",
+        "contactHours": "Contact Hours",
+        "agent": "Agent"
+      },
+      "updated": "Updated",
+      "updateNote": "* Contact information has been updated since booking was created",
+      "unavailable": "Contact information is currently unavailable. Please try again later.",
+      "support": {
+        "note": "For booking-related inquiries, questions, or assistance",
+        "hours": "Mon-Fri: 9 AM - 6 PM, Sat: 10 AM - 4 PM"
+      }
+    },
+    "pricing": {
+      "subtotal": "Subtotal",
+      "protectionPlan": "Protection Plan",
+      "total": "Total"
+    },
+    "paymentStatus": {
+      "paymentCompleted": "Payment Completed",
+      "paymentCompletedAndPaid": "Payment Completed & Paid to Host",
+      "awaitingPayment": "Awaiting Payment",
+      "messages": {
+        "hostPaid": "Host was paid on {{date}}",
+        "hostPaidGeneric": "Host has been paid for this booking",
+        "readyToPayHost": "Ready to pay host",
+        "paymentPendingFromAgent": "Payment pending from agent",
+        "clientCanProceed": "Client can now proceed with payment to complete the booking"
+      }
+    },
+    "payment": {
+      "selectedMessage": "Your booking has been selected! You can now proceed with payment.",
+      "pendingMessage": "Payment options will be available once your booking is selected by the host.",
+      "providers": {
+        "click": {
+          "available": "Pay with Click",
+          "unavailable": "Click Pay - Available after selection"
+        },
+        "payme": {
+          "available": "Pay with Payme",
+          "unavailable": "Payme - Available after selection"
+        },
+        "octo": {
+          "available": "Pay with Octo",
+          "unavailable": "Octo Pay - Available after selection"
+        },
+        "generic": {
+          "available": "Pay with {{provider}}",
+          "unavailable": "Payment will be available after selection"
+        }
+      },
+      "debug": {
+        "responseTitle": "Payment Response (Debug)",
+        "bookingId": "Booking ID",
+        "action": "Action",
+        "timestamp": "Timestamp",
+        "errorCode": "Error Code",
+        "fullClickResponse": "Full Click Response",
+        "completeResponse": "Complete Payment Response Object"
+      }
+    },
+    "refundPolicy": {
+      "title": "Cancellation & Refund Policy",
+      "policyAtTime": "Policy at Time of Booking",
+      "noPolicy": "No specific refund policy was captured at the time of booking.",
+      "contactSupport": "Please contact customer support for assistance with cancellation and refund requests.",
+      "protectionPlan": {
+        "active": "Client Protection Plan: Active",
+        "notSelected": "Client Protection Plan: Not Selected"
+      },
+      "options": {
+        "flexible14Day": "Flexible 14-Day: Full refund if canceled 14+ days before check-in",
+        "moderate7Day": "Moderate 7-Day: 50% refund if canceled 7+ days before check-in",
+        "strict": "Strict: No refund if canceled less than 6 days before check-in",
+        "nonRefundable": "Non-Refundable: No refunds allowed",
+        "rescheduleOnly": "Reschedule Only: No refund, but reschedule allowed with 3+ days notice",
+        "protectionPlan": "Client Protection Plan: Additional insurance coverage available"
+      }
+    },
+    "propertyDetails": {
+      "checkIn": "Check-in: {{time}}",
+      "checkOut": "Check-out: {{time}}"
+    },
+    "progress": {
+      "steps": {
+        "requestSubmitted": "Request Submitted",
+        "selectedForPayment": "Selected for Payment", 
+        "pendingPayment": "Pending Payment",
+        "paymentComplete": "Payment Complete",
+        "confirmed": "Confirmed",
+        "paidToHost": "Paid to Host"
+      },
+      "descriptions": {
+        "requestSubmitted": "Booking request submitted and awaiting review",
+        "selectedForPayment": "Booking selected by host, proceed with payment",
+        "pendingPayment": "Payment required to confirm booking",
+        "paymentComplete": "Payment confirmed, awaiting final approval",
+        "confirmed": "Booking confirmed and ready",
+        "paidToHost": {
+          "completed": "Agent has paid the host",
+          "agentPending": "Ready to mark payment complete",
+          "hostPending": "Awaiting payment from agent"
+        }
+      },
+      "status": {
+        "currentStep": "Current Step",
+        "byAgent": "by Agent"
+      },
+      "rejected": {
+        "title": "Booking Unavailable", 
+        "message": "Unfortunately, your requested time slot is no longer available. This could be due to another booking being confirmed or changes in availability. We apologize for any inconvenience.",
+        "requestDeclined": "Request Declined",
+        "viewAvailable": "View Available Times",
+        "browseOther": "Browse Other Venues"
+      },
+      "nextSteps": {
+        "title": "Next Steps",
+        "selectedMessage": "Your booking has been selected by the host. Please proceed with payment to confirm your reservation.",
+        "confirmedTitle": "Booking Confirmed"
+      }
+    },
+    "timeline": {
+      "title": "Booking Timeline",
+      "steps": {
+        "requestSubmitted": "Request Submitted",
+        "selectedForPayment": "Selected for Payment",
+        "pendingPayment": "Pending Payment",
+        "paymentComplete": "Payment Complete", 
+        "confirmed": "Confirmed",
+        "paidToHost": "Paid to Host",
+        "rejected": "Rejected"
+      },
+      "status": {
+        "pending": "Pending",
+        "unknown": "Status transition occurred",
+        "noTimestamp": "No timestamp available"
+      },
+      "descriptions": {
+        "paymentComplete": "Agent marked payment complete",
+        "readyToPay": "Ready to mark payment complete",
+        "awaitingPayment": "Awaiting payment from agent"
+      },
+      "statuses": {
+        "pending": "Pending",
+        "transitionOccurred": "Status transition occurred",
+        "noTimestamp": "No timestamp available"
+      }
+    },
+    "actions": {
+      "processing": "Processing...",
+      "buttons": {
+        "approve": "Approve",
+        "reject": "Reject", 
+        "cancel": "Cancel",
+        "markPaid": "Mark as Paid to Host",
+        "select": "Select",
+        "selectBooking": "Select Booking"
+      },
+      "confirmations": {
+        "approve": "Are you sure you want to approve this booking?",
+        "reject": "Are you sure you want to reject this booking?",
+        "cancel": "Are you sure you want to cancel this booking?",
+        "markPaid": "Are you sure you want to mark payment to host as complete?",
+        "paymentConfirmed": "Payment Confirmed - Approve",
+        "approveWithoutPayment": "Approve Without Payment Confirmation",
+        "select": "Are you sure you want to select this booking?"
+      }
+    },
+    "timing": {
+      "fullDay": "Full Day Booking",
+      "fullDayDescription": "This booking covers the entire day"
+    },
+    "paymentResponse": {
+      "title": "Payment Response (Debug)",
+      "labels": {
+        "bookingId": "Booking ID:",
+        "action": "Action:",
+        "timestamp": "Timestamp:",
+        "errorCode": "Error Code:",
+        "fullClickResponse": "Full Click Response:",
+        "completeResponse": "Complete Payment Response Object:"
+      },
+      "status": {
+        "unknown": "UNKNOWN"
+      }
     }
   }
 }
