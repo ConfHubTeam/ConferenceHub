@@ -87,6 +87,7 @@ export default function Header() {
             onChange={changeCurrency}
             availableCurrencies={availableCurrencies}
             compact={true}
+            theme="light"
           />
         </div>
         
@@ -97,6 +98,7 @@ export default function Header() {
             showFlag={true}
             showText={false}
             className="border-l border-gray-300 pl-2 ml-2"
+            theme="light"
           />
         </div>
         

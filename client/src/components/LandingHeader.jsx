@@ -50,7 +50,7 @@ function LandingHeaderBase({
   }, [t, ready]);
 
   return (
-    <header className={`relative z-50 px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between ${className}`}>
+    <header className={`relative z-50 px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between bg-transparent sm:bg-transparent ${className}`}>
       {/* Logo with enhanced visibility */}
       <div className="flex items-center">
         <Link to="/" className="focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg">
@@ -99,26 +99,25 @@ function LandingHeaderBase({
 
       {/* Auth Section */}
       <div className="flex items-center space-x-2 sm:space-x-4">
-        {/* Currency Selector */}
-        <div className="relative hidden sm:block">
-          <CurrencySelector 
+        {/* Currency Selector - Desktop only */}
+        <div className="hidden md:block" style={{ width: '90px' }}>
+          <CurrencySelector
             selectedCurrency={selectedCurrency}
             onChange={changeCurrency}
             availableCurrencies={availableCurrencies}
             compact={true}
+            theme="dark"
           />
         </div>
         
-        {/* Separator Line */}
-        <div className="hidden sm:block w-px h-6 bg-white/30"></div>
-        
-        {/* Language Selector */}
-        <div className="relative hidden sm:block">
+        {/* Language Selector - Desktop only */}
+        <div className="hidden md:block">
           <LanguageSelector 
             variant="compact"
             showFlag={true}
             showText={false}
-            placement="bottom-right"
+            className="border-l border-white/30 pl-2 ml-2"
+            theme="dark"
           />
         </div>
 
@@ -172,7 +171,7 @@ export default withTranslationLoading(LandingHeaderBase, {
   namespaces: ["common", "navigation", "auth"],
   preloadNamespaces: ["landing", "search"],
   loadingComponent: ({ children, ...props }) => (
-    <header className={`relative z-50 px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between ${props.className || ""}`}>
+    <header className={`relative z-50 px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between bg-transparent sm:bg-transparent ${props.className || ""}`}>
       <div className="flex items-center">
         <div className="h-8 sm:h-10 lg:h-12 w-24 bg-white/20 rounded animate-pulse"></div>
       </div>
@@ -181,7 +180,7 @@ export default withTranslationLoading(LandingHeaderBase, {
         <div className="h-8 w-24 bg-white/20 rounded animate-pulse"></div>
       </div>
       <div className="flex items-center space-x-2 sm:space-x-4">
-        <div className="hidden sm:flex space-x-4">
+        <div className="hidden md:flex space-x-4">
           <div className="h-8 w-16 bg-white/20 rounded animate-pulse"></div>
           <div className="h-8 w-16 bg-white/20 rounded animate-pulse"></div>
         </div>
@@ -193,7 +192,7 @@ export default withTranslationLoading(LandingHeaderBase, {
     </header>
   ),
   errorComponent: ({ error, retry, ...props }) => (
-    <header className={`relative z-50 px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between ${props.className || ""}`}>
+    <header className={`relative z-50 px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between bg-transparent sm:bg-transparent ${props.className || ""}`}>
       <div className="flex items-center">
         <Link to="/" className="focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg">
           <img 

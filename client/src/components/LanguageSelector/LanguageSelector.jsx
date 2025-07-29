@@ -13,7 +13,8 @@ const LanguageSelector = ({
   variant = "default", 
   showFlag = true,
   showText = true,
-  placement = "bottom-right"
+  placement = "bottom-right",
+  theme = "light" // Default to light theme
 }) => {
   const { t } = useTranslation("common");
   const { 
@@ -137,9 +138,13 @@ const LanguageSelector = ({
         disabled={isLoading}
         className={`
           inline-flex items-center justify-center gap-2 
-          border border-gray-300 rounded-lg
-          bg-white hover:bg-gray-50 
-          focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
+          ${theme === "dark" 
+            ? 'border border-white/30 bg-black hover:bg-white/10 text-white' 
+            : 'border border-gray-300 bg-white hover:bg-gray-50'
+          } 
+          rounded-lg
+          focus:outline-none focus:ring-2 focus:ring-offset-2 
+          ${theme === "dark" ? 'focus:ring-white/20' : 'focus:ring-indigo-500'}
           transition-colors duration-200
           disabled:opacity-50 disabled:cursor-not-allowed
           ${styles.button}
@@ -156,25 +161,33 @@ const LanguageSelector = ({
             </span>
           )}
           {showText && (
-            <span className="font-medium text-gray-700">
+            <span className={`font-medium ${
+              theme === "dark" ? 'text-white' : 'text-gray-700'
+            }`}>
               {languageConfig[currentLanguageObject.code]?.nativeName || currentLanguageObject.name}
             </span>
           )}
           {!showText && !showFlag && (
-            <GlobeAltIcon className="w-5 h-5 text-gray-600" />
+            <GlobeAltIcon className={`w-5 h-5 ${
+              theme === "dark" ? 'text-white/80' : 'text-gray-600'
+            }`} />
           )}
         </div>
 
         {/* Loading indicator or chevron */}
         {isLoading ? (
           <div className="w-4 h-4">
-            <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-indigo-600"></div>
+            <div className={`animate-spin rounded-full h-4 w-4 border-2 ${
+              theme === "dark" 
+                ? 'border-white/30 border-t-white' 
+                : 'border-gray-300 border-t-indigo-600'
+            }`}></div>
           </div>
         ) : (
           <ChevronDownIcon 
-            className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
-              isOpen ? "transform rotate-180" : ""
-            }`}
+            className={`w-4 h-4 transition-transform duration-200 ${
+              theme === "dark" ? 'text-white/60' : 'text-gray-400'
+            } ${isOpen ? "transform rotate-180" : ""}`}
           />
         )}
       </button>

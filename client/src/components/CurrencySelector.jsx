@@ -1,7 +1,13 @@
 import { useEffect, useState, useRef } from "react";
 import api from "../utils/api";
 
-export default function CurrencySelector({ selectedCurrency, onChange, availableCurrencies, compact = false }) {
+export default function CurrencySelector({ 
+  selectedCurrency, 
+  onChange, 
+  availableCurrencies, 
+  compact = false,
+  theme = "light" // Default to light theme
+}) {
   const [currencies, setCurrencies] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -164,10 +170,18 @@ export default function CurrencySelector({ selectedCurrency, onChange, available
           compact 
             ? 'px-2 py-1 text-sm' 
             : 'px-4 py-3 text-base'
-        } bg-white border border-gray-200 rounded-lg cursor-pointer transition-all duration-200 hover:border-gray-300 hover:shadow-sm ${
+        } ${
+          theme === "dark" 
+            ? 'bg-black text-white border-white/30 hover:border-white/50' 
+            : 'bg-white border border-gray-200 hover:border-gray-300'
+        } rounded-lg cursor-pointer transition-all duration-200 hover:shadow-sm ${
           isOpen 
-            ? 'border-blue-500 ring-2 ring-blue-500 ring-opacity-20 shadow-sm' 
-            : 'focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20'
+            ? theme === "dark" 
+              ? 'border-white/50 ring-2 ring-white/20 shadow-sm' 
+              : 'border-blue-500 ring-2 ring-blue-500 ring-opacity-20 shadow-sm'
+            : theme === "dark"
+              ? 'focus:border-white/50 focus:ring-2 focus:ring-white/20'
+              : 'focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20'
         }`}
         onClick={() => setIsOpen(!isOpen)}
         tabIndex={0}
@@ -183,26 +197,40 @@ export default function CurrencySelector({ selectedCurrency, onChange, available
               {compact ? (
                 // Professional compact mode: clean, inline layout
                 <div className="flex items-center space-x-1">
-                  <span className="font-medium text-gray-700 text-sm">
+                  <span className={`font-medium text-sm ${
+                    theme === "dark" ? 'text-white/80' : 'text-gray-700'
+                  }`}>
                     {getCurrencyInfo(selectedCurrency.charCode).symbol}
                   </span>
-                  <span className="font-medium text-gray-900 text-sm">
+                  <span className={`font-medium text-sm ${
+                    theme === "dark" ? 'text-white' : 'text-gray-900'
+                  }`}>
                     {getCurrencyInfo(selectedCurrency.charCode).displayCode}
                   </span>
                 </div>
               ) : (
                 // Full mode: professional layout with icon
                 <>
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-50 border border-gray-200">
-                    <span className="font-semibold text-gray-700 text-sm">
+                  <div className={`flex items-center justify-center w-8 h-8 rounded-full border ${
+                    theme === "dark" 
+                      ? 'bg-white/10 border-white/20' 
+                      : 'bg-gray-50 border-gray-200'
+                  }`}>
+                    <span className={`font-semibold text-sm ${
+                      theme === "dark" ? 'text-white' : 'text-gray-700'
+                    }`}>
                       {getCurrencyInfo(selectedCurrency.charCode).symbol}
                     </span>
                   </div>
                   <div className="flex flex-col min-w-0 ml-3">
-                    <span className="font-medium text-gray-900 text-base">
+                    <span className={`font-medium text-base ${
+                      theme === "dark" ? 'text-white' : 'text-gray-900'
+                    }`}>
                       {getCurrencyInfo(selectedCurrency.charCode).displayCode}
                     </span>
-                    <span className="text-xs text-gray-500 truncate">
+                    <span className={`text-xs truncate ${
+                      theme === "dark" ? 'text-white/60' : 'text-gray-500'
+                    }`}>
                       {getCurrencyInfo(selectedCurrency.charCode).name}
                     </span>
                   </div>
@@ -211,7 +239,9 @@ export default function CurrencySelector({ selectedCurrency, onChange, available
             </>
           )}
           {!selectedCurrency && (
-            <span className="text-gray-400 font-medium text-sm">Select Currency</span>
+            <span className={`font-medium text-sm ${
+              theme === "dark" ? 'text-white/60' : 'text-gray-400'
+            }`}>Select Currency</span>
           )}
         </div>
       </div>
