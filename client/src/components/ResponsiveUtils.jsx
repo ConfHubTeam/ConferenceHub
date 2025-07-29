@@ -188,7 +188,7 @@ export const MobileNavigation = ({ isOpen, onToggle, onClose, user = null }) => 
                         className="hover:text-brand-orange transition-colors py-2" 
                         onClick={onClose}
                       >
-                        {t("accountNav.spaces", "My Places")}
+                        {t("header.navigation.myPlaces", "My Places")}
                       </a>
                     )}
                   </>

@@ -11,7 +11,7 @@ import { isValidPhoneNumber, isPossiblePhoneNumber } from "react-phone-number-in
 
 export default function ProfilePage({}) {
   const [redirect, setRedirect] = useState(); // control the redirect after logout
-  const { isReady, user, setUser, setReady } = useContext(UserContext); // check the user data loading status
+  const { isReady, user, setUser, refreshUserProfile } = useContext(UserContext); // check the user data loading status
   const { notify } = useNotification();
   const { t } = useTranslation(["profile", "forms"]);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -159,8 +159,11 @@ export default function ProfilePage({}) {
         phoneNumber: editPhoneNumber.trim()
       });
       
-      // Update the user context with the new data
+      // Update the user context with the new data and refresh profile
       setUser(response.data.user);
+      if (refreshUserProfile) {
+        await refreshUserProfile();
+      }
       setIsEditing(false);
       notify(t("profile:messages.profileUpdated"), "success");
     } catch (error) {

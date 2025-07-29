@@ -124,6 +124,13 @@ export default function AllPlacesPage() {
   async function loadPlaces() {
     setLoading(true);
     try {
+      // Check if user is authenticated and is an agent
+      if (!user || user.userType !== 'agent') {
+        console.error('User is not an agent:', user);
+        setLoading(false);
+        return;
+      }
+
       // Build query parameters
       const queryParams = new URLSearchParams({
         page: currentPage.toString(),
@@ -135,6 +142,7 @@ export default function AllPlacesPage() {
       }
       
       const endpoint = `/places?${queryParams.toString()}`;
+      console.log('Fetching places from:', endpoint);
       const { data } = await api.get(endpoint);
       
       // Handle both old format (direct array) and new format (with pagination)
@@ -155,6 +163,8 @@ export default function AllPlacesPage() {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching places:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
       setLoading(false);
     }
   }

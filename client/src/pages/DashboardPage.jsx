@@ -3,7 +3,7 @@ import AccountNav from "../components/AccountNav";
 import ReviewAnalytics from "../components/ReviewAnalytics";
 import api from "../utils/api";
 import { UserContext } from "../components/UserContext";
-import { Navigate } from "react-router-dom";
+import { Navigate, Link } from "react-router-dom";
 
 export default function DashboardPage() {
   const { user } = useContext(UserContext);
@@ -145,15 +145,15 @@ export default function DashboardPage() {
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
           <h2 className="text-xl font-semibold mb-4">Quick Access</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <a href="/account/bookings" className="bg-primary text-white p-4 rounded-lg flex items-center justify-center hover:bg-opacity-90 transition-all">
+            <Link to="/account/bookings" className="bg-primary text-white p-4 rounded-lg flex items-center justify-center hover:bg-opacity-90 transition-all">
               <span className="font-medium">Manage Bookings</span>
-            </a>
-            <a href="/account/users" className="bg-blue-500 text-white p-4 rounded-lg flex items-center justify-center hover:bg-opacity-90 transition-all">
+            </Link>
+            <Link to="/account/users" className="bg-blue-500 text-white p-4 rounded-lg flex items-center justify-center hover:bg-opacity-90 transition-all">
               <span className="font-medium">View Users</span>
-            </a>
-            <a href="/account/all-places" className="bg-green-500 text-white p-4 rounded-lg flex items-center justify-center hover:bg-opacity-90 transition-all">
+            </Link>
+            <Link to="/account/all-places" className="bg-green-500 text-white p-4 rounded-lg flex items-center justify-center hover:bg-opacity-90 transition-all">
               <span className="font-medium">View Conference Rooms</span>
-            </a>
+            </Link>
           </div>
         </div>
       </div>

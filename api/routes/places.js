@@ -1,15 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const placeController = require("../controllers/placeController");
+const { isAuthenticated } = require("../middleware/auth");
 
 // Submit new place form
-router.post("/", placeController.createPlace);
+router.post("/", isAuthenticated, placeController.createPlace);
 
 // Get all places (agent only)
-router.get("/", placeController.getAllPlaces);
+router.get("/", isAuthenticated, placeController.getAllPlaces);
 
 // Get places for current user
-router.get("/user-places", placeController.getUserPlaces);
+router.get("/user-places", isAuthenticated, placeController.getUserPlaces);
 
 // Get filtered places for homepage
 router.get("/home", placeController.getHomePlaces);
@@ -18,12 +19,12 @@ router.get("/home", placeController.getHomePlaces);
 router.get("/:id", placeController.getPlaceById);
 
 // Get specific booking for a place
-router.get("/:placeId/:bookingId", placeController.getBookingForPlace);
+router.get("/:placeId/:bookingId", isAuthenticated, placeController.getBookingForPlace);
 
 // Update place
-router.put("/", placeController.updatePlace);
+router.put("/", isAuthenticated, placeController.updatePlace);
 
 // Delete a place
-router.delete("/:id", placeController.deletePlace);
+router.delete("/:id", isAuthenticated, placeController.deletePlace);
 
 module.exports = router;
