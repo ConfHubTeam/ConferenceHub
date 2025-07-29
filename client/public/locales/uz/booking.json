@@ -138,9 +138,9 @@
   "filters": {
     "searchBookings": "Bron qilishlarni qidirish",
     "searchPlaceholders": {
-      "agent": "So'rov raqami, joy egasi, mijoz yoki mulkka ko'ra qidiring...",
-      "host": "So'rov raqami yoki mulkka ko'ra qidiring...",
-      "client": "Mulk nomiga ko'ra qidiring..."
+      "agent": "So'rov raqami, joy egasi, mijoz yoki joyga ko'ra qidiring...",
+      "host": "So'rov raqami yoki joyga ko'ra qidiring...",
+      "client": "Joy nomiga ko'ra qidiring..."
     },
     "sortBy": "Saralash",
     "sortOptions": {
@@ -149,7 +149,7 @@
       "checkInDate": "Kelish sanasi",
       "highestPrice": "Eng yuqori narx",
       "lowestPrice": "Eng past narx",
-      "propertyName": "Mulk nomi"
+      "propertyName": "Joy nomi"
     },
     "filterByStatus": "Holat bo'yicha filtrlash",
     "statusLabels": {
@@ -251,7 +251,7 @@
     "backToBookings": "Bron qilishlarga qaytish",
     "sections": {
       "bookingProgress": "Bron qilish jarayoni",
-      "propertyDetails": "Mulk tafsilotlari",
+      "propertyDetails": "Joy tafsilotlari",
       "bookingInformation": "Bron qilish ma'lumotlari",
       "contactInformation": "Aloqa ma'lumotlari",
       "cancellationRefund": "Bekor qilish va qaytarish siyosati",

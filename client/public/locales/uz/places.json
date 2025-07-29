@@ -21,11 +21,11 @@
     "townhouse": "Shahar uyi"
   },
   "form": {
-    "title": "Mulk ma'lumotlari",
-    "name": "Mulk nomi",
-    "namePlaceholder": "Mulk nomini kiriting",
+    "title": "Joy ma'lumotlari",
+    "name": "Joy nomi",
+    "namePlaceholder": "Joy nomini kiriting",
     "description": "Tavsif",
-    "descriptionPlaceholder": "Mulkingizni tasvirlab bering",
+    "descriptionPlaceholder": "Joyingizni tasvirlab bering",
     "address": "Manzil",
     "addressPlaceholder": "To'liq manzilni kiriting",
     "city": "Shahar",
@@ -72,7 +72,7 @@
     "cityView": "Shahar manzarasi"
   },
   "listing": {
-    "details": "Mulk tafsilotlari",
+    "details": "Joy tafsilotlari",
     "amenitiesTitle": "Qulayliklar",
     "rulesTitle": "Uy qoidalari",
     "locationTitle": "Joylashuv",
@@ -97,7 +97,7 @@
     "priceRange": "Narx diapazoni",
     "minPrice": "Minimal narx",
     "maxPrice": "Maksimal narx",
-    "propertyType": "Mulk turi",
+    "propertyType": "Joy turi",
     "roomsAndBeds": "Xonalar va yotoqlar",
     "amenities": "Qulayliklar",
     "instantBook": "Tezkor bron",

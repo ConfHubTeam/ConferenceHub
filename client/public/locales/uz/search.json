@@ -56,7 +56,7 @@
       "size_max": "{{max}} m²gacha"
     },
     "priceRange": "Narx oralig'i",
-    "propertyType": "Mulk turi",
+    "propertyType": "Joy turi",
     "amenities": "Qulayliklar",
     "guestCount": "Mehmonlar soni",
     "bedrooms": "Yotoq xonalari",
@@ -286,7 +286,7 @@
           "super_strict_60": "60+ kun oldin bekor qilsangiz, to'liq qaytarim",
           "client_protection_plan": "Qo'shimcha himoya va sug'urta",
           "instant_book": "Tasdiqlashni kutmasdan darhol bron qiling",
-          "verified_host": "Faqat tasdiqlangan mulk egalarini ko'rsatish"
+          "verified_host": "Faqat tasdiqlangan joy egalarini ko'rsatish"
         },
         "actions": {
           "clear": "Tozalash",
