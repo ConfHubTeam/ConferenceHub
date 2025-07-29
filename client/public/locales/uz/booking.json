@@ -110,11 +110,120 @@
     "pending": "Kutilmoqda",
     "confirmed": "Tasdiqlangan",
     "cancelled": "Bekor qilingan",
-    "completed": "Yakunlangan"
+    "completed": "Yakunlangan",
+    "approved": "Tasdiqlangan",
+    "rejected": "Rad etilgan",
+    "selected": "Tanlangan",
+    "paid": "To'langan"
   },
   "userTypes": {
     "client": "Mijoz",
     "host": "Uy egasi",
     "agent": "Agent"
+  },
+  "filters": {
+    "searchBookings": "Bron qilishlarni qidirish",
+    "searchPlaceholders": {
+      "agent": "So'rov raqami, uy egasi, mijoz yoki mulkka ko'ra qidiring...",
+      "host": "So'rov raqami yoki mulkka ko'ra qidiring...",
+      "client": "Mulk nomiga ko'ra qidiring..."
+    },
+    "sortBy": "Saralash",
+    "sortOptions": {
+      "newestFirst": "Eng yangilari birinchi",
+      "oldestFirst": "Eng eskilari birinchi",
+      "checkInDate": "Kelish sanasi",
+      "highestPrice": "Eng yuqori narx",
+      "lowestPrice": "Eng past narx",
+      "propertyName": "Mulk nomi"
+    },
+    "filterByStatus": "Holat bo'yicha filtrlash",
+    "statusLabels": {
+      "client": {
+        "pending": "Kutilmoqda",
+        "approved": "Tasdiqlangan",
+        "rejected": "Rad etilgan",
+        "all": "Hammasi"
+      },
+      "host": {
+        "pending": "Kutilmoqda",
+        "approved": "Tasdiqlangan",
+        "rejected": "Rad etilgan",
+        "paid_to_host": "To'langan",
+        "all": "Hammasi"
+      },
+      "agent": {
+        "pending": "Kutilmoqda",
+        "approved": "Tasdiqlangan",
+        "rejected": "Rad etilgan",
+        "paid_to_host": "To'langan",
+        "all": "Hammasi"
+      }
+    },
+    "activeFilters": "Faol filtrlar:",
+    "clearAllFilters": "Barcha filtrlarni tozalash",
+    "filterLabels": {
+      "search": "Qidiruv: \"{searchTerm}\"",
+      "status": "Holat: {status}",
+      "user": "Foydalanuvchi: {userName}",
+      "host": "Uy egasi: {hostName}"
+    },
+    "removeFilter": "{filterName} filtrini olib tashlash"
+  },
+  "pages": {
+    "titles": {
+      "client": {
+        "allBookings": "Barcha bron qilishlar",
+        "pendingBookings": "Kutilayotgan bron qilishlar",
+        "confirmedBookings": "Tasdiqlangan bron qilishlar",
+        "rejectedBookings": "Rad etilgan bron qilishlar"
+      },
+      "host": {
+        "allRequests": "Barcha so'rovlar",
+        "pendingRequests": "Kutilayotgan so'rovlar",
+        "approvedRequests": "Tasdiqlangan so'rovlar",
+        "rejectedRequests": "Rad etilgan so'rovlar",
+        "paidRequests": "To'langan so'rovlar"
+      },
+      "agent": {
+        "allBookings": "Barcha bron qilishlar",
+        "pendingBookings": "Kutilayotgan bron qilishlar",
+        "approvedBookings": "Tasdiqlangan bron qilishlar",
+        "rejectedBookings": "Rad etilgan bron qilishlar",
+        "paidBookings": "To'langan bron qilishlar"
+      }
+    },
+    "emptyStates": {
+      "noBookingsFound": "Bron qilishlar topilmadi",
+      "noRequestsFound": "Bron so'rovlari topilmadi",
+      "adjustFilters": "Qidiruv yoki filtr mezonlarini o'zgartirib ko'ring.",
+      "noBookingsYet": {
+        "client": "Sizda hali bron qilishlar yo'q. Mavjud anjuman xonalarini ko'rib chiqing va bron qiling.",
+        "host": "Sizda hali bron so'rovlari yo'q. Mijozlar sizning anjuman xonalaringizni bron qilganda, ularning so'rovlari bu yerda ko'rinadi.",
+        "agent": "Tizimda hali bron qilishlar yo'q."
+      },
+      "findRooms": "Anjuman xonalarini topish"
+    },
+    "statusIndicators": {
+      "pendingBookings": "{count} bron qilish tasdiqlashni kutmoqda",
+      "pendingRequests": "{count} so'rov e'tiborni {verb}",
+      "awaitingApproval": "tasdiqlashni kutmoqda"
+    }
+  },
+  "card": {
+    "requestId": "SO'R-{id}",
+    "guests": "{count} mehmon",
+    "timeSlots": "Vaqt oralig'i:",
+    "viewDetails": "Tafsilotlarni ko'rish",
+    "paid": "To'langan",
+    "dateFormat": "MMM d, yyyy",
+    "timeSlotFormat": "MMM d",
+    "agentInfo": {
+      "client": "Mijoz",
+      "host": "Uy egasi",
+      "name": "Ism:",
+      "phone": "Telefon:",
+      "notAvailable": "Mavjud emas"
+    }
   }
 }

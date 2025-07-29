@@ -1,5 +1,6 @@
 import { useContext } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { UserContext } from "./UserContext";
 import PriceDisplay from "./PriceDisplay";
 import PriorityIndicator from "./PriorityIndicator";
@@ -15,6 +16,7 @@ import { getCurrentDateObjectInUzbekistan } from "../utils/uzbekistanTimezoneUti
  */
 export default function BookingRequestCard({ booking, competingBookings = [] }) {
   const { user } = useContext(UserContext);
+  const { t } = useTranslation('booking');
 
   // Get status badge styling
   const getStatusBadge = (status) => {
@@ -66,12 +68,12 @@ export default function BookingRequestCard({ booking, competingBookings = [] }) 
               competingBookings={competingBookings} 
             />
             <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusBadge(booking.status)}`}>
-              {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+              {t(`status.${booking.status}`)}
             </span>
             {/* Paid to Host Indicator */}
             {booking.status === 'approved' && booking.paidToHost && (
               <span className="px-2 py-1 text-xs font-medium rounded-full border bg-blue-50 text-blue-700 border-blue-200">
-                Paid
+                {t("card.paid")}
               </span>
             )}
           </div>
@@ -107,7 +109,7 @@ export default function BookingRequestCard({ booking, competingBookings = [] }) 
               />
             </div>
             <div className="text-xs text-gray-500">
-              {booking.numOfGuests} guest{booking.numOfGuests > 1 ? "s" : ""}
+              {booking.numOfGuests} {t("card.guests", { count: booking.numOfGuests })}
             </div>
           </div>
         </div>
@@ -131,11 +133,11 @@ export default function BookingRequestCard({ booking, competingBookings = [] }) 
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div className="flex-1">
-              <span className="font-medium">Time slots:</span>
+              <span className="font-medium">{t("card.timeSlots")}</span>
               <div className="mt-1 space-y-1">
                 {booking.timeSlots.map((slot, index) => (
                   <div key={index} className="text-xs bg-blue-50 border border-blue-200 rounded px-2 py-1 inline-block mr-1 mb-1">
-                    {format(parseDateSafely(slot.date), "MMM d")}: {slot.startTime}-{slot.endTime}
+                    {format(parseDateSafely(slot.date), t("card.timeSlotFormat"))}: {slot.startTime}-{slot.endTime}
                   </div>
                 ))}
               </div>
@@ -149,20 +151,20 @@ export default function BookingRequestCard({ booking, competingBookings = [] }) 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
               {/* Client info */}
               <div className="bg-blue-50 border border-blue-200 rounded p-2">
-                <div className="font-medium text-blue-700 mb-1">Client</div>
+                <div className="font-medium text-blue-700 mb-1">{t("card.agentInfo.client")}</div>
                 <div className="text-blue-600">
-                  <div><span className="font-medium">Name:</span> {booking.guestName || booking.user?.name || 'N/A'}</div>
-                  <div><span className="font-medium">Phone:</span> {booking.guestPhone || booking.user?.phoneNumber || 'N/A'}</div>
+                  <div><span className="font-medium">{t("card.agentInfo.name")}</span> {booking.guestName || booking.user?.name || t("card.agentInfo.notAvailable")}</div>
+                  <div><span className="font-medium">{t("card.agentInfo.phone")}</span> {booking.guestPhone || booking.user?.phoneNumber || t("card.agentInfo.notAvailable")}</div>
                 </div>
               </div>
               
               {/* Host info */}
               {booking.place?.owner && (
                 <div className="bg-green-50 border border-green-200 rounded p-2">
-                  <div className="font-medium text-green-700 mb-1">Host</div>
+                  <div className="font-medium text-green-700 mb-1">{t("card.agentInfo.host")}</div>
                   <div className="text-green-600">
-                    <div><span className="font-medium">Name:</span> {booking.place.owner.name}</div>
-                    <div><span className="font-medium">Phone:</span> {booking.place.owner.phoneNumber || 'N/A'}</div>
+                    <div><span className="font-medium">{t("card.agentInfo.name")}</span> {booking.place.owner.name}</div>
+                    <div><span className="font-medium">{t("card.agentInfo.phone")}</span> {booking.place.owner.phoneNumber || t("card.agentInfo.notAvailable")}</div>
                   </div>
                 </div>
               )}
@@ -177,7 +179,7 @@ export default function BookingRequestCard({ booking, competingBookings = [] }) 
           to={`/account/bookings/${booking.id}`}
           className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors text-center"
         >
-          View Details
+          {t("card.viewDetails")}
         </Link>
       </div>
       </div>

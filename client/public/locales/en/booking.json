@@ -110,11 +110,120 @@
     "pending": "Pending",
     "confirmed": "Confirmed",
     "cancelled": "Cancelled",
-    "completed": "Completed"
+    "completed": "Completed",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "selected": "Selected",
+    "paid": "Paid"
   },
   "userTypes": {
     "client": "Client",
     "host": "Host",
     "agent": "Agent"
+  },
+  "filters": {
+    "searchBookings": "Search bookings",
+    "searchPlaceholders": {
+      "agent": "Search by request ID, host, client, or property...",
+      "host": "Search by request ID or property...",
+      "client": "Search by property name..."
+    },
+    "sortBy": "Sort by",
+    "sortOptions": {
+      "newestFirst": "Newest first",
+      "oldestFirst": "Oldest first",
+      "checkInDate": "Check-in date",
+      "highestPrice": "Highest price",
+      "lowestPrice": "Lowest price",
+      "propertyName": "Property name"
+    },
+    "filterByStatus": "Filter by Status",
+    "statusLabels": {
+      "client": {
+        "pending": "Pending",
+        "approved": "Confirmed",
+        "rejected": "Rejected",
+        "all": "All"
+      },
+      "host": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "paid_to_host": "Paid",
+        "all": "All"
+      },
+      "agent": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "paid_to_host": "Paid",
+        "all": "All"
+      }
+    },
+    "activeFilters": "Active filters:",
+    "clearAllFilters": "Clear all filters",
+    "filterLabels": {
+      "search": "Search: \"{searchTerm}\"",
+      "status": "Status: {status}",
+      "user": "User: {userName}",
+      "host": "Host: {hostName}"
+    },
+    "removeFilter": "Remove {filterName} filter"
+  },
+  "pages": {
+    "titles": {
+      "client": {
+        "allBookings": "All Bookings",
+        "pendingBookings": "Pending Bookings",
+        "confirmedBookings": "Confirmed Bookings",
+        "rejectedBookings": "Rejected Bookings"
+      },
+      "host": {
+        "allRequests": "All Requests",
+        "pendingRequests": "Pending Requests",
+        "approvedRequests": "Approved Requests",
+        "rejectedRequests": "Rejected Requests",
+        "paidRequests": "Paid Requests"
+      },
+      "agent": {
+        "allBookings": "All Bookings",
+        "pendingBookings": "Pending Bookings",
+        "approvedBookings": "Approved Bookings",
+        "rejectedBookings": "Rejected Bookings",
+        "paidBookings": "Paid Bookings"
+      }
+    },
+    "emptyStates": {
+      "noBookingsFound": "No bookings found",
+      "noRequestsFound": "No booking requests found",
+      "adjustFilters": "Try adjusting your search or filter criteria.",
+      "noBookingsYet": {
+        "client": "You don't have any bookings yet. Browse available conference rooms and make a booking.",
+        "host": "You don't have any booking requests yet. When clients book your conference rooms, their requests will appear here.",
+        "agent": "There are no bookings in the system yet."
+      },
+      "findRooms": "Find Conference Rooms"
+    },
+    "statusIndicators": {
+      "pendingBookings": "{count} booking{plural} awaiting approval",
+      "pendingRequests": "{count} request{plural} {verb} attention",
+      "awaitingApproval": "awaiting approval"
+    }
+  },
+  "card": {
+    "requestId": "REQ-{id}",
+    "guests": "{count} guest{plural}",
+    "timeSlots": "Time slots:",
+    "viewDetails": "View Details",
+    "paid": "Paid",
+    "dateFormat": "MMM d, yyyy",
+    "timeSlotFormat": "MMM d",
+    "agentInfo": {
+      "client": "Client",
+      "host": "Host",
+      "name": "Name:",
+      "phone": "Phone:",
+      "notAvailable": "N/A"
+    }
   }
 }
