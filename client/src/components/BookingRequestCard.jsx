@@ -6,6 +6,7 @@ import PriceDisplay from "./PriceDisplay";
 import PriorityIndicator from "./PriorityIndicator";
 import { formatBookingDates } from "../utils/dateFormatting";
 import { format, parseISO } from "date-fns";
+import { enUS, ru, uz } from "date-fns/locale";
 import { getCurrentDateObjectInUzbekistan } from "../utils/uzbekistanTimezoneUtils";
 
 /**
@@ -16,7 +17,16 @@ import { getCurrentDateObjectInUzbekistan } from "../utils/uzbekistanTimezoneUti
  */
 export default function BookingRequestCard({ booking, competingBookings = [] }) {
   const { user } = useContext(UserContext);
-  const { t } = useTranslation('booking');
+  const { t, i18n } = useTranslation('booking');
+
+  // Get appropriate locale for date formatting
+  const getDateLocale = () => {
+    switch (i18n.language) {
+      case 'ru': return ru;
+      case 'uz': return uz;
+      default: return enUS;
+    }
+  };
 
   // Get status badge styling
   const getStatusBadge = (status) => {
@@ -79,7 +89,7 @@ export default function BookingRequestCard({ booking, competingBookings = [] }) 
           </div>
         </div>
         <span className="text-xs text-gray-500">
-          {format(new Date(booking.createdAt), "MMM d, yyyy")}
+          {format(new Date(booking.createdAt), "MMM d, yyyy", { locale: getDateLocale() })}
         </span>
       </div>
 
@@ -140,7 +150,7 @@ export default function BookingRequestCard({ booking, competingBookings = [] }) 
               <div className="mt-1 space-y-1">
                 {booking.timeSlots.map((slot, index) => (
                   <div key={index} className="text-xs bg-blue-50 border border-blue-200 rounded px-2 py-1 inline-block mr-1 mb-1">
-                    {format(parseDateSafely(slot.date), t("card.timeSlotFormat"))}: {slot.startTime}-{slot.endTime}
+                    {format(parseDateSafely(slot.date), t("card.timeSlotFormat"), { locale: getDateLocale() })}: {slot.startTime}-{slot.endTime}
                   </div>
                 ))}
               </div>
