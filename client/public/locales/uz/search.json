@@ -246,7 +246,10 @@
           "evacuationSigns": "Evakuatsiya belgilari",
           "catering": "Ovqatlanish xizmati mavjud",
           "coffee": "Kofe xizmati",
-          "parking": "O'z parkingimiz"
+          "parking": "O'z parkingimiz",
+          "pets": "Uy hayvonlariga ruxsat",
+          "entrance": "Shaxsiy kirish",
+          "kitchen": "Oshxonaga kirish"
         },
         "actions": {
           "clear": "Tozalash",

@@ -51,7 +51,8 @@
     "available": "Available",
     "unavailable": "Unavailable",
     "online": "Online",
-    "offline": "Offline"
+    "offline": "Offline",
+    "new": "New"
   },
   "messages": {
     "noData": "No data available",

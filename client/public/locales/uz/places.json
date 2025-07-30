@@ -22,10 +22,11 @@
   },
   "form": {
     "title": "Joy ma'lumotlari",
+    "titlePlaceholder": "Sarlavha, masalan: Boshqaruv konferens zali",
     "name": "Joy nomi",
     "namePlaceholder": "Joy nomini kiriting",
     "description": "Tavsif",
-    "descriptionPlaceholder": "Joyingizni tasvirlab bering",
+    "descriptionPlaceholder": "Konferens zalingizning xususiyatlari, muhiti, mavjud resurslar va boshqalarni tasvirlab bering.",
     "address": "Manzil",
     "addressPlaceholder": "To'liq manzilni kiriting",
     "city": "Shahar",
@@ -39,6 +40,9 @@
     "maxGuests": "Maksimal mehmonlar",
     "amenities": "Qulayliklar",
     "photos": "Rasmlar",
+    "perks": "Imtiyozlar",
+    "extraInfo": "Qo'shimcha ma'lumot",
+    "extraInfoPlaceholder": "Bron qilish qoidalari, bekor qilish siyosati yoki maxsus ko'rsatmalar kabi har qanday qo'shimcha ma'lumot.",
     "rules": "Uy qoidalari",
     "checkInTime": "Kirish vaqti",
     "checkOutTime": "Chiqish vaqti",
@@ -47,29 +51,10 @@
     "instantBook": "Tezkor bron",
     "ownerName": "Egasi nomi",
     "ownerPhone": "Egasi telefoni",
-    "ownerEmail": "Egasi elektron pochtasi"
-  },
-  "amenities": {
-    "wifi": "Wi-Fi",
-    "parking": "Bepul to'xtash joyi",
-    "airConditioning": "Konditsioner",
-    "heating": "Isitish",
-    "kitchen": "Oshxona",
-    "washer": "Kir yuvish mashinasi",
-    "dryer": "Quritgich",
-    "tv": "Televizor",
-    "pool": "Hovuz",
-    "gym": "Sport zali",
-    "balcony": "Balkon",
-    "garden": "Bog'",
-    "petFriendly": "Uy hayvonlariga mos",
-    "smokingAllowed": "Chekishga ruxsat",
-    "fireplace": "Kamin",
-    "elevator": "Lift",
-    "hotTub": "Issiq vanna",
-    "beachAccess": "Dengizga kirish",
-    "mountainView": "Tog' manzarasi",
-    "cityView": "Shahar manzarasi"
+    "ownerEmail": "Egasi elektron pochtasi",
+    "refundOptions": "Qaytarish variantlari",
+    "refundOptionsDescription": "Konferens zalingiz uchun qaytarish va bekor qilish siyosatlarini tanlang.",
+    "saveButton": "Konferens zalini saqlash"
   },
   "listing": {
     "details": "Joy tafsilotlari",
@@ -91,7 +76,8 @@
     "bathroomCount": "{{count}} hammom",
     "bathroomCount_plural": "{{count}} hammom",
     "guestCount": "{{count}} mehmon",
-    "guestCount_plural": "{{count}} mehmon"
+    "guestCount_plural": "{{count}} mehmon",
+    "showAllAmenities": "Barcha {{count}} qulayliklarni ko'rsatish"
   },
   "filters": {
     "priceRange": "Narx diapazoni",
@@ -139,5 +125,147 @@
       "edit": "Tahrirlash",
       "view_details": "Tafsilotlar"
     }
+  },
+  "perks": {
+    "groups": {
+      "audioVideo": "Audio/Video",
+      "technicalEquipment": "Texnik jihozlar",
+      "furniture": "Mebel",
+      "miscellaneous": "Boshqalar",
+      "safety": "Xavfsizlik",
+      "services": "Xizmatlar"
+    },
+    "items": {
+      "microphone": "Mikrofon",
+      "speaker": "Dinamik",
+      "projector": "Proyektor",
+      "screen": "Ekran",
+      "whiteboard": "Oq doska",
+      "flipChart": "Flip chart",
+      "soundSystem": "Ovoz tizimi",
+      "audioMixer": "Audio mikser",
+      "cablesMics": "Mikrofon uchun kabellar",
+      "cameraTripod": "Kamera uchgun",
+      "lightingEquipment": "Yoritish jihozlari",
+      "stageLighting": "Sahna yoritish",
+      "laptop": "Noutbuk",
+      "desktop": "Ish stoli kompyuteri",
+      "extensionCords": "Uzatuvchi simlar",
+      "chargers": "Zaryadlovchilar",
+      "wiredInternet": "Simli internet",
+      "wifi": "Wi-Fi",
+      "router": "Router",
+      "wifiAccessPoint": "Wi-Fi ulanish nuqtasi",
+      "speakerPodium": "Ma'ruzachi minbari",
+      "speakerTable": "Ma'ruzachi stoli",
+      "speakerChair": "Ma'ruzachi stuli",
+      "participantChairs": "Ishtirokchilar stullari",
+      "participantDesks": "Ishtirokchilar stoli",
+      "bottledWater": "Suv 0.5L",
+      "waterCooler": "Sovutgichli suv",
+      "cups": "Stakanlar",
+      "nameTags": "Ism yorliqlari",
+      "markers": "Markerlar",
+      "paper": "Qog'oz",
+      "airConditioner": "Konditsioner",
+      "ventilation": "Ventilyatsiya tizimi",
+      "signage": "Yo'nalish belgilari",
+      "registrationDesk": "Ro'yxatga olish stoli",
+      "fireExtinguisher": "Yong'in o'chiruvchi",
+      "firstAidKit": "Birinchi yordam to'plami",
+      "evacuationSigns": "Evakuatsiya belgilari",
+      "catering": "Ovqat xizmati mavjud",
+      "coffee": "Kofe xizmati",
+      "parking": "Avtoturargoh"
+    }
+  },
+  "placeDetail": {
+    "bookingRestored": "Sizning bron tanlovlaringiz tiklandi. Endi bronni yakunlashingiz mumkin.",
+    "deleteSuccess": "Konferens zal muvaffaqiyatli o'chirildi",
+    "ownerNotification": "Siz ushbu konferens zalning egasisiz",
+    "agentNotification": "Agent boshqaruvi kirish",
+    "sections": {
+      "description": "Tavsif",
+      "location": "Joylashuv",
+      "additionalInfo": "Qo'shimcha ma'lumot"
+    },
+    "managementOptions": {
+      "title": "Boshqaruv imkoniyatlari",
+      "edit": "Konferens zalini tahrirlash",
+      "delete": "Konferens zalini o'chirish",
+      "deleting": "O'chirilmoqda..."
+    },
+    "deleteModal": {
+      "title": "Konferens zalini o'chirish",
+      "titleLabel": "Sarlavha",
+      "locationLabel": "Joylashuv",
+      "priceLabel": "Narx",
+      "hour": "soat",
+      "consequences": {
+        "roomDetails": "Konferens zal va uning barcha tafsilotlari",
+        "photos": "Ushbu konferens zal bilan bog'liq barcha rasmlar",
+        "bookings": "Ushbu konferens zal uchun barcha bronlar",
+        "reviews": "Ushbu konferens zal uchun barcha reytinglar va sharhlar"
+      }
+    }
+  },
+  "placeDetailsInfo": {
+    "title": "Zal tafsilotlari",
+    "sections": {
+      "pricing": "Narxlar",
+      "capacity": "Sig'im va makon",
+      "timeRules": "Vaqt qoidalari"
+    },
+    "pricing": {
+      "hourlyRate": "Soatlik tarif",
+      "fullDay": "To'liq kun ({{hours}}s)"
+    },
+    "capacity": {
+      "maxAttendees": "Maksimal ishtirokchilar",
+      "people": "kishi",
+      "roomSize": "Zal o'lchami",
+      "type": "Tur",
+      "hotel": "Mehmonxona"
+    },
+    "timeRules": {
+      "minBooking": "Min. bron",
+      "cooldown": "Tanaffus",
+      "min": "daq"
+    }
+  },
+  "placePerks": {
+    "whatThisPlaceOffers": "Bu joy nimalarni taklif qiladi",
+    "showAllAmenities": "Barcha {{count}} qulayliklarni ko'rsatish"
+  },
+  "common": {
+    "error": "Xato"
+  },
+  "placesPage": {
+    "addNewRoom": "Yangi xona qo'shish",
+    "noRoomsFound": "Xonalar topilmadi",
+    "noRoomsYet": "Hali konferens xonalari yo'q",
+    "tryAdjustingSearch": "Qidiruv mezonlarini o'zgartirib ko'ring.",
+    "getStartedMessage": "Birinchi konferens xona e'loningizni qo'shish bilan boshlang.",
+    "clearSearch": "Qidiruvni tozalash",
+    "addFirstRoom": "Birinchi xonangizni qo'shing",
+    "yourRooms": "Sizning konferens xonalaringiz",
+    "showingResults": "\"{{searchTerm}}\" uchun natijalar"
+  },
+  "allPlacesPage": {
+    "createPlace": "Joy yaratish",
+    "searchRooms": "Xonalarni qidirish",
+    "searchPlaceholder": "Sarlavha, manzil yoki mezbon nomi bo'yicha qidiring...",
+    "noRoomsFound": "Konferens xonalari topilmadi",
+    "tryAdjustingFilters": "Ko'proq natijalar ko'rish uchun filtrlarni o'zgartirib ko'ring.",
+    "noRoomsListed": "Hali konferens xonalari ro'yxatga olinmagan.",
+    "clearAllFilters": "Barcha filtrlarni tozalash",
+    "showingResults": "{{total}} konferens xonadan {{count}} tasi {{plural}}",
+    "byHost": "{{hostName}} tomonidan",
+    "matching": "\"{{searchTerm}}\" ga mos",
+    "host": "Mezbon"
+  },
+  "placeFilters": {
+    "searchLabel": "Konferens xonalaringizni qidiring",
+    "searchPlaceholder": "Mulk nomi yoki manzil bo'yicha qidiring..."
   }
 }

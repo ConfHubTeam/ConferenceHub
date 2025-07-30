@@ -252,7 +252,10 @@
           "evacuationSigns": "Evacuation signs",
           "catering": "Catering Available",
           "coffee": "Coffee Service",
-          "parking": "On-site Parking"
+          "parking": "On-site Parking",
+          "pets": "Pet Friendly",
+          "entrance": "Private Entrance",
+          "kitchen": "Kitchen Access"
         },
         "actions": {
           "clear": "Clear",

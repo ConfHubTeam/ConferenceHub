@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import AccountNav from "../components/AccountNav";
 import api from "../utils/api";
 import { UserContext } from "../components/UserContext";
@@ -16,6 +17,7 @@ import Pagination from "../components/Pagination";
 import ActiveFilters, { FilterCreators } from "../components/ActiveFilters";
 
 export default function AllPlacesPage() {
+  const { t } = useTranslation('places');
   const { user } = useContext(UserContext);
   const [places, setPlaces] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -369,7 +371,7 @@ export default function AllPlacesPage() {
                     d="M12 4.5v15m7.5-7.5h-15"
                   />
                 </svg>
-                Create Place
+                {t('allPlacesPage.createPlace', 'Create Place')}
               </Link>
             )}
           </div>
@@ -381,11 +383,11 @@ export default function AllPlacesPage() {
             {/* Search input */}
             <div className="flex-1">
               <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
-                Search Rooms
+                {t('allPlacesPage.searchRooms', 'Search Rooms')}
               </label>
               <input
                 type="text"
-                placeholder="Search by title, address, or host name..."
+                placeholder={t('allPlacesPage.searchPlaceholder', 'Search by title, address, or host name...')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 text-sm"
@@ -408,11 +410,11 @@ export default function AllPlacesPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H9m0 0H5m4 0V9a2 2 0 012-2h2a2 2 0 012 2v8" />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No conference rooms found</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">{t('allPlacesPage.noRoomsFound', 'No conference rooms found')}</h3>
             <p className="text-gray-500 mb-4">
               {selectedUserId || searchTerm 
-                ? "Try adjusting your filters to see more results." 
-                : "No conference rooms have been listed yet."
+                ? t('allPlacesPage.tryAdjustingFilters', 'Try adjusting your filters to see more results.') 
+                : t('allPlacesPage.noRoomsListed', 'No conference rooms have been listed yet.')
               }
             </p>
             {(selectedUserId || searchTerm) && (
@@ -420,7 +422,7 @@ export default function AllPlacesPage() {
                 onClick={clearAllFilters}
                 className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
               >
-                Clear all filters
+                {t('allPlacesPage.clearAllFilters', 'Clear all filters')}
               </button>
             )}
           </div>
@@ -428,9 +430,13 @@ export default function AllPlacesPage() {
           <div className="mb-8">
             {/* Results summary */}
             <div className="mb-4 text-sm text-gray-600">
-              Showing {filteredPlaces.length} of {totalItems} conference room{totalItems !== 1 ? 's' : ''}
-              {selectedUserId && ` by ${getSelectedUser()?.name}`}
-              {searchTerm && ` matching "${searchTerm}"`}
+              {t('allPlacesPage.showingResults', 'Showing {{count}} of {{total}} conference room{{plural}}', {
+                count: filteredPlaces.length,
+                total: totalItems,
+                plural: totalItems !== 1 ? 's' : ''
+              })}
+              {selectedUserId && ` ${t('allPlacesPage.byHost', 'by {{hostName}}', { hostName: getSelectedUser()?.name })}`}
+              {searchTerm && ` ${t('allPlacesPage.matching', 'matching "{{searchTerm}}"', { searchTerm })}`}
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -465,7 +471,7 @@ export default function AllPlacesPage() {
                             <svg className="w-5 h-5 mr-1 fill-current text-yellow-400" viewBox="0 0 20 20">
                               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                             </svg>
-                            <span className="font-medium">{place.averageRating || 'New'}</span>
+                            <span className="font-medium">{place.averageRating || t('common:status.new', 'New')}</span>
                             {place.totalReviews > 0 && (
                               <span className="ml-1">({place.totalReviews})</span>
                             )}
@@ -477,7 +483,7 @@ export default function AllPlacesPage() {
                               <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                               </svg>
-                              {place.maxGuests} guests
+                              {place.maxGuests} {t('common:units.guests_plural', 'guests')}
                             </div>
                           )}
                         </div>
@@ -498,7 +504,7 @@ export default function AllPlacesPage() {
                       {place.owner && (
                         <div className="flex items-center justify-between mt-3 pt-3 border-t">
                           <span className="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full">
-                            Host: {place.owner.name}
+                            {t('allPlacesPage.host', 'Host')}: {place.owner.name}
                           </span>
                           <span className="text-base text-primary font-semibold">
                             <PriceDisplay 

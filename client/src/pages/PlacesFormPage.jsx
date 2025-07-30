@@ -12,8 +12,10 @@ import YouTubeSection, { extractYouTubeVideoId } from "../components/YouTubeSect
 import MatterportSection from "../components/MatterportSection";
 import HostSelector from "../components/HostSelector";
 import RefundOptions from "../components/RefundOptions";
+import { useTranslation } from "react-i18next";
 
 export default function PlacesFormPage() {
+  const { t } = useTranslation(['places', 'forms', 'common']);
   const { id } = useParams();
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
@@ -376,11 +378,11 @@ export default function PlacesFormPage() {
     return matrix[str2.length][str1.length];
   }
 
-  function preInput(header, description, isRequired = false) {
+  function preInput(headerKey, descriptionKey, isRequired = false) {
     return (
       <div>
-        {inputHeader(header, isRequired)}
-        {inputDescription(description)}
+        {inputHeader(t(headerKey), isRequired)}
+        {inputDescription(descriptionKey ? t(descriptionKey) : '')}
       </div>
     );
   }
@@ -395,7 +397,7 @@ export default function PlacesFormPage() {
   }
 
   function inputDescription(text) {
-    return <p className="text-gray-500 text-sm">{text}</p>;
+    return text ? <p className="text-gray-500 text-sm">{text}</p> : null;
   }
 
   async function savePlace(event) {
@@ -661,13 +663,14 @@ export default function PlacesFormPage() {
         )}
         
         {preInput(
-          "Title",
+          "places:form.title",
+          null,
           true // Required field
         )}
         <input
           id="place-title"
           type="text"
-          placeholder="Title, for example: Executive Conference Room"
+          placeholder={t('places:form.titlePlaceholder')}
           value={title}
           onChange={(event) => setTitle(event.target.value)}
           className="w-full border my-2 py-2 px-3 rounded-2xl"
@@ -690,7 +693,7 @@ export default function PlacesFormPage() {
           placeId={id} // Pass the place ID to determine if this is creation or editing
         />
         
-        {preInput("Photos")}
+        {preInput("places:form.photos")}
         <PhotoUploader
           addedPhotos={addedPhotos}
           setAddedPhotos={setAddedPhotos}
@@ -708,23 +711,23 @@ export default function PlacesFormPage() {
           preInput={preInput}
         />
         
-        {preInput("Description")}
+        {preInput("places:form.description")}
         <textarea
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           className="w-full border my-2 py-2 px-3 rounded-2xl"
           rows={5}
-          placeholder="Describe your conference room's features, ambiance, available resources, etc."
+          placeholder={t('places:form.descriptionPlaceholder')}
         />
-        {preInput("Perks")}
+        {preInput("places:form.perks")}
         <PerkSelections selectedPerks={perks} setPerks={setPerks} />
-        {preInput("Extra info")}
+        {preInput("places:form.extraInfo")}
         <textarea
           value={extraInfo}
           onChange={(event) => setExtraInfo(event.target.value)}
           className="w-full border my-2 py-2 px-3 rounded-2xl"
           rows={4}
-          placeholder="Any additional information such as booking rules, cancellation policy, or special instructions."
+          placeholder={t('places:form.extraInfoPlaceholder')}
         />
         <AvailabilitySection
           startDate={startDate}
@@ -763,8 +766,8 @@ export default function PlacesFormPage() {
         />
         
         {preInput(
-          "Refund Options",
-          "Select the refund and cancellation policies for your conference room.",
+          "places:form.refundOptions",
+          "places:form.refundOptionsDescription",
           true // Required field
         )}
         <RefundOptions
@@ -782,7 +785,7 @@ export default function PlacesFormPage() {
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
-            Cancel
+            {t('common:buttons.cancel')}
           </button>
           <button 
             type="submit"
@@ -791,7 +794,7 @@ export default function PlacesFormPage() {
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            Save Conference Room
+            {t('places:form.saveButton')}
           </button>
         </div>
       </form>
