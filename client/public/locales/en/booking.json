@@ -135,6 +135,20 @@
     "host": "Host",
     "agent": "Agent"
   },
+  "roleNotifications": {
+    "owner": {
+      "title": "You own this conference room",
+      "description": "You can view the calendar to see availability, but booking is for clients only."
+    },
+    "agent": {
+      "title": "Agent View",
+      "description": "You can view the calendar to see availability, but booking is for clients only."
+    },
+    "host": {
+      "title": "Host View",
+      "description": "You can view the calendar to see availability, but booking is for clients only."
+    }
+  },
   "filters": {
     "searchBookings": "Search bookings",
     "searchPlaceholders": {

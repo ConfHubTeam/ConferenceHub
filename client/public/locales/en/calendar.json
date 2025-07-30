@@ -39,5 +39,60 @@
   "dateSelection": {
     "dateSelected": "date selected",
     "datesSelected": "dates selected"
+  },
+  "placeAvailabilityCalendar": {
+    "title": {
+      "availabilityCalendar": "Availability Calendar",
+      "selectYourDates": "Select Your Dates"
+    },
+    "messages": {
+      "unauthenticatedInfo": "Select dates and time slots to see pricing. You'll need to login to complete booking.",
+      "hostAgentInfo": "Click on any date to see booking details"
+    }
+  },
+  "dateAvailabilityDetails": {
+    "title": "Daily Schedule",
+    "operatingHours": "Operating Hours",
+    "timeSlotAvailability": "Time Slot Availability",
+    "noTimeSlotsAvailable": "No time slots available for this date.",
+    "legend": {
+      "title": "Legend",
+      "booked": "Booked",
+      "cooldown": "Cooldown",
+      "notBookable": "Not bookable",
+      "dayEnd": "Day End",
+      "available": "Available"
+    },
+    "slotStatus": {
+      "booked": "Booked",
+      "bookedPast": "Booked (Past)",
+      "cooldown": "Cooldown",
+      "cooldownPast": "Cooldown (Past)",
+      "conflicts": "Conflicts",
+      "conflictsPast": "Conflicts (Past)",
+      "dayEnd": "Day End",
+      "available": "Available"
+    },
+    "cooldownInfo": {
+      "title": "Cooldown period:",
+      "afterEachBooking": "after each booking",
+      "timeUnits": {
+        "hour": "h",
+        "minute": "min"
+      }
+    },
+    "bookings": {
+      "title": "Bookings",
+      "bookedBy": "Booked by:",
+      "notes": "Notes:",
+      "status": {
+        "confirmed": "Confirmed",
+        "pending": "Pending",
+        "cancelled": "Cancelled"
+      }
+    },
+    "buttons": {
+      "close": "Close"
+    }
   }
 }

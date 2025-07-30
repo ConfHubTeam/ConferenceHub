@@ -64,6 +64,26 @@
     "reviewsTitle": "Sharhlar",
     "hostTitle": "Sizning mezboniz",
     "availabilityTitle": "Mavjudlik",
+    "weeklyAvailability": {
+      "title": "Ish vaqtlari",
+      "notAvailable": "Mavjud emas",
+      "noSpecificHours": "Aniq vaqt belgilanmagan",
+      "from": "Dan:",
+      "to": "Gacha:",
+      "legend": {
+        "availableWithHours": "Ish soatlari bilan mavjud",
+        "notAvailable": "Mavjud emas"
+      },
+      "weekdays": {
+        "sunday": "Yakshanba",
+        "monday": "Dushanba",
+        "tuesday": "Seshanba",
+        "wednesday": "Chorshanba",
+        "thursday": "Payshanba",
+        "friday": "Juma",
+        "saturday": "Shanba"
+      }
+    },
     "pricingTitle": "Narxlar",
     "perNight": "tuniga",
     "totalPrice": "Jami: {{amount, currency}}",
@@ -230,7 +250,8 @@
     "timeRules": {
       "minBooking": "Min. bron",
       "cooldown": "Tanaffus",
-      "min": "daq"
+      "min": "minut",
+      "hour": "soat"
     }
   },
   "placePerks": {

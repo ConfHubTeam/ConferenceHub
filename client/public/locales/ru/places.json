@@ -64,6 +64,26 @@
     "reviewsTitle": "Отзывы",
     "hostTitle": "Ваш хозяин",
     "availabilityTitle": "Доступность",
+    "weeklyAvailability": {
+      "title": "Рабочие часы",
+      "notAvailable": "Недоступно",
+      "noSpecificHours": "Конкретные часы не установлены",
+      "from": "С:",
+      "to": "До:",
+      "legend": {
+        "availableWithHours": "Доступно с часами работы",
+        "notAvailable": "Недоступно"
+      },
+      "weekdays": {
+        "sunday": "Воскресенье",
+        "monday": "Понедельник",
+        "tuesday": "Вторник",
+        "wednesday": "Среда",
+        "thursday": "Четверг",
+        "friday": "Пятница",
+        "saturday": "Суббота"
+      }
+    },
     "pricingTitle": "Цены",
     "perNight": "за ночь",
     "totalPrice": "Итого: {{amount, currency}}",
@@ -230,7 +250,8 @@
     "timeRules": {
       "minBooking": "Мин. бронирование",
       "cooldown": "Перерыв",
-      "min": "мин"
+      "min": "мин",
+      "hour": "ч"
     }
   },
   "placePerks": {

@@ -39,5 +39,60 @@
   "dateSelection": {
     "dateSelected": "дата выбрана",
     "datesSelected": "дат выбрано"
+  },
+  "placeAvailabilityCalendar": {
+    "title": {
+      "availabilityCalendar": "Календарь доступности",
+      "selectYourDates": "Выберите даты"
+    },
+    "messages": {
+      "unauthenticatedInfo": "Выберите даты и временные слоты, чтобы увидеть цену. Для завершения бронирования необходимо войти в систему.",
+      "hostAgentInfo": "Нажмите на любую дату, чтобы увидеть детали бронирования"
+    }
+  },
+  "dateAvailabilityDetails": {
+    "title": "Ежедневное расписание",
+    "operatingHours": "Рабочие часы",
+    "timeSlotAvailability": "Доступность временных слотов",
+    "noTimeSlotsAvailable": "Нет доступных временных слотов на эту дату.",
+    "legend": {
+      "title": "Легенда",
+      "booked": "Забронировано",
+      "cooldown": "Пауза",
+      "notBookable": "Недоступно",
+      "dayEnd": "Конец дня",
+      "available": "Доступно"
+    },
+    "slotStatus": {
+      "booked": "Забронировано",
+      "bookedPast": "Забронировано (Прошедшее)",
+      "cooldown": "Пауза",
+      "cooldownPast": "Пауза (Прошедшее)",
+      "conflicts": "Конфликты",
+      "conflictsPast": "Конфликты (Прошедшее)",
+      "dayEnd": "Конец дня",
+      "available": "Доступно"
+    },
+    "cooldownInfo": {
+      "title": "Период паузы:",
+      "afterEachBooking": "после каждого бронирования",
+      "timeUnits": {
+        "hour": "час",
+        "minute": "мин"
+      }
+    },
+    "bookings": {
+      "title": "Бронирования",
+      "bookedBy": "Забронировано:",
+      "notes": "Заметки:",
+      "status": {
+        "confirmed": "Подтверждено",
+        "pending": "В ожидании",
+        "cancelled": "Отменено"
+      }
+    },
+    "buttons": {
+      "close": "Закрыть"
+    }
   }
 }

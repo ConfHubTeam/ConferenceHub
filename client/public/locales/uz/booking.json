@@ -135,6 +135,20 @@
     "host": "Joy egasi",
     "agent": "Agent"
   },
+  "roleNotifications": {
+    "owner": {
+      "title": "Siz ushbu konferens zalining egasisiz",
+      "description": "Siz mavjudlikni ko'rish uchun kalendarni ko'rishingiz mumkin, lekin bronlash faqat mijozlar uchun."
+    },
+    "agent": {
+      "title": "Agent ko'rinishi",
+      "description": "Siz mavjudlikni ko'rish uchun kalendarni ko'rishingiz mumkin, lekin bronlash faqat mijozlar uchun."
+    },
+    "host": {
+      "title": "Joy egasi ko'rinishi",
+      "description": "Siz mavjudlikni ko'rish uchun kalendarni ko'rishingiz mumkin, lekin bronlash faqat mijozlar uchun."
+    }
+  },
   "filters": {
     "searchBookings": "Bron qilishlarni qidirish",
     "searchPlaceholders": {

@@ -114,7 +114,7 @@ export default function PlaceDetailsInfo({ placeDetail }) {
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">{t('placeDetailsInfo.timeRules.minBooking')}:</span>
-              <span className="font-bold text-purple-900">{minimumHours}h</span>
+              <span className="font-bold text-purple-900">{minimumHours} {t('placeDetailsInfo.timeRules.hour')}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">{t('placeDetailsInfo.timeRules.cooldown')}:</span>

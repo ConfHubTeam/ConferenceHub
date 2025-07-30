@@ -64,6 +64,26 @@
     "reviewsTitle": "Reviews",
     "hostTitle": "Your Host",
     "availabilityTitle": "Availability",
+    "weeklyAvailability": {
+      "title": "Working Hours",
+      "notAvailable": "Not Available",
+      "noSpecificHours": "No specific hours set",
+      "from": "From:",
+      "to": "To:",
+      "legend": {
+        "availableWithHours": "Available with hours",
+        "notAvailable": "Not available"
+      },
+      "weekdays": {
+        "sunday": "Sunday",
+        "monday": "Monday",
+        "tuesday": "Tuesday",
+        "wednesday": "Wednesday",
+        "thursday": "Thursday",
+        "friday": "Friday",
+        "saturday": "Saturday"
+      }
+    },
     "pricingTitle": "Pricing",
     "perNight": "per night",
     "totalPrice": "Total: {{amount, currency}}",
@@ -230,7 +250,8 @@
     "timeRules": {
       "minBooking": "Min. Booking",
       "cooldown": "Cooldown",
-      "min": "min"
+      "min": "min",
+      "hour": "hour"
     }
   },
   "placePerks": {

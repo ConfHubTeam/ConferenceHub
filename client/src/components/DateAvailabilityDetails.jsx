@@ -14,8 +14,12 @@ import { getCurrentDateObjectInUzbekistan } from "../utils/uzbekistanTimezoneUti
 /**
  * DateAvailabilityDetails Component
  * 
- * Shows detailed time slot availability for a specific date
- * Used by hosts and agents to check booking status
+ * Shows detailed time slot availability for a specific date.
+ * Used by hosts and agents to check booking status with internationalization support.
+ * 
+ * Single Responsibility: Only handles date-specific availability details
+ * Open/Closed: Extensible for new availability features without modification
+ * DRY: Reuses translation keys and follows project patterns
  */
 export default function DateAvailabilityDetails({ 
   date, 
@@ -23,7 +27,39 @@ export default function DateAvailabilityDetails({
   bookedTimeSlots = [],
   placeDetail = {} 
 }) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  // Helper function to format hour based on language preference
+  const formatHourForDisplay = (hour) => {
+    if (!hour) return "";
+    
+    const currentLanguage = i18n.language;
+    const hourNum = parseInt(hour.split(':')[0], 10);
+    
+    // Use 24-hour format for Russian and Uzbek, 12-hour format for English
+    if (currentLanguage === 'ru' || currentLanguage === 'uz') {
+      // 24-hour format: 18:00
+      return `${hourNum.toString().padStart(2, '0')}:00`;
+    } else {
+      // Use existing formatHourTo12 function for English
+      return formatHourTo12(hour);
+    }
+  };
+
+  // Helper function to format cooldown duration with translated time units
+  const formatCooldownDuration = (cooldownMinutes) => {
+    if (cooldownMinutes >= 60) {
+      const hours = Math.floor(cooldownMinutes / 60);
+      const remainingMinutes = cooldownMinutes % 60;
+      let result = `${hours}${t("calendar:dateAvailabilityDetails.cooldownInfo.timeUnits.hour")}`;
+      if (remainingMinutes > 0) {
+        result += ` ${remainingMinutes}${t("calendar:dateAvailabilityDetails.cooldownInfo.timeUnits.minute")}`;
+      }
+      return result;
+    } else {
+      return `${cooldownMinutes} ${t("calendar:dateAvailabilityDetails.cooldownInfo.timeUnits.minute")}`;
+    }
+  };
 
   // Get appropriate locale for date formatting
   const getDateLocale = () => {
@@ -101,7 +137,7 @@ export default function DateAvailabilityDetails({
       const timeSlot = {
         hour: hour,
         time24: `${hour.toString().padStart(2, "0")}:00`,
-        display: formatHourTo12(`${hour.toString().padStart(2, "0")}:00`),
+        display: formatHourForDisplay(`${hour.toString().padStart(2, "0")}:00`),
         isBooked: false,
         isInCooldown: false,
         isConflicted: false,
@@ -223,7 +259,7 @@ export default function DateAvailabilityDetails({
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2 text-blue-600">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0121 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
             </svg>
-            Daily Schedule
+            {t("calendar:dateAvailabilityDetails.title")}
           </h3>
           <button 
             onClick={onClose}
@@ -244,16 +280,16 @@ export default function DateAvailabilityDetails({
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span className="text-blue-700">
-              Operating Hours: <strong>{formatHourTo12(timeRange.start)} - {formatHourTo12(timeRange.end)}</strong>
+              {t("calendar:dateAvailabilityDetails.operatingHours")}: <strong>{formatHourForDisplay(timeRange.start)} - {formatHourForDisplay(timeRange.end)}</strong>
             </span>
           </div>
         </div>
         
         <div className="mb-4">
-          <h4 className="font-medium text-gray-700 mb-2">Time Slot Availability</h4>
+          <h4 className="font-medium text-gray-700 mb-2">{t("calendar:dateAvailabilityDetails.timeSlotAvailability")}</h4>
           
           {allTimeSlots.length === 0 ? (
-            <p className="text-gray-500 italic">No time slots available for this date.</p>
+            <p className="text-gray-500 italic">{t("calendar:dateAvailabilityDetails.noTimeSlotsAvailable")}</p>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
               {allTimeSlots.map((slot, index) => (
@@ -301,20 +337,20 @@ export default function DateAvailabilityDetails({
                     <div className="text-xs mt-0.5">
                       {slot.isBooked ? (
                         <span className={slot.isPast ? 'text-gray-500' : 'text-red-700'}>
-                          Booked{slot.isPast ? ' (Past)' : ''}
+                          {slot.isPast ? t("calendar:dateAvailabilityDetails.slotStatus.bookedPast") : t("calendar:dateAvailabilityDetails.slotStatus.booked")}
                         </span>
                       ) : slot.isInCooldown ? (
                         <span className={slot.isPast ? 'text-gray-500' : 'text-orange-700'}>
-                          Cooldown{slot.isPast ? ' (Past)' : ''}
+                          {slot.isPast ? t("calendar:dateAvailabilityDetails.slotStatus.cooldownPast") : t("calendar:dateAvailabilityDetails.slotStatus.cooldown")}
                         </span>
                       ) : slot.isConflicted ? (
                         <span className={slot.isPast ? 'text-gray-500' : 'text-purple-700'}>
-                          Conflicts{slot.isPast ? ' (Past)' : ''}
+                          {slot.isPast ? t("calendar:dateAvailabilityDetails.slotStatus.conflictsPast") : t("calendar:dateAvailabilityDetails.slotStatus.conflicts")}
                         </span>
                       ) : slot.isWorkingHoursEnd ? (
-                        <span className="text-gray-700">Day End</span>
+                        <span className="text-gray-700">{t("calendar:dateAvailabilityDetails.slotStatus.dayEnd")}</span>
                       ) : (
-                        <span className="text-green-700">Available</span>
+                        <span className="text-green-700">{t("calendar:dateAvailabilityDetails.slotStatus.available")}</span>
                       )}
                     </div>
                   </div>
@@ -325,27 +361,27 @@ export default function DateAvailabilityDetails({
           
           {/* Legend for time slot colors */}
           <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-            <h5 className="text-sm font-medium text-gray-700 mb-2">Legend</h5>
+            <h5 className="text-sm font-medium text-gray-700 mb-2">{t("calendar:dateAvailabilityDetails.legend.title")}</h5>
             <div className="flex flex-wrap items-center gap-4 text-xs text-gray-600">
               <div className="flex items-center">
                 <div className="h-3 w-3 bg-red-500 rounded mr-1"></div>
-                <span>Booked</span>
+                <span>{t("calendar:dateAvailabilityDetails.legend.booked")}</span>
               </div>
               <div className="flex items-center">
                 <div className="h-3 w-3 bg-orange-500 rounded mr-1"></div>
-                <span>Cooldown</span>
+                <span>{t("calendar:dateAvailabilityDetails.legend.cooldown")}</span>
               </div>
               <div className="flex items-center">
                 <div className="h-3 w-3 bg-purple-500 rounded mr-1"></div>
-                <span>Not bookable</span>
+                <span>{t("calendar:dateAvailabilityDetails.legend.notBookable")}</span>
               </div>
               <div className="flex items-center">
                 <div className="h-3 w-3 bg-gray-500 rounded mr-1"></div>
-                <span>Day End</span>
+                <span>{t("calendar:dateAvailabilityDetails.legend.dayEnd")}</span>
               </div>
               <div className="flex items-center">
                 <div className="h-3 w-3 bg-green-500 rounded mr-1"></div>
-                <span>Available</span>
+                <span>{t("calendar:dateAvailabilityDetails.legend.available")}</span>
               </div>
             </div>
           </div>
@@ -359,7 +395,7 @@ export default function DateAvailabilityDetails({
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <p className="text-xs">
-                <strong>Cooldown period:</strong> {placeDetail.cooldown >= 60 ? `${Math.floor(placeDetail.cooldown / 60)}h ${placeDetail.cooldown % 60 > 0 ? `${placeDetail.cooldown % 60}min` : ''}`.trim() : `${placeDetail.cooldown} min`} after each booking
+                <strong>{t("calendar:dateAvailabilityDetails.cooldownInfo.title")}</strong> {formatCooldownDuration(placeDetail.cooldown)} {t("calendar:dateAvailabilityDetails.cooldownInfo.afterEachBooking")}
               </p>
             </div>
           </div>
@@ -367,18 +403,18 @@ export default function DateAvailabilityDetails({
 
         {bookings.length > 0 && (
           <div className="mt-6">
-            <h4 className="font-medium text-gray-700 mb-2">Bookings</h4>
+            <h4 className="font-medium text-gray-700 mb-2">{t("calendar:dateAvailabilityDetails.bookings.title")}</h4>
             <div className="space-y-3">
               {bookings.map((booking, index) => (
                 <div key={index} className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="font-medium text-blue-900">
-                        {formatHourTo12(booking.startTime)} - {formatHourTo12(booking.endTime)}
+                        {formatHourForDisplay(booking.startTime)} - {formatHourForDisplay(booking.endTime)}
                       </p>
                       {booking.userName && (
                         <p className="text-sm text-blue-800 mt-1">
-                          Booked by: {booking.userName}
+                          {t("calendar:dateAvailabilityDetails.bookings.bookedBy")}: {booking.userName}
                         </p>
                       )}
                     </div>
@@ -390,14 +426,14 @@ export default function DateAvailabilityDetails({
                           booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
                           'bg-gray-100 text-gray-800'}
                       `}>
-                        {booking.status}
+                        {t(`calendar:dateAvailabilityDetails.bookings.status.${booking.status}`, booking.status)}
                       </span>
                     )}
                   </div>
                   
                   {booking.notes && (
                     <p className="mt-3 text-sm text-gray-600 bg-white p-2 rounded">
-                      <span className="font-medium">Notes:</span> {booking.notes}
+                      <span className="font-medium">{t("calendar:dateAvailabilityDetails.bookings.notes")}:</span> {booking.notes}
                     </p>
                   )}
                 </div>
@@ -411,7 +447,7 @@ export default function DateAvailabilityDetails({
             onClick={onClose}
             className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
           >
-            Close
+            {t("calendar:dateAvailabilityDetails.buttons.close")}
           </button>
         </div>
       </div>
