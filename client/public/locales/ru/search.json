@@ -198,9 +198,9 @@
         "perksSelected_plural": "{{count}} удобств выбрано",
         "noPerksSelected": "Удобства не выбраны",
         "categories": {
-          "Audio Equipment": "Аудиооборудование",
-          "Visual Equipment": "Видеооборудование", 
-          "Technical Equipment": "Техническое оборудование",
+          "Audio_Equipment": "Аудиооборудование",
+          "Visual_Equipment": "Видеооборудование", 
+          "Technical_Equipment": "Техническое оборудование",
           "Furniture": "Мебель",
           "Miscellaneous": "Разное",
           "Safety": "Безопасность",

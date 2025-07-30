@@ -192,9 +192,9 @@
         "perksSelected": "{{count}} ta qulaylik tanlandi",
         "perksSelected_plural": "{{count}} ta qulaylik tanlandi",
         "categories": {
-          "Audio Equipment": "Audio jihozlar",
-          "Visual Equipment": "Vizual jihozlar", 
-          "Technical Equipment": "Texnik jihozlar",
+          "Audio_Equipment": "Audio jihozlar",
+          "Visual_Equipment": "Vizual jihozlar", 
+          "Technical_Equipment": "Texnik jihozlar",
           "Furniture": "Mebel",
           "Miscellaneous": "Boshqalar",
           "Safety": "Xavfsizlik",

@@ -36,7 +36,7 @@ const MOST_RELEVANT_PERKS = [
 
 // All available perks grouped by category (from PerkSelections.jsx)
 const ALL_PERKS_BY_CATEGORY = {
-  "Audio Equipment": [
+  "Audio_Equipment": [
     { name: "speakerMic", labelKey: "search:filters.modals.perks.items.speakerMic" },
     { name: "backupMic", labelKey: "search:filters.modals.perks.items.backupMic" },
     { name: "speaker", labelKey: "search:filters.modals.perks.items.speaker" },
@@ -45,7 +45,7 @@ const ALL_PERKS_BY_CATEGORY = {
     { name: "amplifier", labelKey: "search:filters.modals.perks.items.amplifier" },
     { name: "acoustic", labelKey: "search:filters.modals.perks.items.acoustic" }
   ],
-  "Visual Equipment": [
+  "Visual_Equipment": [
     { name: "projector", labelKey: "search:filters.modals.perks.items.projector" },
     { name: "ledScreen", labelKey: "search:filters.modals.perks.items.ledScreen" },
     { name: "projectorScreen", labelKey: "search:filters.modals.perks.items.projectorScreen" },
@@ -56,7 +56,7 @@ const ALL_PERKS_BY_CATEGORY = {
     { name: "laserPointer", labelKey: "search:filters.modals.perks.items.laserPointer" },
     { name: "stageLighting", labelKey: "search:filters.modals.perks.items.stageLighting" }
   ],
-  "Technical Equipment": [
+  "Technical_Equipment": [
     { name: "laptop", labelKey: "search:filters.modals.perks.items.laptop" },
     { name: "desktop", labelKey: "search:filters.modals.perks.items.desktop" },
     { name: "extensionCords", labelKey: "search:filters.modals.perks.items.extensionCords" },

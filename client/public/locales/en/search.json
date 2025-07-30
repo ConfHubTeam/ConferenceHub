@@ -198,9 +198,9 @@
         "perksSelected_plural": "{{count}} perks selected",
         "noPerksSelected": "No perks selected",
         "categories": {
-          "Audio Equipment": "Audio Equipment",
-          "Visual Equipment": "Visual Equipment", 
-          "Technical Equipment": "Technical Equipment",
+          "Audio_Equipment": "Audio Equipment",
+          "Visual_Equipment": "Visual Equipment", 
+          "Technical_Equipment": "Technical Equipment",
           "Furniture": "Furniture",
           "Miscellaneous": "Miscellaneous",
           "Safety": "Safety",
