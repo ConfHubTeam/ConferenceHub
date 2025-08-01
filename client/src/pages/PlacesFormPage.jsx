@@ -553,7 +553,7 @@ export default function PlacesFormPage() {
       startDate: startDate || null,
       endDate: endDate || null,
       youtubeLink: cleanedYouTubeLink,
-      matterportLink: matterportLink || null,
+      matterportLink,
       lat: coordinates.lat,
       lng: coordinates.lng,
       // Include time slot management data

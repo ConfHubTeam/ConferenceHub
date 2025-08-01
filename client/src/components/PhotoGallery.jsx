@@ -11,7 +11,7 @@ export default function PhotoGallery({placeDetail}) {
   const hasYoutubeVideo = !!placeDetail.youtubeLink;
   const hasMatterport = !!placeDetail.matterportLink;
   
-  // Compute total slide count (photos + 3D + video if present)
+  // Compute total slide count (photos + video + 3D if present)
   let totalSlides = placeDetail.photos.length;
   if (hasMatterport) totalSlides += 1;
   if (hasYoutubeVideo) totalSlides += 1;
@@ -28,6 +28,48 @@ export default function PhotoGallery({placeDetail}) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
   
+  // Auto-scroll to the selected slide when fullscreen gallery opens
+  useEffect(() => {
+    if (showAllPhotos && scrollRef.current) {
+      // Small delay to ensure the DOM is ready
+      const timer = setTimeout(() => {
+        if (scrollRef.current) {
+          const { current } = scrollRef;
+          const scrollAmount = current.offsetWidth * currentSlide;
+          
+          current.scrollTo({
+            left: scrollAmount,
+            behavior: 'instant' // Use instant for initial positioning
+          });
+        }
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [showAllPhotos]);
+  
+  // Separate useEffect to handle scroll synchronization
+  useEffect(() => {
+    if (showAllPhotos && scrollRef.current) {
+      const handleScroll = () => {
+        if (scrollRef.current) {
+          const { scrollLeft, offsetWidth } = scrollRef.current;
+          const newSlide = Math.round(scrollLeft / offsetWidth);
+          if (newSlide !== currentSlide) {
+            setCurrentSlide(newSlide);
+          }
+        }
+      };
+      
+      const current = scrollRef.current;
+      current.addEventListener('scroll', handleScroll, { passive: true });
+      
+      return () => {
+        current.removeEventListener('scroll', handleScroll);
+      };
+    }
+  }, [showAllPhotos, currentSlide]);
+  
   // Function to scroll to next or previous image/video
   const scroll = (direction) => {
     if (scrollRef.current) {
@@ -41,11 +83,7 @@ export default function PhotoGallery({placeDetail}) {
         behavior: 'smooth'
       });
       
-      // Update current slide indicator
-      const newSlide = direction === 'left' 
-        ? Math.max(0, currentSlide - 1)
-        : Math.min(totalSlides - 1, currentSlide + 1);
-      setCurrentSlide(newSlide);
+      // Don't manually update currentSlide - let the scroll event listener handle it
     }
   };
   
@@ -60,7 +98,7 @@ export default function PhotoGallery({placeDetail}) {
         behavior: 'smooth'
       });
       
-      setCurrentSlide(index);
+      // Don't manually update currentSlide - let the scroll event listener handle it
     }
   };
 
@@ -117,10 +155,10 @@ export default function PhotoGallery({placeDetail}) {
               className="flex overflow-x-auto snap-x snap-mandatory w-full h-full"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
             >
-              {/* Photos first */}
+              {/* Photos - first in order */}
               {placeDetail.photos?.map((photo, index) => (
                 <div 
-                  key={index} 
+                  key={`photo-${index}`} 
                   className="flex-shrink-0 w-full h-full flex items-center justify-center snap-center"
                 >
                   <CloudinaryImage 
@@ -130,8 +168,8 @@ export default function PhotoGallery({placeDetail}) {
                   />
                 </div>
               ))}
-
-              {/* Matterport 3D Tour (if available) - after photos */}
+              
+              {/* 3D Matterport (if available) - second in order */}
               {hasMatterport && (
                 <div 
                   className="flex-shrink-0 w-full h-full flex items-center justify-center snap-center"
@@ -146,7 +184,7 @@ export default function PhotoGallery({placeDetail}) {
                 </div>
               )}
               
-              {/* YouTube Video (if available) - last */}
+              {/* YouTube Video (if available) - last in order */}
               {hasYoutubeVideo && (
                 <div 
                   className="flex-shrink-0 w-full h-full flex items-center justify-center snap-center"
@@ -205,34 +243,40 @@ export default function PhotoGallery({placeDetail}) {
   return (
     <div className="relative rounded-xl overflow-hidden">
       {/* Main photo/video layout */}
-      {(hasYoutubeVideo || placeDetail.photos?.length > 0) ? (
+      {(placeDetail.photos?.length > 0 || hasMatterport || hasYoutubeVideo) ? (
         <div className="flex flex-col">
-          {/* Main display area - priority: YouTube > First Photo */}
+          {/* Main image - always show the first photo if available */}
           <div className="w-full h-[250px] sm:h-[300px] md:h-[450px] overflow-hidden">
-            {hasYoutubeVideo ? (
-              <YouTubeEmbed
-                url={placeDetail.youtubeLink}
-                title={placeDetail.title}
-                className="w-full h-full"
-              />
-            ) : (
+            {placeDetail.photos?.length > 0 ? (
               <CloudinaryImage
                 photo={placeDetail.photos[0]}
                 alt={placeDetail.title}
                 className="w-full h-full object-cover cursor-pointer"
                 onClick={() => {setShowAllPhotos(true); setCurrentSlide(0);}}
               />
-            )}
+            ) : hasMatterport ? (
+              <MatterportEmbed
+                url={placeDetail.matterportLink}
+                title={placeDetail.title}
+                className="w-full h-full"
+              />
+            ) : hasYoutubeVideo ? (
+              <YouTubeEmbed
+                url={placeDetail.youtubeLink}
+                title={placeDetail.title}
+                className="w-full h-full"
+              />
+            ) : null}
           </div>
           
           {/* Scrollable thumbnails for additional media */}
           {totalSlides > 1 && (
             <div className="relative mt-2">
               <div className="flex overflow-x-auto gap-2 py-2 px-1 snap-x scrollbar-hide">
-                {/* Photo thumbnails - first in order */}
+                {/* Photo thumbnails */}
                 {placeDetail.photos.map((photo, index) => (
                   <div 
-                    key={index} 
+                    key={`photo-${index}`} 
                     className={`flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 cursor-pointer snap-start rounded-lg overflow-hidden ${
                       index === currentSlide ? 'ring-2 ring-primary' : ''
                     }`}
@@ -245,41 +289,39 @@ export default function PhotoGallery({placeDetail}) {
                     />
                   </div>
                 ))}
-
-                {/* Matterport 3D Tour thumbnail (if available) - after photos */}
+                
+                {/* 3D Matterport thumbnail (if available) */}
                 {hasMatterport && (
                   <div 
                     className={`flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 cursor-pointer snap-start rounded-lg overflow-hidden relative ${
-                      placeDetail.photos.length === currentSlide ? 'ring-2 ring-primary' : ''
+                      currentSlide === placeDetail.photos.length ? 'ring-2 ring-primary' : ''
                     }`}
                     onClick={() => {setShowAllPhotos(true); setCurrentSlide(placeDetail.photos.length);}}
                   >
-                    <div className="w-full h-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center relative">
+                    <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center relative">
                       <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8 text-white">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 7.5V18M15 7.5V18M3 16.811V8.69c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 010 1.953l-7.108 4.061A1.125 1.125 0 013 16.811z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 sm:w-8 sm:h-8 text-white">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
                         </svg>
                       </div>
                       <div className="absolute bottom-1 left-1 right-1">
-                        <div className="text-white text-xs font-semibold text-center bg-black/40 rounded px-1 py-0.5">
-                          3D Tour
-                        </div>
+                        <div className="text-white text-xs font-medium text-center bg-black/40 rounded px-1">3D</div>
                       </div>
                     </div>
                   </div>
                 )}
-
-                {/* YouTube video thumbnail (if available) - last in order */}
+                
+                {/* YouTube video thumbnail (if available) */}
                 {hasYoutubeVideo && (
                   <div 
                     className={`flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 cursor-pointer snap-start rounded-lg overflow-hidden relative ${
-                      (placeDetail.photos.length + (hasMatterport ? 1 : 0)) === currentSlide ? 'ring-2 ring-primary' : ''
+                      currentSlide === (placeDetail.photos.length + (hasMatterport ? 1 : 0)) ? 'ring-2 ring-primary' : ''
                     }`}
                     onClick={() => {setShowAllPhotos(true); setCurrentSlide(placeDetail.photos.length + (hasMatterport ? 1 : 0));}}
                   >
                     <div className="w-full h-full bg-gray-800 flex items-center justify-center relative">
                       <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 sm:w-8 sm:h-8 text-white">
                           <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
                         </svg>
                       </div>
