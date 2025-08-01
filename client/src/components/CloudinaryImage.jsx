@@ -1,6 +1,7 @@
 import React from 'react';
 import { AdvancedImage } from '@cloudinary/react';
 import { getCloudinaryImageUrl } from '../utils/cloudinary';
+import { useTranslation } from 'react-i18next';
 
 /**
  * CloudinaryImage component for displaying optimized images
@@ -21,6 +22,8 @@ export default function CloudinaryImage({
   onClick = null,
   ...rest
 }) {
+  const { t } = useTranslation('booking');
+  
   // Get the URL from various photo formats
   const imageUrl = getCloudinaryImageUrl(photo);
   
@@ -30,7 +33,7 @@ export default function CloudinaryImage({
         className={`bg-gray-200 flex items-center justify-center ${className}`}
         style={imgStyle}
       >
-        <span className="text-gray-400">No image</span>
+        <span className="text-gray-400">{t('common.noImage')}</span>
       </div>
     );
   }

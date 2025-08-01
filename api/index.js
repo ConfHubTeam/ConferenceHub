@@ -30,6 +30,9 @@ const paymeRoutes = require('./routes/payme');
 const reviewRoutes = require('./routes/reviews');
 const notificationRoutes = require('./routes/notifications');
 
+// Import i18n configuration
+const { languageMiddleware } = require('./i18n/config');
+
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
@@ -40,6 +43,9 @@ app.use(session(authConfig.session));
 
 // Use CORS configuration from config/cors.js
 app.use(cors(corsOptions));
+
+// Language detection and translation middleware
+app.use(languageMiddleware);
 
 const bcryptSalt = authConfig.bcrypt.generateSalt();
 

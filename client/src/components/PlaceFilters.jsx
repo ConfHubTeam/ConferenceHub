@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import ActiveFilters, { FilterCreators } from "./ActiveFilters";
 
@@ -8,6 +9,7 @@ export default function PlaceFilters({
   setSearchTerm,
   onClearAllFilters
 }) {
+  const { t } = useTranslation('places');
   const location = useLocation();
 
   // Helper function to get active filters
@@ -27,12 +29,12 @@ export default function PlaceFilters({
         {/* Search */}
         <div className="flex-1">
           <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
-            Search your conference rooms
+            {t('placeFilters.searchLabel', 'Search your conference rooms')}
           </label>
           <input
             id="search"
             type="text"
-            placeholder="Search by property name or address..."
+            placeholder={t('placeFilters.searchPlaceholder', 'Search by property name or address...')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 text-sm"

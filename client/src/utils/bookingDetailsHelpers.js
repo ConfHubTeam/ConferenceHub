@@ -1,4 +1,6 @@
 import { format } from "date-fns";
+import { enUS, ru, uz } from "date-fns/locale";
+import i18n from "../i18n/config";
 
 /**
  * Helper functions for BookingDetailsPage
@@ -8,13 +10,15 @@ import { format } from "date-fns";
  * Format refund options for display
  */
 export const formatRefundOption = (option) => {
+  const t = i18n.getFixedT(null, 'booking');
+  
   const optionMap = {
-    'flexible_14_day': 'Flexible 14-Day: Full refund if canceled 14+ days before check-in',
-    'moderate_7_day': 'Moderate 7-Day: 50% refund if canceled 7+ days before check-in', 
-    'strict': 'Strict: No refund if canceled less than 6 days before check-in',
-    'non_refundable': 'Non-Refundable: No refunds allowed',
-    'reschedule_only': 'Reschedule Only: No refund, but reschedule allowed with 3+ days notice',
-    'client_protection_plan': 'Client Protection Plan: Additional insurance coverage available'
+    'flexible_14_day': t('details.refundPolicy.options.flexible14Day', { default: 'Flexible 14-Day: Full refund if canceled 14+ days before check-in' }),
+    'moderate_7_day': t('details.refundPolicy.options.moderate7Day', { default: 'Moderate 7-Day: 50% refund if canceled 7+ days before check-in' }),
+    'strict': t('details.refundPolicy.options.strict', { default: 'Strict: No refund if canceled less than 6 days before check-in' }),
+    'non_refundable': t('details.refundPolicy.options.nonRefundable', { default: 'Non-Refundable: No refunds allowed' }),
+    'reschedule_only': t('details.refundPolicy.options.rescheduleOnly', { default: 'Reschedule Only: No refund, but reschedule allowed with 3+ days notice' }),
+    'client_protection_plan': t('details.refundPolicy.options.protectionPlan', { default: 'Client Protection Plan: Additional insurance coverage available' })
   };
   return optionMap[option] || option;
 };
@@ -36,19 +40,31 @@ export const getContactDisplayInfo = (contactData) => {
  * Get booking info cards data
  */
 export const getBookingInfoCards = (booking) => {
+  const t = i18n.getFixedT(null, 'booking');
+  const currentLanguage = i18n.language || 'en';
+  
+  // Get appropriate locale for date formatting
+  const getLocale = (lang) => {
+    switch (lang) {
+      case 'ru': return ru;
+      case 'uz': return uz;
+      default: return enUS;
+    }
+  };
+  
   return [
     {
-      title: "Number of Guests",
+      title: t('details.bookingInfo.guestsCount'),
       icon: "guests",
       value: booking.numOfGuests
     },
     {
-      title: "Booking Date",
+      title: t('details.bookingInfo.bookedDate'),
       icon: "calendar",
-      value: format(new Date(booking.createdAt), "MMM d, yyyy 'at' HH:mm")
+      value: `${format(new Date(booking.createdAt), "MMM d, yyyy", { locale: getLocale(currentLanguage) })} ${t('card.dateFormatting.at')} ${format(new Date(booking.createdAt), "HH:mm", { locale: getLocale(currentLanguage) })}`
     },
     {
-      title: "Request ID",
+      title: t('details.bookingInfo.requestId'),
       icon: "code",
       value: booking.uniqueRequestId || `REQ-${booking.id}`,
       className: "font-mono"
@@ -253,25 +269,34 @@ export const getPageHeaderProps = (booking) => ({
 /**
  * Get modal configuration for confirmation
  */
-export const getModalConfiguration = (modalConfig, isUpdating) => ({
-  title: modalConfig.title,
-  message: modalConfig.requiresPaymentCheck && modalConfig.paymentMessage ? 
-    modalConfig.paymentMessage : 
-    modalConfig.message,
-  confirmText: modalConfig.agentApproval ? "Approve" : (modalConfig.requiresPaymentCheck ? "Approve Anyway" : "Confirm"),
-  cancelText: "Cancel",
-  confirmButtonClass: modalConfig.status === "approved" || modalConfig.status === "selected"
-    ? "bg-green-600 hover:bg-green-700" 
-    : "bg-red-600 hover:bg-red-700",
-  isLoading: isUpdating,
-  showPaymentOptions: modalConfig.requiresPaymentCheck && !modalConfig.agentApproval
-});
+export const getModalConfiguration = (modalConfig, isUpdating) => {
+  const t = i18n.getFixedT(null, 'booking');
+  
+  return {
+    title: modalConfig.title,
+    message: modalConfig.requiresPaymentCheck && modalConfig.paymentMessage ? 
+      modalConfig.paymentMessage : 
+      modalConfig.message,
+    confirmText: modalConfig.agentApproval ? 
+      t('details.actions.buttons.approve') : 
+      (modalConfig.requiresPaymentCheck ? 
+        t('details.actions.confirmations.approveWithoutPayment') : 
+        t('common.buttons.ok')),
+    cancelText: t('common.buttons.cancel'),
+    confirmButtonClass: modalConfig.status === "approved" || modalConfig.status === "selected"
+      ? "bg-green-600 hover:bg-green-700" 
+      : "bg-red-600 hover:bg-red-700",
+    isLoading: isUpdating,
+    showPaymentOptions: modalConfig.requiresPaymentCheck && !modalConfig.agentApproval
+  };
+};
 
 /**
  * Get support contact hours display
  */
 export const getSupportContactHours = () => {
-  return "Mon-Fri: 9 AM - 6 PM, Sat: 10 AM - 4 PM";
+  const t = i18n.getFixedT(null, 'booking');
+  return t('details.contactInfo.support.hours', { default: "Mon-Fri: 9 AM - 6 PM, Sat: 10 AM - 4 PM" });
 };
 
 /**
@@ -288,9 +313,11 @@ export const getPaymentConfirmationConfig = (requiresPaymentCheck, agentApproval
  * Get modal confirm button text
  */
 export const getModalConfirmText = (agentApproval, requiresPaymentCheck) => {
-  if (agentApproval) return "Approve";
-  if (requiresPaymentCheck) return "Approve Anyway";
-  return "Confirm";
+  const t = i18n.getFixedT(null, 'booking');
+  
+  if (agentApproval) return t('details.actions.buttons.approve');
+  if (requiresPaymentCheck) return t('details.actions.confirmations.approveWithoutPayment');
+  return t('common.buttons.ok');
 };
 
 /**

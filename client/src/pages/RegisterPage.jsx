@@ -1,11 +1,14 @@
 import { useContext, useState, useEffect } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { withTranslationLoading } from "../i18n/hoc/withTranslationLoading";
 import api, { getPasswordRequirements } from "../utils/api";
 import { useNotification } from "../components/NotificationContext";
 import { validateForm, checkPasswordSpecialChars } from "../utils/formUtils";
 import { UserContext } from "../components/UserContext";
 
-export default function RegisterPage() {
+function RegisterPage() {
+  const { t, ready } = useTranslation(["auth", "common"]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -160,7 +163,7 @@ export default function RegisterPage() {
     
     // Validate email format
     if (!validateEmail(email)) {
-      setError("Please enter a valid email address");
+      setError(ready ? t("auth:validation.emailInvalid") : "Please enter a valid email address");
       return;
     }
     
@@ -172,15 +175,22 @@ export default function RegisterPage() {
       // Check for invalid special characters
       if (!validSpecialChars) {
         const specialCharCheck = checkPasswordSpecialChars(password, passwordRequirements.allowedSpecialChars);
-        specificError = `Password contains invalid special characters: ${specialCharCheck.invalidChars}. Only these special characters are allowed: ${passwordRequirements.allowedSpecialChars}`;
+        specificError = ready ? 
+          t("auth:register.passwordInvalidSpecialChars", { 
+            invalidChars: specialCharCheck.invalidChars,
+            allowedChars: passwordRequirements.allowedSpecialChars 
+          }) :
+          `Password contains invalid special characters: ${specialCharCheck.invalidChars}. Only these special characters are allowed: ${passwordRequirements.allowedSpecialChars}`;
       }
       // Check for missing special characters
       else if (!specialChar) {
-        specificError = `Password must include at least one of these special characters: ${passwordRequirements.allowedSpecialChars}`;
+        specificError = ready ? 
+          t("auth:register.passwordMissingSpecialChars", { allowedChars: passwordRequirements.allowedSpecialChars }) :
+          `Password must include at least one of these special characters: ${passwordRequirements.allowedSpecialChars}`;
       } 
       // General error message
       else {
-        specificError = "Password must meet all requirements listed below";
+        specificError = ready ? t("auth:register.passwordRequirementsNotMet") : "Password must meet all requirements listed below";
       }
       
       setError(specificError);
@@ -191,13 +201,13 @@ export default function RegisterPage() {
     const { isValid, errorMessage } = validateForm(
       { name, email, password },
       {
-        name: { required: true, errorMessage: "Name is required" },
-        email: { required: true, errorMessage: "Email is required" },
+        name: { required: true, errorMessage: ready ? t("auth:validation.nameRequired") : "Name is required" },
+        email: { required: true, errorMessage: ready ? t("auth:validation.emailRequired") : "Email is required" },
         password: { 
           required: true, 
-          errorMessage: "Password is required",
+          errorMessage: ready ? t("auth:validation.passwordRequired") : "Password is required",
           pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, 
-          patternErrorMessage: "Password must be at least 8 characters with uppercase, lowercase, number and special character"
+          patternErrorMessage: ready ? t("auth:validation.passwordPattern") : "Password must be at least 8 characters with uppercase, lowercase, number and special character"
         }
       }
     );
@@ -213,7 +223,7 @@ export default function RegisterPage() {
         const checkResponse = await api.post("/auth/check-user", { email });
         
         if (checkResponse.data.exists) {
-          setError("An account with this email already exists. Please use a different email or login instead.");
+          setError(ready ? t("auth:register.emailExists") : "An account with this email already exists. Please use a different email or login instead.");
           return;
         }
       } catch (checkError) {
@@ -236,13 +246,13 @@ export default function RegisterPage() {
         setUser(loginResponse.data);
         
         // Show success notification
-        notify("Registration successful! Welcome to your account.", "success");
+        notify(ready ? t("auth:register.successMessage") : "Registration successful! Welcome to your account.", "success");
         
         // Redirect to profile page
         setRedirect(true);
       } catch (loginError) {
         // If auto-login fails, still consider registration successful
-        notify("Registration successful, but automatic login failed. Please log in manually.", "info");
+        notify(ready ? t("auth:register.successButLoginFailed") : "Registration successful, but automatic login failed. Please log in manually.", "info");
         setRedirect(true);
       }
       
@@ -252,9 +262,9 @@ export default function RegisterPage() {
       setPassword("");
     } catch (e) {
       if (e.response?.data?.name === 'SequelizeUniqueConstraintError') {
-        setError("This email is already registered. Please use a different email or login instead.");
+        setError(ready ? t("auth:register.emailAlreadyRegistered") : "This email is already registered. Please use a different email or login instead.");
       } else {
-        setError(e.response?.data?.error || "Registration failed. Please try again later.");
+        setError(e.response?.data?.error || (ready ? t("auth:register.generalError") : "Registration failed. Please try again later."));
       }
     }
   }
@@ -266,8 +276,12 @@ export default function RegisterPage() {
   return (
     <div className="px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8">
       <div className="w-full max-w-sm mx-auto">
-        <h1 className="text-2xl sm:text-3xl font-bold text-center mb-0.5 sm:mb-1">Register</h1>
-        <p className="text-center text-gray-500 text-xs sm:text-sm mb-2 sm:mb-3">Create your account</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-center mb-0.5 sm:mb-1">
+          {ready ? t("auth:register.title") : "Register"}
+        </h1>
+        <p className="text-center text-gray-500 text-xs sm:text-sm mb-2 sm:mb-3">
+          {ready ? t("auth:register.subtitle") : "Create your account"}
+        </p>
         
         <form className="bg-white p-3 sm:p-4 lg:p-5 rounded-xl shadow-sm" onSubmit={registerUser}>
           {error && (
@@ -278,11 +292,13 @@ export default function RegisterPage() {
           
           <div className="grid md:grid-cols-2 gap-x-4">
             <div className="mb-2">
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-0.5">Full Name</label>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-0.5">
+                {ready ? t("auth:register.fullName") : "Full Name"}
+              </label>
               <input
                 id="name"
                 type="text"
-                placeholder="Jane Doe"
+                placeholder={ready ? t("auth:register.fullNamePlaceholder") : "Jane Doe"}
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 className="w-full px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
@@ -291,28 +307,34 @@ export default function RegisterPage() {
             </div>
             
             <div className="mb-2">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-0.5">Email</label>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-0.5">
+                {ready ? t("auth:register.email") : "Email"}
+              </label>
               <input
                 id="email"
                 type="email"
-                placeholder="your@email.com"
+                placeholder={ready ? t("auth:register.emailPlaceholder") : "your@email.com"}
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 className={`w-full px-3 py-1 border ${emailValid ? 'border-gray-300' : 'border-red-500'} rounded-md focus:outline-none focus:ring-2 ${emailValid ? 'focus:ring-primary' : 'focus:ring-red-500'}`}
                 required
               />
               {!emailValid && email && (
-                <p className="text-red-500 text-xs mt-1">Please enter a valid email address</p>
+                <p className="text-red-500 text-xs mt-1">
+                  {ready ? t("auth:validation.emailInvalid") : "Please enter a valid email address"}
+                </p>
               )}
             </div>
           </div>
           
           <div className="mb-2">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-0.5">Password</label>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-0.5">
+              {ready ? t("auth:register.password") : "Password"}
+            </label>
             <input
               id="password"
               type="password"
-              placeholder="••••••••"
+              placeholder={ready ? t("auth:register.passwordPlaceholder") : "••••••••"}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               className={`w-full px-3 py-1 border ${
@@ -340,31 +362,56 @@ export default function RegisterPage() {
                 
                 {/* Password Requirements Checklist */}
                 <div className="mt-2 text-xs space-y-1">
-                  <p className="font-medium mb-1">Password requirements:</p>
+                  <p className="font-medium mb-1">
+                    {ready ? t("auth:register.passwordRequirements") : "Password requirements:"}
+                  </p>
                   <div className={`flex items-start gap-1 ${passwordChecklist.length ? 'text-green-600' : 'text-red-500'}`}>
                     <span>{passwordChecklist.length ? '✓' : '✗'}</span>
-                    <span>At least {passwordRequirements.minLength} characters</span>
+                    <span>
+                      {ready ? 
+                        t("auth:register.passwordRequirement.length", { minLength: passwordRequirements.minLength }) : 
+                        `At least ${passwordRequirements.minLength} characters`
+                      }
+                    </span>
                   </div>
                   <div className={`flex items-start gap-1 ${passwordChecklist.lowercase ? 'text-green-600' : 'text-red-500'}`}>
                     <span>{passwordChecklist.lowercase ? '✓' : '✗'}</span>
-                    <span>At least one lowercase letter</span>
+                    <span>
+                      {ready ? t("auth:register.passwordRequirement.lowercase") : "At least one lowercase letter"}
+                    </span>
                   </div>
                   <div className={`flex items-start gap-1 ${passwordChecklist.uppercase ? 'text-green-600' : 'text-red-500'}`}>
                     <span>{passwordChecklist.uppercase ? '✓' : '✗'}</span>
-                    <span>At least one uppercase letter</span>
+                    <span>
+                      {ready ? t("auth:register.passwordRequirement.uppercase") : "At least one uppercase letter"}
+                    </span>
                   </div>
                   <div className={`flex items-start gap-1 ${passwordChecklist.number ? 'text-green-600' : 'text-red-500'}`}>
                     <span>{passwordChecklist.number ? '✓' : '✗'}</span>
-                    <span>At least one number</span>
+                    <span>
+                      {ready ? t("auth:register.passwordRequirement.number") : "At least one number"}
+                    </span>
                   </div>
                   <div className={`flex items-start gap-1 ${passwordChecklist.specialChar ? 'text-green-600' : 'text-red-500'}`}>
                     <span>{passwordChecklist.specialChar ? '✓' : '✗'}</span>
-                    <span>At least one special character from: <span className="font-mono bg-gray-100 px-1 rounded">{passwordRequirements.allowedSpecialChars}</span></span>
+                    <span>
+                      {ready ? 
+                        t("auth:register.passwordRequirement.specialChar", { allowedChars: passwordRequirements.allowedSpecialChars }) :
+                        `At least one special character from: `
+                      }
+                      {!ready && <span className="font-mono bg-gray-100 px-1 rounded">{passwordRequirements.allowedSpecialChars}</span>}
+                    </span>
                   </div>
                   {!passwordChecklist.validSpecialChars && (
                     <div className="text-red-500 flex items-start gap-1">
                       <span>✗</span>
-                      <span>Contains invalid special characters. Only these are allowed: <span className="font-mono bg-gray-100 px-1 rounded">{passwordRequirements.allowedSpecialChars}</span></span>
+                      <span>
+                        {ready ? 
+                          t("auth:register.passwordRequirement.invalidSpecialChars", { allowedChars: passwordRequirements.allowedSpecialChars }) :
+                          "Contains invalid special characters. Only these are allowed: "
+                        }
+                        {!ready && <span className="font-mono bg-gray-100 px-1 rounded">{passwordRequirements.allowedSpecialChars}</span>}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -373,7 +420,9 @@ export default function RegisterPage() {
           </div>
           
           <div className="mb-3">
-            <label className="block text-sm font-medium text-gray-700 mb-0.5">Account Type</label>
+            <label className="block text-sm font-medium text-gray-700 mb-0.5">
+              {ready ? t("auth:register.accountType") : "Account Type"}
+            </label>
             
             <div className="grid grid-cols-2 gap-2">
               {/* Client Option */}
@@ -397,8 +446,12 @@ export default function RegisterPage() {
                   </svg>
                 </div>
                 <div>
-                  <span className="font-medium text-sm">Client</span>
-                  <span className="text-xs text-gray-500 hidden md:inline ml-1">(Book rooms)</span>
+                  <span className="font-medium text-sm">
+                    {ready ? t("auth:register.userType.client") : "Client"}
+                  </span>
+                  <span className="text-xs text-gray-500 hidden md:inline ml-1">
+                    ({ready ? t("auth:register.userType.clientDescription") : "Book rooms"})
+                  </span>
                 </div>
                 {userType === 'client' && (
                   <div className="ml-1 text-primary">
@@ -430,8 +483,12 @@ export default function RegisterPage() {
                   </svg>
                 </div>
                 <div>
-                  <span className="font-medium text-sm">Host</span>
-                  <span className="text-xs text-gray-500 hidden md:inline ml-1">(Manage spaces)</span>
+                  <span className="font-medium text-sm">
+                    {ready ? t("auth:register.userType.host") : "Host"}
+                  </span>
+                  <span className="text-xs text-gray-500 hidden md:inline ml-1">
+                    ({ready ? t("auth:register.userType.hostDescription") : "Manage spaces"})
+                  </span>
                 </div>
                 {userType === 'host' && (
                   <div className="ml-1 text-primary">
@@ -446,19 +503,21 @@ export default function RegisterPage() {
 
           <div className="flex items-center justify-between">
             <button className="bg-primary text-white py-1 px-4 rounded-md hover:bg-primary-dark transition-colors font-medium">
-              Register
+              {ready ? t("auth:register.registerButton") : "Register"}
             </button>
             
             <div className="text-gray-500 text-xs">
-              Already have an account?{" "}
+              {ready ? t("auth:register.alreadyHaveAccount") : "Already have an account?"}{" "}
               <Link className="text-primary font-medium hover:underline" to={"/login"}>
-                Login
+                {ready ? t("auth:register.loginLink") : "Login"}
               </Link>
             </div>
           </div>
           
           <div className="mt-4 pt-4 border-t border-gray-200">
-            <p className="text-center text-gray-600 text-sm mb-3">or continue with</p>
+            <p className="text-center text-gray-600 text-sm mb-3">
+              {ready ? t("auth:register.orContinueWith") : "or continue with"}
+            </p>
             <Link 
               to="/telegram-auth" 
               className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-[#0088cc] text-white rounded-md hover:bg-[#0077b5] transition-colors"
@@ -467,7 +526,7 @@ export default function RegisterPage() {
                 <path fill="white" d="M66.964 134.874s-32.08-10.062-51.344-16.002c-17.542-6.693-1.57-14.928 6.015-17.59 7.585-2.66 186.38-71.948 194.94-75.233 8.94-4.147 19.884-.35 14.767 18.656-4.416 20.407-30.166 142.874-33.827 158.812-3.66 15.937-18.447 6.844-18.447 6.844l-83.21-61.442z" />
                 <path fill="none" stroke="white" strokeWidth="8" d="M86.232 157.428c-12.023 12.024-22.92 6.417-22.92 6.417l-20.158-27.902 89.261-71.267c7.585-6.067 2.799-7.586 2.799-7.586s-4.447 1.519-9.383 6.455c-4.936 4.935-82.733 74.293-82.733 74.293" />
               </svg>
-              Register with Telegram
+              {ready ? t("auth:register.telegramRegister") : "Register with Telegram"}
             </Link>
           </div>
         </form>
@@ -475,3 +534,5 @@ export default function RegisterPage() {
     </div>
   );
 }
+
+export default withTranslationLoading(RegisterPage, ["auth", "common"]);

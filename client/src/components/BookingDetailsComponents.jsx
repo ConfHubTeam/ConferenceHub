@@ -1,8 +1,24 @@
 import { format } from "date-fns";
+import { enUS, ru, uz } from "date-fns/locale";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import i18n from "../i18n/config";
 import CloudinaryImage from "./CloudinaryImage";
 import PriceDisplay from "./PriceDisplay";
 import { getLatestContactInfo, shouldShowUpdatedIndicator } from "../utils/bookingDetailsHelpers";
+
+// Get appropriate locale for date formatting
+const getDateLocale = () => {
+  const currentLanguage = i18n.language;
+  switch (currentLanguage) {
+    case 'ru':
+      return ru;
+    case 'uz':
+      return uz;
+    default:
+      return enUS;
+  }
+};
 
 /**
  * Reusable UI components for BookingDetailsPage
@@ -122,6 +138,7 @@ export const EnhancedContactInfoCard = ({
   iconTextColor = "text-blue-600",
   titleTextColor = "text-blue-800"
 }) => {
+  const { t } = useTranslation('booking');
   const contactInfo = getLatestContactInfo(userType, booking, latestContactInfo);
   const hasUpdates = shouldShowUpdatedIndicator(userType, booking, latestContactInfo);
   
@@ -136,7 +153,7 @@ export const EnhancedContactInfoCard = ({
             <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            Updated
+            {t('details.contactInfo.updated')}
           </div>
         </div>
       )}
@@ -153,7 +170,7 @@ export const EnhancedContactInfoCard = ({
         {contactInfo.name && (
           <ContactInfoRow 
             icon={<UserIcon />}
-            label="Name"
+            label={t('details.contactInfo.labels.name')}
             value={contactInfo.name}
             iconColor={iconTextColor}
             titleColor={titleTextColor}
@@ -162,7 +179,7 @@ export const EnhancedContactInfoCard = ({
         {contactInfo.email && (
           <ContactInfoRow 
             icon={<EmailIcon />}
-            label="Email"
+            label={t('details.contactInfo.labels.email')}
             value={
               <a href={`mailto:${contactInfo.email}`} className={`ml-1 ${iconTextColor} hover:${titleTextColor} hover:underline break-all`}>
                 {contactInfo.email}
@@ -176,7 +193,7 @@ export const EnhancedContactInfoCard = ({
         {contactInfo.phoneNumber && (
           <ContactInfoRow 
             icon={<PhoneIcon />}
-            label="Phone"
+            label={t('details.contactInfo.labels.phone')}
             value={
               <a href={`tel:${contactInfo.phoneNumber}`} className={`ml-1 ${iconTextColor} hover:${titleTextColor} hover:underline`}>
                 {contactInfo.phoneNumber}
@@ -193,7 +210,7 @@ export const EnhancedContactInfoCard = ({
       {hasUpdates && (
         <div className="mt-3 pt-3 border-t border-gray-200">
           <p className="text-xs text-gray-500 italic">
-            * Contact information has been updated since booking was created
+            {t('details.contactInfo.updateNote')}
           </p>
         </div>
       )}
@@ -205,22 +222,24 @@ export const EnhancedContactInfoCard = ({
  * Pricing section component
  */
 export const PricingSection = ({ booking, user, children }) => {
+  const { t } = useTranslation('booking');
+  
   return (
-    <SectionCard title="Pricing">
+    <SectionCard title={t('details.sections.pricing')}>
       <div className="space-y-3">
         <div className="flex justify-between">
-          <span>Subtotal</span>
+          <span>{t('details.pricing.subtotal')}</span>
           <PriceDisplay price={booking.totalPrice} currency={booking.place?.currency} />
         </div>
         {booking.protectionPlanSelected && (
           <div className="flex justify-between">
-            <span>Protection Plan</span>
+            <span>{t('details.pricing.protectionPlan')}</span>
             <PriceDisplay price={booking.protectionPlanFee} currency={booking.place?.currency} />
           </div>
         )}
         <hr />
         <div className="flex justify-between font-semibold text-lg">
-          <span>Total</span>
+          <span>{t('details.pricing.total')}</span>
           <PriceDisplay 
             price={booking.finalTotal || booking.totalPrice} 
             currency={booking.place?.currency} 
@@ -238,6 +257,8 @@ export const PricingSection = ({ booking, user, children }) => {
  * Payment status indicator component
  */
 export const PaymentStatusIndicator = ({ status, userType, booking }) => {
+  const { t } = useTranslation('booking');
+  
   if (!((userType === 'host' || userType === 'agent'))) return null;
 
   // Format timestamp for display
@@ -265,8 +286,8 @@ export const PaymentStatusIndicator = ({ status, userType, booking }) => {
       const paidAtTimestamp = formatPaymentTimestamp(booking.paidToHostAt);
       return (
         <StatusIndicator
-          status="Payment Completed & Paid to Host"
-          message={paidAtTimestamp ? `Host was paid on ${paidAtTimestamp}` : "Host has been paid for this booking"}
+          status={t('details.paymentStatus.paymentCompletedAndPaid')}
+          message={paidAtTimestamp ? t('details.paymentStatus.messages.hostPaid', { date: paidAtTimestamp }) : t('details.paymentStatus.messages.hostPaidGeneric')}
           icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />}
           bgColor="bg-blue-50"
           borderColor="border-blue-200"
@@ -278,8 +299,8 @@ export const PaymentStatusIndicator = ({ status, userType, booking }) => {
     } else {
       return (
         <StatusIndicator
-          status="Payment Completed"
-          message={userType === 'agent' ? "Ready to pay host" : "Payment pending from agent"}
+          status={t('details.paymentStatus.paymentCompleted')}
+          message={userType === 'agent' ? t('details.paymentStatus.messages.readyToPayHost') : t('details.paymentStatus.messages.paymentPendingFromAgent')}
           icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />}
           bgColor="bg-green-50"
           borderColor="border-green-200"
@@ -294,8 +315,8 @@ export const PaymentStatusIndicator = ({ status, userType, booking }) => {
   if (status === 'selected') {
     return (
       <StatusIndicator
-        status="Awaiting Payment"
-        message="Client can now proceed with payment to complete the booking"
+        status={t('details.paymentStatus.awaitingPayment')}
+        message={t('details.paymentStatus.messages.clientCanProceed')}
         icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />}
         bgColor="bg-yellow-50"
         borderColor="border-yellow-200"
@@ -313,8 +334,10 @@ export const PaymentStatusIndicator = ({ status, userType, booking }) => {
  * Payment section component for clients
  */
 export const PaymentSection = ({ isPaymentAvailable, paymentProviders, onPaymentClick }) => {
+  const { t } = useTranslation('booking');
+  
   return (
-    <SectionCard title="Payment">
+    <SectionCard title={t('details.sections.payment')}>
       <div className="space-y-4">
         {/* Payment Provider Icons */}
         <div className="grid grid-cols-3 gap-4">
@@ -339,7 +362,7 @@ export const PaymentSection = ({ isPaymentAvailable, paymentProviders, onPayment
               </svg>
               <div className="text-sm">
                 <div className="font-medium text-green-800 mb-1">
-                  Your booking has been selected! You can now proceed with payment.
+                  {t('details.payment.selectedMessage')}
                 </div>
               </div>
             </div>
@@ -351,7 +374,7 @@ export const PaymentSection = ({ isPaymentAvailable, paymentProviders, onPayment
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 18.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
               <span className="text-sm text-amber-800">
-                Payment options will be available once your booking is selected by the host.
+                {t('details.payment.pendingMessage')}
               </span>
             </div>
           </div>
@@ -377,6 +400,8 @@ export const RefundOptionItem = ({ option, formatRefundOption }) => {
  * Refund policy section component
  */
 export const RefundPolicySection = ({ booking, formatRefundOption }) => {
+  const { t } = useTranslation('booking');
+  
   // Get refund policy from booking snapshot, not from current place policy
   const refundPolicySnapshot = booking.refundPolicySnapshot;
   const protectionPlanSelected = booking.protectionPlanSelected;
@@ -395,12 +420,12 @@ export const RefundPolicySection = ({ booking, formatRefundOption }) => {
   const hasValidOptions = filteredRefundOptions.length > 0;
 
   return (
-    <SectionCard title="Cancellation & Refund Policy">
+    <SectionCard title={t('details.sections.cancellationRefund')}>
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="font-medium text-yellow-800">Policy at Time of Booking</h3>
+          <h3 className="font-medium text-yellow-800">{t('details.refundPolicy.policyAtTime')}</h3>
           <span className="text-xs text-yellow-600 bg-yellow-100 px-2 py-1 rounded-full">
-            {format(new Date(booking.createdAt), 'MMM dd, yyyy')}
+            {format(new Date(booking.createdAt), 'MMM dd, yyyy', { locale: getDateLocale() })}
           </span>
         </div>
         
@@ -418,10 +443,10 @@ export const RefundPolicySection = ({ booking, formatRefundOption }) => {
           ) : (
             <div className="text-center py-4">
               <p className="text-yellow-700 mb-2">
-                <span className="font-medium">No specific refund policy was captured at the time of booking.</span>
+                <span className="font-medium">{t('details.refundPolicy.noPolicy')}</span>
               </p>
               <p className="text-sm text-yellow-600">
-                Please contact customer support for assistance with cancellation and refund requests.
+                {t('details.refundPolicy.contactSupport')}
               </p>
             </div>
           )}
@@ -436,7 +461,7 @@ export const RefundPolicySection = ({ booking, formatRefundOption }) => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <span className="text-sm font-medium text-green-700">
-                      Client Protection Plan: Active
+                      {t('details.refundPolicy.protectionPlan.active')}
                     </span>
                   </>
                 ) : (
@@ -445,7 +470,7 @@ export const RefundPolicySection = ({ booking, formatRefundOption }) => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                     <span className="text-sm text-gray-600">
-                      Client Protection Plan: Not Selected
+                      {t('details.refundPolicy.protectionPlan.notSelected')}
                     </span>
                   </>
                 )}
@@ -462,8 +487,10 @@ export const RefundPolicySection = ({ booking, formatRefundOption }) => {
  * Property details section component
  */
 export const PropertyDetailsSection = ({ place }) => {
+  const { t } = useTranslation('booking');
+  
   return (
-    <SectionCard title="Property Details">
+    <SectionCard title={t('details.sections.propertyDetails')}>
       <div className="flex gap-4">
         {place?.photos?.[0] && (
           <div className="w-32 h-24 flex-shrink-0">
@@ -485,8 +512,8 @@ export const PropertyDetailsSection = ({ place }) => {
           <div className="mt-2 text-sm text-gray-500">
             {place?.checkIn && (
               <>
-                <span> • Check-in: {place.checkIn}</span>
-                <span> • Check-out: {place.checkOut}</span>
+                <span> • {t('details.propertyDetails.checkIn', { time: place.checkIn })}</span>
+                <span> • {t('details.propertyDetails.checkOut', { time: place.checkOut })}</span>
               </>
             )}
           </div>
@@ -505,6 +532,8 @@ export const PropertyDetailsSection = ({ place }) => {
  * Support contact section component
  */
 export const SupportContactSection = ({ agentContact, getSupportContactHours }) => {
+  const { t } = useTranslation('booking');
+  
   return (
     <div className="max-w-2xl">
       <div className="bg-gradient-to-br from-blue-50 to-sky-50 border border-blue-200 rounded-lg p-4 shadow-sm">
@@ -516,13 +545,13 @@ export const SupportContactSection = ({ agentContact, getSupportContactHours }) 
               <path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2" />
             </svg>
           </div>
-          <h3 className="font-semibold text-blue-800 text-base">Support Contact</h3>
+          <h3 className="font-semibold text-blue-800 text-base">{t('details.contactInfo.titles.supportContact')}</h3>
         </div>
         {agentContact ? (
           <div className="space-y-2 text-sm">
             <ContactInfoRow 
               icon={<UserIcon />}
-              label="Agent"
+              label={t('details.contactInfo.labels.agent')}
               value={agentContact.name}
               iconColor="text-blue-500"
               titleColor="text-blue-700"
@@ -530,7 +559,7 @@ export const SupportContactSection = ({ agentContact, getSupportContactHours }) 
             />
             <ContactInfoRow 
               icon={<EmailIcon />}
-              label="Email"
+              label={t('details.contactInfo.labels.email')}
               value={
                 <a href={`mailto:${agentContact.email}`} className="ml-1 text-blue-600 hover:text-blue-800 hover:underline break-all">
                   {agentContact.email}
@@ -544,7 +573,7 @@ export const SupportContactSection = ({ agentContact, getSupportContactHours }) 
               <>
                 <ContactInfoRow 
                   icon={<PhoneIcon />}
-                  label="Phone"
+                  label={t('details.contactInfo.labels.phone')}
                   value={
                     <a href={`tel:${agentContact.phoneNumber}`} className="ml-1 text-blue-600 hover:text-blue-800 hover:underline">
                       {agentContact.phoneNumber}
@@ -556,7 +585,7 @@ export const SupportContactSection = ({ agentContact, getSupportContactHours }) 
                 />
                 <ContactInfoRow 
                   icon={<ClockIcon />}
-                  label="Hours"
+                  label={t('details.contactInfo.labels.contactHours')}
                   value={getSupportContactHours()}
                   iconColor="text-blue-500"
                   titleColor="text-blue-700"
@@ -568,11 +597,11 @@ export const SupportContactSection = ({ agentContact, getSupportContactHours }) 
           </div>
         ) : (
           <div className="text-sm text-blue-600">
-            <p>Contact information is currently unavailable. Please try again later.</p>
+            <p>{t('details.contactInfo.unavailable')}</p>
           </div>
         )}
         <p className="text-xs text-blue-600 mt-2 italic">
-          For booking-related inquiries, questions, or assistance
+          {t('details.contactInfo.support.note')}
         </p>
       </div>
     </div>
@@ -588,12 +617,14 @@ export const ActionButtonsSection = ({
   onActionClick, 
   getActionButtonClasses 
 }) => {
+  const { t } = useTranslation('booking');
+  
   if (actionButtons.length === 0) {
     return null;
   }
 
   return (
-    <SectionCard title="Actions">
+    <SectionCard title={t('details.sections.actions')}>
       <div className="space-y-3">
         {actionButtons.map((button, index) => (
           <button
@@ -603,7 +634,7 @@ export const ActionButtonsSection = ({
             className={getActionButtonClasses(button.variant)}
             title={button.description}
           >
-            {isUpdating ? "Processing..." : button.label}
+            {isUpdating ? t('actions.processing') : button.label}
           </button>
         ))}
       </div>
@@ -651,7 +682,7 @@ export const TimeSlotCard = ({ slot, index }) => {
         <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
         <div>
           <p className="text-blue-800 font-medium text-sm">
-            {slot.formattedDate || format(new Date(slot.date), "MMM d, yyyy")}
+            {slot.formattedDate || format(new Date(slot.date), "MMM d, yyyy", { locale: getDateLocale() })}
           </p>
           <p className="text-blue-700 text-sm font-semibold">
             {slot.startTime} - {slot.endTime}
@@ -666,13 +697,15 @@ export const TimeSlotCard = ({ slot, index }) => {
  * Full day booking indicator
  */
 export const FullDayBookingCard = () => {
+  const { t } = useTranslation('booking');
+  
   return (
     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 shadow-sm text-center">
       <div className="flex items-center justify-center">
         <div className="w-4 h-4 bg-blue-500 rounded-full mr-3"></div>
-        <span className="text-blue-800 font-medium text-lg">Full Day Booking</span>
+        <span className="text-blue-800 font-medium text-lg">{t('details.timing.fullDay')}</span>
       </div>
-      <p className="text-blue-600 text-sm mt-2">This booking covers the entire day</p>
+      <p className="text-blue-600 text-sm mt-2">{t('details.timing.fullDayDescription')}</p>
     </div>
   );
 };
@@ -681,17 +714,19 @@ export const FullDayBookingCard = () => {
  * Payment button component
  */
 export const PaymentButton = ({ provider, isAvailable, onClick, iconSrc, alt }) => {
+  const { t } = useTranslation('booking');
+  
   const getProviderSpecificMessage = (providerId) => {
     if (providerId === 'click') {
-      return isAvailable ? 'Pay with Click' : 'Click Pay - Available after selection';
+      return isAvailable ? t('payment.providers.click.available') : t('payment.providers.click.unavailable');
     }
     if (providerId === 'payme') {
-      return isAvailable ? 'Pay with Payme' : 'Payme - Available after selection';
+      return isAvailable ? t('payment.providers.payme.available') : t('payment.providers.payme.unavailable');
     }
     if (providerId === 'octo') {
-      return isAvailable ? 'Pay with Octo' : 'Octo Pay - Available after selection';
+      return isAvailable ? t('payment.providers.octo.available') : t('payment.providers.octo.unavailable');
     }
-    return isAvailable ? `Pay with ${alt}` : 'Available after booking selection';
+    return isAvailable ? t('payment.providers.generic.available', { provider: alt }) : t('payment.providers.generic.unavailable');
   };
 
   const getButtonStyles = () => {
@@ -728,6 +763,8 @@ export const PaymentButton = ({ provider, isAvailable, onClick, iconSrc, alt }) 
  * Visible to hosts and agents only
  */
 export const BookingTimeline = ({ booking, userType }) => {
+  const { t } = useTranslation('booking');
+  
   // Only show for hosts and agents
   if (userType !== 'host' && userType !== 'agent') return null;
 
@@ -756,7 +793,7 @@ export const BookingTimeline = ({ booking, userType }) => {
     
     // 1. Request Submitted (always present)
     steps.push({
-      title: 'Request Submitted',
+      title: t('timeline.steps.requestSubmitted'),
       timestamp: booking.createdAt ? formatTimestamp(booking.createdAt) : null,
       status: 'completed',
       icon: 'submit'
@@ -766,7 +803,7 @@ export const BookingTimeline = ({ booking, userType }) => {
     if (booking.selectedAt || booking.status === 'selected' || 
         booking.status === 'approved' || booking.status === 'rejected') {
       steps.push({
-        title: 'Selected for Payment',
+        title: t('timeline.steps.selectedForPayment'),
         timestamp: booking.selectedAt ? formatTimestamp(booking.selectedAt) : null,
         status: booking.selectedAt ? 'completed' : 'unknown',
         icon: 'selected'
@@ -776,7 +813,7 @@ export const BookingTimeline = ({ booking, userType }) => {
     // 3. Pending Payment (transitional step for selected bookings)
     if (booking.status === 'selected' || booking.status === 'approved') {
       steps.push({
-        title: 'Pending Payment',
+        title: t('timeline.steps.pendingPayment'),
         timestamp: booking.selectedAt ? formatTimestamp(booking.selectedAt) : null,
         status: booking.status === 'approved' ? 'completed' : 'current',
         icon: 'pending'
@@ -786,7 +823,7 @@ export const BookingTimeline = ({ booking, userType }) => {
     // 4. Payment Complete (for approved bookings)
     if (booking.status === 'approved') {
       steps.push({
-        title: 'Payment Complete',
+        title: t('timeline.steps.paymentComplete'),
         timestamp: booking.approvedAt ? formatTimestamp(booking.approvedAt) : null,
         status: 'completed',
         icon: 'payment'
@@ -796,7 +833,7 @@ export const BookingTimeline = ({ booking, userType }) => {
     // 5. Confirmed (for approved bookings)
     if (booking.status === 'approved') {
       steps.push({
-        title: 'Confirmed',
+        title: t('timeline.steps.confirmed'),
         timestamp: booking.approvedAt ? formatTimestamp(booking.approvedAt) : null,
         status: 'completed',
         icon: 'confirmed'
@@ -806,22 +843,22 @@ export const BookingTimeline = ({ booking, userType }) => {
     // 6. Paid to Host (for approved bookings with agent payment)
     if (booking.status === 'approved') {
       steps.push({
-        title: 'Paid to Host',
+        title: t('timeline.steps.paidToHost'),
         timestamp: booking.paidToHostAt ? formatTimestamp(booking.paidToHostAt) : null,
         status: booking.paidToHost ? 'completed' : 'pending',
         icon: 'paid',
         description: booking.paidToHost 
-          ? `Agent marked payment complete`
+          ? t('timeline.descriptions.paymentComplete')
           : userType === 'agent' 
-            ? 'Ready to mark payment complete' 
-            : 'Awaiting payment from agent'
+            ? t('timeline.descriptions.readyToPay')
+            : t('timeline.descriptions.awaitingPayment')
       });
     }
 
     // 7. Rejected (if booking was rejected)
     if (booking.status === 'rejected') {
       steps.push({
-        title: 'Rejected',
+        title: t('timeline.steps.rejected'),
         timestamp: booking.rejectedAt ? formatTimestamp(booking.rejectedAt) : null,
         status: 'rejected',
         icon: 'rejected'
@@ -905,7 +942,7 @@ export const BookingTimeline = ({ booking, userType }) => {
           <svg className="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
           </svg>
-          Booking Timeline
+          {t('timeline.title')}
         </h3>
       </div>
       
@@ -928,9 +965,9 @@ export const BookingTimeline = ({ booking, userType }) => {
                 </div>
                 <div className="text-xs text-gray-600">
                   {step.timestamp || 
-                   (step.status === 'pending' ? step.description || 'Pending' : 
-                    step.status === 'unknown' ? 'Status transition occurred' : 
-                    'No timestamp available')}
+                   (step.status === 'pending' ? step.description || t('timeline.statuses.pending') : 
+                    step.status === 'unknown' ? t('timeline.statuses.transitionOccurred') : 
+                    t('timeline.statuses.noTimestamp'))}
                 </div>
               </div>
             </div>

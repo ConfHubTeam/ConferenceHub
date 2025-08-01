@@ -1,0 +1,63 @@
+{
+  "header": {
+    "logo": {
+      "alt": "GetSpace",
+      "title": "GetSpace - Find Your Perfect Space"
+    },
+    "navigation": {
+      "browseSpaces": "Browse Spaces",
+      "myPlaces": "My Places", 
+      "listYourSpace": "List Your Space",
+      "experiences": "Experiences",
+      "home": "Home"
+    },
+    "userMenu": {
+      "myAccount": "My Account",
+      "login": "Log In",
+      "signup": "Sign Up",
+      "logOut": "Log Out",
+      "profile": "Profile"
+    },
+    "mobileMenu": {
+      "currency": "Currency",
+      "language": "Language",
+      "toggleMenu": "Toggle menu",
+      "closeMenu": "Close menu"
+    }
+  },
+  "accountNav": {
+    "profile": "Profile",
+    "bookings": "Bookings", 
+    "notifications": "Notifications",
+    "spaces": "Spaces",
+    "hostDashboard": "Host Dashboard",
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "places": "Places",
+    "reviews": "Reviews",
+    "myListings": "My Listings",
+    "browseListings": "Browse Listings"
+  },
+  "mobileNavigation": {
+    "browseSpaces": "Browse Spaces",
+    "myAccount": "My Account",
+    "myPlaces": "My Places",
+    "login": "Log In",
+    "signup": "Sign Up"
+  },
+  "legacy": {
+    "browse_spaces": "Browse Spaces",
+    "my_account": "My Account",
+    "my_places": "My Places",
+    "list_your_space": "List Your Space",
+    "toggle_menu": "Toggle mobile menu",
+    "close_menu": "Close mobile menu",
+    "home": "Home",
+    "about": "About",
+    "contact": "Contact",
+    "help": "Help",
+    "support": "Support",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy"
+  }
+}

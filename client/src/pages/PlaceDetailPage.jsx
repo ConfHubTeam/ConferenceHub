@@ -1,6 +1,7 @@
 import api from "../utils/api";
 import { useContext, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import BookingWidget from "../components/BookingWidget";
 import PhotoGallery from "../components/PhotoGallery";
 import BookingCard from "../components/BookingCard";
@@ -16,6 +17,7 @@ import RefundPolicyDisplay from "../components/RefundPolicyDisplay";
 import PlaceReviews from "../components/PlaceReviews";
 
 export default function PlaceDetailPage() {
+  const { t } = useTranslation('places');
   const { placeId, bookingId } = useParams();
   const [placeDetail, setPlaceDetail] = useState();
   const [bookingDetail, setBookingDetail] = useState();
@@ -68,7 +70,7 @@ export default function PlaceDetailPage() {
           }
           
           // Notify the user that their booking selections were restored
-          notify("Your booking selections have been restored. You can now complete your booking.", "info");
+          notify(t('placeDetail.bookingRestored'), "info");
           
           // Clear the stored data after restoring
           sessionStorage.removeItem("bookingSelections");
@@ -95,12 +97,12 @@ export default function PlaceDetailPage() {
     
     try {
       await api.delete(`/places/${placeId}`);
-      notify('Conference room deleted successfully', 'success');
+      notify(t('placeDetail.deleteSuccess'), 'success');
       setShowDeleteModal(false);
       navigate('/account/user-places'); // Redirect to my conference rooms page
     } catch (error) {
       setError(error.response?.data?.error || error.message);
-      notify(`Error: ${error.response?.data?.error || error.message}`, 'error');
+      notify(`${t('common.error')}: ${error.response?.data?.error || error.message}`, 'error');
     } finally {
       setIsDeleting(false);
       setDeleteInProgress(false);
@@ -148,14 +150,14 @@ export default function PlaceDetailPage() {
       {/* Owner notification */}
       {isOwner && (
         <div className="bg-green-100 p-4 mb-4 rounded-lg">
-          <p className="text-green-800 font-semibold text-sm md:text-base">You are the owner of this conference room</p>
+          <p className="text-green-800 font-semibold text-sm md:text-base">{t('placeDetail.ownerNotification')}</p>
         </div>
       )}
 
       {/* Agent notification */}
       {user && user.userType === 'agent' && !isOwner && (
         <div className="bg-blue-100 p-4 mb-4 rounded-lg">
-          <p className="text-blue-800 font-semibold text-sm md:text-base">Agent Management Access</p>
+          <p className="text-blue-800 font-semibold text-sm md:text-base">{t('placeDetail.agentNotification')}</p>
         </div>
       )}
 
@@ -185,7 +187,7 @@ export default function PlaceDetailPage() {
 
             {/* Description Section */}
             <div className="mb-8">
-              <h2 className="text-xl md:text-2xl font-semibold mb-4">Description</h2>
+              <h2 className="text-xl md:text-2xl font-semibold mb-4">{t('placeDetail.sections.description')}</h2>
               <p className="leading-6 md:leading-7 text-sm md:text-base text-gray-700">{placeDetail.description}</p>
             </div>
 
@@ -221,7 +223,7 @@ export default function PlaceDetailPage() {
             {/* Location Map - Hidden on mobile */}
             {hasCoordinates && (
               <div className="mb-8 hidden md:block">
-                <h2 className="text-xl md:text-2xl font-semibold mb-4">Location</h2>
+                <h2 className="text-xl md:text-2xl font-semibold mb-4">{t('placeDetail.sections.location')}</h2>
                 <div className="h-64 rounded-lg overflow-hidden border">
                   <MapView places={mapPlaces} disableInfoWindow={true} />
                 </div>
@@ -231,7 +233,7 @@ export default function PlaceDetailPage() {
             {/* Extra Information Section */}
             {placeDetail.extraInfo && (
               <div className="mb-8">
-                <h2 className="text-xl md:text-2xl font-semibold mb-4">Additional Information</h2>
+                <h2 className="text-xl md:text-2xl font-semibold mb-4">{t('placeDetail.sections.additionalInfo')}</h2>
                 <p className="leading-6 md:leading-7 text-sm md:text-base text-gray-700">{placeDetail.extraInfo}</p>
               </div>
             )}
@@ -274,20 +276,20 @@ export default function PlaceDetailPage() {
             {/* Show management options for hosts who own this conference room or agents */}
             {user && canManage && !bookingId && (
               <div className="bg-white shadow p-4 rounded-2xl">
-                <h2 className="text-xl font-semibold mb-4">Management Options</h2>
+                <h2 className="text-xl font-semibold mb-4">{t('placeDetail.managementOptions.title')}</h2>
                 <div className="flex flex-col gap-2">
                   <a 
                     href={`/account/places/${placeId}`} 
                     className="bg-green-500 py-2 px-5 rounded-2xl text-white text-center"
                   >
-                    Edit Conference Room
+                    {t('placeDetail.managementOptions.edit')}
                   </a>
                   <button 
                     className="bg-orange-500 py-2 px-5 rounded-2xl text-white"
                     onClick={handleDeleteClick}
                     disabled={isDeleting}
                   >
-                    {isDeleting ? 'Deleting...' : 'Delete Conference Room'}
+                    {isDeleting ? t('placeDetail.managementOptions.deleting') : t('placeDetail.managementOptions.delete')}
                   </button>
                 </div>
               </div>
@@ -309,18 +311,18 @@ export default function PlaceDetailPage() {
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onDelete={handleDelete}
-        title="Delete Conference Room"
+        title={t('placeDetail.deleteModal.title')}
         itemToDelete={placeDetail}
         itemDetails={[
-          { label: "Title", value: placeDetail?.title },
-          { label: "Location", value: placeDetail?.address },
-          { label: "Price", value: `$${placeDetail?.price} / hour` }
+          { label: t('placeDetail.deleteModal.titleLabel'), value: placeDetail?.title },
+          { label: t('placeDetail.deleteModal.locationLabel'), value: placeDetail?.address },
+          { label: t('placeDetail.deleteModal.priceLabel'), value: `$${placeDetail?.price} / ${t('placeDetail.deleteModal.hour')}` }
         ]}
         consequences={[
-          "The conference room and all its details",
-          "All photos associated with this conference room",
-          "All bookings made for this conference room",
-          "All ratings and reviews for this conference room"
+          t('placeDetail.deleteModal.consequences.roomDetails'),
+          t('placeDetail.deleteModal.consequences.photos'),
+          t('placeDetail.deleteModal.consequences.bookings'),
+          t('placeDetail.deleteModal.consequences.reviews')
         ]}
         deleteInProgress={deleteInProgress}
       />

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import {
   startOfMonth,
   endOfMonth,
@@ -32,6 +33,28 @@ export default function Calendar({
   availableDatesUzbekistan = [], // New prop for timezone-aware available dates
   useTimezoneValidation = false // New prop to enable Uzbekistan timezone validation
 }) {
+  const { t } = useTranslation("calendar");
+  
+  // Helper function to get translated month name
+  const getTranslatedMonth = useCallback((date) => {
+    const monthIndex = date.getMonth();
+    const monthKeys = [
+      "months.january",
+      "months.february", 
+      "months.march",
+      "months.april",
+      "months.may",
+      "months.june",
+      "months.july",
+      "months.august",
+      "months.september",
+      "months.october",
+      "months.november",
+      "months.december"
+    ];
+    return t(monthKeys[monthIndex]);
+  }, [t]);
+  
   const [currentMonth, setCurrentMonth] = useState(() => {
     // Initialize current month based on Uzbekistan timezone when timezone validation is enabled
     if (useTimezoneValidation) {
@@ -401,7 +424,18 @@ export default function Calendar({
 
   const days = generateDays(currentMonth);
   const nextMonthDays = generateDays(addMonths(currentMonth, 1));
-  const weekDays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+  // Generate weekday headers using translation
+  const getWeekDays = useCallback(() => [
+    t("weekdays.short.sunday"),
+    t("weekdays.short.monday"),
+    t("weekdays.short.tuesday"),
+    t("weekdays.short.wednesday"),
+    t("weekdays.short.thursday"),
+    t("weekdays.short.friday"),
+    t("weekdays.short.saturday")
+  ], [t]);
+
+  const weekDays = getWeekDays();
 
   // Render a single month grid
   const renderMonthGrid = (month, daysArray) => {
@@ -410,7 +444,7 @@ export default function Calendar({
         {/* Month title - Only show on desktop when there are two months */}
         <div className="text-center mb-4 hidden lg:block">
           <h3 className="text-lg font-semibold text-gray-800">
-            {format(month, "MMMM yyyy")}
+            {getTranslatedMonth(month)} {format(month, "yyyy")}
           </h3>
         </div>
         
@@ -525,10 +559,10 @@ export default function Calendar({
         
         <h2 className="text-xl font-semibold text-gray-800">
           <span className="hidden lg:block">
-            {format(currentMonth, "MMMM yyyy")} - {format(addMonths(currentMonth, 1), "MMMM yyyy")}
+            {getTranslatedMonth(currentMonth)} {format(currentMonth, "yyyy")} - {getTranslatedMonth(addMonths(currentMonth, 1))} {format(addMonths(currentMonth, 1), "yyyy")}
           </span>
           <span className="lg:hidden">
-            {format(currentMonth, "MMMM yyyy")}
+            {getTranslatedMonth(currentMonth)} {format(currentMonth, "yyyy")}
           </span>
         </h2>
         
@@ -558,12 +592,12 @@ export default function Calendar({
       <div className="mt-5 px-3 py-2 bg-gray-50 rounded-lg border border-gray-100">
         <p className="text-sm text-gray-600 text-center font-medium">
           {onBlockedDateClick ? 
-            "✨ Click dates to toggle blocked/unblocked status" : 
+            t("guidance.blockingMode") : 
             individualDateMode ?
-              "🎯 Select individual dates for booking" :
+              t("guidance.individualMode") :
               selectingStart ? 
-                "📅 Select your start date" : 
-                "📅 Select your end date (hover to preview range)"
+                t("guidance.selectStart") : 
+                t("guidance.selectEnd")
           }
         </p>
       </div>
@@ -571,19 +605,19 @@ export default function Calendar({
       {/* Color coding legend */}
       {!onBlockedDateClick && (Object.keys(bookingPercentages).length > 0 || Object.keys(completelyUnbookableDates).length > 0) && (
         <div className="mt-3 px-3 py-2 bg-gray-50 rounded-lg border border-gray-100">
-          <p className="text-xs text-gray-600 mb-2 font-medium">Availability Legend:</p>
+          <p className="text-xs text-gray-600 mb-2 font-medium">{t("legend.title")}</p>
           <div className="flex flex-wrap gap-2 justify-center">
             <div className="flex items-center">
               <div className="h-3 w-3 bg-white border border-gray-300 rounded mr-1"></div>
-              <span className="text-xs text-gray-600">Available</span>
+              <span className="text-xs text-gray-600">{t("legend.available")}</span>
             </div>
             <div className="flex items-center">
               <div className="h-3 w-3 bg-orange-100 border border-orange-200 rounded mr-1"></div>
-              <span className="text-xs text-gray-600">Partially Booked</span>
+              <span className="text-xs text-gray-600">{t("legend.partiallyBooked")}</span>
             </div>
             <div className="flex items-center">
               <div className="h-3 w-3 bg-red-100 border border-red-200 rounded mr-1"></div>
-              <span className="text-xs text-gray-600">Fully Booked / Unavailable</span>
+              <span className="text-xs text-gray-600">{t("legend.fullyBooked")}</span>
             </div>
           </div>
         </div>

@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import CloudinaryImage from "./CloudinaryImage";
 import PriceDisplay from "./PriceDisplay";
 
 export default function PlaceCard({ place, showActions = true }) {
+  const { t } = useTranslation("places");
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
       {/* Image */}
@@ -41,7 +43,10 @@ export default function PlaceCard({ place, showActions = true }) {
               <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
-              Up to {place.maxGuests} guests
+              {place.maxGuests === 1 
+                ? t("card.up_to_guests_single", { count: place.maxGuests })
+                : t("card.up_to_guests", { count: place.maxGuests })
+              }
             </div>
           )}
           {place.squareMeters && (
@@ -49,44 +54,40 @@ export default function PlaceCard({ place, showActions = true }) {
               <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
               </svg>
-              {place.squareMeters} m²
+              {t("card.square_meters", { size: place.squareMeters })}
             </div>
           )}
-          <div className="flex items-center text-xs text-gray-600">
-            <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            {place.checkIn} - {place.checkOut}
-          </div>
         </div>
         
         {/* Price and Actions */}
-        <div className="flex items-center justify-between mt-4 pt-4 border-t">
-          <span className="text-lg font-semibold text-primary">
-            <PriceDisplay 
-              price={place.price} 
-              currency={place.currency}
-              suffix="/hour"
-              priceClassName="text-lg font-semibold"
-            />
-          </span>
-          
-          {showActions && (
-            <div className="flex gap-2">
-              <Link 
-                to={`/account/places/${place.id}`}
-                className="px-3 py-1 text-xs bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-              >
-                Edit
-              </Link>
-              <Link 
-                to={`/place/${place.id}`}
-                className="px-3 py-1 text-xs bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-              >
-                View
-              </Link>
-            </div>
-          )}
+        <div className="mt-4 pt-4 border-t">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-lg font-semibold text-primary flex-shrink-0">
+              <PriceDisplay 
+                price={place.price} 
+                currency={place.currency}
+                suffix={t("card.price_per_hour")}
+                priceClassName="text-lg font-semibold"
+              />
+            </span>
+            
+            {showActions && (
+              <div className="flex gap-2 flex-shrink-0">
+                <Link 
+                  to={`/account/places/${place.id}`}
+                  className="px-3 py-1 text-xs bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                >
+                  {t("card.actions.edit")}
+                </Link>
+                <Link 
+                  to={`/place/${place.id}`}
+                  className="px-3 py-1 text-xs bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  {t("card.actions.view")}
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

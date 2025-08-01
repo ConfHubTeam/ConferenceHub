@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 /**
  * StatusFilter Component
@@ -10,24 +11,24 @@ import React from "react";
 // Status configuration for different user types
 const STATUS_CONFIG = {
   client: {
-    pending: { label: "Pending", color: "yellow" },
-    approved: { label: "Confirmed", color: "green" },
-    rejected: { label: "Rejected", color: "red" },
-    all: { label: "All", color: "gray" }
+    pending: { key: "pending", color: "yellow" },
+    approved: { key: "approved", color: "green" },
+    rejected: { key: "rejected", color: "red" },
+    all: { key: "all", color: "gray" }
   },
   host: {
-    pending: { label: "Pending", color: "yellow" },
-    approved: { label: "Approved", color: "green" },
-    rejected: { label: "Rejected", color: "red" },
-    paid_to_host: { label: "Paid", color: "blue" },
-    all: { label: "All", color: "gray" }
+    pending: { key: "pending", color: "yellow" },
+    approved: { key: "approved", color: "green" },
+    rejected: { key: "rejected", color: "red" },
+    paid_to_host: { key: "paid_to_host", color: "blue" },
+    all: { key: "all", color: "gray" }
   },
   agent: {
-    pending: { label: "Pending", color: "yellow" },
-    approved: { label: "Approved", color: "green" },
-    rejected: { label: "Rejected", color: "red" },
-    paid_to_host: { label: "Paid", color: "blue" },
-    all: { label: "All", color: "gray" }
+    pending: { key: "pending", color: "yellow" },
+    approved: { key: "approved", color: "green" },
+    rejected: { key: "rejected", color: "red" },
+    paid_to_host: { key: "paid_to_host", color: "blue" },
+    all: { key: "all", color: "gray" }
   }
 };
 
@@ -113,6 +114,7 @@ export default function StatusFilter({
   className = "",
   size = "default" // "default" | "compact" | "large"
 }) {
+  const { t } = useTranslation('booking');
   const statusConfig = STATUS_CONFIG[userType] || STATUS_CONFIG.client;
   
   // Define the order of status buttons
@@ -138,6 +140,9 @@ export default function StatusFilter({
       {statusOrder.map((status) => {
         const config = statusConfig[status];
         
+        // Get the translated label
+        const label = t(`filters.statusLabels.${userType}.${status}`) || status;
+        
         // Calculate count - for "all", sum all status counts
         let count;
         if (status === "all") {
@@ -152,7 +157,7 @@ export default function StatusFilter({
           <StatusButton
             key={status}
             status={status}
-            label={config.label}
+            label={label}
             color={config.color}
             count={count}
             isActive={currentStatus === status}

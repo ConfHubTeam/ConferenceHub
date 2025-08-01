@@ -1,0 +1,36 @@
+{
+  "hero": {
+    "title_line_1": "Find a space.",
+    "title_line_2": "Fulfill your vision.",
+    "subtitle": "Discover and book the perfect venue for your next event",
+    "loading": "Loading GetSpace..."
+  },
+  "search": {
+    "placeholder": "Search for venues...",
+    "button": "Search",
+    "filters": {
+      "dates": "Dates",
+      "time": "Time",
+      "price": "Price",
+      "attendees": "Attendees",
+      "size": "Size"
+    }
+  },
+  "features": {
+    "instant_booking": "Instant Booking",
+    "verified_venues": "Verified Venues",
+    "secure_payments": "Secure Payments",
+    "24_7_support": "24/7 Support"
+  },
+  "cta": {
+    "explore_venues": "Explore Venues",
+    "get_started": "Get Started",
+    "learn_more": "Learn More"
+  },
+  "stats": {
+    "venues": "venues",
+    "cities": "cities",
+    "events": "events hosted",
+    "satisfied_customers": "satisfied customers"
+  }
+}

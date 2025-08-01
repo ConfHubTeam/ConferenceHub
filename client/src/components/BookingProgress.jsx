@@ -1,63 +1,92 @@
 import { format } from "date-fns";
+import { enUS, ru, uz } from "date-fns/locale";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import i18n from "../i18n/config";
 
 /**
- * BookingProgress Component
+ * Booki                {formatDate(new Dat                {formatDate(new Date(booking.rejectedAt || booking.updatedAt), "MMM d, yyyy")}
+              </div>
+              <div className="text-xs text-gray-500">
+                {formatDate(new Date(booking.rejectedAt || booking.updatedAt), "h:mm a")}oking.createdAt), "MMM d, yyyy")}
+              </div>
+              <div className="text-xs text-gray-500">
+                {formatDate(new Date(booking.createdAt), "h:mm a")}ogress Component
  * Shows a visual progress indicator for booking status with timestamps
  */
 export default function BookingProgress({ booking, userType }) {
+  const { t } = useTranslation('booking');
+  
+  // Get locale for date formatting
+  const getDateLocale = () => {
+    const currentLanguage = i18n.language;
+    switch (currentLanguage) {
+      case 'ru':
+        return ru;
+      case 'uz':
+        return uz;
+      default:
+        return enUS;
+    }
+  };
+
+  // Format date with locale support
+  const formatDate = (date, formatString) => {
+    return format(date, formatString, { locale: getDateLocale() });
+  };
+
   // Define progress steps with their configurations
   const getProgressSteps = () => {
     const steps = [
       {
         id: "pending",
-        label: "Request Submitted",
+        label: t('details.progress.steps.requestSubmitted'),
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         ),
-        description: "Booking request submitted and awaiting review"
+        description: t('details.progress.descriptions.requestSubmitted')
       },
       {
         id: "selected",
-        label: "Selected for Payment",
+        label: t('details.progress.steps.selectedForPayment'),
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         ),
-        description: "Booking selected by host, proceed with payment"
+        description: t('details.progress.descriptions.selectedForPayment')
       },
       {
         id: "payment_pending",
-        label: "Pending Payment", 
+        label: t('details.progress.steps.pendingPayment'), 
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
           </svg>
         ),
-        description: "Payment required to confirm booking"
+        description: t('details.progress.descriptions.pendingPayment')
       },
       {
         id: "payment_complete",
-        label: "Payment Complete",
+        label: t('details.progress.steps.paymentComplete'),
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
           </svg>
         ),
-        description: "Payment confirmed, awaiting final approval"
+        description: t('details.progress.descriptions.paymentComplete')
       },
       {
         id: "approved",
-        label: "Confirmed",
+        label: t('details.progress.steps.confirmed'),
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         ),
-        description: "Booking confirmed and ready"
+        description: t('details.progress.descriptions.confirmed')
       }
     ];
 
@@ -65,17 +94,17 @@ export default function BookingProgress({ booking, userType }) {
     if (userType === 'host' || userType === 'agent') {
       steps.push({
         id: "paid_to_host",
-        label: "Paid to Host",
+        label: t('details.progress.steps.paidToHost'),
         icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
           </svg>
         ),
         description: booking.paidToHost 
-          ? "Agent has paid the host" 
+          ? t('details.progress.descriptions.paidToHost.completed')
           : userType === 'agent' 
-            ? "Ready to mark payment complete" 
-            : "Awaiting payment from agent"
+            ? t('details.progress.descriptions.paidToHost.agentPending')
+            : t('details.progress.descriptions.paidToHost.hostPending')
       });
     }
 
@@ -175,7 +204,7 @@ export default function BookingProgress({ booking, userType }) {
   if (isRejected) {
     return (
       <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-6">Booking Status</h3>
+        <h3 className="text-lg font-semibold mb-6">{t('details.timeline.title')}</h3>
         
         {/* Rejected Progress */}
         <div className="flex items-center justify-between mb-6">
@@ -189,12 +218,12 @@ export default function BookingProgress({ booking, userType }) {
               </div>
             </div>
             <div className="text-sm">
-              <div className="font-semibold text-gray-900">Request Submitted</div>
+              <div className="font-semibold text-gray-900">{t('details.timeline.steps.requestSubmitted')}</div>
               <div className="text-gray-500">
-                {format(new Date(booking.createdAt), "MMM d, yyyy")}
+                {formatDate(new Date(booking.createdAt), "MMM d, yyyy")}
               </div>
               <div className="text-xs text-gray-400">
-                {format(new Date(booking.createdAt), "h:mm a")}
+                {formatDate(new Date(booking.createdAt), "h:mm a")}
               </div>
             </div>
           </div>
@@ -221,12 +250,12 @@ export default function BookingProgress({ booking, userType }) {
               </div>
             </div>
             <div className="text-sm">
-              <div className="font-semibold text-red-900">Request Declined</div>
+              <div className="font-semibold text-red-900">{t('details.progress.rejected.requestDeclined')}</div>
               <div className="text-gray-500">
-                {format(new Date(booking.rejectedAt || booking.updatedAt), "MMM d, yyyy")}
+                {formatDate(new Date(booking.rejectedAt || booking.updatedAt), "MMM d, yyyy")}
               </div>
               <div className="text-xs text-gray-400">
-                {format(new Date(booking.rejectedAt || booking.updatedAt), "h:mm a")}
+                {formatDate(new Date(booking.rejectedAt || booking.updatedAt), "h:mm a")}
               </div>
             </div>
           </div>
@@ -242,10 +271,10 @@ export default function BookingProgress({ booking, userType }) {
             </div>
             <div className="ml-3 flex-1">
               <h4 className="text-sm font-semibold text-red-800 mb-2">
-                Booking Unavailable
+                {t('details.progress.rejected.title')}
               </h4>
               <p className="text-sm text-red-700 mb-4">
-                Unfortunately, your requested time slot is no longer available. This could be due to another booking being confirmed or changes in availability. We apologize for any inconvenience.
+                {t('details.progress.rejected.message')}
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link
@@ -255,7 +284,7 @@ export default function BookingProgress({ booking, userType }) {
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  View Available Times
+                  {t('details.progress.rejected.viewAvailable')}
                 </Link>
                 <Link
                   to="/"
@@ -264,7 +293,7 @@ export default function BookingProgress({ booking, userType }) {
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
-                  Browse Other Venues
+                  {t('details.progress.rejected.browseOther')}
                 </Link>
               </div>
             </div>
@@ -279,7 +308,7 @@ export default function BookingProgress({ booking, userType }) {
   
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6">
-      <h3 className="text-lg font-semibold mb-6">Booking Progress</h3>
+      <h3 className="text-lg font-semibold mb-6">{t('details.sections.bookingProgress')}</h3>
       
       <div className="space-y-8">
         {steps.map((step, index) => {
@@ -347,14 +376,14 @@ export default function BookingProgress({ booking, userType }) {
                     {stepInfo.timestamp && (
                       <div className="text-right ml-4">
                         <div className="text-sm font-medium text-gray-900">
-                          {format(stepInfo.timestamp, "MMM d, yyyy")}
+                          {format(stepInfo.timestamp, "MMM d, yyyy", { locale: getDateLocale() })}
                         </div>
                         <div className="text-xs text-gray-500">
-                          {format(stepInfo.timestamp, "h:mm a")}
+                          {format(stepInfo.timestamp, "h:mm a", { locale: getDateLocale() })}
                         </div>
                         {stepInfo.completedByAgent && (
                           <div className="text-xs text-blue-600 font-medium mt-1 bg-blue-50 px-2 py-1 rounded">
-                            by Agent
+                            {t('details.progress.status.byAgent')}
                           </div>
                         )}
                       </div>
@@ -365,7 +394,7 @@ export default function BookingProgress({ booking, userType }) {
                   {isCurrent && (
                     <div className="mt-3 flex items-center text-blue-600">
                       <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse mr-2"></div>
-                      <span className="text-sm font-medium">Current Step</span>
+                      <span className="text-sm font-medium">{t('details.progress.status.currentStep')}</span>
                     </div>
                   )}
                 </div>
@@ -386,10 +415,10 @@ export default function BookingProgress({ booking, userType }) {
             </div>
             <div className="ml-3">
               <h4 className="text-sm font-medium text-blue-800">
-                Next Steps
+                {t('details.progress.nextSteps.title')}
               </h4>
               <p className="mt-1 text-sm text-blue-700">
-                Your booking has been selected by the host. Please proceed with payment to confirm your reservation.
+                {t('details.progress.nextSteps.selectedMessage')}
               </p>
             </div>
           </div>
@@ -406,7 +435,7 @@ export default function BookingProgress({ booking, userType }) {
             </div>
             <div className="ml-3">
               <h4 className="text-sm font-medium text-green-800">
-                Booking Confirmed
+                {t('details.progress.nextSteps.confirmedTitle')}
               </h4>
             </div>
           </div>

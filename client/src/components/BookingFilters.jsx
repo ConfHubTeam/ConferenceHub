@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import ActiveFilters, { FilterCreators } from "./ActiveFilters";
 import StatusFilter from "./StatusFilter";
 
@@ -16,6 +17,7 @@ export default function BookingFilters({
   stats,
   onClearAllFilters
 }) {
+  const { t } = useTranslation('booking');
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -40,18 +42,12 @@ export default function BookingFilters({
         {/* Mobile: Search Bar First (Most Important) - Hidden on desktop */}
         <div className="order-1 lg:hidden">
           <label htmlFor="search" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
-            Search bookings
+            {t("filters.searchBookings")}
           </label>
           <input
             id="search"
             type="text"
-            placeholder={
-              user?.userType === "agent" 
-                ? "Search by request ID, host, client, or property..."
-                : user?.userType === "host"
-                ? "Search by request ID or property..."
-                : "Search by property name..."
-            }
+            placeholder={t(`filters.searchPlaceholders.${user?.userType || 'client'}`)}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 text-sm"
@@ -63,18 +59,12 @@ export default function BookingFilters({
           {/* Search - Hidden on mobile, shown on desktop */}
           <div className="hidden lg:block lg:flex-1">
             <label htmlFor="search-desktop" className="block text-sm font-medium text-gray-700 mb-2">
-              Search bookings
+              {t("filters.searchBookings")}
             </label>
             <input
               id="search-desktop"
               type="text"
-              placeholder={
-                user?.userType === "agent" 
-                  ? "Search by request ID, host, client, or property..."
-                  : user?.userType === "host"
-                  ? "Search by request ID or property..."
-                  : "Search by property name..."
-              }
+              placeholder={t(`filters.searchPlaceholders.${user?.userType || 'client'}`)}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 text-sm"
@@ -86,7 +76,7 @@ export default function BookingFilters({
           {/* Sort Options */}
           <div className="lg:w-48">
             <label htmlFor="sort" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
-              Sort by
+              {t("filters.sortBy")}
             </label>
             <select
               id="sort"
@@ -104,12 +94,12 @@ export default function BookingFilters({
                 backgroundSize: "12px"
               }}
             >
-              <option value="createdAt-desc">Newest first</option>
-              <option value="createdAt-asc">Oldest first</option>
-              <option value="checkInDate-asc">Check-in date</option>
-              <option value="totalPrice-desc">Highest price</option>
-              <option value="totalPrice-asc">Lowest price</option>
-              <option value="place-asc">Property name</option>
+              <option value="createdAt-desc">{t("filters.sortOptions.newestFirst")}</option>
+              <option value="createdAt-asc">{t("filters.sortOptions.oldestFirst")}</option>
+              <option value="checkInDate-asc">{t("filters.sortOptions.checkInDate")}</option>
+              <option value="totalPrice-desc">{t("filters.sortOptions.highestPrice")}</option>
+              <option value="totalPrice-asc">{t("filters.sortOptions.lowestPrice")}</option>
+              <option value="place-asc">{t("filters.sortOptions.propertyName")}</option>
             </select>
           </div>
         </div>
@@ -117,7 +107,7 @@ export default function BookingFilters({
         {/* Status Filter - Clickable buttons instead of dropdown */}
         <div className="order-3 lg:order-2">
           <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3">
-            Filter by Status
+            {t("filters.filterByStatus")}
           </label>
           <StatusFilter
             userType={user?.userType}

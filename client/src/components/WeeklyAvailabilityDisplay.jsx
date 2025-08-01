@@ -1,22 +1,40 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 /**
  * WeeklyAvailabilityDisplay Component
  * 
  * Displays the weekly time slots and blocked weekdays in a read-only format
- * for the place details page. Now with collapsible functionality.
+ * for the place details page. Now with collapsible functionality and internationalization.
+ * 
+ * Single Responsibility: Only handles weekly availability display
+ * Open/Closed: Extensible for new UI features without modification
+ * DRY: Reuses translation keys and follows project patterns
  */
 export default function WeeklyAvailabilityDisplay({ weekdayTimeSlots, blockedWeekdays }) {
-  const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const { t, i18n } = useTranslation();
+  
+  // Define weekdays order (Sunday = 0, Monday = 1, etc.)
+  const weekdayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
   const [isExpanded, setIsExpanded] = useState(false);
   
-  // Helper function to format hour to 12-hour format
+  // Helper function to format hour based on language preference
   const formatHour = (hour) => {
-    if (!hour) return "Not set";
+    if (!hour) return t("places:listing.weeklyAvailability.noSpecificHours");
+    
     const hourNum = parseInt(hour, 10);
-    const displayHour = hourNum === 0 ? 12 : hourNum > 12 ? hourNum - 12 : hourNum;
-    const amPm = hourNum < 12 ? 'AM' : 'PM';
-    return `${displayHour}:00 ${amPm}`;
+    const currentLanguage = i18n.language;
+    
+    // Use 24-hour format for Russian and Uzbek, 12-hour format for English
+    if (currentLanguage === 'ru' || currentLanguage === 'uz') {
+      // 24-hour format: 18:00
+      return `${hourNum.toString().padStart(2, '0')}:00`;
+    } else {
+      // 12-hour format with AM/PM for English
+      const displayHour = hourNum === 0 ? 12 : hourNum > 12 ? hourNum - 12 : hourNum;
+      const amPm = hourNum < 12 ? 'AM' : 'PM';
+      return `${displayHour}:00 ${amPm}`;
+    }
   };
 
   // Check if there are any available time slots
@@ -38,7 +56,7 @@ export default function WeeklyAvailabilityDisplay({ weekdayTimeSlots, blockedWee
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mr-2 text-green-600">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
           </svg>
-          Working Hours
+          {t("places:listing.weeklyAvailability.title")}
         </h2>
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
@@ -56,14 +74,15 @@ export default function WeeklyAvailabilityDisplay({ weekdayTimeSlots, blockedWee
       {isExpanded && (
         <div className="mt-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {weekdays.map((day, index) => {
+            {weekdayKeys.map((dayKey, index) => {
               const isBlocked = blockedWeekdays && blockedWeekdays.includes(index);
               const timeSlot = weekdayTimeSlots && weekdayTimeSlots[index];
               const hasTimeSlot = timeSlot && (timeSlot.start || timeSlot.end);
+              const dayName = t(`places:listing.weeklyAvailability.weekdays.${dayKey}`);
               
               return (
                 <div 
-                  key={day} 
+                  key={dayKey} 
                   className={`p-4 rounded-lg border-2 transition-all ${
                     isBlocked 
                       ? 'bg-red-50 border-red-200' 
@@ -77,8 +96,8 @@ export default function WeeklyAvailabilityDisplay({ weekdayTimeSlots, blockedWee
                     <h3 className={`font-semibold text-sm ${
                       isBlocked ? 'text-red-800' : hasTimeSlot ? 'text-green-800' : 'text-gray-600'
                     }`}>
-                      <span className="sm:hidden">{day.substring(0, 3)}</span>
-                      <span className="hidden sm:inline">{day}</span>
+                      <span className="sm:hidden">{dayName.substring(0, 3)}</span>
+                      <span className="hidden sm:inline">{dayName}</span>
                     </h3>
                     {isBlocked && (
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-red-600">
@@ -95,18 +114,18 @@ export default function WeeklyAvailabilityDisplay({ weekdayTimeSlots, blockedWee
                   {/* Content */}
                   {isBlocked ? (
                     <div className="text-center">
-                      <p className="text-red-600 text-sm font-medium">Not Available</p>
+                      <p className="text-red-600 text-sm font-medium">{t("places:listing.weeklyAvailability.notAvailable")}</p>
                     </div>
                   ) : hasTimeSlot ? (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-600 font-medium">From:</span>
+                        <span className="text-xs text-gray-600 font-medium">{t("places:listing.weeklyAvailability.from")}</span>
                         <span className="text-sm font-bold text-green-800">
                           {formatHour(timeSlot.start)}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-600 font-medium">To:</span>
+                        <span className="text-xs text-gray-600 font-medium">{t("places:listing.weeklyAvailability.to")}</span>
                         <span className="text-sm font-bold text-green-800">
                           {formatHour(timeSlot.end)}
                         </span>
@@ -114,7 +133,7 @@ export default function WeeklyAvailabilityDisplay({ weekdayTimeSlots, blockedWee
                     </div>
                   ) : (
                     <div className="text-center">
-                      <p className="text-gray-500 text-sm">No specific hours set</p>
+                      <p className="text-gray-500 text-sm">{t("places:listing.weeklyAvailability.noSpecificHours")}</p>
                     </div>
                   )}
                 </div>
@@ -127,11 +146,11 @@ export default function WeeklyAvailabilityDisplay({ weekdayTimeSlots, blockedWee
             <div className="flex flex-wrap gap-4 justify-center text-sm">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-green-200 border border-green-300 rounded"></div>
-                <span className="text-gray-600">Available with hours</span>
+                <span className="text-gray-600">{t("places:listing.weeklyAvailability.legend.availableWithHours")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-red-200 border border-red-300 rounded"></div>
-                <span className="text-gray-600">Not available</span>
+                <span className="text-gray-600">{t("places:listing.weeklyAvailability.legend.notAvailable")}</span>
               </div>
             </div>
           </div>

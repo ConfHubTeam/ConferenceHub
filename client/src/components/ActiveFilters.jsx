@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 /**
  * ActiveFilters Component
@@ -12,13 +13,15 @@ export default function ActiveFilters({
   onClearAllFilters,
   className = ""
 }) {
+  const { t } = useTranslation('booking');
+  
   // Don't render anything if no filters are active
   if (!filters.length) return null;
 
   return (
     <div className={`mt-4 pt-4 border-t border-gray-200 ${className}`}>
       <div className="flex flex-wrap gap-2 items-center">
-        <span className="text-sm text-gray-600 mr-2">Active filters:</span>
+        <span className="text-sm text-gray-600 mr-2">{t("filters.activeFilters")}</span>
         
         {filters.map((filter, index) => (
           <span 
@@ -30,7 +33,7 @@ export default function ActiveFilters({
               <button
                 onClick={() => onClearFilter ? onClearFilter(filter.key) : filter.onClear()}
                 className={`ml-2 hover:opacity-80 transition-opacity ${filter.buttonColorClass || 'text-blue-600 hover:text-blue-800'}`}
-                aria-label={`Remove ${filter.label} filter`}
+                aria-label={t("filters.removeFilter", { filterName: filter.label })}
               >
                 ×
               </button>
@@ -44,7 +47,7 @@ export default function ActiveFilters({
             onClick={onClearAllFilters}
             className="text-xs text-gray-500 hover:text-gray-700 underline ml-2"
           >
-            Clear all filters
+            {t("filters.clearAllFilters")}
           </button>
         )}
       </div>

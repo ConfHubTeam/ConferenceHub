@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useSearchParams as useRouterSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useSizeFilter } from "../contexts/SizeFilterContext";
 
 /**
@@ -14,6 +15,7 @@ import { useSizeFilter } from "../contexts/SizeFilterContext";
  * @param {Function} props.onClose - Function to call when closing the modal
  */
 export default function SizeFilterModal({ isOpen, onClose }) {
+  const { t } = useTranslation("search");
   const {
     minSize,
     maxSize,
@@ -142,17 +144,17 @@ export default function SizeFilterModal({ isOpen, onClose }) {
     
     // Validate inputs
     if (min !== null && min < 0) {
-      alert("Minimum size cannot be negative");
+      alert(t("filters.modals.size.validation.minNegative"));
       return;
     }
     
     if (max !== null && max < 0) {
-      alert("Maximum size cannot be negative");
+      alert(t("filters.modals.size.validation.maxNegative"));
       return;
     }
     
     if (min !== null && max !== null && min > max) {
-      alert("Minimum size cannot be greater than maximum size");
+      alert(t("filters.modals.size.validation.minGreaterThanMax"));
       return;
     }
     
@@ -219,11 +221,11 @@ export default function SizeFilterModal({ isOpen, onClose }) {
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b flex-shrink-0 bg-gray-50">
-          <h2 className="text-lg sm:text-xl font-semibold text-brand-purple">Size (m²)</h2>
+          <h2 className="text-lg sm:text-xl font-semibold text-brand-purple">{t("filters.modals.size.title")}</h2>
           <button 
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-200 transition-colors"
-            aria-label="Close modal"
+            aria-label={t("filters.modals.size.actions.close")}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -249,7 +251,7 @@ export default function SizeFilterModal({ isOpen, onClose }) {
                   }`}
                 >
                   <div className="font-medium text-sm sm:text-base">
-                    {range.label}
+                    {range.labelKey ? t(range.labelKey) : range.label}
                   </div>
                 </button>
               ))}
@@ -263,14 +265,14 @@ export default function SizeFilterModal({ isOpen, onClose }) {
                 {/* Minimum Size Input */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Min size
+                    {t("filters.modals.size.min")}
                   </label>
                   <div className="relative">
                     <input
                       type="text"
                       value={tempMinSize}
                       onChange={(e) => handleSizeInput(e.target.value, "min")}
-                      placeholder="Min"
+                      placeholder={t("filters.modals.size.placeholder.min")}
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
                     />
                     <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
@@ -282,14 +284,14 @@ export default function SizeFilterModal({ isOpen, onClose }) {
                 {/* Maximum Size Input */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Max size
+                    {t("filters.modals.size.max")}
                   </label>
                   <div className="relative">
                     <input
                       type="text"
                       value={tempMaxSize}
                       onChange={(e) => handleSizeInput(e.target.value, "max")}
-                      placeholder="Max"
+                      placeholder={t("filters.modals.size.placeholder.max")}
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
                     />
                     <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
@@ -303,13 +305,13 @@ export default function SizeFilterModal({ isOpen, onClose }) {
               {(tempMinSize || tempMaxSize) && (
                 <div className="p-3 bg-gray-50 rounded-lg">
                   <span className="text-sm text-gray-600">
-                    Size range: {" "}
+                    {t("filters.modals.size.range")}: {" "}
                     <span className="font-medium">
                       {tempMinSize && tempMaxSize
-                        ? `${tempMinSize} - ${tempMaxSize} m²`
+                        ? t("filters.modals.size.rangeFormat", { min: tempMinSize, max: tempMaxSize })
                         : tempMinSize
-                        ? `${tempMinSize}+ m²`
-                        : `Up to ${tempMaxSize} m²`
+                        ? t("filters.modals.size.overFormat", { size: tempMinSize })
+                        : t("filters.modals.size.upToFormat", { size: tempMaxSize })
                       }
                     </span>
                   </span>
@@ -322,7 +324,7 @@ export default function SizeFilterModal({ isOpen, onClose }) {
           {hasActiveSizeFilter && !showCustomRange && (
             <div className="p-3 bg-blue-50 rounded-lg">
               <span className="text-sm text-blue-800">
-                Current filter: <span className="font-medium">{getFormattedSizeRange()}</span>
+                {t("filters.modals.size.current")}: <span className="font-medium">{getFormattedSizeRange()}</span>
               </span>
             </div>
           )}
@@ -334,20 +336,20 @@ export default function SizeFilterModal({ isOpen, onClose }) {
             onClick={handleClear}
             className="text-brand-purple font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-brand-purple px-2 py-1 rounded-md text-sm sm:text-base"
           >
-            Clear
+            {t("filters.modals.size.actions.clear")}
           </button>
           <div className="flex gap-3">
             <button 
               onClick={onClose}
               className="px-4 sm:px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-purple transition-colors text-sm sm:text-base"
             >
-              Cancel
+              {t("filters.modals.size.actions.cancel")}
             </button>
             <button 
               onClick={handleApply}
               className="bg-brand-orange text-white rounded-lg px-4 sm:px-6 py-2 font-medium hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-orange transition-colors text-sm sm:text-base"
             >
-              Done
+              {t("filters.modals.size.actions.apply")}
             </button>
           </div>
         </div>

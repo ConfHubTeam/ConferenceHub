@@ -1,0 +1,98 @@
+{
+  "months": {
+    "january": "January",
+    "february": "February",
+    "march": "March",
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December"
+  },
+  "weekdays": {
+    "short": {
+      "sunday": "Su",
+      "monday": "Mo", 
+      "tuesday": "Tu",
+      "wednesday": "We",
+      "thursday": "Th",
+      "friday": "Fr",
+      "saturday": "Sa"
+    }
+  },
+  "guidance": {
+    "blockingMode": "✨ Click dates to toggle blocked/unblocked status",
+    "individualMode": "🎯 Select individual dates for booking",
+    "selectStart": "📅 Select your start date",
+    "selectEnd": "📅 Select your end date (hover to preview range)"
+  },
+  "legend": {
+    "title": "Availability Legend:",
+    "available": "Available",
+    "partiallyBooked": "Partially Booked",
+    "fullyBooked": "Fully Booked / Unavailable"
+  },
+  "dateSelection": {
+    "dateSelected": "date selected",
+    "datesSelected": "dates selected"
+  },
+  "placeAvailabilityCalendar": {
+    "title": {
+      "availabilityCalendar": "Availability Calendar",
+      "selectYourDates": "Select Your Dates"
+    },
+    "messages": {
+      "unauthenticatedInfo": "Select dates and time slots to see pricing. You'll need to login to complete booking.",
+      "hostAgentInfo": "Click on any date to see booking details"
+    }
+  },
+  "dateAvailabilityDetails": {
+    "title": "Daily Schedule",
+    "operatingHours": "Operating Hours",
+    "timeSlotAvailability": "Time Slot Availability",
+    "noTimeSlotsAvailable": "No time slots available for this date.",
+    "legend": {
+      "title": "Legend",
+      "booked": "Booked",
+      "cooldown": "Cooldown",
+      "notBookable": "Not bookable",
+      "dayEnd": "Day End",
+      "available": "Available"
+    },
+    "slotStatus": {
+      "booked": "Booked",
+      "bookedPast": "Booked (Past)",
+      "cooldown": "Cooldown",
+      "cooldownPast": "Cooldown (Past)",
+      "conflicts": "Conflicts",
+      "conflictsPast": "Conflicts (Past)",
+      "dayEnd": "Day End",
+      "available": "Available"
+    },
+    "cooldownInfo": {
+      "title": "Cooldown period:",
+      "afterEachBooking": "after each booking",
+      "timeUnits": {
+        "hour": "h",
+        "minute": "min"
+      }
+    },
+    "bookings": {
+      "title": "Bookings",
+      "bookedBy": "Booked by:",
+      "notes": "Notes:",
+      "status": {
+        "confirmed": "Confirmed",
+        "pending": "Pending",
+        "cancelled": "Cancelled"
+      }
+    },
+    "buttons": {
+      "close": "Close"
+    }
+  }
+}

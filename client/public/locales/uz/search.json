@@ -1,0 +1,333 @@
+{
+  "form": {
+    "when": "Qachon?",
+    "price": "Narx",
+    "attendees": "Ishtirokchilar",
+    "size": "O'lcham",
+    "search": "Qidirish",
+    "placeholders": {
+      "when": "Har qanday vaqt",
+      "price": "Har qanday narx",
+      "attendees": "Ishtirokchilar soni",
+      "size": "Konferentsiya o'lchami"
+    },
+    "aria_labels": {
+      "select_dates": "Sana va vaqtni tanlang",
+      "select_price": "Narx oralig'ini tanlang",
+      "select_attendees": "Ishtirokchilar sonini tanlang",
+      "select_size": "O'lchamni tanlang",
+      "search": "Qidirish"
+    },
+    "multiple_dates": "{{count}} ta sana tanlandi",
+    "multiple_dates_short": "{{count}} ta sana"
+  },
+  "title": "Qidiruv natijalari",
+  "subtitle": "Dam olish uchun mukammal joy toping",
+  "noResults": "Hech narsa topilmadi",
+  "resultsCount": "{{count}} ta joy topildi",
+  "resultsCount_plural": "{{count}} ta joy topildi",
+  "searchPlaceholder": "Qayerga bormoqchisiz?",
+  "search_results": {
+    "no_results": "Hech narsa topilmadi",
+    "no_results_description": "Ko'proq variantlar topish uchun filtrlarni o'zgartirib ko'ring"
+  },
+  "filters": {
+    "title": "Filtrlar",
+    "buttons": {
+      "when": "Qachon",
+      "price": "Narx",
+      "attendees": "Ishtirokchilar",
+      "size": "Hajmi",
+      "perks": "Qulayliklar",
+      "perks_with_count": "Qulayliklar ({{count}})",
+      "policies": "Qoidalar",
+      "policies_with_count": "Qoidalar ({{count}})",
+      "reset": "Tozalash",
+      "map": "Xarita",
+      "show_map": "Xaritani ko'rsatish",
+      "hide_map": "Xaritani yashirish",
+      "multiple_dates": "{{count}} sanalar",
+      "up_to": "Gacha",
+      "attendees_range": "{{min}}-{{max}} ishtirokchi",
+      "attendees_min": "{{min}}+ ishtirokchi",
+      "attendees_max": "{{max}} ishtirokchigacha",
+      "size_range": "{{min}}-{{max}} m²",
+      "size_min": "{{min}}+ m²",
+      "size_max": "{{max}} m²gacha"
+    },
+    "priceRange": "Narx oralig'i",
+    "propertyType": "Joy turi",
+    "amenities": "Qulayliklar",
+    "guestCount": "Mehmonlar soni",
+    "bedrooms": "Yotoq xonalari",
+    "bathrooms": "Hammomlar",
+    "instantBook": "Zudlik bilan band qilish",
+    "superhost": "Super uy egasi",
+    "clearAll": "Hammasini tozalash",
+    "apply": "Filtrlarni qo'llash",
+    "modals": {
+      "dateTime": {
+        "title": "Sana va vaqtni tanlang",
+        "startTime": "Boshlanish vaqti",
+        "endTime": "Tugash vaqti",
+        "clearAll": "Hammasini tozalash",
+        "apply": "Qo'llash"
+      },
+      "price": {
+        "title": "Narx oralig'i",
+        "subtitle": "Soliqlardan oldingi umumiy summa",
+        "min": "Minimum",
+        "max": "Maksimum",
+        "range": "Narx oralig'i",
+        "current": "Joriy filtr",
+        "upTo": "Gacha",
+        "upToFormat": "{{amount}} gacha",
+        "customRange": "Maxsus oraliq",
+        "presets": {
+          "upTo1M": "1 mln gacha",
+          "1M_3M": "1 mln - 3 mln",
+          "3M_5M": "3 mln - 5 mln",
+          "5M_10M": "5 mln - 10 mln",
+          "above10M": "10 mln dan yuqori"
+        },
+        "placeholder": {
+          "min": "Min",
+          "max": "Maks"
+        },
+        "validation": {
+          "minNegative": "Minimal narx manfiy bo'lishi mumkin emas",
+          "maxNegative": "Maksimal narx manfiy bo'lishi mumkin emas",
+          "minGreaterThanMax": "Minimal narx maksimal narxdan katta bo'lishi mumkin emas",
+          "invalidRange": "Maksimum minimumdan katta bo'lishi kerak",
+          "required": "Iltimos, to'g'ri narx qiymatlarini kiriting"
+        },
+        "actions": {
+          "clear": "Tozalash",
+          "cancel": "Bekor qilish",
+          "apply": "Tayyor",
+          "close": "Modalni yopish"
+        }
+      },
+      "attendees": {
+        "title": "Ishtirokchilar soni",
+        "subtitle": "Necha kishi ishtirok etadi?",
+        "min": "Minimal ishtirokchilar",
+        "max": "Maksimal ishtirokchilar",
+        "range": "Ishtirokchilar oralig'i",
+        "current": "Joriy filtr",
+        "upTo": "Gacha",
+        "over": "Dan ko'p",
+        "people": "kishi",
+        "upToFormat": "{{count}} kishi gacha",
+        "overFormat": "{{count}}+ kishi",
+        "rangeFormat": "{{min}} - {{max}} kishi",
+        "customRange": "Maxsus oraliq",
+        "presets": {
+          "1_10": "1-10 kishi",
+          "11_25": "11-25 kishi",
+          "26_50": "26-50 kishi",
+          "51_100": "51-100 kishi",
+          "100plus": "100 dan ortiq kishi"
+        },
+        "placeholder": {
+          "min": "Min",
+          "max": "Maks"
+        },
+        "validation": {
+          "minNegative": "Minimal ishtirokchilar 1 dan kam bo'lishi mumkin emas",
+          "maxNegative": "Maksimal ishtirokchilar 1 dan kam bo'lishi mumkin emas",
+          "minGreaterThanMax": "Minimal ishtirokchilar maksimaldan ko'p bo'lishi mumkin emas",
+          "invalidRange": "Maksimum minimumdan katta bo'lishi kerak",
+          "required": "Iltimos, to'g'ri ishtirokchilar sonini kiriting"
+        },
+        "actions": {
+          "clear": "Tozalash",
+          "cancel": "Bekor qilish",
+          "apply": "Tayyor",
+          "close": "Modalni yopish"
+        }
+      },
+      "size": {
+        "title": "Konferentsiya o'lchami",
+        "subtitle": "Kerakli joy o'lchamini tanlang",
+        "min": "Minimal o'lcham",
+        "max": "Maksimal o'lcham",
+        "range": "O'lcham oralig'i",
+        "current": "Joriy filtr",
+        "upToFormat": "{{size}} kv.m gacha",
+        "overFormat": "{{size}}+ kv.m",
+        "rangeFormat": "{{min}} - {{max}} kv.m",
+        "customRange": "Maxsus oraliq",
+        "presets": {
+          "small": "Kichik • ~50 kv.m",
+          "medium": "O'rta • 50–100 kv.m",
+          "large": "Katta • 100–300 kv.m",
+          "extraLarge": "Juda katta • 300–700 kv.m"
+        },
+        "placeholder": {
+          "min": "Min",
+          "max": "Maks"
+        },
+        "validation": {
+          "minNegative": "Minimal o'lcham manfiy bo'lishi mumkin emas",
+          "maxNegative": "Maksimal o'lcham manfiy bo'lishi mumkin emas",
+          "minGreaterThanMax": "Minimal o'lcham maksimal o'lchamdan katta bo'lishi mumkin emas",
+          "invalidRange": "Maksimum minimumdan katta bo'lishi kerak",
+          "required": "Iltimos, to'g'ri o'lcham qiymatlarini kiriting"
+        },
+        "actions": {
+          "clear": "Tozalash",
+          "cancel": "Bekor qilish",
+          "apply": "Tayyor",
+          "close": "Modalni yopish"
+        }
+      },
+      "perks": {
+        "title": "Qulayliklar bo'yicha filtrlash",
+        "subtitle": "Qanday qulayliklar kerak?",
+        "clearAll": "Hammasini tozalash",
+        "showAllPerks": "Barcha qulayliklarni ko'rsatish",
+        "backToPopular": "Mashhur qulayliklarga qaytish",
+        "noPerksSelected": "Hech qanday qulaylik tanlanmagan",
+        "perksSelected": "{{count}} ta qulaylik tanlandi",
+        "perksSelected_plural": "{{count}} ta qulaylik tanlandi",
+        "categories": {
+          "Audio_Equipment": "Audio jihozlar",
+          "Visual_Equipment": "Vizual jihozlar", 
+          "Technical_Equipment": "Texnik jihozlar",
+          "Furniture": "Mebel",
+          "Miscellaneous": "Boshqalar",
+          "Safety": "Xavfsizlik",
+          "Services": "Xizmatlar"
+        },
+        "items": {
+          "speakerMic": "Ma'ruzachi mikrofoni",
+          "backupMic": "Zaxira mikrofon",
+          "speaker": "Karnay",
+          "mixer": "Mikser",
+          "soundControl": "Tovush boshqaruv paneli",
+          "amplifier": "Kuchaytirgich",
+          "acoustic": "Xona akustik tozalash",
+          "projector": "Proyektor",
+          "ledScreen": "LED ekran",
+          "projectorScreen": "Proyektor ekrani",
+          "hdmiCable": "HDMI kabel",
+          "vgaCable": "VGA kabel",
+          "adapters": "Adapterlar va konverterlar",
+          "clicker": "Taqdimot clickeri",
+          "laserPointer": "Lazer ko'rsatgich",
+          "stageLighting": "Sahna yoritish",
+          "laptop": "Noutbuk",
+          "desktop": "Kompyuter",
+          "extensionCords": "Uzatma kabellar",
+          "chargers": "Zaryadlovchilar",
+          "wiredInternet": "Simli internet",
+          "wifi": "Wi-Fi",
+          "router": "Router",
+          "wifiAccessPoint": "Wi-Fi kirish nuqtasi",
+          "speakerPodium": "Ma'ruzachi tribunasi",
+          "speakerTable": "Ma'ruzachilar uchun stol",
+          "speakerChair": "Ma'ruzachilar uchun stul",
+          "participantChairs": "Ishtirokchilar uchun stullar",
+          "participantDesks": "Ishtirokchilar uchun stollar",
+          "bottledWater": "Shishali suv 0.5L",
+          "waterCooler": "Sovutgichdan suv",
+          "cups": "Stakanlar",
+          "nameTags": "Ism belgilari",
+          "flipChart": "Flip chart",
+          "markers": "Markerlar",
+          "paper": "Qog'oz",
+          "airConditioner": "Konditsioner",
+          "ventilation": "Ventilyatsiya tizimi",
+          "signage": "Yo'nalish belgilari",
+          "registrationDesk": "Ro'yxatdan o'tish stoli",
+          "fireExtinguisher": "O't o'chiruvchi",
+          "firstAidKit": "Birinchi yordam to'plami",
+          "evacuationSigns": "Evakuatsiya belgilari",
+          "catering": "Ovqatlanish xizmati mavjud",
+          "coffee": "Kofe xizmati",
+          "parking": "O'z parkingimiz",
+          "pets": "Uy hayvonlariga ruxsat",
+          "entrance": "Shaxsiy kirish",
+          "kitchen": "Oshxonaga kirish"
+        },
+        "actions": {
+          "clear": "Tozalash",
+          "cancel": "Bekor qilish",
+          "apply": "Filtrlarni qo'llash",
+          "close": "Modalni yopish"
+        }
+      },
+      "policy": {
+        "title": "Qaytarib berish",
+        "subtitle": "Afzal ko'rgan shartlarni tanlang",
+        "clearAll": "Hammasini tozalash",
+        "noPoliciesSelected": "Hech qanday siyosat tanlanmagan",
+        "policiesSelected": "{{count}} ta siyosat tanlandi",
+        "policiesSelected_plural": "{{count}} ta siyosat tanlandi",
+        "noPoliciesAvailable": "Siyosatlar mavjud emas",
+        "noPoliciesFound": "Siyosatlar topilmadi",
+        "policies": {
+          "flexible_14_day": "Moslashuvchan 14 kun",
+          "moderate_7_day": "O'rtacha 7 kun",
+          "strict": "Qattiq",
+          "non_refundable": "Qaytarib bo'lmaydigan",
+          "reschedule_only": "Faqat vaqtni o'zgartirish",
+          "super_strict_30": "Juda qattiq 30 kun",
+          "super_strict_60": "Juda qattiq 60 kun",
+          "client_protection_plan": "Mijoz himoya rejasi",
+          "instant_book": "Zudlik bilan bron qilish",
+          "verified_host": "Tasdiqlangan uy egasi"
+        },
+        "descriptions": {
+          "flexible_14_day": "14+ kun oldin bekor qilsangiz, to'liq qaytarim",
+          "moderate_7_day": "7+ kun oldin bekor qilsangiz, 50% qaytarim",
+          "strict": "6 kundan kam vaqt oldin bekor qilsangiz, qaytarim yo'q",
+          "non_refundable": "Hech qanday qaytarim yo'q",
+          "reschedule_only": "Qaytarim yo'q, lekin 3+ kun oldin xabar bergan holda vaqtni o'zgartirish mumkin",
+          "super_strict_30": "30+ kun oldin bekor qilsangiz, to'liq qaytarim",
+          "super_strict_60": "60+ kun oldin bekor qilsangiz, to'liq qaytarim",
+          "client_protection_plan": "Qo'shimcha himoya va sug'urta",
+          "instant_book": "Tasdiqlashni kutmasdan darhol bron qiling",
+          "verified_host": "Faqat tasdiqlangan joy egalarini ko'rsatish"
+        },
+        "actions": {
+          "clear": "Tozalash",
+          "cancel": "Bekor qilish",
+          "apply": "Filtrlarni qo'llash",
+          "close": "Modalni yopish"
+        }
+      }
+    }
+  },
+  "sorting": {
+    "title": "Saralash",
+    "recommended": "Tavsiya etilgan",
+    "priceAsc": "Narx: Pastdan yuqoriga",
+    "priceDesc": "Narx: Yuqoridan pastga",
+    "rating": "Eng yuqori baholi",
+    "newest": "Eng yangi"
+  },
+  "map": {
+    "showMap": "Xaritani ko'rsatish",
+    "hideMap": "Xaritani yashirish",
+    "listView": "Ro'yxat ko'rinishi",
+    "mapView": "Xarita ko'rinishi"
+  },
+  "pagination": {
+    "previous": "Oldingi",
+    "next": "Keyingi",
+    "page": "{{page}} sahifa",
+    "loadMore": "Ko'proq natijalar yuklash"
+  },
+  "error": {
+    "loadFailed": "Qidiruv natijalarini yuklashda xatolik",
+    "retry": "Qayta urinish",
+    "noConnection": "Internet aloqangizni tekshiring"
+  },
+  "loading": {
+    "searching": "Qidirmoqda...",
+    "loadingMore": "Ko'proq natijalar yuklanmoqda...",
+    "applying": "Filtrlar qo'llanmoqda..."
+  }
+}

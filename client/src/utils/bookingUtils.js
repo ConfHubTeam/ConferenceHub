@@ -178,13 +178,14 @@ export const isBookingEditable = (booking, user) => {
 };
 
 /**
- * Get booking action buttons configuration
+ * Get action buttons available for a booking based on user permissions and booking status
  * @param {Object} booking - Booking object
- * @param {Object} user - Current user
- * @param {Array} competingBookings - Array of competing bookings (optional)
+ * @param {Object} user - Current user object
+ * @param {Array} competingBookings - Array of competing bookings
+ * @param {Function} t - Translation function
  * @returns {Object} Object with buttons array and optional note
  */
-export const getBookingActionButtons = (booking, user, competingBookings = []) => {
+export const getBookingActionButtons = (booking, user, competingBookings = [], t = (key) => key) => {
   const buttons = [];
   let note = null;
   
@@ -201,11 +202,11 @@ export const getBookingActionButtons = (booking, user, competingBookings = []) =
   // Select button for hosts/agents on pending bookings
   if (canPerformBookingAction(user, booking, "select", competingBookings)) {
     buttons.push({
-      label: "Select",
+      label: t('details.actions.buttons.select'),
       action: "selected",
       variant: "primary",
       icon: "check-circle",
-      description: "Select this booking to enable client payment"
+      description: t('details.actions.confirmations.select')
     });
   }
   
@@ -219,7 +220,7 @@ export const getBookingActionButtons = (booking, user, competingBookings = []) =
     if (isPending && hasSelectedCompetitor) {
       // For pending bookings with selected competitors - disable approve
       buttons.push({
-        label: "Approve",
+        label: t('details.actions.buttons.approve'),
         action: "approved",
         variant: "secondary",
         icon: "check",
@@ -232,7 +233,7 @@ export const getBookingActionButtons = (booking, user, competingBookings = []) =
     } else if (isSelected && isHost) {
       // For hosts on selected bookings: Approve button is disabled (waiting for payment)
       buttons.push({
-        label: "Approve",
+        label: t('details.actions.buttons.approve'),
         action: "approved",
         variant: "secondary",
         icon: "check",
@@ -242,22 +243,22 @@ export const getBookingActionButtons = (booking, user, competingBookings = []) =
     } else if (isSelected && isAgent) {
       // For agents on selected bookings: Approve button is available
       buttons.push({
-        label: "Approve",
+        label: t('details.actions.buttons.approve'),
         action: "approved",
         variant: "success",
         icon: "check",
         requiresPaymentCheck: false, 
         agentApproval: true, 
-        description: "Approve booking (marks payment and approval complete)"
+        description: t('details.actions.confirmations.approve')
       });
     } else if (isPending && isAgent) {
       // For agents on pending bookings: Approve button is always available
       buttons.push({
-        label: "Approve",
+        label: t('details.actions.buttons.approve'),
         action: "approved",
         variant: "success",
         icon: "check",
-        description: "Approve booking request"
+        description: t('details.actions.confirmations.approve')
       });
     }
   }
@@ -265,33 +266,33 @@ export const getBookingActionButtons = (booking, user, competingBookings = []) =
   // Reject button
   if (canPerformBookingAction(user, booking, "reject", competingBookings)) {
     buttons.push({
-      label: "Reject",
+      label: t('details.actions.buttons.reject'),
       action: "rejected",
       variant: "danger",
       icon: "x",
-      description: "Reject this booking request"
+      description: t('details.actions.confirmations.reject')
     });
   }
   
   // Cancel button for clients
   if (canPerformBookingAction(user, booking, "cancel", competingBookings)) {
     buttons.push({
-      label: "Cancel",
+      label: t('details.actions.buttons.cancel'),
       action: "rejected",
       variant: "danger",
       icon: "x",
-      description: "Cancel your booking request"
+      description: t('details.actions.confirmations.cancel')
     });
   }
 
   // Paid to Host button for agents on approved unpaid bookings
   if (canMarkPaidToHost(user, booking)) {
     buttons.push({
-      label: "Mark Paid to Host",
+      label: t('details.actions.buttons.markPaid'),
       action: "paid_to_host",
       variant: "primary",
       icon: "dollar-sign",
-      description: "Mark payment to host as complete"
+      description: t('details.actions.confirmations.markPaid')
     });
   }
   

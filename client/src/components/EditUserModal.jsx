@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import CustomPhoneInput from "./CustomPhoneInput";
 import { isValidPhoneNumber, isPossiblePhoneNumber } from "react-phone-number-input";
+import { withTranslationLoading } from "../i18n/hoc/withTranslationLoading";
 
-export default function EditUserModal({ isOpen, onClose, onSave, user, isSaving }) {
+function EditUserModal({ isOpen, onClose, onSave, user, isSaving }) {
+  const { t } = useTranslation("profile");
   const [formData, setFormData] = useState({
     name: "",
     phoneNumber: ""
@@ -27,7 +30,7 @@ export default function EditUserModal({ isOpen, onClose, onSave, user, isSaving 
     
     // Validate name
     if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
+      newErrors.name = t("fields.fullName.required");
     }
 
     // Validate phone number if provided
@@ -35,12 +38,12 @@ export default function EditUserModal({ isOpen, onClose, onSave, user, isSaving 
       try {
         // Check if phone number is valid for the selected country
         if (!isPossiblePhoneNumber(formData.phoneNumber)) {
-          newErrors.phoneNumber = "Please enter a valid phone number";
+          newErrors.phoneNumber = t("fields.phoneNumber.validation.invalid");
         } else if (!isValidPhoneNumber(formData.phoneNumber)) {
-          newErrors.phoneNumber = "Please enter a valid phone number for the selected country";
+          newErrors.phoneNumber = t("fields.phoneNumber.validation.invalidCountry");
         }
       } catch (error) {
-        newErrors.phoneNumber = "Please enter a valid phone number";
+        newErrors.phoneNumber = t("fields.phoneNumber.validation.invalid");
       }
     }
 
@@ -92,11 +95,11 @@ export default function EditUserModal({ isOpen, onClose, onSave, user, isSaving 
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">Edit User</h2>
+            <h2 className="text-xl font-semibold text-gray-900">{t("editModal.title")}</h2>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-sm text-gray-600">ID: {user.id}</span>
+              <span className="text-sm text-gray-600">{t("editModal.userId", { id: user.id })}</span>
               <span className={`px-2 py-0.5 text-xs rounded-full ${getUserTypeClass(user.userType)}`}>
-                {user.userType.charAt(0).toUpperCase() + user.userType.slice(1)}
+                {t(`editModal.userType.${user.userType}`, user.userType.charAt(0).toUpperCase() + user.userType.slice(1))}
               </span>
             </div>
           </div>
@@ -117,21 +120,21 @@ export default function EditUserModal({ isOpen, onClose, onSave, user, isSaving 
             {/* Email (Read-only) */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email Address
+                {t("fields.email.label")}
               </label>
               <input
                 type="email"
-                value={user.email || "No email"}
+                value={user.email || t("fields.email.noEmail")}
                 disabled
                 className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
               />
-              <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+              <p className="text-xs text-gray-500 mt-1">{t("fields.email.cannotChange")}</p>
             </div>
 
             {/* Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Full Name *
+                {t("fields.fullName.label")} *
               </label>
               <input
                 type="text"
@@ -142,7 +145,7 @@ export default function EditUserModal({ isOpen, onClose, onSave, user, isSaving 
                 className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 ${
                   errors.name ? "border-red-300 focus:ring-red-500" : "border-gray-300"
                 }`}
-                placeholder="Enter full name"
+                placeholder={t("fields.fullName.placeholder")}
               />
               {errors.name && (
                 <p className="text-sm text-red-600 mt-1">{errors.name}</p>
@@ -152,20 +155,20 @@ export default function EditUserModal({ isOpen, onClose, onSave, user, isSaving 
             {/* Phone Number */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Phone Number
+                {t("fields.phoneNumber.label")}
               </label>
               <CustomPhoneInput
                 value={formData.phoneNumber}
                 onChange={handlePhoneChange}
                 disabled={isSaving}
                 className={`w-full ${errors.phoneNumber ? "border-red-300" : ""}`}
-                placeholder="Enter phone number"
+                placeholder={t("fields.phoneNumber.placeholder")}
               />
               {errors.phoneNumber && (
                 <p className="text-sm text-red-600 mt-1">{errors.phoneNumber}</p>
               )}
               <p className="text-xs text-gray-500 mt-1">
-                Enter phone number in international format (e.g., +998901234567). Leave empty to remove phone number.
+                {t("fields.phoneNumber.help")}
               </p>
             </div>
           </div>
@@ -178,7 +181,7 @@ export default function EditUserModal({ isOpen, onClose, onSave, user, isSaving 
               disabled={isSaving}
               className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 transition-colors"
             >
-              Cancel
+              {t("actions.cancel")}
             </button>
             <button
               type="submit"
@@ -190,10 +193,10 @@ export default function EditUserModal({ isOpen, onClose, onSave, user, isSaving 
                   <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
-                  Saving...
+                  {t("actions.saving")}
                 </>
               ) : (
-                "Save Changes"
+                t("actions.saveChanges")
               )}
             </button>
           </div>
@@ -202,3 +205,5 @@ export default function EditUserModal({ isOpen, onClose, onSave, user, isSaving 
     </div>
   );
 }
+
+export default withTranslationLoading(EditUserModal, ["profile"]);

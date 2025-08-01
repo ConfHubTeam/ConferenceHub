@@ -9,7 +9,7 @@ function IndexPageLayout() {
   return (
     <div className="flex flex-col h-screen overflow-hidden">
       <div className={`${isMobileMapView ? 'fixed w-full' : 'sticky'} top-0 z-[60] bg-white flex-shrink-0`}>
-        <div className="py-5 border-b border-gray-200">
+        <div className="py-5 border-b border-gray-200 pb-2">
           <Header />
         </div>
         <FilterRow 

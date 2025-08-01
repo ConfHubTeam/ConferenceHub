@@ -1,11 +1,16 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useDateTimeFilter } from "../contexts/DateTimeFilterContext";
 import { usePriceFilter } from "../contexts/PriceFilterContext";
-import { useAttendeesFilter } from "../contexts/AttendeesFilterContext";
-import { useSizeFilter } from "../contexts/SizeFilterContext";
+import { useAttendeesFilter, ATTENDEES_RANGES } from "../contexts/AttendeesFilterContext";
+import { useSizeFilter, SIZE_RANGES } from "../contexts/SizeFilterContext";
 import { usePerksFilter } from "../contexts/PerksFilterContext";
 import { usePoliciesFilter } from "../contexts/PoliciesFilterContext";
+import { formatCurrency, getCurrencySymbol } from "../utils/currencyUtils";
+import { formatHourTo12 } from "../utils/TimeUtils";
+import { format } from "date-fns";
+import { enUS, ru, uz } from "date-fns/locale";
 import DateTimeFilterModal from "./DateTimeFilterModal";
 import PriceFilterModal from "./PriceFilterModal";
 import AttendeesFilterModal from "./AttendeesFilterModal";
@@ -19,6 +24,8 @@ export default function FilterRow({
   showMobileMap, 
   isMobileMapView 
 }) {
+  const { t, i18n } = useTranslation("search");
+  
   // State for modal visibility
   const [isDateTimeModalOpen, setIsDateTimeModalOpen] = useState(false);
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
@@ -36,22 +43,168 @@ export default function FilterRow({
   const location = useLocation();
   
   // Get date/time filter state from context
-  const { getFormattedDateTime, hasActiveDateTimeFilter, clearDateTimeFilter } = useDateTimeFilter();
+  const { 
+    selectedDates, 
+    startTime, 
+    endTime, 
+    hasActiveDateTimeFilter, 
+    clearDateTimeFilter 
+  } = useDateTimeFilter();
   
   // Get price filter state from context
-  const { getFormattedPriceRange, hasActivePriceFilter, clearPriceFilter } = usePriceFilter();
+  const { 
+    minPrice, 
+    maxPrice, 
+    selectedCurrency,
+    hasActivePriceFilter, 
+    clearPriceFilter 
+  } = usePriceFilter();
   
   // Get attendees filter state from context
-  const { getFormattedAttendeesRange, hasActiveAttendeesFilter, clearAttendeesFilter } = useAttendeesFilter();
+  const { 
+    minAttendees, 
+    maxAttendees, 
+    selectedRangeId: attendeesRangeId,
+    hasActiveAttendeesFilter, 
+    clearAttendeesFilter 
+  } = useAttendeesFilter();
   
   // Get size filter state from context
-  const { getFormattedSizeRange, hasActiveSizeFilter, clearSizeFilter } = useSizeFilter();
+  const { 
+    minSize, 
+    maxSize, 
+    selectedRangeId: sizeRangeId,
+    hasActiveSizeFilter, 
+    clearSizeFilter 
+  } = useSizeFilter();
   
   // Get perks filter state from context
   const { hasSelectedPerks, selectedPerksCount, clearAllPerks } = usePerksFilter();
   
   // Get policies filter state from context
   const { hasSelectedPolicies, selectedPoliciesCount, clearAllPolicies } = usePoliciesFilter();
+  
+  // Get appropriate locale for date formatting
+  const getDateLocale = () => {
+    switch (i18n.language) {
+      case 'ru': return ru;
+      case 'uz': return uz;
+      default: return enUS;
+    }
+  };
+  
+  // Formatting functions with translation support
+  const getFormattedDateTime = () => {
+    if (selectedDates.length === 0) return "";
+    if (selectedDates.length === 1) {
+      const formattedDate = format(selectedDates[0], "MMM d", { locale: getDateLocale() });
+      // Include time information if available
+      if (startTime && endTime) {
+        return `${formattedDate}, ${formatHourTo12(startTime)}-${formatHourTo12(endTime)}`;
+      }
+      return formattedDate;
+    }
+    return t("filters.buttons.multiple_dates", { count: selectedDates.length });
+  };
+  
+  const getFormattedPriceRange = () => {
+    if (!selectedCurrency) return "";
+    
+    const symbol = getCurrencySymbol(selectedCurrency);
+    const hasMin = minPrice !== null && minPrice !== undefined && minPrice !== "";
+    const hasMax = maxPrice !== null && maxPrice !== undefined && maxPrice !== "";
+
+    if (!hasMin && !hasMax) return "";
+
+    if (hasMin && hasMax) {
+      const formattedMin = formatCurrency(minPrice, selectedCurrency);
+      const formattedMax = formatCurrency(maxPrice, selectedCurrency);
+      
+      if (selectedCurrency.charCode === "USD") {
+        return `${symbol}${formattedMin} - ${symbol}${formattedMax}`;
+      } else {
+        return `${formattedMin} - ${formattedMax} ${symbol}`;
+      }
+    } else if (hasMin) {
+      const formattedMin = formatCurrency(minPrice, selectedCurrency);
+      
+      if (selectedCurrency.charCode === "USD") {
+        return `${symbol}${formattedMin}+`;
+      } else {
+        return `${formattedMin}+ ${symbol}`;
+      }
+    } else if (hasMax) {
+      const formattedMax = formatCurrency(maxPrice, selectedCurrency);
+      
+      if (selectedCurrency.charCode === "USD") {
+        // Handle Uzbek word order: "amount gacha" instead of "Up to amount"
+        if (i18n.language === "uz") {
+          return `${symbol}${formattedMax} ${t("filters.buttons.up_to")}`;
+        } else {
+          return `${t("filters.buttons.up_to")} ${symbol}${formattedMax}`;
+        }
+      } else {
+        // Handle Uzbek word order: "amount gacha" instead of "Up to amount"
+        if (i18n.language === "uz") {
+          return `${formattedMax} ${symbol} ${t("filters.buttons.up_to")}`;
+        } else {
+          return `${t("filters.buttons.up_to")} ${formattedMax} ${symbol}`;
+        }
+      }
+    }
+
+    return "";
+  };
+  
+  const getFormattedAttendeesRange = () => {
+    const hasMin = minAttendees !== null && minAttendees !== undefined;
+    const hasMax = maxAttendees !== null && maxAttendees !== undefined;
+
+    if (!hasMin && !hasMax) return "";
+
+    // Check for predefined ranges with translation keys
+    if (attendeesRangeId && attendeesRangeId !== "custom") {
+      // Convert hyphen to underscore for translation keys
+      const translationKey = attendeesRangeId.replace(/-/g, "_").replace(/\+/g, "plus");
+      return t(`filters.modals.attendees.presets.${translationKey}`);
+    }
+
+    // Custom formatting with translations
+    if (hasMin && hasMax) {
+      return t("filters.buttons.attendees_range", { min: minAttendees, max: maxAttendees });
+    } else if (hasMin) {
+      return t("filters.buttons.attendees_min", { min: minAttendees });
+    } else if (hasMax) {
+      return t("filters.buttons.attendees_max", { max: maxAttendees });
+    }
+
+    return "";
+  };
+  
+  const getFormattedSizeRange = () => {
+    const hasMin = minSize !== null && minSize !== undefined;
+    const hasMax = maxSize !== null && maxSize !== undefined;
+
+    if (!hasMin && !hasMax) return "";
+
+    // Check for predefined ranges with translation keys
+    if (sizeRangeId && sizeRangeId !== "custom") {
+      // Convert "extra-large" to "extraLarge" for translation keys
+      const translationKey = sizeRangeId === "extra-large" ? "extraLarge" : sizeRangeId;
+      return t(`filters.modals.size.presets.${translationKey}`);
+    }
+
+    // Custom formatting with translations
+    if (hasMin && hasMax) {
+      return t("filters.buttons.size_range", { min: minSize, max: maxSize });
+    } else if (hasMin) {
+      return t("filters.buttons.size_min", { min: minSize });
+    } else if (hasMax) {
+      return t("filters.buttons.size_max", { max: maxSize });
+    }
+
+    return "";
+  };
   
   // Check if any filter is active
   const hasAnyActiveFilter = hasActiveDateTimeFilter || hasActivePriceFilter || hasActiveAttendeesFilter || hasActiveSizeFilter || hasSelectedPerks || hasSelectedPolicies;
@@ -170,7 +323,7 @@ export default function FilterRow({
                   }`}
                 >
                   <div className="truncate max-w-[100px]">
-                    {hasActiveDateTimeFilter ? getFormattedDateTime() : "When"}
+                    {hasActiveDateTimeFilter ? getFormattedDateTime() : t("filters.buttons.when")}
                   </div>
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -186,7 +339,7 @@ export default function FilterRow({
                   }`}
                 >
                   <div className="truncate max-w-[100px]">
-                    {hasActivePriceFilter ? getFormattedPriceRange() : "Price"}
+                    {hasActivePriceFilter ? getFormattedPriceRange() : t("filters.buttons.price")}
                   </div>
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -202,7 +355,7 @@ export default function FilterRow({
                   }`}
                 >
                   <div className="truncate max-w-[100px]">
-                    {hasActiveAttendeesFilter ? getFormattedAttendeesRange() : "Attendees"}
+                    {hasActiveAttendeesFilter ? getFormattedAttendeesRange() : t("filters.buttons.attendees")}
                   </div>
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -218,7 +371,7 @@ export default function FilterRow({
                   }`}
                 >
                   <div className="truncate max-w-[100px]">
-                    {hasActiveSizeFilter ? getFormattedSizeRange() : "Size"}
+                    {hasActiveSizeFilter ? getFormattedSizeRange() : t("filters.buttons.size")}
                   </div>
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -234,7 +387,7 @@ export default function FilterRow({
                   }`}
                 >
                   <div className="truncate max-w-[100px]">
-                    {hasSelectedPerks ? `Perks (${selectedPerksCount})` : "Perks"}
+                    {hasSelectedPerks ? t("filters.buttons.perks_with_count", { count: selectedPerksCount }) : t("filters.buttons.perks")}
                   </div>
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -250,7 +403,7 @@ export default function FilterRow({
                   }`}
                 >
                   <div className="truncate max-w-[100px]">
-                    {hasSelectedPolicies ? `Policies (${selectedPoliciesCount})` : "Policies"}
+                    {hasSelectedPolicies ? t("filters.buttons.policies_with_count", { count: selectedPoliciesCount }) : t("filters.buttons.policies")}
                   </div>
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -266,7 +419,7 @@ export default function FilterRow({
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                    Reset
+                    {t("filters.buttons.reset")}
                   </button>
                 )}
                 
@@ -311,7 +464,7 @@ export default function FilterRow({
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                 </svg>
-                Map
+                {t("filters.buttons.map")}
               </button>
             </div>
           )}
@@ -320,20 +473,23 @@ export default function FilterRow({
 
       {/* Desktop: Single row */}
       <div className="hidden md:flex items-center justify-between w-full min-w-0">
-        {/* Left side - Filters aligned to the left */}
-        <div className="flex items-center space-x-2 flex-shrink-0">
-          {/* Filter buttons */}
-          <div className="flex items-center space-x-2">
+        {/* Left side - Filters aligned to the left with overflow scroll */}
+        <div className="flex items-center flex-1 min-w-0 mr-4">
+          {/* Scrollable filter container */}
+          <div className="relative flex-1 min-w-0">
+            <div className="overflow-x-auto scrollbar-hide">
+              <div className="flex items-center space-x-2 pb-1">
+                {/* Filter buttons */}
             <button 
               onClick={openDateTimeModal}
-              className={`flex px-4 py-2 items-center transition-all duration-200 border rounded-full ${
+              className={`flex px-4 py-2 items-center transition-all duration-200 border rounded-full flex-shrink-0 whitespace-nowrap ${
                 hasActiveDateTimeFilter 
                   ? "bg-brand-orange text-white border-brand-orange" 
                   : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
               }`}
             >
               <div className="truncate max-w-[250px]">
-                {hasActiveDateTimeFilter ? getFormattedDateTime() : "When"}
+                {hasActiveDateTimeFilter ? getFormattedDateTime() : t("filters.buttons.when")}
               </div>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -341,14 +497,14 @@ export default function FilterRow({
             </button>
             <button 
               onClick={openPriceModal}
-              className={`flex px-4 py-2 items-center transition-all duration-200 border rounded-full ${
+              className={`flex px-4 py-2 items-center transition-all duration-200 border rounded-full flex-shrink-0 whitespace-nowrap ${
                 hasActivePriceFilter 
                   ? "bg-brand-orange text-white border-brand-orange" 
                   : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
               }`}
             >
               <div className="truncate max-w-[200px]">
-                {hasActivePriceFilter ? getFormattedPriceRange() : "Price"}
+                {hasActivePriceFilter ? getFormattedPriceRange() : t("filters.buttons.price")}
               </div>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -356,14 +512,14 @@ export default function FilterRow({
             </button>
             <button 
               onClick={openAttendeesModal}
-              className={`flex px-4 py-2 items-center transition-all duration-200 border rounded-full ${
+              className={`flex px-4 py-2 items-center transition-all duration-200 border rounded-full flex-shrink-0 whitespace-nowrap ${
                 hasActiveAttendeesFilter 
                   ? "bg-brand-orange text-white border-brand-orange" 
                   : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
               }`}
             >
               <div className="truncate max-w-[150px]">
-                {hasActiveAttendeesFilter ? getFormattedAttendeesRange() : "Attendees"}
+                {hasActiveAttendeesFilter ? getFormattedAttendeesRange() : t("filters.buttons.attendees")}
               </div>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -371,14 +527,14 @@ export default function FilterRow({
             </button>
             <button 
               onClick={openSizeModal}
-              className={`flex px-4 py-2 items-center transition-all duration-200 border rounded-full ${
+              className={`flex px-4 py-2 items-center transition-all duration-200 border rounded-full flex-shrink-0 whitespace-nowrap ${
                 hasActiveSizeFilter 
                   ? "bg-brand-orange text-white border-brand-orange" 
                   : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
               }`}
             >
               <div className="truncate max-w-[150px]">
-                {hasActiveSizeFilter ? getFormattedSizeRange() : "Size"}
+                {hasActiveSizeFilter ? getFormattedSizeRange() : t("filters.buttons.size")}
               </div>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -386,14 +542,14 @@ export default function FilterRow({
             </button>
             <button 
               onClick={openPerksModal}
-              className={`flex px-4 py-2 items-center transition-all duration-200 border rounded-full ${
+              className={`flex px-4 py-2 items-center transition-all duration-200 border rounded-full flex-shrink-0 whitespace-nowrap ${
                 hasSelectedPerks 
                   ? "bg-brand-orange text-white border-brand-orange" 
                   : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
               }`}
             >
               <div className="truncate max-w-[150px]">
-                {hasSelectedPerks ? `Perks (${selectedPerksCount})` : "Perks"}
+                {hasSelectedPerks ? t("filters.buttons.perks_with_count", { count: selectedPerksCount }) : t("filters.buttons.perks")}
               </div>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -401,14 +557,14 @@ export default function FilterRow({
             </button>
             <button 
               onClick={openPolicyModal}
-              className={`flex px-4 py-2 items-center transition-all duration-200 border rounded-full ${
+              className={`flex px-4 py-2 items-center transition-all duration-200 border rounded-full flex-shrink-0 whitespace-nowrap ${
                 hasSelectedPolicies 
                   ? "bg-brand-orange text-white border-brand-orange" 
                   : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
               }`}
             >
               <div className="truncate max-w-[150px]">
-                {hasSelectedPolicies ? `Policies (${selectedPoliciesCount})` : "Policies"}
+                {hasSelectedPolicies ? t("filters.buttons.policies_with_count", { count: selectedPoliciesCount }) : t("filters.buttons.policies")}
               </div>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -419,14 +575,19 @@ export default function FilterRow({
             {hasAnyActiveFilter && (
               <button 
                 onClick={handleResetAllFilters}
-                className="flex px-4 py-2 bg-orange-50 hover:bg-orange-100 text-orange-600 hover:text-orange-700 items-center transition-all duration-200 border border-orange-200 hover:border-orange-300 rounded-full"
+                className="flex px-4 py-2 bg-orange-50 hover:bg-orange-100 text-orange-600 hover:text-orange-700 items-center transition-all duration-200 border border-orange-200 hover:border-orange-300 rounded-full whitespace-nowrap"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
-                Reset
+                {t("filters.buttons.reset")}
               </button>
             )}
+                
+                {/* End spacer for smooth scrolling */}
+                <div className="w-4 flex-shrink-0"></div>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -443,7 +604,7 @@ export default function FilterRow({
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
               </svg>
-              {isMapVisible ? "Hide map" : "Show map"}
+              {isMapVisible ? t("filters.buttons.hide_map") : t("filters.buttons.show_map")}
             </button>
           )}
         </div>

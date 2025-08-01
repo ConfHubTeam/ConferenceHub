@@ -33,6 +33,32 @@ api.interceptors.request.use(
   }
 );
 
+// Add response interceptor to handle authentication errors and extract tokens
+api.interceptors.response.use(
+  (response) => {
+    // Check if response contains a new token cookie and sync to localStorage
+    if (response.config.url?.includes('/auth/login') && response.data?.id) {
+      // For login responses, check if we have a token in cookies
+      const cookies = document.cookie.split(';');
+      const tokenCookie = cookies.find(cookie => cookie.trim().startsWith('token='));
+      if (tokenCookie) {
+        const token = tokenCookie.split('=')[1];
+        localStorage.setItem('token', token);
+      }
+    }
+    return response;
+  },
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token is invalid or expired, clear it
+      localStorage.removeItem('token');
+      // Don't automatically redirect to login, let components handle it
+      console.warn('Authentication token expired or invalid');
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;
 
 // Utility function to get password requirements

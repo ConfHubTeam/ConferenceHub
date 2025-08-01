@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback, useMemo } from "react";
 import { format, isValid, parseISO } from "date-fns";
+import { useTranslation } from "react-i18next";
 import { formatSimpleDate } from "../utils/dateUtils";
 import { formatHourTo12, formatHourTo24 } from "../utils/TimeUtils";
 
@@ -29,6 +30,7 @@ export const useDateTimeFilter = () => {
  * @returns {React.ReactElement} Provider component
  */
 export const DateTimeFilterProvider = ({ children }) => {
+  const { t } = useTranslation("search");
   // State for selected dates and time ranges (using Uzbekistan timezone for date awareness)
   const [selectedDates, setSelectedDates] = useState([]);
   const [startTime, setStartTime] = useState("00:00"); // Default to 12:00 AM (midnight)
@@ -97,8 +99,8 @@ export const DateTimeFilterProvider = ({ children }) => {
   const getFormattedDate = useCallback(() => {
     if (selectedDates.length === 0) return "";
     if (selectedDates.length === 1) return formatSimpleDate(selectedDates[0]);
-    return `${selectedDates.length} dates selected`;
-  }, [selectedDates]);
+    return t("form.multiple_dates", { count: selectedDates.length });
+  }, [selectedDates, t]);
 
   /**
    * Formats the selected time range for display
@@ -119,14 +121,14 @@ export const DateTimeFilterProvider = ({ children }) => {
 
   /**
    * Gets combined formatted date and time for display
-   * @returns {string} Formatted date and time or "Anytime" if no selection
+   * @returns {string} Formatted date and time or translated placeholder if no selection
    */
   const getFormattedDateTime = useCallback(() => {
-    if (selectedDates.length === 0) return "Anytime";
+    if (selectedDates.length === 0) return "";
     
     // For mobile optimization, when there are multiple dates, just show the count without time details
     if (selectedDates.length > 1) {
-      return `${selectedDates.length} dates`;
+      return t("form.multiple_dates_short", { count: selectedDates.length });
     }
     
     const dateStr = getFormattedDate();
@@ -134,7 +136,7 @@ export const DateTimeFilterProvider = ({ children }) => {
     
     // For single date, show date and possibly time
     return timeStr ? `${dateStr}, ${timeStr}` : dateStr;
-  }, [selectedDates, getFormattedDate, getFormattedTimeRange]);
+  }, [selectedDates, getFormattedDate, getFormattedTimeRange, t]);
 
   /**
    * Serializes date and time for URL parameters

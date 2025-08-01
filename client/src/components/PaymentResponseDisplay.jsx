@@ -1,6 +1,9 @@
 import React from "react";
+import { useTranslation } from 'react-i18next';
 
 const PaymentResponseDisplay = ({ paymentResponse, bookingId }) => {
+  const { t } = useTranslation('booking');
+  
   if (!paymentResponse) {
     return null;
   }
@@ -26,7 +29,7 @@ const PaymentResponseDisplay = ({ paymentResponse, bookingId }) => {
     <div className="mt-6 p-4 border rounded-lg bg-gray-50">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900">
-          Payment Response (Debug)
+          {t('payment.debug.responseTitle')}
         </h3>
         <span 
           className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(paymentResponse.status)}`}
@@ -38,22 +41,22 @@ const PaymentResponseDisplay = ({ paymentResponse, bookingId }) => {
       <div className="space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           <div>
-            <span className="font-medium text-gray-600">Booking ID:</span>
+            <span className="font-medium text-gray-600">{t('payment.debug.bookingId')}:</span>
             <span className="ml-2 text-gray-900">{bookingId}</span>
           </div>
           <div>
-            <span className="font-medium text-gray-600">Action:</span>
+            <span className="font-medium text-gray-600">{t('payment.debug.action')}:</span>
             <span className="ml-2 text-gray-900">{paymentResponse.action}</span>
           </div>
           <div>
-            <span className="font-medium text-gray-600">Timestamp:</span>
+            <span className="font-medium text-gray-600">{t('payment.debug.timestamp')}:</span>
             <span className="ml-2 text-gray-900">
               {new Date(paymentResponse.timestamp).toLocaleString()}
             </span>
           </div>
           {paymentResponse.error_code && (
             <div>
-              <span className="font-medium text-gray-600">Error Code:</span>
+              <span className="font-medium text-gray-600">{t('payment.debug.errorCode')}:</span>
               <span className="ml-2 text-red-600">{paymentResponse.error_code}</span>
             </div>
           )}
@@ -61,7 +64,7 @@ const PaymentResponseDisplay = ({ paymentResponse, bookingId }) => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Full Click Response:
+            {t('payment.debug.fullClickResponse')}:
           </label>
           <div className="bg-white border border-gray-300 rounded-md">
             <pre className="p-4 text-xs text-gray-800 overflow-auto max-h-64 whitespace-pre-wrap">
@@ -72,7 +75,7 @@ const PaymentResponseDisplay = ({ paymentResponse, bookingId }) => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Complete Payment Response Object:
+            {t('payment.debug.completeResponse')}:
           </label>
           <div className="bg-white border border-gray-300 rounded-md">
             <pre className="p-4 text-xs text-gray-800 overflow-auto max-h-96 whitespace-pre-wrap">

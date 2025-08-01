@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import CustomPhoneInput, { isPossiblePhoneNumber } from "./CustomPhoneInput";
 import api from "../utils/api";
 import { UserContext } from "./UserContext";
@@ -14,6 +15,7 @@ import { calculateBookingPricing } from "../utils/pricingCalculator";
 import { isProtectionPlanAvailable } from "../utils/refundPolicyUtils";
 
 export default function BookingWidget({ placeDetail, buttonDisabled, selectedCalendarDates = [] }) {
+  const { t } = useTranslation('booking');
   const [numOfGuests, setNumOfGuests] = useState(0);
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
@@ -125,13 +127,13 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
       {
         guestName: { 
           required: true, 
-          errorMessage: "Please provide your name"
+          errorMessage: t("validation.errors.nameRequired")
         },
         guestPhone: { 
           required: true, 
           customValidation: (value) => {
-            if (!value) return "Please provide your phone number for contact";
-            if (!isPossiblePhoneNumber(value)) return "Please enter a valid phone number";
+            if (!value) return t("validation.errors.phoneRequired");
+            if (!isPossiblePhoneNumber(value)) return t("validation.errors.phoneInvalid");
             return null;
           }
         },
@@ -140,8 +142,8 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
           required: true,
           min: 1, 
           max: placeDetail.maxGuests,
-          minErrorMessage: "Please specify the number of attendees (minimum 1)",
-          maxErrorMessage: `Maximum capacity is ${placeDetail.maxGuests} people`
+          minErrorMessage: t("validation.errors.attendeesRequired"),
+          maxErrorMessage: t("validation.errors.attendeesMax", { maxGuests: placeDetail.maxGuests })
         }
       }
     );
@@ -153,14 +155,14 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
 
     // Check if calendar dates are selected
     if (!selectedCalendarDates || selectedCalendarDates.length === 0) {
-      setError("Please select dates and time slots from the calendar above");
+      setError(t("validation.errors.timeSlotsRequired"));
       return;
     }
 
     // Check if selected time slots are available
     const isAvailable = await validateTimeSlotAvailability();
     if (!isAvailable) {
-      setError("Selected time slots are not available. Please choose different times.");
+      setError(t("validation.errors.timeSlotsUnavailable"));
       return;
     }
 
@@ -179,19 +181,19 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
         // Redirect to login with return URL
         handleLoginRedirect();
         return;
-        setError("Please log in to book a conference room");
+        setError(t("validation.errors.loginRequired"));
         return;
       }
 
       // Check if user is not the owner (hosts shouldn't book their own rooms)
       if (user.id === placeDetail.ownerId) {
-        setError("You cannot book your own conference room");
+        setError(t("validation.errors.cannotBookOwn"));
         return;
       }
 
       // Check if user is a client (only clients can book)
       if (user.userType !== 'client') {
-        setError("Only clients can book conference rooms. Hosts and agents cannot make bookings.");
+        setError(t("validation.errors.clientsOnly"));
         return;
       }
 
@@ -211,10 +213,10 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
 
       const response = await api.post("/bookings", bookingData);
 
-      notify("Booking request submitted successfully", "success");
+      notify(t("notifications.success"), "success");
       setRedirect("/account/bookings");
     } catch (err) {
-      const errorMsg = err.response?.data?.error || "Failed to make reservation. Please try again.";
+      const errorMsg = err.response?.data?.error || t("validation.errors.reservationFailed");
       setError(errorMsg);
     }
   }
@@ -262,7 +264,7 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0z" />
                 </svg>
                 <label className="font-medium text-gray-700">
-                  Attendees
+                  {t("widget.attendees.label")}
                 </label>
               </div>
               <div className="flex items-center space-x-2">
@@ -298,7 +300,7 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
             </div>
             {placeDetail.maxGuests && (
               <p className="text-gray-500 text-xs ml-7 mt-2">
-                Maximum capacity: {placeDetail.maxGuests} people
+                {t("widget.attendees.maximum")}: {placeDetail.maxGuests} {t("widget.attendees.people")}
               </p>
             )}
           </div>
@@ -333,8 +335,8 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
           className="block w-full bg-primary text-white py-3 px-6 rounded-lg text-center font-medium hover:bg-primary-dark transition-colors"
         >
           {selectedCalendarDates && selectedCalendarDates.length > 0
-            ? "Login to Book Selected Time Slots"
-            : "Login to Book This Conference Room"
+            ? t("widget.buttons.login")
+            : t("widget.buttons.loginGeneral")
           }
         </button>
 
@@ -355,7 +357,7 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
             }}
             className="underline text-primary hover:text-primary-dark bg-transparent border-none cursor-pointer"
           >
-            Sign up here
+            {t("widget.buttons.signUp")}
           </button>
         </p>
       </div>
@@ -371,10 +373,10 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
             currency={placeDetail.currency} 
             bold={true}
             className="text-2xl mr-1 inline-block"
-          /> per hour
+          /> {t("widget.pricing.perHour")}
           {placeDetail.fullDayDiscountPrice > 0 && (
             <div className="text-sm text-green-600 mt-1">
-              Full day ({placeDetail.fullDayHours}h): <PriceDisplay 
+              {t("widget.pricing.fullDay")} ({placeDetail.fullDayHours}h): <PriceDisplay 
                 price={placeDetail.fullDayDiscountPrice} 
                 currency={placeDetail.currency} 
                 bold={true}
@@ -408,7 +410,7 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0z" />
                 </svg>
                 <label htmlFor="numOfGuests" className="font-medium text-gray-700">
-                  Attendees
+                  {t("widget.attendees.label")}
                 </label>
               </div>
               <div className="flex items-center space-x-2">
@@ -445,10 +447,10 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
             </div>
             {placeDetail.maxGuests && (
               <p className="text-gray-500 text-xs ml-7">
-                Maximum capacity: {placeDetail.maxGuests} people
+                {t("widget.attendees.maximum")}: {placeDetail.maxGuests} {t("widget.attendees.people")}
                 {numOfGuests === 0 && (
                   <span className="block text-orange-600 font-medium mt-1">
-                    ⚠️ Please specify the number of attendees
+                    {t("widget.attendees.selectNumber")}
                   </span>
                 )}
               </p>
@@ -460,7 +462,7 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                 </svg>
-                Your Full Name
+                {t("widget.contactInfo.title")}
               </h4>
               
               <div className="grid grid-cols-1 gap-3">
@@ -470,7 +472,7 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
                     type="text"
                     value={guestName}
                     onChange={(event) => setGuestName(event.target.value)}
-                    placeholder="Your full name"
+                    placeholder={t("widget.contactInfo.fullName")}
                     className={`w-full ${guestName ? 'pl-3' : 'pl-10'} pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors`}
                   />
                 </div>
@@ -480,7 +482,7 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
                     value={guestPhone}
                     onChange={setGuestPhone}
                     defaultCountry="UZ"
-                    placeholder="Phone number"
+                    placeholder={t("widget.contactInfo.phoneNumber")}
                     required
                   />
                 </div>
@@ -517,10 +519,10 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
           disabled={buttonDisabled}
         >
           {buttonDisabled 
-            ? "Not available to book" 
+            ? t("widget.buttons.notAvailable")
             : selectedCalendarDates && selectedCalendarDates.length > 0
-              ? "Book Selected Time Slots"
-              : "Select Time Slots to Book"
+              ? t("widget.buttons.bookSelectedSlots")
+              : t("widget.buttons.selectTimeSlots")
           }
         </button>
       </div>

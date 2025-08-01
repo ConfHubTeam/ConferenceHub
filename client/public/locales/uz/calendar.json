@@ -1,0 +1,98 @@
+{
+  "months": {
+    "january": "Yanvar",
+    "february": "Fevral",
+    "march": "Mart",
+    "april": "Aprel",
+    "may": "May",
+    "june": "Iyun",
+    "july": "Iyul",
+    "august": "Avgust",
+    "september": "Sentyabr",
+    "october": "Oktyabr",
+    "november": "Noyabr",
+    "december": "Dekabr"
+  },
+  "weekdays": {
+    "short": {
+      "sunday": "Yak",
+      "monday": "Du", 
+      "tuesday": "Se",
+      "wednesday": "Cho",
+      "thursday": "Pa",
+      "friday": "Ju",
+      "saturday": "Sha"
+    }
+  },
+  "guidance": {
+    "blockingMode": "✨ Bloklangan/bloklanmagan holatni almashtirish uchun sanalarga bosing",
+    "individualMode": "🎯 Bronlash uchun alohida sanalarni tanlang",
+    "selectStart": "📅 Boshlanish sanasini tanlang",
+    "selectEnd": "📅 Yakunlanish sanasini tanlang (diapazonni oldindan ko'rish uchun kursorni olib boring)"
+  },
+  "legend": {
+    "title": "Mavjudlik belgilari:",
+    "available": "Mavjud",
+    "partiallyBooked": "Qisman bronlangan",
+    "fullyBooked": "To'liq bronlangan / Mavjud emas"
+  },
+  "dateSelection": {
+    "dateSelected": "sana tanlandi",
+    "datesSelected": "sana tanlandi"
+  },
+  "placeAvailabilityCalendar": {
+    "title": {
+      "availabilityCalendar": "Mavjudlik kalendari",
+      "selectYourDates": "Sanalaringizni tanlang"
+    },
+    "messages": {
+      "unauthenticatedInfo": "Narxni ko'rish uchun sanalar va vaqt oralig'ini tanlang. Bronlashni yakunlash uchun tizimga kirishingiz kerak.",
+      "hostAgentInfo": "Bronlash tafsilotlarini ko'rish uchun istalgan sanaga bosing"
+    }
+  },
+  "dateAvailabilityDetails": {
+    "title": "Kunlik jadval",
+    "operatingHours": "Ish vaqtlari",
+    "timeSlotAvailability": "Vaqt oralig'ining mavjudligi",
+    "noTimeSlotsAvailable": "Ushbu sana uchun mavjud vaqt oraliqları yo'q.",
+    "legend": {
+      "title": "Belgilar",
+      "booked": "Bronlangan",
+      "cooldown": "Tanaffus",
+      "notBookable": "Mavjud emas",
+      "dayEnd": "Kun tugashi",
+      "available": "Mavjud"
+    },
+    "slotStatus": {
+      "booked": "Bronlangan",
+      "bookedPast": "Bronlangan (O'tgan)",
+      "cooldown": "Tanaffus",
+      "cooldownPast": "Tanaffus (O'tgan)",
+      "conflicts": "Ziddiyatlar",
+      "conflictsPast": "Ziddiyatlar (O'tgan)",
+      "dayEnd": "Kun tugashi",
+      "available": "Mavjud"
+    },
+    "cooldownInfo": {
+      "title": "Tanaffus davri:",
+      "afterEachBooking": "har bir bronlashdan keyin",
+      "timeUnits": {
+        "hour": "soat",
+        "minute": "daq"
+      }
+    },
+    "bookings": {
+      "title": "Bronlashlar",
+      "bookedBy": "Bronlovchi:",
+      "notes": "Izohlar:",
+      "status": {
+        "confirmed": "Tasdiqlandi",
+        "pending": "Kutilmoqda",
+        "cancelled": "Bekor qilindi"
+      }
+    },
+    "buttons": {
+      "close": "Yopish"
+    }
+  }
+}

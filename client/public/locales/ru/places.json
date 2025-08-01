@@ -1,0 +1,292 @@
+{
+  "search": {
+    "title": "Найдите идеальное жильё",
+    "subtitle": "Забронируйте уникальные места для проживания",
+    "checkInDate": "Дата заезда",
+    "checkOutDate": "Дата выезда",
+    "guestCount": "Количество гостей",
+    "locationPlaceholder": "Куда едете?",
+    "searchButton": "Найти"
+  },
+  "propertyTypes": {
+    "apartment": "Квартира",
+    "house": "Дом",
+    "villa": "Вилла",
+    "hotel": "Отель",
+    "guesthouse": "Гостевой дом",
+    "studio": "Студия",
+    "loft": "Лофт",
+    "cabin": "Коттедж",
+    "cottage": "Дача",
+    "townhouse": "Таунхаус"
+  },
+  "form": {
+    "title": "Информация о жилье",
+    "titlePlaceholder": "Название, например: Исполнительный конференц-зал",
+    "name": "Название жилья",
+    "namePlaceholder": "Введите название жилья",
+    "description": "Описание",
+    "descriptionPlaceholder": "Опишите особенности вашего конференц-зала, атмосферу, доступные ресурсы и т.д.",
+    "address": "Адрес",
+    "addressPlaceholder": "Введите полный адрес",
+    "city": "Город",
+    "cityPlaceholder": "Введите город",
+    "country": "Страна",
+    "countryPlaceholder": "Выберите страну",
+    "price": "Цена за ночь",
+    "pricePlaceholder": "Введите цену",
+    "bedrooms": "Спальни",
+    "bathrooms": "Ванные",
+    "maxGuests": "Максимум гостей",
+    "amenities": "Удобства",
+    "photos": "Фотографии",
+    "perks": "Преимущества",
+    "extraInfo": "Дополнительная информация",
+    "extraInfoPlaceholder": "Любая дополнительная информация, такая как правила бронирования, политика отмены или специальные инструкции.",
+    "rules": "Правила дома",
+    "checkInTime": "Время заезда",
+    "checkOutTime": "Время выезда",
+    "cancellationPolicy": "Политика отмены",
+    "minimumStay": "Минимальное проживание (ночей)",
+    "instantBook": "Мгновенное бронирование",
+    "ownerName": "Имя владельца",
+    "ownerPhone": "Телефон владельца",
+    "ownerEmail": "Email владельца",
+    "refundOptions": "Варианты возврата",
+    "refundOptionsDescription": "Выберите политику возврата и отмены для вашего конференц-зала.",
+    "saveButton": "Сохранить конференц-зал"
+  },
+  "listing": {
+    "details": "Детали жилья",
+    "amenitiesTitle": "Удобства",
+    "rulesTitle": "Правила дома",
+    "locationTitle": "Местоположение",
+    "reviewsTitle": "Отзывы",
+    "hostTitle": "Ваш хозяин",
+    "availabilityTitle": "Доступность",
+    "weeklyAvailability": {
+      "title": "Рабочие часы",
+      "notAvailable": "Недоступно",
+      "noSpecificHours": "Конкретные часы не установлены",
+      "from": "С:",
+      "to": "До:",
+      "legend": {
+        "availableWithHours": "Доступно с часами работы",
+        "notAvailable": "Недоступно"
+      },
+      "weekdays": {
+        "sunday": "Воскресенье",
+        "monday": "Понедельник",
+        "tuesday": "Вторник",
+        "wednesday": "Среда",
+        "thursday": "Четверг",
+        "friday": "Пятница",
+        "saturday": "Суббота"
+      }
+    },
+    "pricingTitle": "Цены",
+    "perNight": "за ночь",
+    "totalPrice": "Итого: {{amount, currency}}",
+    "serviceFee": "Сервисный сбор",
+    "cleaningFee": "Сбор за уборку",
+    "taxes": "Налоги",
+    "sleeps": "Спальных мест {{count}}",
+    "bedroomCount": "{{count}} спальня",
+    "bedroomCount_plural": "{{count}} спален",
+    "bathroomCount": "{{count}} ванная",
+    "bathroomCount_plural": "{{count}} ванных",
+    "guestCount": "{{count}} гость",
+    "guestCount_plural": "{{count}} гостей",
+    "showAllAmenities": "Показать все {{count}} удобств"
+  },
+  "filters": {
+    "priceRange": "Диапазон цен",
+    "minPrice": "Минимальная цена",
+    "maxPrice": "Максимальная цена",
+    "propertyType": "Тип жилья",
+    "roomsAndBeds": "Комнаты и кровати",
+    "amenities": "Удобства",
+    "instantBook": "Мгновенное бронирование",
+    "superhost": "Суперхозяин",
+    "freeParking": "Бесплатная парковка",
+    "wifi": "Wi-Fi",
+    "kitchen": "Кухня",
+    "airConditioning": "Кондиционер",
+    "pool": "Бассейн",
+    "petFriendly": "Можно с питомцами",
+    "smokingAllowed": "Разрешено курение"
+  },
+  "search_results": {
+    "no_results": "Жильё не найдено",
+    "no_results_description": "Попробуйте изменить фильтры поиска или даты, чтобы найти больше вариантов"
+  },
+  "card": {
+    "up_to_guests": "До {{count}} гостей",
+    "up_to_guests_single": "До {{count}} гостя",
+    "square_meters": "{{size}} м²",
+    "check_in_out": "{{checkIn}} - {{checkOut}}",
+    "price_per_hour": "/час",
+    "price_per_night": "/ночь",
+    "price_per_day": "/день",
+    "new_rating": "Новый",
+    "guests": "чел.",
+    "actions": {
+      "edit": "Редактировать",
+      "view": "Посмотреть",
+      "book": "Забронировать",
+      "details": "Подробности"
+    }
+  },
+  "list": {
+    "check_in": "Заселение",
+    "check_out": "Выселение",
+    "total_price": "Общая стоимость",
+    "actions": {
+      "edit": "Редактировать",
+      "view_details": "Подробности"
+    }
+  },
+  "perks": {
+    "groups": {
+      "audioVideo": "Аудио/Видео",
+      "technicalEquipment": "Техническое оборудование",
+      "furniture": "Мебель",
+      "miscellaneous": "Разное",
+      "safety": "Безопасность",
+      "services": "Услуги"
+    },
+    "items": {
+      "microphone": "Микрофон",
+      "speaker": "Динамик",
+      "projector": "Проектор",
+      "screen": "Экран",
+      "whiteboard": "Доска",
+      "flipChart": "Флипчарт",
+      "soundSystem": "Звуковая система",
+      "audioMixer": "Аудио микшер",
+      "cablesMics": "Кабели для микрофонов",
+      "cameraTripod": "Штатив для камеры",
+      "lightingEquipment": "Осветительное оборудование",
+      "stageLighting": "Сценическое освещение",
+      "laptop": "Ноутбук",
+      "desktop": "Настольный компьютер",
+      "extensionCords": "Удлинители",
+      "chargers": "Зарядные устройства",
+      "wiredInternet": "Проводной интернет",
+      "wifi": "Wi-Fi",
+      "router": "Роутер",
+      "wifiAccessPoint": "Точка доступа Wi-Fi",
+      "speakerPodium": "Трибуна для докладчика",
+      "speakerTable": "Стол для докладчика",
+      "speakerChair": "Стул для докладчика",
+      "participantChairs": "Стулья для участников",
+      "participantDesks": "Столы для участников",
+      "bottledWater": "Вода 0.5л",
+      "waterCooler": "Вода из кулера",
+      "cups": "Стаканы",
+      "nameTags": "Бейджи",
+      "markers": "Маркеры",
+      "paper": "Бумага",
+      "airConditioner": "Кондиционер",
+      "ventilation": "Система вентиляции",
+      "signage": "Указатели",
+      "registrationDesk": "Стойка регистрации",
+      "fireExtinguisher": "Огнетушитель",
+      "firstAidKit": "Аптечка",
+      "evacuationSigns": "Знаки эвакуации",
+      "catering": "Кейтеринг доступен",
+      "coffee": "Кофе-сервис",
+      "parking": "Парковка"
+    }
+  },
+  "placeDetail": {
+    "bookingRestored": "Ваши настройки бронирования восстановлены. Теперь вы можете завершить бронирование.",
+    "deleteSuccess": "Конференц-зал успешно удален",
+    "ownerNotification": "Вы являетесь владельцем этого конференц-зала",
+    "agentNotification": "Доступ к управлению агентом",
+    "sections": {
+      "description": "Описание",
+      "location": "Местоположение",
+      "additionalInfo": "Дополнительная информация"
+    },
+    "managementOptions": {
+      "title": "Варианты управления",
+      "edit": "Редактировать конференц-зал",
+      "delete": "Удалить конференц-зал",
+      "deleting": "Удаление..."
+    },
+    "deleteModal": {
+      "title": "Удалить конференц-зал",
+      "titleLabel": "Название",
+      "locationLabel": "Местоположение",
+      "priceLabel": "Цена",
+      "hour": "час",
+      "consequences": {
+        "roomDetails": "Конференц-зал и все его детали",
+        "photos": "Все фотографии, связанные с этим конференц-залом",
+        "bookings": "Все бронирования для этого конференц-зала",
+        "reviews": "Все рейтинги и отзывы для этого конференц-зала"
+      }
+    }
+  },
+  "placeDetailsInfo": {
+    "title": "Детали зала",
+    "sections": {
+      "pricing": "Цены",
+      "capacity": "Вместимость и пространство",
+      "timeRules": "Временные правила"
+    },
+    "pricing": {
+      "hourlyRate": "Почасовая ставка",
+      "fullDay": "Полный день ({{hours}}ч)"
+    },
+    "capacity": {
+      "maxAttendees": "Макс. участников",
+      "people": "чел.",
+      "roomSize": "Размер зала",
+      "type": "Тип",
+      "hotel": "Отель"
+    },
+    "timeRules": {
+      "minBooking": "Мин. бронирование",
+      "cooldown": "Перерыв",
+      "min": "мин",
+      "hour": "ч"
+    }
+  },
+  "placePerks": {
+    "whatThisPlaceOffers": "Что предлагает это место",
+    "showAllAmenities": "Показать все {{count}} удобств"
+  },
+  "common": {
+    "error": "Ошибка"
+  },
+  "placesPage": {
+    "addNewRoom": "Добавить новую комнату",
+    "noRoomsFound": "Комнаты не найдены",
+    "noRoomsYet": "Пока нет конференц-залов",
+    "tryAdjustingSearch": "Попробуйте изменить критерии поиска.",
+    "getStartedMessage": "Начните с добавления вашего первого объявления конференц-зала.",
+    "clearSearch": "Очистить поиск",
+    "addFirstRoom": "Добавьте вашу первую комнату",
+    "yourRooms": "Ваши конференц-залы",
+    "showingResults": "Результаты для \"{{searchTerm}}\""
+  },
+  "allPlacesPage": {
+    "createPlace": "Создать место",
+    "searchRooms": "Поиск комнат",
+    "searchPlaceholder": "Поиск по названию, адресу или имени хозяина...",
+    "noRoomsFound": "Конференц-залы не найдены",
+    "tryAdjustingFilters": "Попробуйте изменить фильтры для большего количества результатов.",
+    "noRoomsListed": "Конференц-залы еще не размещены.",
+    "clearAllFilters": "Очистить все фильтры",
+    "showingResults": "Показано {{count}} из {{total}} конференц-зал{{plural}}",
+    "byHost": "от {{hostName}}",
+    "matching": "соответствующий \"{{searchTerm}}\"",
+    "host": "Хозяин"
+  },
+  "placeFilters": {
+    "searchLabel": "Поиск ваших конференц-залов",
+    "searchPlaceholder": "Поиск по названию или адресу..."
+  }
+}

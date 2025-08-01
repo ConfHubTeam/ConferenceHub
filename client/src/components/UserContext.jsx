@@ -7,20 +7,36 @@ export function UserContextProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isReady, setReady] = useState(false);
 
-  useEffect(() => {
-    if (!user) {
-      api.get("/users/profile").then(({data}) => {
-        setUser(data);
-        setReady(true); // to check the user data is loaded from backend
-      }).catch(err => {
-        console.error("Failed to fetch user profile:", err);
-        setReady(true); // Set ready even if there's an error to prevent infinite loading
-      });
+  const refreshUserProfile = async () => {
+    try {
+      const { data } = await api.get("/users/profile");
+      setUser(data);
+      setReady(true);
+      return data;
+    } catch (err) {
+      console.error("Failed to fetch user profile:", err);
+      setReady(true);
+      return null;
     }
+  };
+
+  // Enhanced setUser that also refreshes profile to ensure all data is up to date
+  const setUserWithRefresh = async (userData) => {
+    setUser(userData);
+    // If user data is provided, also refresh to get complete profile
+    if (userData && userData.id) {
+      setTimeout(() => {
+        refreshUserProfile();
+      }, 100); // Small delay to ensure token is properly set
+    }
+  };
+
+  useEffect(() => {
+    refreshUserProfile();
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, setUser, isReady}}>
+    <UserContext.Provider value={{ user, setUser: setUserWithRefresh, isReady, refreshUserProfile }}>
       {children}
     </UserContext.Provider>
   );

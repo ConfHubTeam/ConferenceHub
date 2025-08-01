@@ -3,10 +3,12 @@ import DateDuration from "./DateDuration";
 import { useContext } from "react";
 import { UserContext } from "./UserContext";
 import CloudinaryImage from "./CloudinaryImage";
+import { useTranslation } from "react-i18next";
 
 export default function List(props) {
   const { pathname } = useLocation();
   const { user } = useContext(UserContext);
+  const { t } = useTranslation("places");
   let subpage = pathname.split("/")?.[2];
   const isHostViewingOwnRooms = user?.userType === 'host' && subpage === "user-places";
 
@@ -135,7 +137,7 @@ export default function List(props) {
                             d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3l1.5 1.5 3-3.75"
                           />
                         </svg>
-                        <span className="truncate">Check in: {place.checkIn}</span>
+                        <span className="truncate">{t("list.check_in")}: {place.checkIn}</span>
                       </p>
                       <p className="flex items-center text-sm">
                         <svg
@@ -152,7 +154,7 @@ export default function List(props) {
                             d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
                           />
                         </svg>
-                        <span className="truncate">Check out: {place.checkOut}</span>
+                        <span className="truncate">{t("list.check_out")}: {place.checkOut}</span>
                       </p>
                     </div>
                     
@@ -172,7 +174,7 @@ export default function List(props) {
                             d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"
                           />
                         </svg>
-                        Total price: ${props.totalPrice}
+                        {t("list.total_price")}: ${props.totalPrice}
                       </div>
                     )}
                   </div>
@@ -184,13 +186,13 @@ export default function List(props) {
                         to={`/account/places/${place.id || place._id}`}
                         className="bg-green-500 text-white py-2 px-3 rounded-lg text-center text-sm hover:bg-green-600"
                       >
-                        Edit
+                        {t("list.actions.edit")}
                       </Link>
                       <Link 
                         to={`/place/${place.id || place._id}`}
                         className="bg-blue-500 text-white py-2 px-3 rounded-lg text-center text-sm hover:bg-blue-600"
                       >
-                        View Details
+                        {t("list.actions.view_details")}
                       </Link>
                     </div>
                   )}

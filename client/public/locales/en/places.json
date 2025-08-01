@@ -1,0 +1,292 @@
+{
+  "search": {
+    "title": "Find your perfect stay",
+    "subtitle": "Book unique places to stay and things to do",
+    "checkInDate": "Check-in date",
+    "checkOutDate": "Check-out date",
+    "guestCount": "Number of guests",
+    "locationPlaceholder": "Where are you going?",
+    "searchButton": "Search"
+  },
+  "propertyTypes": {
+    "apartment": "Apartment",
+    "house": "House",
+    "villa": "Villa",
+    "hotel": "Hotel",
+    "guesthouse": "Guesthouse",
+    "studio": "Studio",
+    "loft": "Loft",
+    "cabin": "Cabin",
+    "cottage": "Cottage",
+    "townhouse": "Townhouse"
+  },
+  "form": {
+    "title": "Property Information",
+    "titlePlaceholder": "Title, for example: Executive Conference Room",
+    "name": "Property Name",
+    "namePlaceholder": "Enter property name",
+    "description": "Description",
+    "descriptionPlaceholder": "Describe your conference room's features, ambiance, available resources, etc.",
+    "address": "Address",
+    "addressPlaceholder": "Enter full address",
+    "city": "City",
+    "cityPlaceholder": "Enter city",
+    "country": "Country",
+    "countryPlaceholder": "Select country",
+    "price": "Price per night",
+    "pricePlaceholder": "Enter price",
+    "bedrooms": "Bedrooms",
+    "bathrooms": "Bathrooms",
+    "maxGuests": "Maximum guests",
+    "amenities": "Amenities",
+    "photos": "Photos",
+    "perks": "Perks",
+    "extraInfo": "Extra info",
+    "extraInfoPlaceholder": "Any additional information such as booking rules, cancellation policy, or special instructions.",
+    "rules": "House Rules",
+    "checkInTime": "Check-in time",
+    "checkOutTime": "Check-out time",
+    "cancellationPolicy": "Cancellation Policy",
+    "minimumStay": "Minimum stay (nights)",
+    "instantBook": "Instant booking",
+    "ownerName": "Owner name",
+    "ownerPhone": "Owner phone",
+    "ownerEmail": "Owner email",
+    "refundOptions": "Refund Options",
+    "refundOptionsDescription": "Select the refund and cancellation policies for your conference room.",
+    "saveButton": "Save Conference Room"
+  },
+  "listing": {
+    "details": "Property Details",
+    "amenitiesTitle": "Amenities",
+    "rulesTitle": "House Rules",
+    "locationTitle": "Location",
+    "reviewsTitle": "Reviews",
+    "hostTitle": "Your Host",
+    "availabilityTitle": "Availability",
+    "weeklyAvailability": {
+      "title": "Working Hours",
+      "notAvailable": "Not Available",
+      "noSpecificHours": "No specific hours set",
+      "from": "From:",
+      "to": "To:",
+      "legend": {
+        "availableWithHours": "Available with hours",
+        "notAvailable": "Not available"
+      },
+      "weekdays": {
+        "sunday": "Sunday",
+        "monday": "Monday",
+        "tuesday": "Tuesday",
+        "wednesday": "Wednesday",
+        "thursday": "Thursday",
+        "friday": "Friday",
+        "saturday": "Saturday"
+      }
+    },
+    "pricingTitle": "Pricing",
+    "perNight": "per night",
+    "totalPrice": "Total: {{amount, currency}}",
+    "serviceFee": "Service fee",
+    "cleaningFee": "Cleaning fee",
+    "taxes": "Taxes",
+    "sleeps": "Sleeps {{count}}",
+    "bedroomCount": "{{count}} bedroom",
+    "bedroomCount_plural": "{{count}} bedrooms",
+    "bathroomCount": "{{count}} bathroom",
+    "bathroomCount_plural": "{{count}} bathrooms",
+    "guestCount": "{{count}} guest",
+    "guestCount_plural": "{{count}} guests",
+    "showAllAmenities": "Show all {{count}} amenities"
+  },
+  "filters": {
+    "priceRange": "Price Range",
+    "minPrice": "Minimum price",
+    "maxPrice": "Maximum price",
+    "propertyType": "Property Type",
+    "roomsAndBeds": "Rooms & Beds",
+    "amenities": "Amenities",
+    "instantBook": "Instant Book",
+    "superhost": "Superhost",
+    "freeParking": "Free parking",
+    "wifi": "Wi-Fi",
+    "kitchen": "Kitchen",
+    "airConditioning": "Air conditioning",
+    "pool": "Pool",
+    "petFriendly": "Pet friendly",
+    "smokingAllowed": "Smoking allowed"
+  },
+  "search_results": {
+    "no_results": "No properties found",
+    "no_results_description": "Try adjusting your search filters or dates to find more options"
+  },
+  "card": {
+    "up_to_guests": "Up to {{count}} guests",
+    "up_to_guests_single": "Up to {{count}} guest",
+    "square_meters": "{{size}} m²",
+    "check_in_out": "{{checkIn}} - {{checkOut}}",
+    "price_per_hour": "/hr",
+    "price_per_night": "/night",
+    "price_per_day": "/day",
+    "new_rating": "New",
+    "guests": "people",
+    "actions": {
+      "edit": "Edit",
+      "view": "View",
+      "book": "Book",
+      "details": "Details"
+    }
+  },
+  "list": {
+    "check_in": "Check in",
+    "check_out": "Check out",
+    "total_price": "Total price",
+    "actions": {
+      "edit": "Edit",
+      "view_details": "View Details"
+    }
+  },
+  "perks": {
+    "groups": {
+      "audioVideo": "Audio/Video",
+      "technicalEquipment": "Technical Equipment",
+      "furniture": "Furniture",
+      "miscellaneous": "Miscellaneous",
+      "safety": "Safety",
+      "services": "Services"
+    },
+    "items": {
+      "microphone": "Microphone",
+      "speaker": "Speaker",
+      "projector": "Projector",
+      "screen": "Screen",
+      "whiteboard": "Whiteboard",
+      "flipChart": "Flip chart",
+      "soundSystem": "Sound system",
+      "audioMixer": "Audio mixer",
+      "cablesMics": "Cables for microphones",
+      "cameraTripod": "Camera tripod",
+      "lightingEquipment": "Lighting equipment",
+      "stageLighting": "Stage lighting",
+      "laptop": "Laptop",
+      "desktop": "Desktop computer",
+      "extensionCords": "Extension cords",
+      "chargers": "Chargers",
+      "wiredInternet": "Wired internet",
+      "wifi": "Wi-Fi",
+      "router": "Router",
+      "wifiAccessPoint": "Wi-Fi access point",
+      "speakerPodium": "Speaker podium",
+      "speakerTable": "Table for speakers",
+      "speakerChair": "Chair for speakers",
+      "participantChairs": "Chairs for participants",
+      "participantDesks": "Desk for participants",
+      "bottledWater": "Water 0.5L",
+      "waterCooler": "Water from cooler",
+      "cups": "Cups",
+      "nameTags": "Name tags",
+      "markers": "Markers",
+      "paper": "Paper",
+      "airConditioner": "Air conditioner",
+      "ventilation": "Ventilation system",
+      "signage": "Directional signage",
+      "registrationDesk": "Registration desk",
+      "fireExtinguisher": "Fire extinguisher",
+      "firstAidKit": "First aid kit",
+      "evacuationSigns": "Evacuation signs",
+      "catering": "Catering Available",
+      "coffee": "Coffee Service",
+      "parking": "On-site Parking"
+    }
+  },
+  "placeDetail": {
+    "bookingRestored": "Your booking selections have been restored. You can now complete your booking.",
+    "deleteSuccess": "Conference room deleted successfully",
+    "ownerNotification": "You are the owner of this conference room",
+    "agentNotification": "Agent Management Access",
+    "sections": {
+      "description": "Description",
+      "location": "Location",
+      "additionalInfo": "Additional Information"
+    },
+    "managementOptions": {
+      "title": "Management Options",
+      "edit": "Edit Conference Room",
+      "delete": "Delete Conference Room",
+      "deleting": "Deleting..."
+    },
+    "deleteModal": {
+      "title": "Delete Conference Room",
+      "titleLabel": "Title",
+      "locationLabel": "Location",
+      "priceLabel": "Price",
+      "hour": "hour",
+      "consequences": {
+        "roomDetails": "The conference room and all its details",
+        "photos": "All photos associated with this conference room",
+        "bookings": "All bookings made for this conference room",
+        "reviews": "All ratings and reviews for this conference room"
+      }
+    }
+  },
+  "placeDetailsInfo": {
+    "title": "Room Details",
+    "sections": {
+      "pricing": "Pricing",
+      "capacity": "Capacity & Space",
+      "timeRules": "Time Rules"
+    },
+    "pricing": {
+      "hourlyRate": "Hourly Rate",
+      "fullDay": "Full Day ({{hours}}h)"
+    },
+    "capacity": {
+      "maxAttendees": "Max Attendees",
+      "people": "people",
+      "roomSize": "Room Size",
+      "type": "Type",
+      "hotel": "Hotel"
+    },
+    "timeRules": {
+      "minBooking": "Min. Booking",
+      "cooldown": "Cooldown",
+      "min": "min",
+      "hour": "hour"
+    }
+  },
+  "placePerks": {
+    "whatThisPlaceOffers": "What this place offers",
+    "showAllAmenities": "Show all {{count}} amenities"
+  },
+  "common": {
+    "error": "Error"
+  },
+  "placesPage": {
+    "addNewRoom": "Add New Room",
+    "noRoomsFound": "No rooms found",
+    "noRoomsYet": "No conference rooms yet",
+    "tryAdjustingSearch": "Try adjusting your search criteria.",
+    "getStartedMessage": "Get started by adding your first conference room listing.",
+    "clearSearch": "Clear Search",
+    "addFirstRoom": "Add Your First Room",
+    "yourRooms": "Your Conference Rooms",
+    "showingResults": "Showing results for \"{{searchTerm}}\""
+  },
+  "allPlacesPage": {
+    "createPlace": "Create Place",
+    "searchRooms": "Search Rooms",
+    "searchPlaceholder": "Search by title, address, or host name...",
+    "noRoomsFound": "No conference rooms found",
+    "tryAdjustingFilters": "Try adjusting your filters to see more results.",
+    "noRoomsListed": "No conference rooms have been listed yet.",
+    "clearAllFilters": "Clear all filters",
+    "showingResults": "Showing {{count}} of {{total}} conference room{{plural}}",
+    "byHost": "by {{hostName}}",
+    "matching": "matching \"{{searchTerm}}\"",
+    "host": "Host"
+  },
+  "placeFilters": {
+    "searchLabel": "Search your conference rooms",
+    "searchPlaceholder": "Search by property name or address..."
+  }
+}

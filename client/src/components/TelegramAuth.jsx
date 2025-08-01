@@ -1,9 +1,12 @@
 import { useState, useEffect, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { withTranslationLoading } from "../i18n/hoc/withTranslationLoading";
 import { UserContext } from "./UserContext";
 import { useNotification } from "./NotificationContext";
 
-export default function TelegramAuth() {
+function TelegramAuthBase() {
+  const { t, ready } = useTranslation(["auth", "common"]);
   const [error, setError] = useState('');
   const [userType, setUserType] = useState('client');
   const [roleSelected, setRoleSelected] = useState(false);
@@ -18,15 +21,15 @@ export default function TelegramAuth() {
     const error = params.get('error');
     
     if (error === 'not_registered') {
-      setError('You need to register or link your Telegram account first.');
+      setError(ready ? t("auth:telegram.notRegistered") : 'You need to register or link your Telegram account first.');
     } else if (error === 'server_error') {
-      setError('An error occurred during authentication. Please try again.');
+      setError(ready ? t("auth:telegram.serverError") : 'An error occurred during authentication. Please try again.');
     } else if (error === 'expired_auth') {
-      setError('Authentication expired. Please try again.');
+      setError(ready ? t("auth:telegram.expiredAuth") : 'Authentication expired. Please try again.');
     } else if (error === 'invalid_auth') {
-      setError('Invalid authentication data. Please try again.');
+      setError(ready ? t("auth:telegram.invalidAuth") : 'Invalid authentication data. Please try again.');
     } else if (error === 'invalid_user_type') {
-      setError('Invalid user type selected. Please choose either "client" or "host".');
+      setError(ready ? t("auth:telegram.invalidUserType") : 'Invalid user type selected. Please choose either "client" or "host".');
     }
     
     // Check for stored Telegram auth error
@@ -40,8 +43,8 @@ export default function TelegramAuth() {
     // If there was a success, show notification and redirect
     if (params.get('login_success') || params.get('new_account')) {
       notify(params.get('new_account') 
-        ? 'Successfully registered with Telegram' 
-        : 'Successfully logged in with Telegram', 
+        ? (ready ? t("auth:telegram.registerSuccess") : 'Successfully registered with Telegram')
+        : (ready ? t("auth:telegram.loginSuccess") : 'Successfully logged in with Telegram'), 
         'success');
       navigate('/account');
     }
@@ -112,7 +115,9 @@ export default function TelegramAuth() {
 
   return (
     <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-xl shadow-md">
-      <h1 className="text-2xl font-bold text-center mb-2">Login with Telegram</h1>
+      <h1 className="text-2xl font-bold text-center mb-2">
+        {ready ? t("auth:telegram.title") : "Login with Telegram"}
+      </h1>
       
       {error && (
         <div className="bg-red-100 text-red-800 p-3 rounded-lg mb-4 text-sm">
@@ -124,7 +129,7 @@ export default function TelegramAuth() {
         {!roleSelected ? (
           <>
             <p className="text-gray-600 text-center mb-4">
-              Please select your account type before continuing:
+              {ready ? t("auth:telegram.selectAccountType") : "Please select your account type before continuing:"}
             </p>
             
             <div className="flex flex-col gap-4 w-full">
@@ -138,8 +143,12 @@ export default function TelegramAuth() {
                   </svg>
                 </div>
                 <div className="text-left">
-                  <span className="font-medium text-lg block">Client</span>
-                  <span className="text-sm text-blue-100">Find and book places to stay</span>
+                  <span className="font-medium text-lg block">
+                    {ready ? t("auth:roleSelector.guest") : "Client"}
+                  </span>
+                  <span className="text-sm text-blue-100">
+                    {ready ? t("auth:telegram.guestDescription") : "Find and book places to stay"}
+                  </span>
                 </div>
               </button>
               
@@ -153,8 +162,12 @@ export default function TelegramAuth() {
                   </svg>
                 </div>
                 <div className="text-left">
-                  <span className="font-medium text-lg block">Host</span>
-                  <span className="text-sm text-green-100">Rent out your property to guests</span>
+                  <span className="font-medium text-lg block">
+                    {ready ? t("auth:roleSelector.host") : "Host"}
+                  </span>
+                  <span className="text-sm text-green-100">
+                    {ready ? t("auth:telegram.hostDescription") : "Rent out your property to guests"}
+                  </span>
                 </div>
               </button>
             </div>
@@ -175,22 +188,33 @@ export default function TelegramAuth() {
               </div>
               <div className="flex-1">
                 <p className={`font-medium ${userType === 'client' ? 'text-blue-800' : 'text-green-800'}`}>
-                  Selected: <span className="font-bold">{userType === 'client' ? 'Client' : 'Host'}</span>
+                  {ready ? t("auth:telegram.selectedRole") : "Selected:"} <span className="font-bold">
+                    {userType === 'client' 
+                      ? (ready ? t("auth:roleSelector.guest") : "Client")
+                      : (ready ? t("auth:roleSelector.host") : "Host")
+                    }
+                  </span>
                 </p>
                 <p className={`text-sm ${userType === 'client' ? 'text-blue-600' : 'text-green-600'}`}>
-                  {userType === 'client' ? 'You will be able to book places to stay' : 'You will be able to list your properties'}
+                  {userType === 'client' 
+                    ? (ready ? t("auth:telegram.guestDescription") : "You will be able to book places to stay")
+                    : (ready ? t("auth:telegram.hostDescription") : "You will be able to list your properties")
+                  }
                 </p>
               </div>
               <button 
                 onClick={changeUserType}
                 className={`text-sm py-1 px-3 rounded ${userType === 'client' ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' : 'bg-green-100 text-green-700 hover:bg-green-200'} transition-colors`}
               >
-                Change
+                {ready ? t("auth:telegram.changeRole") : "Change"}
               </button>
             </div>
             
             <p className="text-gray-600 text-center mb-4">
-              Click the button below to authenticate with your Telegram account as a {userType === 'client' ? 'Client' : 'Host'}.
+              {ready 
+                ? t("auth:telegram.clickToAuthenticate", { role: userType === 'client' ? t("auth:roleSelector.guest") : t("auth:roleSelector.host") })
+                : `Click the button below to authenticate with your Telegram account as a ${userType === 'client' ? 'Client' : 'Host'}.`
+              }
             </p>
             
             <div id="telegram-login-widget" className="mt-2 flex justify-center"></div>
@@ -200,3 +224,7 @@ export default function TelegramAuth() {
     </div>
   );
 }
+
+// Export the component wrapped with the translation loading HOC
+const TelegramAuth = withTranslationLoading(TelegramAuthBase, ['auth', 'common']);
+export default TelegramAuth;

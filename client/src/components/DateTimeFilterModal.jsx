@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { format, isSameDay, isEqual, parseISO, isValid } from "date-fns";
 import { useSearchParams as useRouterSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useDateTimeFilter } from "../contexts/DateTimeFilterContext";
 import MultiDateCalendar from "./MultiDateCalendar";
 import { formatHourTo12 } from "../utils/TimeUtils";
@@ -27,6 +28,7 @@ import { getCurrentDateObjectInUzbekistan } from "../utils/uzbekistanTimezoneUti
  * @param {Function} props.onClose - Function to call when closing the modal
  */
 export default function DateTimeFilterModal({ isOpen, onClose }) {
+  const { t } = useTranslation("search");
   const {
     selectedDates,
     startTime,
@@ -129,15 +131,29 @@ export default function DateTimeFilterModal({ isOpen, onClose }) {
         format(d, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
       );
       
+      let newDates;
       if (dateExists) {
         // Remove date if already selected
-        return prevDates.filter(d => 
+        newDates = prevDates.filter(d => 
           format(d, 'yyyy-MM-dd') !== format(date, 'yyyy-MM-dd')
         );
       } else {
         // Add date if not already selected
-        return [...prevDates, date];
+        newDates = [...prevDates, date];
+        
+        // Auto-scroll to time section when a date is selected (not removed)
+        setTimeout(() => {
+          const timeSection = document.getElementById('time-section');
+          if (timeSection) {
+            timeSection.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'start' 
+            });
+          }
+        }, 100); // Small delay to ensure the DOM has updated
       }
+      
+      return newDates;
     });
   };
 
@@ -220,9 +236,9 @@ export default function DateTimeFilterModal({ isOpen, onClose }) {
         className="bg-white rounded-xl shadow-2xl w-full max-w-sm sm:max-w-md md:max-w-4xl max-h-[90vh] flex flex-col overflow-hidden relative z-[99999]"
         style={{ zIndex: 999999 }}
       >
-        {/* Header - Ultra compact */}
-        <div className="flex items-center justify-between px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 border-b flex-shrink-0 bg-gray-50">
-          <h2 className="text-sm sm:text-base md:text-lg font-semibold text-brand-purple">Select Dates & Times</h2>
+        {/* Header - Minimal padding */}
+        <div className="flex items-center justify-between px-3 sm:px-4 md:px-6 py-1 sm:py-1.5 md:py-2 border-b flex-shrink-0 bg-gray-50">
+          <h2 className="text-sm sm:text-base md:text-lg font-semibold text-brand-purple">{t("filters.modals.dateTime.title")}</h2>
           <button 
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-200 transition-colors"
@@ -234,76 +250,72 @@ export default function DateTimeFilterModal({ isOpen, onClose }) {
           </button>
         </div>
         
-        {/* Main Content - No scroll, optimized height distribution */}
-        <div className="flex-1 flex flex-col overflow-hidden min-h-0">
-          {/* Calendar Section - Takes 80% of available height for better space utilization */}
-          <div className="flex-shrink-0" style={{ height: '80%' }}>
-            <div className="h-full flex flex-col p-2 sm:p-3 md:p-4">
-              {/* Calendar container - Takes remaining height with better overflow handling */}
-              <div className="flex-1 calendar-container flex items-center justify-center min-h-0">
-                <MultiDateCalendar
-                  selectedDates={tempSelectedDates}
-                  onDateToggle={handleDateToggle}
-                  minDate={getCurrentDateObjectInUzbekistan()}
-                />
-              </div>
+        {/* Main Content - Scrollable content */}
+        <div className="flex-1 overflow-y-auto min-h-0">
+          {/* Calendar Section */}
+          <div className="p-1 sm:p-2 md:p-3">
+            {/* Calendar container */}
+            <div className="calendar-container flex items-center justify-center">
+              <MultiDateCalendar
+                selectedDates={tempSelectedDates}
+                onDateToggle={handleDateToggle}
+                minDate={getCurrentDateObjectInUzbekistan()}
+              />
             </div>
           </div>
 
-          {/* Time Selection Section - Takes 20% of available height */}
-          <div className="flex-shrink-0" style={{ height: '20%' }}>
-            <div className="h-full flex flex-col justify-end pb-2 px-1 sm:px-2 md:px-3">
-              {/* Time selectors - Positioned closer to bottom */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-                <div className="flex flex-col">
-                  <label className="text-xs sm:text-sm font-medium text-gray-700 mb-1 flex-shrink-0">Start time</label>
-                  <div className="relative flex-shrink-0">
-                    <select
-                      value={tempStartTime}
-                      onChange={(e) => setTempStartTime(e.target.value)}
-                      className="w-full p-1.5 sm:p-2 md:p-2.5 text-xs sm:text-sm border border-gray-300 rounded-lg appearance-none bg-white pr-6 sm:pr-8 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
-                    >
-                      {timeOptions.map(time => (
-                        <option 
-                          key={time} 
-                          value={time}
-                          disabled={tempEndTime && time >= tempEndTime}
-                        >
-                          {formatHourTo12(time)}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="absolute inset-y-0 right-0 flex items-center px-1.5 sm:px-2 pointer-events-none text-gray-500">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
+          {/* Time Selection Section */}
+          <div id="time-section" className="border-t bg-gray-50 p-3 sm:p-4">
+            {/* Time selectors */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="flex flex-col">
+                <label className="text-xs sm:text-sm font-medium text-gray-700 mb-2 flex-shrink-0">{t("filters.modals.dateTime.startTime")}</label>
+                <div className="relative flex-shrink-0">
+                  <select
+                    value={tempStartTime}
+                    onChange={(e) => setTempStartTime(e.target.value)}
+                    className="w-full p-2 sm:p-2.5 text-sm border border-gray-300 rounded-lg appearance-none bg-white pr-8 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
+                  >
+                    {timeOptions.map(time => (
+                      <option 
+                        key={time} 
+                        value={time}
+                        disabled={tempEndTime && time >= tempEndTime}
+                      >
+                        {formatHourTo12(time)}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
                   </div>
                 </div>
+              </div>
 
-                <div className="flex flex-col">
-                  <label className="text-xs sm:text-sm font-medium text-gray-700 mb-1 flex-shrink-0">End time</label>
-                  <div className="relative flex-shrink-0">
-                    <select
-                      value={tempEndTime}
-                      onChange={(e) => setTempEndTime(e.target.value)}
-                      className="w-full p-1.5 sm:p-2 md:p-2.5 text-xs sm:text-sm border border-gray-300 rounded-lg appearance-none bg-white pr-6 sm:pr-8 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
-                    >
-                      {timeOptions.map(time => (
-                        <option 
-                          key={time} 
-                          value={time}
-                          disabled={tempStartTime && time <= tempStartTime}
-                        >
-                          {formatHourTo12(time)}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="absolute inset-y-0 right-0 flex items-center px-1.5 sm:px-2 pointer-events-none text-gray-500">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
+              <div className="flex flex-col">
+                <label className="text-xs sm:text-sm font-medium text-gray-700 mb-2 flex-shrink-0">{t("filters.modals.dateTime.endTime")}</label>
+                <div className="relative flex-shrink-0">
+                  <select
+                    value={tempEndTime}
+                    onChange={(e) => setTempEndTime(e.target.value)}
+                    className="w-full p-2 sm:p-2.5 text-sm border border-gray-300 rounded-lg appearance-none bg-white pr-8 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
+                  >
+                    {timeOptions.map(time => (
+                      <option 
+                        key={time} 
+                        value={time}
+                        disabled={tempStartTime && time <= tempStartTime}
+                      >
+                        {formatHourTo12(time)}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
                   </div>
                 </div>
               </div>
@@ -311,13 +323,13 @@ export default function DateTimeFilterModal({ isOpen, onClose }) {
           </div>
         </div>
         
-        {/* Footer - Ultra compact */}
-        <div className="flex items-center justify-between px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 border-t flex-shrink-0 bg-white">
+        {/* Footer - Minimal padding */}
+        <div className="flex items-center justify-between px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 md:py-2.5 border-t flex-shrink-0 bg-white">
           <button 
             onClick={handleClear}
             className="text-brand-purple font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-brand-purple px-1 py-1 rounded-md text-xs sm:text-sm"
           >
-            Clear all
+            {t("filters.modals.dateTime.clearAll")}
           </button>
           <div className="flex gap-2">
             <button 
@@ -325,7 +337,7 @@ export default function DateTimeFilterModal({ isOpen, onClose }) {
               className="bg-brand-orange text-white rounded-lg px-3 sm:px-4 py-1.5 sm:py-2 font-medium hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-orange transition-colors text-xs sm:text-sm"
               disabled={tempSelectedDates.length === 0}
             >
-              Apply
+              {t("filters.modals.dateTime.apply")}
             </button>
           </div>
         </div>

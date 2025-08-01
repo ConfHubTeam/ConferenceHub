@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import AccountNav from "../components/AccountNav";
+import { useTranslation } from "react-i18next";
 import api from "../utils/api";
 import { UserContext } from "../components/UserContext";
 import BookingRequestCard from "../components/BookingRequestCard";
@@ -9,6 +10,7 @@ import { useNotification } from "../components/NotificationContext";
 import BookingFilters from "../components/BookingFilters";
 
 export default function BookingsPage() {
+  const { t, i18n } = useTranslation('booking');
   const [bookings, setBookings] = useState([]);
   const [competingBookingsMap, setCompetingBookingsMap] = useState({});
   const { user } = useContext(UserContext);
@@ -46,6 +48,13 @@ export default function BookingsPage() {
   useEffect(() => {
     loadBookings();
   }, []);
+
+  // Recalculate stats when user or bookings change
+  useEffect(() => {
+    if (bookings.length > 0 && user) {
+      calculateStats(bookings);
+    }
+  }, [bookings, user?.userType]);
 
   // Load bookings from API
   async function loadBookings() {
@@ -103,14 +112,24 @@ export default function BookingsPage() {
     const stats = bookingData.reduce(
       (acc, booking) => {
         acc.total++;
-        // Count "selected" bookings as "pending" for stats purposes since they're still awaiting payment
-        if (booking.status === 'selected') {
+        
+        // Count "selected" and "pending" bookings together as "pending" for stats purposes
+        if (booking.status === 'pending' || booking.status === 'selected') {
           acc.pending++;
+        } else if (booking.status === 'approved') {
+          // For clients: count ALL approved bookings (regardless of payment status)
+          // For agents/hosts: only count unpaid approved bookings (paid ones go to "paid" tab)
+          if (user?.userType === 'client') {
+            acc.approved++;
+          } else if (!booking.paidToHost) {
+            acc.approved++;
+          }
         } else {
+          // For other statuses (rejected, cancelled, etc.)
           acc[booking.status]++;
         }
         
-        // Count paid to host bookings for agents and hosts
+        // Count paid to host bookings for agents and hosts (for "paid" tab)
         if (user?.userType === 'agent' || user?.userType === 'host') {
           if (booking.status === 'approved' && booking.paidToHost) {
             acc.paidToHostCount = (acc.paidToHostCount || 0) + 1;
@@ -128,22 +147,29 @@ export default function BookingsPage() {
   useEffect(() => {
     let filtered = [...bookings];
     
-    // Filter by status - "pending" includes both "pending" and "selected" for all user types
+    // Filter by status - different logic for different user types
     if (statusFilter !== 'all') {
       if (statusFilter === 'pending') {
         // For all user types, "pending" view includes both pending and selected bookings
         // Selected bookings are still considered pending until payment is complete
         filtered = filtered.filter(booking => booking.status === 'pending' || booking.status === 'selected');
-      } else if (statusFilter === 'paid_to_host') {
+      } else if (statusFilter === 'paid_to_host' || statusFilter === 'paid') {
         // Show only approved bookings that have been paid to host
         filtered = filtered.filter(booking => booking.status === 'approved' && booking.paidToHost);
-      } else {
-        // For other statuses, show only unpaid approved bookings or exact status matches
-        if (statusFilter === 'approved') {
-          filtered = filtered.filter(booking => booking.status === 'approved' && !booking.paidToHost);
+      } else if (statusFilter === 'approved') {
+        // For clients: show ALL approved bookings (both paid and unpaid) - these are their confirmed bookings
+        // For agents/hosts: show only unpaid approved bookings
+        if (user?.userType === 'client') {
+          // Clients: approved tab shows all approved bookings regardless of payment status
+          // From client perspective, approved = confirmed, regardless of internal payment workflow
+          filtered = filtered.filter(booking => booking.status === 'approved');
         } else {
-          filtered = filtered.filter(booking => booking.status === statusFilter);
+          // Agents/hosts: approved tab shows only unpaid approved bookings
+          filtered = filtered.filter(booking => booking.status === 'approved' && !booking.paidToHost);
         }
+      } else {
+        // For other statuses, show exact status matches (rejected, cancelled, etc.)
+        filtered = filtered.filter(booking => booking.status === statusFilter);
       }
     }
     
@@ -316,12 +342,12 @@ export default function BookingsPage() {
                 <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No bookings found</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">{t("pages.emptyStates.noBookingsFound")}</h3>
                 <p className="text-gray-600 mb-4">
                   {searchTerm || statusFilter !== "all" ? (
-                    "Try adjusting your search or filter criteria."
+                    t("pages.emptyStates.adjustFilters")
                   ) : (
-                    "There are no bookings in the system yet."
+                    t("pages.emptyStates.noBookingsYet.agent")
                   )}
                 </p>
               </div>
@@ -330,13 +356,18 @@ export default function BookingsPage() {
                 {/* Results header */}
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-medium text-gray-900">
-                    {statusFilter === "all" ? "All" : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Bookings
+                    {t(`pages.titles.agent.${statusFilter === "all" ? "allBookings" : 
+                      statusFilter === "paid_to_host" ? "paidBookings" : 
+                      `${statusFilter}Bookings`}`)}
                     <span className="ml-2 text-sm text-gray-500">({filteredBookings.length})</span>
                   </h2>
                 
                 {statusFilter === "pending" && stats.pending > 0 && (
                   <div className="text-sm text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full">
-                    {stats.pending} booking{stats.pending > 1 ? "s" : ""} awaiting approval
+                    {t("pages.statusIndicators.pendingBookings", { 
+                      count: stats.pending,
+                      plural: stats.pending > 1 ? "s" : ""
+                    })}
                   </div>
                 )}
               </div>
@@ -393,11 +424,11 @@ export default function BookingsPage() {
                 <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No booking requests found</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">{t("pages.emptyStates.noRequestsFound")}</h3>
                 <p className="text-gray-600">
                   {searchTerm || statusFilter !== "all" 
-                    ? "Try adjusting your search or filter criteria." 
-                    : "You don't have any booking requests yet. When clients book your conference rooms, their requests will appear here."
+                    ? t("pages.emptyStates.adjustFilters")
+                    : t("pages.emptyStates.noBookingsYet.host")
                   }
                 </p>
               </div>
@@ -406,13 +437,44 @@ export default function BookingsPage() {
                 {/* Results header */}
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-medium text-gray-900">
-                    {statusFilter === "all" ? "All" : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Requests
+                    {t(`pages.titles.host.${statusFilter === "all" ? "allRequests" : 
+                      statusFilter === "paid_to_host" ? "paidRequests" : 
+                      `${statusFilter}Requests`}`)}
                     <span className="ml-2 text-sm text-gray-500">({filteredBookings.length})</span>
                   </h2>
                   
                   {statusFilter === "pending" && stats.pending > 0 && (
                     <div className="text-sm text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full">
-                      {stats.pending} request{stats.pending > 1 ? "s" : ""} need{stats.pending === 1 ? "s" : ""} attention
+                      {(() => {
+                        const count = stats.pending;
+                        const currentLang = i18n.language || "en";
+                        
+                        // Simple fallback approach for now
+                        if (currentLang === "en") {
+                          return `${count} request${count > 1 ? "s" : ""} ${count === 1 ? "needs" : "need"} attention`;
+                        } else if (currentLang === "uz") {
+                          return `${count} so'rov e'tiborni talab qiladi`;
+                        } else if (currentLang === "ru") {
+                          return `${count} запрос${count > 1 ? "а" : ""} ${count === 1 ? "требует" : "требуют"} внимания`;
+                        }
+                        
+                        // Try the translation with explicit parameters
+                        const translationKey = "pages.statusIndicators.pendingRequests";
+                        const result = t(translationKey, { 
+                          count: count,
+                          plural: count > 1 ? "s" : "",
+                          verb: count === 1 ? "needs" : "need"
+                        });
+                        
+                        console.log("Translation result:", result, "for key:", translationKey);
+                        
+                        // If translation failed, return fallback
+                        if (result === translationKey || result.includes("{")) {
+                          return `${count} request${count > 1 ? "s" : ""} ${count === 1 ? "needs" : "need"} attention`;
+                        }
+                        
+                        return result;
+                      })()}
                     </div>
                   )}
                 </div>
@@ -469,16 +531,16 @@ export default function BookingsPage() {
                 <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No bookings found</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">{t("pages.emptyStates.noBookingsFound")}</h3>
                 <p className="text-gray-600 mb-4">
                   {searchTerm || statusFilter !== "all" 
-                    ? "Try adjusting your search or filter criteria." 
-                    : "You don't have any bookings yet. Browse available conference rooms and make a booking."
+                    ? t("pages.emptyStates.adjustFilters")
+                    : t("pages.emptyStates.noBookingsYet.client")
                   }
                 </p>
                 {!searchTerm && statusFilter === "all" && (
                   <Link to="/" className="bg-primary text-white py-2 px-4 rounded-lg inline-block hover:bg-primary-dark transition-colors">
-                    Find Conference Rooms
+                    {t("pages.emptyStates.findRooms")}
                   </Link>
                 )}
               </div>
@@ -487,13 +549,18 @@ export default function BookingsPage() {
                 {/* Results header */}
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-medium text-gray-900">
-                    {statusFilter === "all" ? "All" : statusFilter === "approved" ? "Confirmed" : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Bookings
+                    {t(`pages.titles.client.${statusFilter === "all" ? "allBookings" : 
+                      statusFilter === "approved" ? "confirmedBookings" : 
+                      `${statusFilter}Bookings`}`)}
                     <span className="ml-2 text-sm text-gray-500">({filteredBookings.length})</span>
                   </h2>
                   
                   {statusFilter === "pending" && stats.pending > 0 && (
                     <div className="text-sm text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full">
-                      {stats.pending} booking{stats.pending > 1 ? "s" : ""} awaiting approval
+                      {t("pages.statusIndicators.pendingBookings", { 
+                        count: stats.pending,
+                        plural: stats.pending > 1 ? "s" : ""
+                      })}
                     </div>
                   )}
                 </div>

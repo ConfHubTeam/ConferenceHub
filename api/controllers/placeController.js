@@ -32,7 +32,9 @@ const createPlace = async (req, res) => {
       return res.status(422).json({ error: refundValidation.error });
     }
 
-    const userData = await getUserDataFromToken(req);
+    // Get userData from middleware (set by isAuthenticated middleware)
+    const userData = req.userData || req.user;
+    
     if (!userData || !userData.id) {
       return res.status(401).json({ error: "Authentication required" });
     }
@@ -161,7 +163,13 @@ const createPlace = async (req, res) => {
  */
 const getUserPlaces = async (req, res) => {
   try {
-    const userData = await getUserDataFromToken(req);
+    // Get userData from middleware (set by isAuthenticated middleware)
+    const userData = req.userData || req.user;
+    
+    if (!userData || !userData.id) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    
     // Update Mongoose find to Sequelize findAll with currency join
     const places = await Place.findAll({
       where: { ownerId: userData.id },
@@ -242,7 +250,12 @@ const updatePlace = async (req, res) => {
       }
     }
 
-    const userData = await getUserDataFromToken(req);
+    // Get userData from middleware (set by isAuthenticated middleware)
+    const userData = req.userData || req.user;
+    
+    if (!userData || !userData.id) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
     
     // Check if user is a host or agent
     if (userData.userType !== 'host' && userData.userType !== 'agent') {
@@ -458,7 +471,8 @@ const getHomePlaces = async (req, res) => {
 const deletePlace = async (req, res) => {
   try {
     const { id } = req.params;
-    const userData = await getUserDataFromToken(req);
+    // Get userData from middleware (set by isAuthenticated middleware)
+    const userData = req.userData || req.user;
 
     // Verify user is authenticated
     if (!userData || !userData.id) {
@@ -511,10 +525,11 @@ const deletePlace = async (req, res) => {
  */
 const getAllPlaces = async (req, res) => {
   try {
-    const userData = await getUserDataFromToken(req);
+    // Get userData from middleware (set by isAuthenticated middleware)
+    const userData = req.userData || req.user;
     
     // Verify user is an agent
-    if (userData.userType !== 'agent') {
+    if (!userData || userData.userType !== 'agent') {
       return res.status(403).json({ error: "Only agents can access all places" });
     }
     
