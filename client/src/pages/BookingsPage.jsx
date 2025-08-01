@@ -49,6 +49,13 @@ export default function BookingsPage() {
     loadBookings();
   }, []);
 
+  // Recalculate stats when user or bookings change
+  useEffect(() => {
+    if (bookings.length > 0 && user) {
+      calculateStats(bookings);
+    }
+  }, [bookings, user?.userType]);
+
   // Load bookings from API
   async function loadBookings() {
     setLoading(true);
@@ -110,7 +117,7 @@ export default function BookingsPage() {
         if (booking.status === 'pending' || booking.status === 'selected') {
           acc.pending++;
         } else if (booking.status === 'approved') {
-          // For clients: count ALL approved bookings (they don't see paid/unpaid distinction)
+          // For clients: count ALL approved bookings (regardless of payment status)
           // For agents/hosts: only count unpaid approved bookings (paid ones go to "paid" tab)
           if (user?.userType === 'client') {
             acc.approved++;
@@ -150,12 +157,12 @@ export default function BookingsPage() {
         // Show only approved bookings that have been paid to host
         filtered = filtered.filter(booking => booking.status === 'approved' && booking.paidToHost);
       } else if (statusFilter === 'approved') {
-        // For clients: don't show paid bookings in approved tab (they should see them as "completed" in all tab)
+        // For clients: show ALL approved bookings (both paid and unpaid) - these are their confirmed bookings
         // For agents/hosts: show only unpaid approved bookings
         if (user?.userType === 'client') {
-          // Clients: approved tab should only show approved bookings that are not yet paid to host
-          // But for clients, once approved+paid, these are "completed" and should only appear in "all" tab
-          filtered = filtered.filter(booking => booking.status === 'approved' && !booking.paidToHost);
+          // Clients: approved tab shows all approved bookings regardless of payment status
+          // From client perspective, approved = confirmed, regardless of internal payment workflow
+          filtered = filtered.filter(booking => booking.status === 'approved');
         } else {
           // Agents/hosts: approved tab shows only unpaid approved bookings
           filtered = filtered.filter(booking => booking.status === 'approved' && !booking.paidToHost);
