@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom"
 import { useTranslation } from "react-i18next";
 import { UserContext } from "../components/UserContext";
 import { useNotification } from "../components/NotificationContext";
+import useSmartPaymentPolling from "../hooks/useSmartPaymentPolling";
 import AccountNav from "../components/AccountNav";
 import PriceDisplay from "../components/PriceDisplay";
 import CloudinaryImage from "../components/CloudinaryImage";
@@ -72,6 +73,28 @@ export default function BookingDetailsPage() {
   const [showModal, setShowModal] = useState(false);
   const [modalConfig, setModalConfig] = useState({});
 
+  // Smart payment polling hook - runs silently in background
+  const { startPolling } = useSmartPaymentPolling(
+    bookingId,
+    // onPaymentSuccess - handles both Click.uz payments and manual agent approvals
+    (paymentData) => {
+      if (paymentData.booking) {
+        setBooking(paymentData.booking);
+      }
+      
+      if (paymentData.manuallyApproved) {
+        notify("Booking approved by agent.", "success");
+      } else {
+        notify("Payment successful! Booking approved.", "success");
+      }
+    },
+    // onPaymentError
+    (errorMessage) => {
+      // Silently log errors, don't show to user
+      console.warn(`Payment verification error: ${errorMessage}`);
+    }
+  );
+
   /**
    * Handles return from Click payment page
    */
@@ -85,14 +108,15 @@ export default function BookingDetailsPage() {
       if (paymentStatus === 'success' || transactionId) {
         notify(t('notifications.paymentCompleted'), "success");
         
-        // Refresh booking data to get updated status
+        // MINIMAL: Start polling if booking still selected
         const { data } = await api.get(`/bookings/${bookingId}`);
         setBooking(data);
         
-        // Show success message
-        setTimeout(() => {
+        if (data.status === 'selected') {
+          startPolling();
+        } else {
           notify(t('notifications.statusUpdated'), "success");
-        }, 1000);
+        }
       } else if (paymentStatus === 'failed') {
         notify(t('notifications.paymentNotCompleted'), "warning");
       } else if (paymentStatus === 'cancelled') {
@@ -359,20 +383,10 @@ export default function BookingDetailsPage() {
           
           notify(t('notifications.paymentWindowOpened'), "success");
           
-          // Optionally refresh booking details after a delay to check for payment updates
-          setTimeout(() => {
-            fetchBookingDetails();
-            
-            // Set up periodic checking for payment status updates
-            const paymentCheckInterval = setInterval(() => {
-              fetchBookingDetails();
-            }, 10000); // Check every 10 seconds
-            
-            // Clear interval after 5 minutes (30 checks)
-            setTimeout(() => {
-              clearInterval(paymentCheckInterval);
-            }, 300000);
-          }, 5000);
+          // MINIMAL: Start polling for selected bookings only
+          if (booking.status === 'selected') {
+            startPolling();
+          }
         } else {
           throw new Error(t('notifications.failedToGenerate'));
         }

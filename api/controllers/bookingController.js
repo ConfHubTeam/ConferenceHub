@@ -364,6 +364,168 @@ const markPaidToHost = async (req, res) => {
   }
 };
 
+/**
+ * Check payment status for a booking (single check for polling)
+ */
+const checkPaymentStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userData = await getUserDataFromToken(req);
+    
+    // Check if user has access to this booking
+    const booking = await BookingService.getBookingById(id, userData);
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+    
+    // Use optimized payment poller for better API efficiency
+    const OptimizedPaymentPoller = require("../services/optimizedPaymentPoller");
+    const poller = new OptimizedPaymentPoller();
+    
+    // Single check (immediate=true, maxAttempts=1)
+    const result = await poller.smartCheckPaymentStatus(id, {
+      maxAttempts: 1,
+      immediate: true
+    });
+    
+    if (result.success && result.isPaid) {
+      // Get updated booking data
+      const updatedBooking = await BookingService.getBookingById(id, userData);
+      res.json({ 
+        success: true, 
+        isPaid: true, 
+        booking: updatedBooking,
+        paymentId: result.paymentId,
+        alreadyProcessed: result.alreadyProcessed || false
+      });
+    } else {
+      res.json({ 
+        success: true, 
+        isPaid: false, 
+        status: booking.status,
+        message: result.message || 'Payment not completed yet'
+      });
+    }
+  } catch (error) {
+    console.error("Error checking payment status:", error);
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({ error: error.message });
+  }
+};
+
+/**
+ * Smart payment status check with Click.uz status codes
+ * Returns actual Click.uz status for optimized frontend polling
+ */
+const checkPaymentStatusSmart = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userData = await getUserDataFromToken(req);
+    
+    // Check if user has access to this booking
+    const booking = await BookingService.getBookingById(id, userData);
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    // Check for manual approval by agent (booking approved and paid without Click payment)
+    if (booking.status === 'approved' && booking.paidAt) {
+      return res.json({
+        success: true,
+        isPaid: true,
+        paymentStatus: 2, // Click.uz successful status
+        errorCode: 0,
+        paymentId: booking.clickPaymentId || 'manual-approval',
+        booking: booking,
+        manuallyApproved: true,
+        message: "Booking manually approved by agent"
+      });
+    }
+
+    // If already paid via Click.uz, return immediately
+    if (booking.paidAt && booking.clickPaymentId) {
+      return res.json({
+        success: true,
+        isPaid: true,
+        paymentStatus: 2, // Click.uz successful status
+        errorCode: 0,
+        paymentId: booking.clickPaymentId,
+        booking: booking,
+        message: "Payment already confirmed"
+      });
+    }
+
+    // If no invoice created yet, can't check
+    if (!booking.clickInvoiceId) {
+      return res.json({
+        success: false,
+        isPaid: false,
+        paymentStatus: null,
+        errorCode: -1,
+        errorNote: "No payment invoice found",
+        booking: booking
+      });
+    }
+
+    // Use enhanced Click service to get raw API response
+    const EnhancedClickService = require("../services/enhancedClickService");
+    const clickService = new EnhancedClickService();
+    
+    try {
+      // Get payment status from Click.uz directly
+      const statusResult = await clickService.getDetailedPaymentStatus(id);
+      
+      if (statusResult.success && statusResult.isPaid) {
+        // Payment found and completed
+        const updatedBooking = await BookingService.getBookingById(id, userData);
+        
+        return res.json({
+          success: true,
+          isPaid: true,
+          paymentStatus: 2, // Click.uz successful
+          errorCode: 0,
+          paymentId: statusResult.paymentId,
+          booking: updatedBooking,
+          message: "Payment confirmed"
+        });
+      } else {
+        // Payment not found or not completed
+        return res.json({
+          success: true,
+          isPaid: false,
+          paymentStatus: statusResult.paymentStatus || 0, // Click.uz status
+          errorCode: statusResult.errorCode || (statusResult.paymentStatus === null ? -16 : 0),
+          errorNote: statusResult.errorNote || "Payment not completed",
+          booking: booking,
+          message: statusResult.message || "Payment not found or incomplete"
+        });
+      }
+    } catch (clickError) {
+      console.error("❌ Click.uz API error:", clickError);
+      
+      return res.json({
+        success: false,
+        isPaid: false,
+        paymentStatus: null,
+        errorCode: -1,
+        errorNote: clickError.message || "Click.uz API error",
+        booking: booking,
+        message: "Unable to check payment status"
+      });
+    }
+    
+  } catch (error) {
+    console.error("💥 Smart payment status check exception:", error);
+    res.status(500).json({ 
+      error: "Failed to check payment status",
+      details: error.message,
+      errorCode: -1,
+      success: false,
+      isPaid: false
+    });
+  }
+};
+
 module.exports = {
   createBooking,
   getBookings,
@@ -373,5 +535,7 @@ module.exports = {
   checkTimezoneAwareAvailability,
   getCompetingBookings,
   getBookingById,
-  markPaidToHost
+  markPaidToHost,
+  checkPaymentStatus,
+  checkPaymentStatusSmart
 };

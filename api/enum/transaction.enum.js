@@ -1,34 +1,30 @@
 /**
- * Transaction 
+ * Payment enums for Merchant API integration only
  */
-exports.TransactionState = {
-	Paid: 2,
-	Pending: 1,
-	PendingCanceled: -1,
-	PaidCanceled: -2,
-}
 
 /**
- * CLICK
+ * Booking Payment Status
  */
-exports.ClickError = {
-	Success: 0,
-	SignFailed: -1,
-	InvalidAmount: -2,
-	ActionNotFound: -3,
-	AlreadyPaid: -4,
-	UserNotFound: -5,
-	TransactionNotFound: -6,
-	BadRequest: -8,
-	TransactionCanceled: -9,
-}
-exports.ClickAction = {
-	Prepare: 0,
-	Complete: 1,
-}
+exports.PaymentStatus = {
+  PENDING: 'pending',
+  PAID: 'paid',
+  FAILED: 'failed',
+  CANCELLED: 'cancelled'
+};
 
 /**
- * PAYME
+ * Booking Status  
+ */
+exports.BookingStatus = {
+  PENDING: 'pending',
+  SELECTED: 'selected', 
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
+  CANCELLED: 'cancelled'
+};
+
+/**
+ * PAYME (Keep for Payme integration)
  */
 exports.PaymeMethod = {
 	CheckPerformTransaction: 'CheckPerformTransaction',
@@ -37,7 +33,8 @@ exports.PaymeMethod = {
 	PerformTransaction: 'PerformTransaction',
 	CancelTransaction: 'CancelTransaction',
 	GetStatement: 'GetStatement',
-}
+};
+
 exports.PaymeError = {
 	InvalidAmount: {
 		name: 'InvalidAmount',
@@ -111,7 +108,8 @@ exports.PaymeError = {
 			en: 'Authorization invalid',
 		},
 	},
-}
+};
+
 exports.PaymeData = {
 	BookingId: 'booking_id'
-}
+};
