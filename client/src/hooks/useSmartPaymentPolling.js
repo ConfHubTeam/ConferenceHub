@@ -61,15 +61,18 @@ export const useSmartPaymentPolling = (bookingId, onPaymentSuccess, onPaymentErr
       setLastCheck(new Date());
       
       const response = await api.post(`/bookings/${bookingId}/check-payment-smart`);
-      const { success, isPaid, paymentStatus: status, errorCode, errorNote } = response.data;
+      const { success, isPaid, paymentStatus: status, errorCode, errorNote, booking, manuallyApproved } = response.data;
 
       setPaymentStatus(status);
       setErrorCount(0); // Reset error count on successful API call
 
-      if (success && isPaid) {
-        // Payment completed successfully
+      // Stop polling if payment completed OR booking manually approved
+      if ((success && isPaid) || (booking?.status === 'approved' && booking?.paidAt)) {
         setIsPolling(false);
         onPaymentSuccess?.(response.data);
+        if (manuallyApproved) {
+          console.log('✅ Polling stopped: Booking manually approved by agent');
+        }
         return;
       }
 

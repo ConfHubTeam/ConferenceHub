@@ -428,14 +428,29 @@ const checkPaymentStatusSmart = async (req, res) => {
       return res.status(404).json({ error: "Booking not found" });
     }
 
-    // If already paid, return immediately
-    if (booking.paidAt) {
+    // Check for manual approval by agent (booking approved and paid without Click payment)
+    if (booking.status === 'approved' && booking.paidAt) {
+      return res.json({
+        success: true,
+        isPaid: true,
+        paymentStatus: 2, // Click.uz successful status
+        errorCode: 0,
+        paymentId: booking.clickPaymentId || 'manual-approval',
+        booking: booking,
+        manuallyApproved: true,
+        message: "Booking manually approved by agent"
+      });
+    }
+
+    // If already paid via Click.uz, return immediately
+    if (booking.paidAt && booking.clickPaymentId) {
       return res.json({
         success: true,
         isPaid: true,
         paymentStatus: 2, // Click.uz successful status
         errorCode: 0,
         paymentId: booking.clickPaymentId,
+        booking: booking,
         message: "Payment already confirmed"
       });
     }
@@ -447,7 +462,8 @@ const checkPaymentStatusSmart = async (req, res) => {
         isPaid: false,
         paymentStatus: null,
         errorCode: -1,
-        errorNote: "No payment invoice found"
+        errorNote: "No payment invoice found",
+        booking: booking
       });
     }
 
@@ -480,6 +496,7 @@ const checkPaymentStatusSmart = async (req, res) => {
           paymentStatus: statusResult.paymentStatus || 0, // Click.uz status
           errorCode: statusResult.errorCode || (statusResult.paymentStatus === null ? -16 : 0),
           errorNote: statusResult.errorNote || "Payment not completed",
+          booking: booking,
           message: statusResult.message || "Payment not found or incomplete"
         });
       }
@@ -492,6 +509,7 @@ const checkPaymentStatusSmart = async (req, res) => {
         paymentStatus: null,
         errorCode: -1,
         errorNote: clickError.message || "Click.uz API error",
+        booking: booking,
         message: "Unable to check payment status"
       });
     }

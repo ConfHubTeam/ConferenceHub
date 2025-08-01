@@ -74,10 +74,17 @@ export default function BookingDetailsPage() {
   // Smart payment polling hook - runs silently in background
   const { startPolling } = useSmartPaymentPolling(
     bookingId,
-    // onPaymentSuccess
+    // onPaymentSuccess - handles both Click.uz payments and manual agent approvals
     (paymentData) => {
-      setBooking(paymentData.booking);
-      notify("Payment successful! Booking approved.", "success");
+      if (paymentData.booking) {
+        setBooking(paymentData.booking);
+      }
+      
+      if (paymentData.manuallyApproved) {
+        notify("Booking approved by agent.", "success");
+      } else {
+        notify("Payment successful! Booking approved.", "success");
+      }
     },
     // onPaymentError
     (errorMessage) => {
