@@ -275,13 +275,10 @@ function RegisterPage() {
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8">
-      <div className="w-full max-w-sm mx-auto">
+      <div className="w-full max-w-md lg:max-w-lg mx-auto">
         <h1 className="text-2xl sm:text-3xl font-bold text-center mb-0.5 sm:mb-1">
           {ready ? t("auth:register.title") : "Register"}
         </h1>
-        <p className="text-center text-gray-500 text-xs sm:text-sm mb-2 sm:mb-3">
-          {ready ? t("auth:register.subtitle") : "Create your account"}
-        </p>
         
         <form className="bg-white p-3 sm:p-4 lg:p-5 rounded-xl shadow-sm" onSubmit={registerUser}>
           {error && (
