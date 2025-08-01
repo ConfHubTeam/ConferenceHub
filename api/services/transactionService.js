@@ -1,40 +1,10 @@
 const { Transaction } = require("../models");
 
 /**
- * TransactionService - Handles the core business.
+ * TransactionService - Handles the core business logic for transactions.
+ * Note: Click payments now use Merchant API and store data directly in Bookings table.
  */
 class TransactionService {
-  /**
-   * Create a new click transaction.
-   */
-  static async createClick(data) {
-    const {
-      state,
-      amount,
-      performDate,
-      cancelDate,
-      createDate,
-      prepareId,
-      clickTransId,
-      bookingId,
-      userId
-    } = data;
-
-    return await Transaction.create({
-      state,
-      amount,
-      performDate,
-      cancelDate,
-      createDate,
-      provider: 'click',
-      prepareId,
-      clickTransId,
-      bookingId,
-      userId: userId,
-      paymeTransId: null
-    });
-  }
-
   /**
    * Create a new payme transaction.
    */
@@ -57,8 +27,6 @@ class TransactionService {
       cancelDate,
       createDate,
       provider: 'payme',
-      prepareId: null,
-      clickTransId: null,
       paymeTransId: paymeTransId,
       bookingId: bookingId,
       userId: userId

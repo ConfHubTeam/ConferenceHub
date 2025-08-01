@@ -23,27 +23,19 @@ const Transaction = sequelize.define('Transaction', {
   createDate: {
     type: DataTypes.DATE,
     allowNull: false,
-    degfaultValue: DataTypes.NOW
+    defaultValue: DataTypes.NOW
   },
   provider: {
-    type: DataTypes.ENUM('click', 'payme'),
-    allowNull: false
-  },
-
-  // CLICK specific fields
-  prepareId: {
-    type: DataTypes.STRING,
-    allowNull: true
-  },
-  clickTransId: {
-    type: DataTypes.STRING,
-    allowNull: true
+    type: DataTypes.ENUM('payme'),
+    allowNull: false,
+    defaultValue: 'payme'
   },
 
   // PAYME specific fields
   paymeTransId: {
     type: DataTypes.STRING,
-    allowNull: true
+    allowNull: true,
+    unique: true
   },
 }, {
   timestamps: true,
@@ -53,14 +45,7 @@ const Transaction = sequelize.define('Transaction', {
       unique: true,
       fields: ['paymeTransId'],
       where: { provider: 'payme' }
-    },
-  ],
-  indexes: [
-    {
-      unique: true,
-      fields: ['clickTransId'],
-      where: { provider: 'click' }
-    },
+    }
   ]
 });
 
