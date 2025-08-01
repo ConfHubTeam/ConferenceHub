@@ -3,14 +3,12 @@ const router = express.Router();
 const clickController = require("../controllers/clickController");
 const { authenticateToken } = require("../middleware/auth");
 const ClickMerchantApiService = require("../services/clickMerchantApiService");
-const PaymentStatusPoller = require("../services/paymentStatusPoller");
 
-// Click.uz webhook endpoints (no auth needed for external service calls)
-router.post("/prepare", clickController.prepare);
-router.post("/complete", clickController.complete);
-
-// Client checkout endpoint (requires authentication)
-router.post("/checkout", authenticateToken, clickController.checkout);
+// Merchant API endpoints (requires authentication)
+router.post("/create-invoice", authenticateToken, clickController.createPaymentInvoice);
+router.post("/checkout", authenticateToken, clickController.createPaymentInvoice); // Alias for checkout
+router.get("/payment-status/:bookingId", authenticateToken, clickController.checkPaymentStatus);
+router.get("/payment-info/:bookingId", authenticateToken, clickController.getPaymentInfo);
 
 // Test Click.uz Merchant API connection
 router.get("/test-merchant-api", authenticateToken, async (req, res) => {
@@ -37,37 +35,6 @@ router.get("/test-merchant-api", authenticateToken, async (req, res) => {
 
   } catch (error) {
     console.error("Click.uz Merchant API test error:", error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
-// Force payment status check for a booking
-router.post("/force-payment-check", authenticateToken, async (req, res) => {
-  try {
-    const { bookingId } = req.body;
-    
-    if (!bookingId) {
-      return res.status(400).json({ 
-        error: "bookingId is required" 
-      });
-    }
-
-    console.log(`🔄 Force checking payment status for booking: ${bookingId}`);
-    
-    const result = await PaymentStatusPoller.checkPaymentStatus(bookingId);
-    
-    res.json({
-      success: true,
-      bookingId,
-      result,
-      timestamp: new Date()
-    });
-
-  } catch (error) {
-    console.error("Force payment check error:", error);
     res.status(500).json({
       success: false,
       error: error.message

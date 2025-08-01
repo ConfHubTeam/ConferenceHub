@@ -5,6 +5,7 @@ const crypto = require('crypto');
  * Click.uz Merchant API Service for checking payment status
  * This allows us to pull payment status instead of relying on webhooks
  */
+
 class ClickMerchantApiService {
   constructor() {
     this.apiUrl = 'https://api.click.uz/v2/merchant';
@@ -72,6 +73,96 @@ class ClickMerchantApiService {
         success: false,
         error: error.response?.data || error.message,
         isPaid: false
+      };
+    }
+  }
+
+  /**
+   * Create an invoice in Click.uz system
+   * @param {Object} invoiceData - Invoice creation data
+   * @param {number} invoiceData.amount - Amount in UZS
+   * @param {string} invoiceData.phoneNumber - Customer phone number
+   * @param {string} invoiceData.merchantTransId - Your transaction reference
+   * @returns {Promise<Object>} Invoice creation response
+   */
+  async createInvoice({ amount, phoneNumber, merchantTransId }) {
+    try {
+      const url = `${this.apiUrl}/invoice/create`;
+      
+      const requestData = {
+        service_id: parseInt(this.serviceId),
+        amount: parseFloat(amount),
+        phone_number: phoneNumber,
+        merchant_trans_id: merchantTransId
+      };
+
+      console.log(`📄 Creating Click.uz invoice:`, {
+        service_id: requestData.service_id,
+        amount: requestData.amount,
+        phone_number: requestData.phone_number,
+        merchant_trans_id: requestData.merchant_trans_id
+      });
+      
+      const response = await axios.post(url, requestData, {
+        headers: this.generateAuthHeader(),
+        timeout: 15000
+      });
+
+      console.log('✅ Click.uz invoice creation response:', response.data);
+
+      return {
+        success: response.data.error_code === 0,
+        data: response.data,
+        invoiceId: response.data.invoice_id,
+        errorCode: response.data.error_code,
+        errorNote: response.data.error_note
+      };
+
+    } catch (error) {
+      console.error('❌ Click.uz invoice creation error:', error.response?.data || error.message);
+      
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        invoiceId: null
+      };
+    }
+  }
+
+  /**
+   * Check invoice status by invoice ID
+   * @param {string} invoiceId - Click invoice ID
+   * @returns {Promise<Object>} Invoice status response
+   */
+  async checkInvoiceStatus(invoiceId) {
+    try {
+      const url = `${this.apiUrl}/invoice/status/${this.serviceId}/${invoiceId}`;
+      
+      console.log(`📊 Checking Click.uz invoice status for ID: ${invoiceId}`);
+      
+      const response = await axios.get(url, {
+        headers: this.generateAuthHeader(),
+        timeout: 15000
+      });
+
+      console.log('✅ Click.uz invoice status response:', response.data);
+
+      return {
+        success: response.data.error_code === 0,
+        data: response.data,
+        invoiceStatus: response.data.invoice_status,
+        invoiceStatusNote: response.data.invoice_status_note,
+        errorCode: response.data.error_code,
+        errorNote: response.data.error_note
+      };
+
+    } catch (error) {
+      console.error('❌ Click.uz invoice status error:', error.response?.data || error.message);
+      
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+        invoiceStatus: null
       };
     }
   }

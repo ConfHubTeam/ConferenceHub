@@ -113,6 +113,30 @@ const Booking = sequelize.define('Booking', {
     allowNull: true,
     field: 'payment_response',
     comment: 'Full payment response from payment provider'
+  },
+  clickInvoiceId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'click_invoice_id',
+    comment: 'Click.uz invoice ID from Merchant API'
+  },
+  clickInvoiceCreatedAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    field: 'click_invoice_created_at',
+    comment: 'When the Click.uz invoice was created'
+  },
+  clickPaymentId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'click_payment_id',
+    comment: 'Click.uz payment ID when payment is completed'
+  },
+  paidAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    field: 'paid_at',
+    comment: 'When the payment was successfully completed'
   }
 }, {
   timestamps: true

@@ -1,113 +1,14 @@
-const clickService = require("../services/clickService");
+const ClickMerchantApiService = require("../services/clickMerchantApiService");
+const EnhancedClickService = require("../services/enhancedClickService");
 const { getUserDataFromToken } = require("../middleware/auth");
 const { User, Booking } = require("../models");
 
 /**
- * Prepares and validates incoming Click transaction data.
- * Must respond with exact format as per Click.uz documentation
+ * Creates a Click invoice for the booking using Enhanced Click Service.
+ * This is the main payment endpoint that replaces the old checkout method.
  */
-const prepare = async (req, res) => {
+const createPaymentInvoice = async (req, res) => {
   try {
-    const data = req.body;
-    console.log("📥 Click PREPARE request:", JSON.stringify(data, null, 2));
-    console.log("📥 Click PREPARE headers:", JSON.stringify(req.headers, null, 2));
-    console.log("📥 Click PREPARE IP:", req.ip || req.connection.remoteAddress);
-    
-    // Validate required fields for PREPARE
-    const requiredFields = ['click_trans_id', 'service_id', 'merchant_trans_id', 'amount', 'action', 'sign_time', 'sign_string'];
-    const missingFields = requiredFields.filter(field => !data[field] && data[field] !== 0);
-    
-    if (missingFields.length > 0) {
-      console.log("❌ Missing required fields:", missingFields);
-      const errorResponse = {
-        error: -8,
-        error_note: `Missing required fields: ${missingFields.join(', ')}`
-      };
-      return res.status(200).json(errorResponse);
-    }
-
-    const result = await clickService.prepare(data);
-    console.log("📤 Click PREPARE result:", JSON.stringify(result, null, 2));
-    
-    // Ensure response has all required fields
-    const response = {
-      click_trans_id: result.click_trans_id,
-      merchant_trans_id: result.merchant_trans_id,
-      merchant_prepare_id: result.merchant_prepare_id,
-      error: result.error,
-      error_note: result.error_note
-    };
-    
-    res.status(200).json(response);
-    
-  } catch (error) {
-    console.error("💥 Click PREPARE exception:", error);
-    const errorResponse = { 
-      error: -8, 
-      error_note: "Internal server error" 
-    };
-    res.status(200).json(errorResponse);
-  }
-};
-
-/**
- * Finalizes the payment transaction after successful validation.
- * Must respond with exact format as per Click.uz documentation
- */
-const complete = async (req, res) => {
-  try {
-    const data = req.body;
-    console.log("📥 Click COMPLETE request:", JSON.stringify(data, null, 2));
-    console.log("📥 Click COMPLETE headers:", JSON.stringify(req.headers, null, 2));
-    console.log("📥 Click COMPLETE IP:", req.ip || req.connection.remoteAddress);
-    
-    // Validate required fields for COMPLETE
-    const requiredFields = ['click_trans_id', 'service_id', 'merchant_trans_id', 'merchant_prepare_id', 'amount', 'action', 'sign_time', 'sign_string', 'error'];
-    const missingFields = requiredFields.filter(field => data[field] === undefined);
-    
-    if (missingFields.length > 0) {
-      console.log("❌ Missing required fields:", missingFields);
-      const errorResponse = {
-        error: -8,
-        error_note: `Missing required fields: ${missingFields.join(', ')}`
-      };
-      return res.status(200).json(errorResponse);
-    }
-
-    const result = await clickService.complete(data);
-    console.log("📤 Click COMPLETE result:", JSON.stringify(result, null, 2));
-    
-    // Ensure response has all required fields
-    const response = {
-      click_trans_id: result.click_trans_id,
-      merchant_trans_id: result.merchant_trans_id,
-      merchant_confirm_id: result.merchant_confirm_id,
-      error: result.error,
-      error_note: result.error_note
-    };
-    
-    res
-      .status(200)
-      .set({
-        "Content-Type": "application/json; charset=UTF-8",
-      })
-      .json(response);
-  } catch (error) {
-    console.error("💥 Click COMPLETE exception:", error);
-    const errorResponse = { 
-      error: -8, 
-      error_note: "Internal server error" 
-    };
-    res.status(200).json(errorResponse);
-  }
-};
-
-/**
- * Generates a Click payment link for the booking.
- */
-const checkout = async (req, res) => {
-  try {
-    // Extract user data from authentication token
     const userData = await getUserDataFromToken(req);
     const { bookingId } = req.body;
     
@@ -118,9 +19,6 @@ const checkout = async (req, res) => {
     }
 
     const userId = userData.id;
-    const MERCHANT_ID = process.env.CLICK_MERCHANT_ID;
-    const SERVICE_ID = process.env.CLICK_SERVICE_ID;
-    const CHECKOUT_LINK = process.env.CLICK_CHECKOUT_LINK;
 
     // Verify user exists
     const user = await User.findByPk(userId);
@@ -128,65 +26,161 @@ const checkout = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Verify booking exists and belongs to user (or user has access)
+    // Verify booking exists and belongs to user
     const booking = await Booking.findByPk(bookingId);
     if (!booking) {
       return res.status(404).json({ error: "Booking not found" });
     }
-    // Ensure the booking belongs to the authenticated user
+
     if (booking.userId !== userId) {
       return res.status(403).json({ 
-        error: "Access denied. You can only create payment links for your own bookings" 
+        error: "Access denied. You can only create payment invoices for your own bookings" 
       });
     }
 
-    // Verify booking is in a payable state (selected)
-    if (booking.status !== 'selected') {
-      return res.status(400).json({ 
-        error: "Payment is only available for selected bookings" 
-      });
-    }
-
-    // Calculate total amount from booking data - use finalTotal if available, otherwise totalPrice
-    const bookingAmount = booking.finalTotal || booking.totalPrice;
-    
-    if (!bookingAmount || isNaN(bookingAmount)) {
-      return res.status(400).json({ 
-        error: "Invalid booking amount. Cannot process payment." 
-      });
-    }
-    
-    const totalAmount = parseFloat(bookingAmount).toFixed(2);
-
-    // Generate Click payment link
-    const clickPaymentLink = await clickService.makeClickPaymentLink({
+    // Use Enhanced Click Service to create invoice
+    const enhancedClickService = new EnhancedClickService();
+    const result = await enhancedClickService.createPaymentInvoice({
       bookingId: bookingId,
-      bookingReference: booking.uniqueRequestId,
-      amount: totalAmount,
-      serviceId: SERVICE_ID,
-      merchantId: MERCHANT_ID,
-      baseUrl: CHECKOUT_LINK,
-      clientBaseUrl: process.env.CLIENT_BASE_URL,
+      userPhone: user.phoneNumber
     });
+
+    if (!result.success) {
+      return res.status(400).json({
+        error: "Failed to create payment invoice",
+        details: result.error
+      });
+    }
 
     res.json({ 
       success: true,
-      url: clickPaymentLink,
-      amount: totalAmount,
-      bookingId: bookingId
+      url: result.paymentUrl, // Frontend expects 'url'
+      invoiceId: result.invoiceId,
+      paymentUrl: result.paymentUrl, // Keep backward compatibility
+      amount: result.amount,
+      bookingId: bookingId,
+      merchantTransId: result.merchantTransId,
+      alreadyExists: result.alreadyExists || false
     });
     
   } catch (error) {
-    console.error("💥 Click checkout exception:", error);
+    console.error("💥 Create payment invoice exception:", error);
     res.status(500).json({ 
-      error: "Failed to generate payment link",
+      error: "Failed to create payment invoice",
+      details: error.message
+    });
+  }
+};
+
+/**
+ * Checks the payment status of a booking using Enhanced Click Service.
+ */
+const checkPaymentStatus = async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+    const { bookingId } = req.params;
+    
+    if (!bookingId) {
+      return res.status(400).json({ 
+        error: "Booking ID is required" 
+      });
+    }
+
+    const userId = userData.id;
+
+    // Verify booking exists and belongs to user
+    const booking = await Booking.findByPk(bookingId);
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    if (booking.userId !== userId) {
+      return res.status(403).json({ 
+        error: "Access denied" 
+      });
+    }
+
+    // Use Enhanced Click Service to verify payment
+    const enhancedClickService = new EnhancedClickService();
+    const result = await enhancedClickService.processPaymentVerification(bookingId);
+
+    if (!result.success) {
+      return res.status(500).json({
+        error: "Failed to check payment status",
+        details: result.error
+      });
+    }
+
+    res.json({
+      success: true,
+      isPaid: result.isPaid,
+      paymentId: result.paymentId,
+      bookingStatus: result.bookingStatus,
+      message: result.message,
+      alreadyProcessed: result.alreadyProcessed || false
+    });
+    
+  } catch (error) {
+    console.error("💥 Check payment status exception:", error);
+    res.status(500).json({ 
+      error: "Failed to check payment status",
+      details: error.message
+    });
+  }
+};
+
+/**
+ * Gets comprehensive payment information using Enhanced Click Service.
+ */
+const getPaymentInfo = async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+    const { bookingId } = req.params;
+    
+    if (!bookingId) {
+      return res.status(400).json({ 
+        error: "Booking ID is required" 
+      });
+    }
+
+    const userId = userData.id;
+
+    // Verify booking exists and belongs to user
+    const booking = await Booking.findByPk(bookingId);
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    if (booking.userId !== userId) {
+      return res.status(403).json({ 
+        error: "Access denied" 
+      });
+    }
+
+    // Use Enhanced Click Service to get payment info
+    const enhancedClickService = new EnhancedClickService();
+    const result = await enhancedClickService.getPaymentInfo(bookingId);
+
+    if (!result.success) {
+      return res.status(500).json({
+        error: "Failed to get payment information",
+        details: result.error
+      });
+    }
+
+    res.json(result);
+    
+  } catch (error) {
+    console.error("💥 Get payment info exception:", error);
+    res.status(500).json({ 
+      error: "Failed to get payment information",
       details: error.message
     });
   }
 };
 
 module.exports = {
-  prepare,
-  complete,
-  checkout,
+  createPaymentInvoice,
+  checkPaymentStatus,
+  getPaymentInfo
 };

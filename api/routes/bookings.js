@@ -30,4 +30,7 @@ router.put("/:id", authenticateToken, bookingController.updateBookingStatus);
 // Mark booking as paid to host (agent-only)
 router.post("/:id/paid-to-host", authenticateToken, bookingController.markPaidToHost);
 
+// Check payment status for booking (for polling after payment)
+router.post("/:id/check-payment", authenticateToken, bookingController.checkPaymentStatus);
+
 module.exports = router;

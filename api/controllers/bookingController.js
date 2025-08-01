@@ -364,6 +364,47 @@ const markPaidToHost = async (req, res) => {
   }
 };
 
+/**
+ * Check payment status for a booking (for polling)
+ */
+const checkPaymentStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userData = await getUserDataFromToken(req);
+    const PaymentStatusPoller = require("../services/paymentStatusPoller");
+    
+    // Check if user has access to this booking
+    const booking = await BookingService.getBookingById(id, userData);
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+    
+    // Check payment status using our Click Merchant API
+    const result = await PaymentStatusPoller.checkPaymentStatus(id);
+    
+    if (result.success && result.isPaid) {
+      // Get updated booking data
+      const updatedBooking = await BookingService.getBookingById(id, userData);
+      res.json({ 
+        success: true, 
+        isPaid: true, 
+        booking: updatedBooking,
+        paymentId: result.paymentId
+      });
+    } else {
+      res.json({ 
+        success: true, 
+        isPaid: false, 
+        status: booking.status 
+      });
+    }
+  } catch (error) {
+    console.error("Error checking payment status:", error);
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createBooking,
   getBookings,
@@ -373,5 +414,6 @@ module.exports = {
   checkTimezoneAwareAvailability,
   getCompetingBookings,
   getBookingById,
-  markPaidToHost
+  markPaidToHost,
+  checkPaymentStatus
 };

@@ -2,10 +2,18 @@ const transactionService = require("../services/transactionService");
 const {
   PaymeError,
   PaymeData,
-  TransactionState,
+  PaymentStatus,
 } = require("../enum/transaction.enum");
 const { User, Booking, Transaction } = require("../models");
 const { PaymeTransactionError } = require("../middleware/errorHandler");
+
+// Define Payme-specific transaction states for backward compatibility
+const PaymeTransactionState = {
+  Paid: 2,
+  Pending: 1,
+  PendingCanceled: -1,
+  PaidCanceled: -2,
+};
 
 class PaymeService {
   /**
@@ -60,7 +68,7 @@ class PaymeService {
 
     // If the transaction already exists, check its state
     if (transaction) {
-      if (transaction.state !== TransactionState.Pending) {
+      if (transaction.state !== PaymePaymeTransactionState.Pending) {
         throw new PaymeTransactionError(PaymeError.CantDoOperation, id);
       }
 
@@ -71,7 +79,7 @@ class PaymeService {
       if (!expirationTime) {
         await Transaction.findOneAndUpdate(
           { paymeTransId: params.id },
-          { state: TransactionState.PendingCanceled, reason: 4 }
+          { state: PaymePaymeTransactionState.PendingCanceled, reason: 4 }
         );
         throw new PaymeTransactionError(PaymeError.CantDoOperation, id);
       }
@@ -79,7 +87,7 @@ class PaymeService {
       return {
         create_time: transaction.createDate,
         transaction: transaction.paymeTransId,
-        state: TransactionState.Pending,
+        state: PaymePaymeTransactionState.Pending,
       };
     }
 
@@ -97,9 +105,9 @@ class PaymeService {
       bookingId: account.booking_id,
     });
     if (transaction) {
-      if (transaction.state === TransactionState.Paid)
+      if (transaction.state === PaymePaymeTransactionState.Paid)
         throw new PaymeTransactionError(PaymeError.AlreadyDone, id);
-      if (transaction.state === TransactionState.Pending)
+      if (transaction.state === PaymePaymeTransactionState.Pending)
         throw new PaymeTransactionError(PaymeError.Pending, id);
     }
 
@@ -110,14 +118,14 @@ class PaymeService {
       cancelDate: null,
       createDate: new Date(time),
       bookingId: account.booking_id,
-      state: TransactionState.Pending,
+      state: PaymeTransactionState.Pending,
       amount: amount,
       userId: booking.userId,
     });
 
     return {
       transaction: newTransaction.paymeTransId,
-      state: TransactionState.Pending,
+      state: PaymeTransactionState.Pending,
       create_time: time,
     };
   }
@@ -136,15 +144,15 @@ class PaymeService {
       throw new PaymeTransactionError(PaymeError.TransactionNotFound, id);
     }
 
-    if (transaction.state !== TransactionState.Pending) {
-      if (transaction.state !== TransactionState.Paid) {
+    if (transaction.state !== PaymeTransactionState.Pending) {
+      if (transaction.state !== PaymeTransactionState.Paid) {
         throw new PaymeTransactionError(PaymeError.CantDoOperation, id);
       }
 
       return {
         perform_time: transaction.performDate,
         transaction: transaction.id,
-        state: TransactionState.Paid,
+        state: PaymeTransactionState.Paid,
       };
     }
 
@@ -154,7 +162,7 @@ class PaymeService {
       await Transaction.findOneAndUpdate(
         { paymeTransId: params.id },
         {
-          state: TransactionState.PendingCanceled,
+          state: PaymeTransactionState.PendingCanceled,
           cancelDate: currentTime,
         }
       );
@@ -166,7 +174,7 @@ class PaymeService {
     await Transaction.findOneAndUpdate(
       { paymeTransId: params.id },
       {
-        state: TransactionState.Paid,
+        state: PaymeTransactionState.Paid,
         performDate: currentTime,
       }
     );
@@ -174,7 +182,7 @@ class PaymeService {
     return {
       perform_time: currentTime,
       transaction: transaction.paymeTransId,
-      state: TransactionState.Paid,
+      state: PaymeTransactionState.Paid,
     };
   }
 
