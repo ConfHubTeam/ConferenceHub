@@ -199,6 +199,94 @@ class EnhancedClickService {
   }
 
   /**
+   * Get detailed payment status with Click.uz status codes
+   * @param {string} bookingId - Booking ID
+   * @returns {Promise<Object>} Detailed payment status with Click.uz codes
+   */
+  async getDetailedPaymentStatus(bookingId) {
+    try {
+      const booking = await Booking.findByPk(bookingId);
+      
+      if (!booking) {
+        return {
+          success: false,
+          isPaid: false,
+          errorCode: -1,
+          errorNote: "Booking not found",
+          message: "Booking not found"
+        };
+      }
+
+      // If already paid, return success immediately
+      if (booking.paidAt) {
+        return {
+          success: true,
+          isPaid: true,
+          paymentStatus: 2, // Click.uz successful status
+          errorCode: 0,
+          paymentId: booking.clickPaymentId,
+          message: "Payment already confirmed"
+        };
+      }
+
+      // If no invoice created, can't check
+      if (!booking.clickInvoiceId) {
+        return {
+          success: false,
+          isPaid: false,
+          paymentStatus: null,
+          errorCode: -1,
+          errorNote: "No payment invoice found",
+          message: "No payment invoice created"
+        };
+      }
+
+      // Check payment status using merchant API
+      const merchantTransId = booking.uniqueRequestId;
+      const apiResult = await this.merchantApi.checkPaymentStatusByMerchantTransId(merchantTransId);
+
+      if (apiResult.success && apiResult.data?.payment_id) {
+        // Payment found and successful
+        const paymentStatusResult = await this.paymentStatusService.verifyAndUpdatePaymentStatus(bookingId, apiResult.data);
+        
+        return {
+          success: true,
+          isPaid: paymentStatusResult.success,
+          paymentStatus: 2, // Click.uz successful
+          errorCode: 0,
+          paymentId: apiResult.data.payment_id,
+          message: paymentStatusResult.success ? "Payment confirmed" : "Payment verification failed"
+        };
+      } else {
+        // Payment not found or failed
+        const errorCode = apiResult.errorCode || -16;
+        const errorNote = apiResult.errorNote || "Payment not found";
+        
+        return {
+          success: true, // API call was successful
+          isPaid: false,
+          paymentStatus: errorCode === -16 ? null : 0, // null = not found, 0 = created but not paid
+          errorCode: errorCode,
+          errorNote: errorNote,
+          message: errorNote
+        };
+      }
+
+    } catch (error) {
+      console.error("❌ Error getting detailed payment status:", error);
+      
+      return {
+        success: false,
+        isPaid: false,
+        paymentStatus: null,
+        errorCode: -1,
+        errorNote: error.message,
+        message: "Error checking payment status"
+      };
+    }
+  }
+
+  /**
    * Health check for Click services
    * @returns {Promise<Object>} Health status
    */

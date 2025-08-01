@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import { UserContext } from "../components/UserContext";
 import { useNotification } from "../components/NotificationContext";
+import useSmartPaymentPolling from "../hooks/useSmartPaymentPolling";
 import AccountNav from "../components/AccountNav";
 import PriceDisplay from "../components/PriceDisplay";
 import CloudinaryImage from "../components/CloudinaryImage";
@@ -69,44 +70,21 @@ export default function BookingDetailsPage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [modalConfig, setModalConfig] = useState({});
-  const [pollingInterval, setPollingInterval] = useState(null); // MINIMAL: single state for polling
 
-  // MINIMAL DRY: Payment polling functions
-  const startPaymentPolling = () => {
-    if (pollingInterval) return;
-    
-    const interval = setInterval(async () => {
-      try {
-        const response = await api.post(`/bookings/${bookingId}/check-payment`);
-        if (response.data.success && response.data.isPaid) {
-          clearInterval(interval);
-          setPollingInterval(null);
-          setBooking(response.data.booking);
-          notify("Payment successful! Booking approved.", "success");
-        }
-      } catch (error) {
-        console.error('Payment polling error:', error);
-      }
-    }, 30000);
-    
-    setPollingInterval(interval);
-    setTimeout(() => { // Auto-stop after 10min
-      if (interval) {
-        clearInterval(interval);
-        setPollingInterval(null);
-      }
-    }, 600000);
-  };
-
-  const stopPaymentPolling = () => {
-    if (pollingInterval) {
-      clearInterval(pollingInterval);
-      setPollingInterval(null);
+  // Smart payment polling hook - runs silently in background
+  const { startPolling } = useSmartPaymentPolling(
+    bookingId,
+    // onPaymentSuccess
+    (paymentData) => {
+      setBooking(paymentData.booking);
+      notify("Payment successful! Booking approved.", "success");
+    },
+    // onPaymentError
+    (errorMessage) => {
+      // Silently log errors, don't show to user
+      console.warn(`Payment verification error: ${errorMessage}`);
     }
-  };
-
-  // Cleanup on unmount
-  useEffect(() => () => pollingInterval && clearInterval(pollingInterval), [pollingInterval]);
+  );
 
   /**
    * Handles return from Click payment page
@@ -126,7 +104,7 @@ export default function BookingDetailsPage() {
         setBooking(data);
         
         if (data.status === 'selected') {
-          startPaymentPolling();
+          startPolling();
         } else {
           notify("Booking status updated successfully!", "success");
         }
@@ -398,7 +376,7 @@ export default function BookingDetailsPage() {
           
           // MINIMAL: Start polling for selected bookings only
           if (booking.status === 'selected') {
-            startPaymentPolling();
+            startPolling();
           }
         } else {
           throw new Error("Failed to generate payment link");

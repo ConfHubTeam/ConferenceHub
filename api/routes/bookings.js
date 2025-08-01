@@ -33,4 +33,7 @@ router.post("/:id/paid-to-host", authenticateToken, bookingController.markPaidTo
 // Check payment status for booking (for polling after payment)
 router.post("/:id/check-payment", authenticateToken, bookingController.checkPaymentStatus);
 
+// Smart payment status check with Click.uz status codes (optimized polling)
+router.post("/:id/check-payment-smart", authenticateToken, bookingController.checkPaymentStatusSmart);
+
 module.exports = router;
