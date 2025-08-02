@@ -1,0 +1,23 @@
+{
+  "clickPhoneModal": {
+    "title": "Click Payment",
+    "phoneLabel": "Click Account Phone Number",
+    "paymentAmount": "Payment Amount:",
+    "processing": "Processing...",
+    "payButton": "Pay with Click",
+    "noAccount": "Don't have a Click account?",
+    "registerLink": "Register here",
+    "loadingPhone": "Loading your phone number...",
+    "verifyClickDescription": "Please verify your saved Click account phone number for payment.",
+    "verifyProfileDescription": "Please verify your phone number for Click payment.",
+    "enterDescription": "Please enter your Click account phone number to proceed with payment.",
+    "editButton": "Edit",
+    "cancelEditing": "Cancel editing",
+    "errors": {
+      "phoneRequired": "Phone number is required",
+      "phoneInvalid": "Please enter a valid phone number",
+      "loadFailed": "Unable to load your phone number. Please enter it manually.",
+      "paymentFailed": "Payment creation failed. Please try again."
+    }
+  }
+}

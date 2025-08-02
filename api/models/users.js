@@ -47,6 +47,11 @@ const User = sequelize.define('User', {
     allowNull: false,
     defaultValue: false
   },
+  clickPhoneNumber: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    comment: 'User\'s preferred phone number for Click payments'
+  },
   userType: {
     type: DataTypes.ENUM('host', 'client', 'agent'),
     allowNull: false,

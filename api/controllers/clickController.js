@@ -38,13 +38,21 @@ const createPaymentInvoice = async (req, res) => {
       });
     }
 
-    // Use the provided Click phone number or fall back to user's phone number
-    const phoneForPayment = clickPhoneNumber || user.phoneNumber || user.telegramPhone;
+    // Use the provided Click phone number or fall back to saved Click phone or user's phone number
+    const phoneForPayment = clickPhoneNumber || user.clickPhoneNumber || user.phoneNumber || user.telegramPhone;
     
     if (!phoneForPayment) {
       return res.status(400).json({
         error: "Phone number is required for Click payments. Please provide your Click account phone number."
       });
+    }
+
+    // If user provided a different Click phone number, save it for future use
+    if (clickPhoneNumber && clickPhoneNumber !== user.clickPhoneNumber) {
+      await User.update(
+        { clickPhoneNumber: clickPhoneNumber },
+        { where: { id: userId } }
+      );
     }
 
     // Use Enhanced Click Service to create invoice
@@ -190,6 +198,7 @@ const getPaymentInfo = async (req, res) => {
 
 /**
  * Get user's phone number for Click payment verification
+ * Priority: 1. Saved Click phone number, 2. Profile phone number, 3. Telegram phone
  */
 const getUserPhoneForClick = async (req, res) => {
   try {
@@ -202,14 +211,19 @@ const getUserPhoneForClick = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Return available phone numbers (prioritize phoneNumber over telegramPhone)
-    const primaryPhone = user.phoneNumber || user.telegramPhone;
+    // Priority: clickPhoneNumber > phoneNumber > telegramPhone
+    const clickPhone = user.clickPhoneNumber;
+    const profilePhone = user.phoneNumber || user.telegramPhone;
+    const preferredPhone = clickPhone || profilePhone;
     
     res.json({
       success: true,
-      phoneNumber: primaryPhone,
-      hasPhoneNumber: !!primaryPhone,
-      alternativePhone: user.phoneNumber ? user.telegramPhone : user.phoneNumber
+      phoneNumber: preferredPhone,
+      clickPhoneNumber: clickPhone, // Specific Click payment phone
+      profilePhoneNumber: profilePhone, // Profile phone number
+      hasPhoneNumber: !!preferredPhone,
+      hasClickPhone: !!clickPhone, // Whether user has saved a Click phone
+      isUsingProfilePhone: !clickPhone && !!profilePhone // Whether we're falling back to profile phone
     });
     
   } catch (error) {
@@ -221,9 +235,52 @@ const getUserPhoneForClick = async (req, res) => {
   }
 };
 
+/**
+ * Update user's preferred Click payment phone number
+ */
+const updateUserClickPhone = async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+    const { clickPhoneNumber } = req.body;
+    const userId = userData.id;
+
+    if (!clickPhoneNumber) {
+      return res.status(400).json({ 
+        error: "Click phone number is required" 
+      });
+    }
+
+    // Verify user exists
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Update the Click phone number
+    await User.update(
+      { clickPhoneNumber: clickPhoneNumber },
+      { where: { id: userId } }
+    );
+
+    res.json({
+      success: true,
+      message: "Click phone number updated successfully",
+      clickPhoneNumber: clickPhoneNumber
+    });
+    
+  } catch (error) {
+    console.error("💥 Update Click phone exception:", error);
+    res.status(500).json({ 
+      error: "Failed to update Click phone number",
+      details: error.message
+    });
+  }
+};
+
 module.exports = {
   createPaymentInvoice,
   checkPaymentStatus,
   getPaymentInfo,
-  getUserPhoneForClick
+  getUserPhoneForClick,
+  updateUserClickPhone
 };

@@ -18,6 +18,8 @@ const ClickPhoneModal = ({
   const { t } = useTranslation(["payment", "common"]);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [originalPhone, setOriginalPhone] = useState("");
+  const [profilePhone, setProfilePhone] = useState(""); // Profile phone number for reference
+  const [hasClickPhone, setHasClickPhone] = useState(false); // Whether user has saved Click phone
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoadingUserPhone, setIsLoadingUserPhone] = useState(false);
   const [error, setError] = useState("");
@@ -35,17 +37,22 @@ const ClickPhoneModal = ({
     try {
       const response = await api.get("/click/user-phone");
       if (response.data.success && response.data.phoneNumber) {
-        const userPhone = response.data.phoneNumber;
-        setOriginalPhone(userPhone);
-        setPhoneNumber(userPhone);
-        setIsEditing(false);
+        const { phoneNumber, clickPhoneNumber, profilePhoneNumber, hasClickPhone, isUsingProfilePhone } = response.data;
+        
+        setOriginalPhone(phoneNumber);
+        setPhoneNumber(phoneNumber);
+        setProfilePhone(profilePhoneNumber || "");
+        setHasClickPhone(hasClickPhone);
+        
+        // Only show editing mode if no phone number at all
+        setIsEditing(!phoneNumber);
       } else {
         // No phone number available, user needs to enter one
         setIsEditing(true);
       }
     } catch (error) {
       console.error("Error fetching user phone:", error);
-      setError("Unable to load your phone number. Please enter it manually.");
+      setError(t("payment:clickPhoneModal.errors.loadFailed"));
       setIsEditing(true);
     } finally {
       setIsLoadingUserPhone(false);
@@ -60,11 +67,11 @@ const ClickPhoneModal = ({
 
   const validatePhoneNumber = (phone) => {
     if (!phone) {
-      return "Phone number is required";
+      return t("payment:clickPhoneModal.errors.phoneRequired");
     }
     
     if (!isValidPhoneNumber(phone)) {
-      return "Please enter a valid phone number";
+      return t("payment:clickPhoneModal.errors.phoneInvalid");
     }
     
     return null;
@@ -83,6 +90,7 @@ const ClickPhoneModal = ({
     setError("");
 
     try {
+      // Create the payment invoice
       const response = await api.post("/click/checkout", {
         bookingId: booking.id,
         clickPhoneNumber: phoneNumber // Send the phone number (either original or edited)
@@ -104,7 +112,7 @@ const ClickPhoneModal = ({
     } catch (error) {
       console.error("Payment creation error:", error);
       
-      let errorMessage = "Payment creation failed. Please try again.";
+      let errorMessage = t("payment:clickPhoneModal.errors.paymentFailed");
       
       if (error.response?.data) {
         const { error: responseError, details } = error.response.data;
@@ -163,14 +171,16 @@ const ClickPhoneModal = ({
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              <span className="ml-2 text-gray-600">Loading your phone number...</span>
+              <span className="ml-2 text-gray-600">{t("payment:clickPhoneModal.loadingPhone")}</span>
             </div>
           ) : (
             <div className="mb-4">
               <p className="text-sm text-gray-600 mb-4">
                 {originalPhone 
-                  ? "Please verify your Click account phone number for payment."
-                  : "Please enter your Click account phone number to proceed with payment."
+                  ? hasClickPhone 
+                    ? t("payment:clickPhoneModal.verifyClickDescription")
+                    : t("payment:clickPhoneModal.verifyProfileDescription")
+                  : t("payment:clickPhoneModal.enterDescription")
                 }
               </p>
               
@@ -190,7 +200,7 @@ const ClickPhoneModal = ({
                     className="px-3 py-2 text-sm text-blue-600 hover:text-blue-800 font-medium border border-blue-200 hover:border-blue-300 rounded-md transition-colors"
                     disabled={isProcessing}
                   >
-                    Edit
+                    {t("payment:clickPhoneModal.editButton")}
                   </button>
                 </div>
               ) : (
@@ -214,18 +224,13 @@ const ClickPhoneModal = ({
                         className="text-sm text-gray-600 hover:text-gray-800"
                         disabled={isProcessing}
                       >
-                        Cancel editing
+                        {t("payment:clickPhoneModal.cancelEditing")}
                       </button>
                     </div>
                   )}
                 </div>
               )}
               
-              {!error && originalPhone && !isEditing && (
-                <p className="mt-2 text-xs text-gray-500">
-                  This phone number is from your account. You can edit it for this payment only.
-                </p>
-              )}
             </div>
           )}
 
