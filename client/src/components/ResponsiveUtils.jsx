@@ -143,6 +143,7 @@ export const MobileNavigation = ({ isOpen, onToggle, onClose, user = null }) => 
                     onChange={changeCurrency}
                     availableCurrencies={availableCurrencies}
                     compact={false}
+                    theme="dark"
                   />
                 </div>
                 
@@ -156,6 +157,7 @@ export const MobileNavigation = ({ isOpen, onToggle, onClose, user = null }) => 
                     showFlag={true}
                     showText={true}
                     placement="bottom-center"
+                    theme="dark"
                   />
                 </div>
               </div>
