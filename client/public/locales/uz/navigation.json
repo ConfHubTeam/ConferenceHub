@@ -36,7 +36,8 @@
     "places": "Joylar",
     "reviews": "Sharhlar",
     "myListings": "Mening e'lonlarim",
-    "browseListings": "E'lonlarni ko'rish"
+    "browseListings": "E'lonlarni ko'rish",
+    "listings": "E'lonlar"
   },
   "mobileNavigation": {
     "browseSpaces": "Joylarni ko'rish",

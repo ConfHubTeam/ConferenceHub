@@ -36,7 +36,8 @@
     "places": "Места",
     "reviews": "Отзывы",
     "myListings": "Мои объявления",
-    "browseListings": "Обзор объявлений"
+    "browseListings": "Обзор объявлений",
+    "listings": "Объявления"
   },
   "mobileNavigation": {
     "browseSpaces": "Обзор пространств",

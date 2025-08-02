@@ -36,7 +36,8 @@
     "places": "Places",
     "reviews": "Reviews",
     "myListings": "My Listings",
-    "browseListings": "Browse Listings"
+    "browseListings": "Browse Listings",
+    "listings": "Listings"
   },
   "mobileNavigation": {
     "browseSpaces": "Browse Spaces",
