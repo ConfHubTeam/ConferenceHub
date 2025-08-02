@@ -10,7 +10,7 @@ const { User, Booking } = require("../models");
 const createPaymentInvoice = async (req, res) => {
   try {
     const userData = await getUserDataFromToken(req);
-    const { bookingId } = req.body;
+    const { bookingId, clickPhoneNumber } = req.body;
     
     if (!bookingId) {
       return res.status(400).json({ 
@@ -38,11 +38,20 @@ const createPaymentInvoice = async (req, res) => {
       });
     }
 
+    // Use the provided Click phone number or fall back to user's phone number
+    const phoneForPayment = clickPhoneNumber || user.phoneNumber || user.telegramPhone;
+    
+    if (!phoneForPayment) {
+      return res.status(400).json({
+        error: "Phone number is required for Click payments. Please provide your Click account phone number."
+      });
+    }
+
     // Use Enhanced Click Service to create invoice
     const enhancedClickService = new EnhancedClickService();
     const result = await enhancedClickService.createPaymentInvoice({
       bookingId: bookingId,
-      userPhone: user.phoneNumber
+      userPhone: phoneForPayment
     });
 
     if (!result.success) {
@@ -179,8 +188,42 @@ const getPaymentInfo = async (req, res) => {
   }
 };
 
+/**
+ * Get user's phone number for Click payment verification
+ */
+const getUserPhoneForClick = async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+    const userId = userData.id;
+
+    // Verify user exists
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Return available phone numbers (prioritize phoneNumber over telegramPhone)
+    const primaryPhone = user.phoneNumber || user.telegramPhone;
+    
+    res.json({
+      success: true,
+      phoneNumber: primaryPhone,
+      hasPhoneNumber: !!primaryPhone,
+      alternativePhone: user.phoneNumber ? user.telegramPhone : user.phoneNumber
+    });
+    
+  } catch (error) {
+    console.error("💥 Get user phone exception:", error);
+    res.status(500).json({ 
+      error: "Failed to get user phone number",
+      details: error.message
+    });
+  }
+};
+
 module.exports = {
   createPaymentInvoice,
   checkPaymentStatus,
-  getPaymentInfo
+  getPaymentInfo,
+  getUserPhoneForClick
 };

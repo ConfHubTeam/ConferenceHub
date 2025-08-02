@@ -9,6 +9,7 @@ router.post("/create-invoice", authenticateToken, clickController.createPaymentI
 router.post("/checkout", authenticateToken, clickController.createPaymentInvoice); // Alias for checkout
 router.get("/payment-status/:bookingId", authenticateToken, clickController.checkPaymentStatus);
 router.get("/payment-info/:bookingId", authenticateToken, clickController.getPaymentInfo);
+router.get("/user-phone", authenticateToken, clickController.getUserPhoneForClick);
 
 // Test Click.uz Merchant API connection
 router.get("/test-merchant-api", authenticateToken, async (req, res) => {

@@ -1,0 +1,31 @@
+{
+  "clickPhoneModal": {
+    "title": "Click to'lovi",
+    "description": "To'lovni davom ettirish uchun Click hisobingizning telefon raqamini kiriting.",
+    "phoneLabel": "Click hisobi telefon raqami",
+    "paymentAmount": "To'lov miqdori:",
+    "processing": "Ishlanmoqda...",
+    "payButton": "Click orqali to'lash",
+    "noAccount": "Click hisobingiz yo'qmi?",
+    "registerLink": "Bu yerda ro'yxatdan o'ting",
+    "verifyPhone": "To'lov uchun Click hisobingizning telefon raqamini tasdiqlang.",
+    "enterPhone": "To'lovni davom ettirish uchun Click hisobingizning telefon raqamini kiriting.",
+    "editButton": "O'zgartirish",
+    "cancelEdit": "O'zgartirishni bekor qilish",
+    "accountPhoneNote": "Bu telefon raqami sizning hisobingizdan. Uni faqat ushbu to'lov uchun o'zgartirishingiz mumkin.",
+    "loadingPhone": "Telefon raqamingiz yuklanmoqda..."
+  },
+  "clickPayment": {
+    "button": "Click orqali to'lash",
+    "bookingNotSelected": "Mezbon sizning buyurtmangizni tanlaganidan keyin to'lov mumkin bo'ladi"
+  },
+  "errors": {
+    "phoneRequired": "Click to'lovlari uchun telefon raqami talab qilinadi",
+    "invalidFormat": "Iltimos, to'g'ri O'zbekiston telefon raqamini kiriting (+998XXXXXXXXX)",
+    "phoneNotAssociated": "Telefon raqami Click.uz hisobida ro'yxatdan o'tmagan",
+    "validationError": "Hozirda telefon raqamini tekshirib bo'lmaydi",
+    "paymentFailed": "To'lovni boshlashda xatolik yuz berdi",
+    "bookingNotSelected": "Mezbon sizning buyurtmangizni tanlaganidan keyin to'lov mumkin bo'ladi",
+    "loadPhoneFailed": "Telefon raqamingizni yuklab bo'lmadi. Iltimos, uni qo'lda kiriting."
+  }
+}
