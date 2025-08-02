@@ -11,6 +11,8 @@ import ConfirmationModal from "../components/ConfirmationModal";
 import LoadingSpinner from "../components/LoadingSpinner";
 import BookingProgress from "../components/BookingProgress";
 import PaymentResponseDisplay from "../components/PaymentResponseDisplay";
+import ClickPaymentButton from "../components/ClickPaymentButton";
+import PaymentMethodsSection from "../components/PaymentMethodsSection";
 import { 
   SectionCard, 
   InfoCard, 
@@ -32,7 +34,6 @@ import {
 import {
   getBookingInfoCards,
   getActionButtonClasses,
-  getPaymentProviders,
   canViewContactInfo,
   canViewSupportContact,
   getSupportContactHours,
@@ -361,56 +362,6 @@ export default function BookingDetailsPage() {
     return canPerformBookingAction(user, booking, "pay");
   };
 
-  // Handle payment provider selection
-  const handlePaymentClick = async (provider) => {
-    if (!isPaymentAvailable()) {
-      notify(t('notifications.paymentOnlyAvailable'), "warning");
-      return;
-    }
-
-    if (provider === 'click') {
-      try {
-        setLoading(true);
-        notify(t('notifications.generatingPaymentLink'), "info");
-        
-        const response = await api.post('/click/checkout', {
-          bookingId: booking.id
-        });
-
-        if (response.data.success && response.data.url) {
-          // Open Click payment page in new tab
-          window.open(response.data.url, '_blank', 'noopener,noreferrer');
-          
-          notify(t('notifications.paymentWindowOpened'), "success");
-          
-          // MINIMAL: Start polling for selected bookings only
-          if (booking.status === 'selected') {
-            startPolling();
-          }
-        } else {
-          throw new Error(t('notifications.failedToGenerate'));
-        }
-      } catch (error) {
-        console.error("Payment error:", error);
-        const errorMessage = error.response?.data?.error || error.message || t('notifications.failedToInitiate');
-        notify(t('notifications.paymentError', { error: errorMessage }), "error");
-      } finally {
-        setLoading(false);
-      }
-    } else if (provider === 'payme') {
-      // Placeholder for Payme integration
-      notify(t('notifications.paymeIntegration'), "info");
-    } else if (provider === 'octo') {
-      // Placeholder for Octo integration 
-      notify(t('notifications.octoIntegration'), "info");
-    } else {
-      // Generic fallback
-      notify(t('notifications.genericIntegration', { provider: provider.charAt(0).toUpperCase() + provider.slice(1) }), "info");
-    }
-    
-    console.log(`Payment initiated with provider: ${provider} for booking ${booking.id}`);
-  };
-
   if (loading) {
     return (
       <div>
@@ -566,11 +517,61 @@ export default function BookingDetailsPage() {
 
             {/* Payment Section - Only for clients */}
             {shouldShowPaymentSection(user) && (
-              <PaymentSection 
-                isPaymentAvailable={isPaymentAvailable()}
-                paymentProviders={getPaymentProviders()}
-                onPaymentClick={handlePaymentClick}
-              />
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  {t('details.sections.payment', 'Payment')}
+                </h3>
+                
+                {isPaymentAvailable() ? (
+                  <div className="space-y-4">
+                    {/* Payment Methods with Click, Payme, and Octo */}
+                    <PaymentMethodsSection
+                      booking={booking}
+                      isPaymentAvailable={isPaymentAvailable()}
+                      onPaymentInitiated={(paymentData) => {
+                        notify(t('notifications.paymentWindowOpened'), "success");
+                        // Start polling for selected bookings only
+                        if (booking.status === 'selected') {
+                          startPolling();
+                        }
+                      }}
+                      onPaymentError={(error) => {
+                        notify(error, "error");
+                      }}
+                    />
+                    
+                    {/* Success Message */}
+                    <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center">
+                        <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div className="text-sm">
+                          <div className="font-medium text-green-800 mb-1">
+                            {t('details.payment.selectedMessage', 'Your booking has been selected! Payment is now available.')}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <div className="text-sm">
+                        <div className="font-medium text-gray-800 mb-1">
+                          {t('details.payment.notAvailableTitle', 'Payment Not Available')}
+                        </div>
+                        <div className="text-gray-600">
+                          {t('details.payment.notAvailableMessage', 'Payment will be available once the host selects your booking.')}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
 
             {/* Actions */}

@@ -1,0 +1,23 @@
+{
+  "clickPhoneModal": {
+    "title": "Click orqali to'lov",
+    "phoneLabel": "Click hisobingiz telefon raqami",
+    "paymentAmount": "To'lov summasi:",
+    "processing": "Ishlov berilmoqda...",
+    "payButton": "Click orqali to'lash",
+    "noAccount": "Click hisobingiz yo'qmi?",
+    "registerLink": "Bu yerda ro'yxatdan o'ting",
+    "loadingPhone": "Telefon raqamingiz yuklanmoqda...",
+    "verifyClickDescription": "To'lov uchun saqlangan Click hisobingiz telefon raqamini tasdiqlang.",
+    "verifyProfileDescription": "Click to'lovi uchun telefon raqamingizni tasdiqlang.",
+    "enterDescription": "To'lovni davom ettirish uchun Click hisobingiz telefon raqamini kiriting.",
+    "editButton": "Tahrirlash",
+    "cancelEditing": "Tahrirni bekor qilish",
+    "errors": {
+      "phoneRequired": "Telefon raqam talab qilinadi",
+      "phoneInvalid": "Iltimos, to'g'ri telefon raqam kiriting",
+      "loadFailed": "Telefon raqamingizni yuklab bo'lmadi. Iltimos, uni qo'lda kiriting.",
+      "paymentFailed": "To'lovni yaratib bo'lmadi. Iltimos, qaytadan urinib ko'ring."
+    }
+  }
+}
