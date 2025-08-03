@@ -1,0 +1,12 @@
+{
+  "success": "Payment processed successfully",
+  "failed": "Payment processing failed",
+  "cancelled": "Payment cancelled",
+  "refunded": "Payment refunded successfully",
+  "pending": "Payment is pending",
+  "invalidAmount": "Invalid payment amount",
+  "insufficientFunds": "Insufficient funds",
+  "cardDeclined": "Card declined",
+  "expiredCard": "Card expired",
+  "processingError": "Payment processing error"
+}

@@ -1,0 +1,12 @@
+{
+  "created": "Booking created successfully",
+  "updated": "Booking updated successfully",
+  "cancelled": "Booking cancelled successfully",
+  "confirmed": "Booking confirmed successfully",
+  "notFound": "Booking not found",
+  "alreadyExists": "Booking already exists for this time slot",
+  "invalidDates": "Invalid booking dates",
+  "paymentRequired": "Payment required to confirm booking",
+  "cannotCancel": "Cannot cancel booking at this time",
+  "refundProcessed": "Refund processed successfully"
+}

@@ -1,0 +1,29 @@
+{
+  "welcome": {
+    "subject": "Platformamizga xush kelibsiz",
+    "greeting": "Salom {{name}}!",
+    "body": "Bizga qo'shilganingiz uchun rahmat. Sizni ko'rganimizdan xursandmiz."
+  },
+  "booking": {
+    "confirmed": {
+      "subject": "Band qilish tasdiqlandi - {{placeName}}",
+      "greeting": "Salom {{guestName}}!",
+      "body": "{{placeName}} uchun {{date}} sanasida {{startTime}} dan {{endTime}} gacha band qilishingiz tasdiqlandi."
+    },
+    "cancelled": {
+      "subject": "Band qilish bekor qilindi - {{placeName}}",
+      "greeting": "Salom {{guestName}}!",
+      "body": "{{placeName}} uchun band qilishingiz bekor qilindi."
+    }
+  },
+  "payment": {
+    "success": {
+      "subject": "To'lov muvaffaqiyatli",
+      "body": "{{amount}} miqdoridagi to'lovingiz muvaffaqiyatli qayta ishlandi."
+    },
+    "failed": {
+      "subject": "To'lov muvaffaqiyatsiz",
+      "body": "To'lovingiz qayta ishlanmadi. Iltimos, qaytadan urinib ko'ring."
+    }
+  }
+}

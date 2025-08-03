@@ -43,15 +43,15 @@ i18next
         if (format === "uppercase") return value.toUpperCase();
         if (format === "lowercase") return value.toLowerCase();
         if (format === "currency") {
-          const locale = lng === "uz" ? "uz-UZ" : "en-US";
-          const currency = lng === "uz" ? "UZS" : "USD";
+          const locale = lng === "uz" ? "uz-UZ" : lng === "ru" ? "ru-RU" : "en-US";
+          const currency = lng === "uz" ? "UZS" : lng === "ru" ? "RUB" : "USD";
           return new Intl.NumberFormat(locale, {
             style: "currency",
             currency: currency
           }).format(value);
         }
         if (format === "date") {
-          const locale = lng === "uz" ? "uz-UZ" : "en-US";
+          const locale = lng === "uz" ? "uz-UZ" : lng === "ru" ? "ru-RU" : "en-US";
           return new Intl.DateTimeFormat(locale).format(new Date(value));
         }
         return value;
@@ -65,12 +65,12 @@ i18next
     joinArrays: " ",
 
     // Supported languages
-    supportedLngs: ["en", "uz"],
+    supportedLngs: ["en", "uz", "ru"],
     nonExplicitSupportedLngs: false,
 
     // Performance optimizations
     load: "languageOnly",
-    preload: ["en", "uz"],
+    preload: ["en", "uz", "ru"],
 
     // Error handling
     saveMissing: process.env.NODE_ENV === "development",
@@ -106,7 +106,7 @@ const getTranslationFunction = (lng = "en", ns = "common") => {
  */
 const translate = (key, options = {}) => {
   const { lng = "en", ns = "common", ...interpolationOptions } = options;
-  
+
   try {
     return i18next.t(key, {
       lng,
@@ -134,23 +134,23 @@ const languageMiddleware = (req, res, next) => {
 
   // Determine language priority: query > body > user preference > header > default
   const detectedLanguage = queryLang || bodyLang || userLang || headerLang || "en";
-  
+
   // Validate language is supported
-  const supportedLanguages = ["en", "uz"];
+  const supportedLanguages = ["en", "uz", "ru"];
   const language = supportedLanguages.includes(detectedLanguage) ? detectedLanguage : "en";
-  
+
   // Attach language to request object
   req.language = language;
-  
+
   // Create translation function for this request
   req.t = (key, options = {}) => translate(key, { lng: language, ...options });
-  
+
   // Create namespace-specific translation functions
   req.tError = (key, options = {}) => translate(key, { lng: language, ns: "errors", ...options });
   req.tValidation = (key, options = {}) => translate(key, { lng: language, ns: "validation", ...options });
   req.tEmail = (key, options = {}) => translate(key, { lng: language, ns: "email", ...options });
   req.tNotification = (key, options = {}) => translate(key, { lng: language, ns: "notifications", ...options });
-  
+
   next();
 };
 
@@ -162,9 +162,9 @@ const languageMiddleware = (req, res, next) => {
  * @returns {string} Formatted currency string
  */
 const formatCurrency = (amount, lng = "en", currency = null) => {
-  const locale = lng === "uz" ? "uz-UZ" : "en-US";
-  const currencyCode = currency || (lng === "uz" ? "UZS" : "USD");
-  
+  const locale = lng === "uz" ? "uz-UZ" : lng === "ru" ? "ru-RU" : "en-US";
+  const currencyCode = currency || (lng === "uz" ? "UZS" : lng === "ru" ? "RUB" : "USD");
+
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: currencyCode,
@@ -181,14 +181,14 @@ const formatCurrency = (amount, lng = "en", currency = null) => {
  * @returns {string} Formatted date string
  */
 const formatDate = (date, lng = "en", options = {}) => {
-  const locale = lng === "uz" ? "uz-UZ" : "en-US";
+  const locale = lng === "uz" ? "uz-UZ" : lng === "ru" ? "ru-RU" : "en-US";
   const defaultOptions = {
     year: "numeric",
     month: "long",
     day: "numeric",
     ...options
   };
-  
+
   return new Intl.DateTimeFormat(locale, defaultOptions).format(new Date(date));
 };
 
@@ -199,7 +199,8 @@ const formatDate = (date, lng = "en", options = {}) => {
 const getAvailableLanguages = () => {
   return [
     { code: "en", name: "English", flag: "🇺🇸" },
-    { code: "uz", name: "O'zbek", flag: "🇺🇿" }
+    { code: "uz", name: "O'zbek", flag: "🇺🇿" },
+    { code: "ru", name: "Русский", flag: "🇷🇺" }
   ];
 };
 

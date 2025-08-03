@@ -1,0 +1,24 @@
+{
+  "required": "Bu maydon majburiy",
+  "email": "Iltimos, haqiqiy elektron pochta manzilini kiriting",
+  "minLength": "Kamida {{min}} ta belgi bo'lishi kerak",
+  "maxLength": "{{max}} ta belgidan ko'p bo'lmasligi kerak",
+  "phone": "Iltimos, haqiqiy telefon raqamini kiriting",
+  "password": {
+    "minLength": "Parol kamida 8 ta belgidan iborat bo'lishi kerak",
+    "requireSpecial": "Parol kamida bitta maxsus belgini o'z ichiga olishi kerak",
+    "requireNumber": "Parol kamida bitta raqamni o'z ichiga olishi kerak",
+    "requireUppercase": "Parol kamida bitta katta harfni o'z ichiga olishi kerak"
+  },
+  "booking": {
+    "dateRequired": "Iltimos, band qilish sanalarini tanlang",
+    "futureDate": "Band qilish sanasi kelajakda bo'lishi kerak",
+    "invalidTimeSlot": "Noto'g'ri vaqt oralig'i tanlangan",
+    "minimumDuration": "Band qilish kamida {{duration}} soat bo'lishi kerak"
+  },
+  "place": {
+    "titleRequired": "Joy nomi majburiy",
+    "addressRequired": "Manzil majburiy",
+    "priceRequired": "Narx majburiy va 0 dan katta bo'lishi kerak"
+  }
+}
