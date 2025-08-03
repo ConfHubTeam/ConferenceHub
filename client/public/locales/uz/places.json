@@ -90,7 +90,7 @@
       "from": "Dan",
       "to": "Gacha",
       "select": "Tanlash",
-      "selectStartTimeFirst": "Avval boshlanish vaqtini tanlang",
+      "selectStartTimeFirst": "Boshlanish vaqtini tanlang",
       "notAvailable": "Mavjud emas",
       "selectDatesToBlock": "Bloklash uchun sanalarni tanlang",
       "clearAllBlockedDates": "Barcha bloklangan sanalarni tozalash",
@@ -349,5 +349,21 @@
   "placeFilters": {
     "searchLabel": "Konferens xonalaringizni qidiring",
     "searchPlaceholder": "Mulk nomi yoki manzil bo'yicha qidiring..."
+  },
+  "validation": {
+    "hostRequired": "Iltimos, joy yaratish uchun host tanlang",
+    "titleRequired": "Sarlavha majburiy",
+    "addressRequired": "Manzil majburiy",
+    "priceRequired": "Soatiga narx majburiy va 0 dan katta bo'lishi kerak",
+    "fullDayPriceRequired": "To'liq kun chegirmali narxi majburiy va 0 dan katta bo'lishi kerak",
+    "currencyRequired": "Iltimos, valyuta tanlang",
+    "datesRequired": "Boshlanish sanasi va tugash sanasini tanlash kerak",
+    "endDateAfterStart": "Tugash sanasi boshlanish sanasidan keyin yoki teng bo'lishi kerak",
+    "weekdayRequired": "Kamida bitta hafta kuni mavjud bo'lishi kerak (bloklanmagan)",
+    "timeSlotsRequired": "Barcha mavjud hafta kunlari haqiqiy vaqt slotlariga ega bo'lishi kerak (boshlanish va tugash vaqti, boshlash tugashdan oldin)",
+    "refundOptionsRequired": "Kamida bitta qaytarish variantini tanlash kerak",
+    "invalidYouTube": "Noto'g'ri YouTube havolasi",
+    "invalidCurrency": "Noto'g'ri valyuta tanlandi. Iltimos, valyutani qayta tanlang.",
+    "submitFailed": "Jo'natish muvaffaqiyatsiz, iltimos keyinroq urinib ko'ring."
   }
 }

@@ -90,7 +90,7 @@
       "from": "From",
       "to": "To", 
       "select": "Select",
-      "selectStartTimeFirst": "Select start time first",
+      "selectStartTimeFirst": "Select start time",
       "notAvailable": "Not available",
       "selectDatesToBlock": "Select dates to block",
       "clearAllBlockedDates": "Clear all blocked dates",
@@ -115,6 +115,22 @@
         "fri": "Fri",
         "sat": "Sat"
       }
+    },
+    "validation": {
+      "hostRequired": "Please select a host to create the place for",
+      "titleRequired": "Title is required",
+      "addressRequired": "Address is required",
+      "priceRequired": "Price per hour is required and must be greater than 0",
+      "fullDayPriceRequired": "Full day discount price is required and must be greater than 0",
+      "currencyRequired": "Please select a currency",
+      "datesRequired": "Both start date and end date must be selected",
+      "endDateAfterStart": "End date must be later than or equal to start date",
+      "weekdayRequired": "At least one weekday must be available (not blocked)",
+      "timeSlotsRequired": "All available weekdays must have valid time slots (start and end times, with start before end)",
+      "refundOptionsRequired": "At least one refund option must be selected",
+      "invalidYouTube": "Invalid YouTube URL",
+      "invalidCurrency": "Invalid currency selected. Please select a currency again.",
+      "submitFailed": "Submit failed, please try again later."
     }
   },
   "listing": {

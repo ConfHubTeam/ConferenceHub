@@ -410,37 +410,37 @@ export default function PlacesFormPage() {
       ...(user?.userType === 'agent' ? [{
         isValid: selectedHost && selectedHost.id,
         fieldId: "host-selector",
-        errorMessage: "Please select a host to create the place for"
+        errorMessage: t('places:validation.hostRequired')
       }] : []),
       {
         isValid: title.trim(),
         fieldId: "place-title",
-        errorMessage: "Title is required"
+        errorMessage: t('places:validation.titleRequired')
       },
       {
         isValid: address.trim(),
         fieldId: "place-address", 
-        errorMessage: "Address is required"
+        errorMessage: t('places:validation.addressRequired')
       },
       {
         isValid: price && parseFloat(price) > 0,
         fieldId: "pricing-capacity",
-        errorMessage: "Price per hour is required and must be greater than 0"
+        errorMessage: t('places:validation.priceRequired')
       },
       {
         isValid: fullDayDiscountPrice && parseFloat(fullDayDiscountPrice) > 0,
         fieldId: "pricing-capacity",
-        errorMessage: "Full day discount price is required and must be greater than 0"
+        errorMessage: t('places:validation.fullDayPriceRequired')
       },
       {
         isValid: currency,
         fieldId: "pricing-capacity",
-        errorMessage: "Please select a currency"
+        errorMessage: t('places:validation.currencyRequired')
       },
       {
         isValid: startDate && endDate,
         fieldId: "date-availability",
-        errorMessage: "Both start date and end date must be selected"
+        errorMessage: t('places:validation.datesRequired')
       },
       {
         customCheck: () => {
@@ -450,7 +450,7 @@ export default function PlacesFormPage() {
           return true;
         },
         fieldId: "date-availability",
-        errorMessage: "End date must be later than or equal to start date"
+        errorMessage: t('places:validation.endDateAfterStart')
       },
       {
         customCheck: () => {
@@ -458,7 +458,7 @@ export default function PlacesFormPage() {
           return blockedWeekdays.length < 7;
         },
         fieldId: "time-slots",
-        errorMessage: "At least one weekday must be available (not blocked)"
+        errorMessage: t('places:validation.weekdayRequired')
       },
       {
         customCheck: () => {
@@ -487,12 +487,12 @@ export default function PlacesFormPage() {
           return true;
         },
         fieldId: "time-slots",
-        errorMessage: "All available weekdays must have valid time slots (start and end times, with start before end)"
+        errorMessage: t('places:validation.timeSlotsRequired')
       },
       {
         isValid: refundOptions && refundOptions.length > 0,
         fieldId: "refund-options",
-        errorMessage: "At least one refund option must be selected"
+        errorMessage: t('places:validation.refundOptionsRequired')
       }
     ];
 
@@ -506,7 +506,7 @@ export default function PlacesFormPage() {
     // Validate and clean YouTube link
     const cleanedYouTubeLink = extractYouTubeVideoId(youtubeLink);
     if (youtubeLink && !cleanedYouTubeLink) {
-      scrollToAndHighlightField("youtube-section", "Invalid YouTube URL", setError);
+      scrollToAndHighlightField("youtube-section", t('places:validation.invalidYouTube'), setError);
       return;
     }
 
@@ -534,7 +534,7 @@ export default function PlacesFormPage() {
     // Ensure we have a valid currency ID from the database
     // Not just from a local defaultCurrencies object
     if (currency && (!currency.id || isNaN(parseInt(currency.id)))) {
-      setError("Invalid currency selected. Please select a currency again.");
+      setError(t('places:validation.invalidCurrency'));
       return;
     }
     
@@ -592,7 +592,7 @@ export default function PlacesFormPage() {
       console.log("Response after saving:", response.data);
     } catch (error) {
       console.error("Submission error:", error.response?.data || error);
-      setError(error.response?.data?.error || "Submit failed, please try again later.");
+      setError(error.response?.data?.error || t('places:validation.submitFailed'));
     }
   }
 

@@ -79,7 +79,7 @@ const TimeSlotByWeekday = ({
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 mr-0.5 text-blue-500 flex-shrink-0">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      From
+                      {t("form.scheduleAvailability.from")}
                     </label>
                     <select
                       value={weekdayTimeSlots[index].start}
@@ -106,7 +106,7 @@ const TimeSlotByWeekday = ({
                       className="w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white appearance-none"
                       disabled={blockedWeekdays.includes(index)}
                     >
-                      <option value="">Select</option>
+                      <option value="">{t("form.scheduleAvailability.select")}</option>
                       {Array.from({ length: 24 }, (_, i) => {
                         const hour = i.toString().padStart(2, '0');
                         const timeString = formatTimeDisplay(hour);
@@ -125,7 +125,7 @@ const TimeSlotByWeekday = ({
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 mr-0.5 text-blue-500 flex-shrink-0">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      To
+                      {t("form.scheduleAvailability.to")}
                     </label>
                     <select
                       value={weekdayTimeSlots[index].end}
@@ -139,7 +139,7 @@ const TimeSlotByWeekday = ({
                       disabled={blockedWeekdays.includes(index) || !weekdayTimeSlots[index].start}
                     >
                       <option value="">
-                        {!weekdayTimeSlots[index].start ? "Select start time first" : "Select"}
+                        {!weekdayTimeSlots[index].start ? t("form.scheduleAvailability.selectStartTimeFirst") : t("form.scheduleAvailability.select")}
                       </option>
                       {weekdayTimeSlots[index].start && Array.from({ length: 24 }, (_, i) => {
                         const startHour = parseInt(weekdayTimeSlots[index].start);
@@ -166,7 +166,7 @@ const TimeSlotByWeekday = ({
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-gray-400 mb-1">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                 </svg>
-                <span className="text-xs font-medium text-gray-400">Not available</span>
+                <span className="text-xs font-medium text-gray-400">{t("form.scheduleAvailability.notAvailable")}</span>
               </div>
             )}
           </div>
