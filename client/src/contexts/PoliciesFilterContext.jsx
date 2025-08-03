@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { VALID_REFUND_OPTIONS, REFUND_POLICY_METADATA, isProtectionPlanAvailable, getPrimaryRefundPolicy } from "../utils/refundPolicyConfig";
+import { VALID_REFUND_OPTIONS, getTranslatedRefundPolicyMetadata, isProtectionPlanAvailable, getPrimaryRefundPolicy } from "../utils/refundPolicyConfig";
 
 // Context for managing policies filter state
 const PoliciesFilterContext = createContext();
@@ -16,11 +16,17 @@ export const usePoliciesFilter = () => {
 
 // Provider component following Single Responsibility Principle
 export const PoliciesFilterProvider = ({ children }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   
   // State management - Single source of truth for policy filter state
   const [selectedPolicies, setSelectedPolicies] = useState([]);
   const [showAllPolicies, setShowAllPolicies] = useState(false);
+
+  // Get translated metadata based on current language
+  const currentLanguage = i18n.language || 'en';
+  const translatedPolicyMetadata = useMemo(() => {
+    return getTranslatedRefundPolicyMetadata(currentLanguage);
+  }, [currentLanguage]);
 
   // Action handlers following DRY principle - reusable and composable
   const addPolicy = useCallback((policyKey) => {
@@ -68,12 +74,12 @@ export const PoliciesFilterProvider = ({ children }) => {
   const relevantPoliciesWithLabels = useMemo(() => {
     return VALID_REFUND_OPTIONS.map(policyKey => ({
       key: policyKey,
-      ...REFUND_POLICY_METADATA[policyKey],
-      label: t(`search:filters.modals.policy.policies.${policyKey}`) || REFUND_POLICY_METADATA[policyKey]?.label || policyKey,
-      description: t(`search:filters.modals.policy.descriptions.${policyKey}`) || REFUND_POLICY_METADATA[policyKey]?.description || '',
-      detailedDescription: t(`search:filters.modals.policy.descriptions.${policyKey}`) || REFUND_POLICY_METADATA[policyKey]?.detailedDescription || REFUND_POLICY_METADATA[policyKey]?.description || ''
+      ...translatedPolicyMetadata[policyKey],
+      label: t(`search:filters.modals.policy.policies.${policyKey}`) || translatedPolicyMetadata[policyKey]?.label || policyKey,
+      description: t(`search:filters.modals.policy.descriptions.${policyKey}`) || translatedPolicyMetadata[policyKey]?.description || '',
+      detailedDescription: t(`search:filters.modals.policy.descriptions.${policyKey}`) || translatedPolicyMetadata[policyKey]?.detailedDescription || translatedPolicyMetadata[policyKey]?.description || ''
     }));
-  }, [t]);
+  }, [t, translatedPolicyMetadata]);
 
   // Most commonly used policies for default display
   const popularPolicies = useMemo(() => [
@@ -125,7 +131,7 @@ export const PoliciesFilterProvider = ({ children }) => {
     relevantPoliciesWithLabels,
     popularPolicies,
     allValidPolicies: VALID_REFUND_OPTIONS,
-    policyMetadata: REFUND_POLICY_METADATA,
+    policyMetadata: translatedPolicyMetadata,
     
     // Computed values
     hasSelectedPolicies: selectedPolicies.length > 0,
@@ -140,7 +146,8 @@ export const PoliciesFilterProvider = ({ children }) => {
     isPolicySelected,
     filterPlacesByPolicies,
     relevantPoliciesWithLabels,
-    popularPolicies
+    popularPolicies,
+    translatedPolicyMetadata
   ]);
 
   return (

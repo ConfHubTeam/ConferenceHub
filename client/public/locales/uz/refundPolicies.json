@@ -1,0 +1,56 @@
+{
+  "title": "Bekor qilish va qaytarish siyosati",
+  "protectionPlanAvailable": "Himoya rejasi mavjud",
+  "protectionPlanDescription": "Xotirjamlik uchun bron qilishda himoya qo'shing (+bron qilish narxining {{percentage}}%)",
+  "importantNotes": {
+    "title": "Muhim eslatmalar",
+    "timezone": "Bekor qilish siyosatlari O'zbekiston vaqt mintaqasidagi bron qilish boshlanish vaqtiga taalluqlidir",
+    "processingTime": "Qaytarishlar 3-5 ish kuni ichida amalga oshiriladi",
+    "serviceFees": "Xizmat to'lovlari boshqacha ko'rsatilmagan bo'lsa qaytarilmaydi",
+    "protectionFee": "Himoya rejasi to'lovi qaytarilmaydi, lekin to'liq bron qilish summangizni qamrab oladi"
+  },
+  "policies": {
+    "flexible_14_day": {
+      "label": "Moslashuvchan 14-kun",
+      "shortLabel": "Moslashuvchan",
+      "description": "Kelishdan 14+ kun oldin bekor qilsangiz to'liq qaytarish",
+      "shortDescription": "To'liq qaytarish (14+ kun ogohlantiruvi)",
+      "detailedDescription": "Rejalashtirilgan kelish vaqtidan kamida 14 kun oldin bron qilishingizni bekor qilsangiz, to'liq qaytarishni oling."
+    },
+    "moderate_7_day": {
+      "label": "O'rtacha 7-kun",
+      "shortLabel": "O'rtacha",
+      "description": "Kelishdan 7+ kun oldin bekor qilsangiz 50% qaytarish",
+      "shortDescription": "50% qaytarish (7+ kun ogohlantiruvi)",
+      "detailedDescription": "Rejalashtirilgan kelish vaqtidan kamida 7 kun oldin bron qilishingizni bekor qilsangiz, 50% qaytarishni oling."
+    },
+    "strict": {
+      "label": "Qat'iy",
+      "shortLabel": "Qat'iy",
+      "description": "Kelishdan 6 kundan kam vaqt oldin bekor qilsangiz qaytarish yo'q",
+      "shortDescription": "Qaytarish yo'q (<6 kun ogohlantiruvi)",
+      "detailedDescription": "Kelishdan 6 kundan kam vaqt ichida bekor qilsangiz qaytarish mavjud emas."
+    },
+    "non_refundable": {
+      "label": "Qaytarilmaydigan",
+      "shortLabel": "Qaytarilmaydigan",
+      "description": "Hech qanday sharoitda qaytarish yo'q",
+      "shortDescription": "Qaytarishlarga ruxsat berilmaydi",
+      "detailedDescription": "Bu bron qilish qaytarilmaydi. Bekor qilish vaqtidan qat'i nazar qaytarishlar taqdim etilmaydi."
+    },
+    "reschedule_only": {
+      "label": "Faqat qayta rejalashtirish",
+      "shortLabel": "Qayta rejalashtirish",
+      "description": "Qaytarish yo'q, lekin 3+ kun ogohlantiruv bilan qayta rejalashtirish mumkin",
+      "shortDescription": "Qayta rejalashtirish ruxsat berilgan (3+ kun ogohlantiruvi)",
+      "detailedDescription": "Pul qaytarish mavjud emas, lekin 3 kun oldindan ogohlantirsangiz bron qilishingizni qayta rejalashtirishingiz mumkin."
+    },
+    "client_protection_plan": {
+      "label": "Himoya rejasi mavjud",
+      "shortLabel": "Himoya rejasi",
+      "description": "Istalgan vaqtda bekor qilish himoyasi uchun {{percentage}}% to'lov qo'shing",
+      "shortDescription": "Himoya rejasi mavjud (+{{percentage}}%)",
+      "detailedDescription": "Qo'shimcha {{percentage}}% uchun siz istalgan vaqtda bekor qilishingiz va asosiy siyosat yoki undan yaxshiroq bo'yicha to'liq qaytarishni olishingiz mumkin."
+    }
+  }
+}
