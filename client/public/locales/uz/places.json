@@ -60,7 +60,26 @@
       "selectedPeriod": "Tanlangan davr",
       "daysSelected": "{{count}} kun tanlandi"
     },
-    "saveButton": "Konferens zalini saqlash"
+    "saveButton": "Konferens zalini saqlash",
+    "pricingAndCapacity": {
+      "title": "Narx va sig'im",
+      "pricePerHour": "Soat uchun narx",
+      "fullDayDiscountPrice": "To'liq kun chegirma narxi",
+      "cooldownPeriod": "Tanafus davri",
+      "maxAttendees": "Maksimal ishtirokchilar",
+      "fullDayConsidered": "To'liq kun hisoblanadi",
+      "minimumBooking": "Minimal bron qilish",
+      "conferenceSize": "Konferens zali o'lchami (m²)",
+      "conferenceSizePlaceholder": "Xona o'lchamini kiriting",
+      "isThisHotel": "Bu mehmonxonami?",
+      "toggleHotelMode": "Mehmonxona rejimini o'zgartirish",
+      "yes": "Ha",
+      "no": "Yo'q",
+      "hours": "soat",
+      "hour": "soat",
+      "hourSingular": "soat",
+      "hourPlural": "soat"
+    }
   },
   "listing": {
     "details": "Joy tafsilotlari",

@@ -60,7 +60,26 @@
       "selectedPeriod": "Selected Period",
       "daysSelected": "{{count}} days selected"
     },
-    "saveButton": "Save Conference Room"
+    "saveButton": "Save Conference Room",
+    "pricingAndCapacity": {
+      "title": "Pricing & Capacity",
+      "pricePerHour": "Price per hour",
+      "fullDayDiscountPrice": "Full day discount price",
+      "cooldownPeriod": "Cooldown period",
+      "maxAttendees": "Max attendees",
+      "fullDayConsidered": "Full day considered",
+      "minimumBooking": "Minimum booking",
+      "conferenceSize": "Conference size (m²)",
+      "conferenceSizePlaceholder": "Enter room size",
+      "isThisHotel": "Is this Hotel ?",
+      "toggleHotelMode": "Toggle Hotel Mode",
+      "yes": "Yes",
+      "no": "No",
+      "hours": "hours",
+      "hour": "hour",
+      "hourSingular": "hour",
+      "hourPlural": "hours"
+    }
   },
   "listing": {
     "details": "Property Details",

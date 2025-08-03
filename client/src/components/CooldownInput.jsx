@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function CooldownInput({ cooldownMinutes, setCooldownMinutes }) {
+  const { t } = useTranslation("places");
   const [isOpen, setIsOpen] = useState(false);
   // Generate options for 1-12 hours in minutes (60, 120, 180, ... 720)
   const options = Array.from({ length: 12 }, (_, i) => (i + 1) * 60);
@@ -8,7 +10,7 @@ export default function CooldownInput({ cooldownMinutes, setCooldownMinutes }) {
   // Format the display value - always show in hours for 1-12 hour range
   const formatDisplayValue = (minutes) => {
     const hours = Math.floor(minutes / 60);
-    return `${hours} hour${hours !== 1 ? 's' : ''}`;
+    return `${hours} ${hours === 1 ? t("form.pricingAndCapacity.hourSingular") : t("form.pricingAndCapacity.hourPlural")}`;
   };
 
   // Handle option selection
@@ -51,7 +53,7 @@ export default function CooldownInput({ cooldownMinutes, setCooldownMinutes }) {
   return (
     <div className="w-full">
       <label htmlFor="cooldownMinutes" className="block mb-2 text-sm font-medium text-gray-700">
-        Cooldown period
+        {t("form.pricingAndCapacity.cooldownPeriod")}
       </label>
       <div className="relative">
         <div

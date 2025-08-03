@@ -1,8 +1,12 @@
+import { useTranslation } from "react-i18next";
+
 export default function MaxAttendeesInput({ maxGuests, setMaxGuests }) {
+  const { t } = useTranslation("places");
+  
   return (
     <div className="w-full">
       <label htmlFor="maxGuests" className="block mb-0 text-sm font-medium text-gray-700">
-        Max attendees
+        {t("form.pricingAndCapacity.maxAttendees")}
       </label>
       <input
         id="maxGuests"

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import PriceInput from "./PriceInput";
 import CurrencySelector from "./CurrencySelector";
 import MaxAttendeesInput from "./MaxAttendeesInput";
@@ -39,8 +40,15 @@ const PricingAndCapacity = ({
   isHotel,
   setIsHotel,
 }) => {
+  const { t } = useTranslation("places");
+
   return (
     <div id="pricing-capacity" className="bg-white p-3 rounded-2xl shadow-sm border">
+      {/* Section Title */}
+      <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+        {t("form.pricingAndCapacity.title")}
+      </h3>
+      
       <div className="w-full mb-3">
         <CurrencySelector 
           selectedCurrency={currency} 
@@ -54,7 +62,7 @@ const PricingAndCapacity = ({
             value={price} 
             onChange={setPrice} 
             currency={currency}
-            label="Price per hour"
+            label={t("form.pricingAndCapacity.pricePerHour")}
             isRequired={true}
           />
         </div>
@@ -63,7 +71,7 @@ const PricingAndCapacity = ({
             value={fullDayDiscountPrice} 
             onChange={setFullDayDiscountPrice} 
             currency={currency}
-            label="Full day discount price"
+            label={t("form.pricingAndCapacity.fullDayDiscountPrice")}
             isRequired={true}
           />
         </div>

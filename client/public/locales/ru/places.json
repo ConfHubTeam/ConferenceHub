@@ -60,7 +60,26 @@
       "selectedPeriod": "Выбранный период",
       "daysSelected": "{{count}} дней выбрано"
     },
-    "saveButton": "Сохранить конференц-зал"
+    "saveButton": "Сохранить конференц-зал",
+    "pricingAndCapacity": {
+      "title": "Цены и вместимость",
+      "pricePerHour": "Цена за час",
+      "fullDayDiscountPrice": "Цена со скидкой на полный день",
+      "cooldownPeriod": "Период охлаждения",
+      "maxAttendees": "Максимум участников",
+      "fullDayConsidered": "Полный день считается",
+      "minimumBooking": "Минимальное бронирование",
+      "conferenceSize": "Размер конференц-зала (м²)",
+      "conferenceSizePlaceholder": "Введите размер комнаты",
+      "isThisHotel": "Это отель?",
+      "toggleHotelMode": "Переключить режим отеля",
+      "yes": "Да",
+      "no": "Нет",
+      "hours": "часов",
+      "hour": "час",
+      "hourSingular": "час",
+      "hourPlural": "часов"
+    }
   },
   "listing": {
     "details": "Детали жилья",
