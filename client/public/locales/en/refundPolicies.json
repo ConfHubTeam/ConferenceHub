@@ -2,6 +2,12 @@
   "title": "Cancellation & Refund Policy",
   "protectionPlanAvailable": "Protection Plan Available",
   "protectionPlanDescription": "Add protection during booking for peace of mind cancellation (+{{percentage}}% of booking price)",
+  "form": {
+    "pleaseSelectOne": "Please select at least one refund option",
+    "pricingConsideration": "Pricing Consideration",
+    "protectionPlanWarning": "Client Protection Plan with Non-refundable policy requires careful price validation. The {{percentage}}% protection fee should be clearly communicated to clients.",
+    "selectedOptions": "Selected Refund Options:"
+  },
   "importantNotes": {
     "title": "Important Notes",
     "timezone": "Cancellation policies apply to the booking start time in Uzbekistan timezone",
