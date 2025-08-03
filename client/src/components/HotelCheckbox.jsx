@@ -11,7 +11,7 @@ const HotelCheckbox = ({ isHotel, setIsHotel }) => {
   return (
     <div className="w-full">
       <label htmlFor="hotel-toggle" className="block mb-1 text-sm font-medium text-gray-700">
-        {t("placeCreate.pricingAndCapacity.isThisHotel")}
+        {t("places:placeCreate.pricingAndCapacity.isThisHotel")}
       </label>
       
       <div className="border border-gray-300 rounded-md p-3 bg-white shadow-sm">
@@ -24,7 +24,7 @@ const HotelCheckbox = ({ isHotel, setIsHotel }) => {
             aria-pressed={isHotel}
             role="switch"
           >
-            <span className="sr-only">{t("placeCreate.pricingAndCapacity.toggleHotelMode")}</span>
+            <span className="sr-only">{t("places:placeCreate.pricingAndCapacity.toggleHotelMode")}</span>
             <span 
               className={`absolute inline-block h-4 w-4 transform rounded-full bg-white border border-gray-100 shadow transition-transform duration-200 ease-in-out ${isHotel ? 'translate-x-[19px]' : 'translate-x-[3px]'}`}
             />
@@ -32,8 +32,8 @@ const HotelCheckbox = ({ isHotel, setIsHotel }) => {
           
           <span className="text-sm font-medium min-w-[30px] ml-2">
             {isHotel ? 
-              <span className="text-primary font-semibold">{t("placeCreate.pricingAndCapacity.yes")}</span> : 
-              <span className="text-gray-500">{t("placeCreate.pricingAndCapacity.no")}</span>
+              <span className="text-primary font-semibold">{t("places:placeCreate.pricingAndCapacity.yes")}</span> : 
+              <span className="text-gray-500">{t("places:placeCreate.pricingAndCapacity.no")}</span>
             }
           </span>
         </div>
