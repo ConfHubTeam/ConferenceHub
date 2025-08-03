@@ -421,37 +421,37 @@ export default function PlacesFormPage() {
       ...(user?.userType === 'agent' ? [{
         isValid: selectedHost && selectedHost.id,
         fieldId: "host-selector",
-        errorMessage: t('places:placeCreate.validation.hostRequired')
+        errorMessage: t('placeCreate.validation.hostRequired')
       }] : []),
       {
         isValid: title.trim(),
         fieldId: "place-title",
-        errorMessage: t('places:placeCreate.validation.titleRequired')
+        errorMessage: t('placeCreate.validation.titleRequired')
       },
       {
         isValid: address.trim(),
         fieldId: "place-address", 
-        errorMessage: t('places:placeCreate.validation.addressRequired')
+        errorMessage: t('placeCreate.validation.addressRequired')
       },
       {
         isValid: price && parseFloat(price) > 0,
         fieldId: "pricing-capacity",
-        errorMessage: t('places:placeCreate.validation.priceRequired')
+        errorMessage: t('placeCreate.validation.priceRequired')
       },
       {
         isValid: fullDayDiscountPrice && parseFloat(fullDayDiscountPrice) > 0,
         fieldId: "pricing-capacity",
-        errorMessage: t('places:placeCreate.validation.fullDayPriceRequired')
+        errorMessage: t('placeCreate.validation.fullDayPriceRequired')
       },
       {
         isValid: currency,
         fieldId: "pricing-capacity",
-        errorMessage: t('places:placeCreate.validation.currencyRequired')
+        errorMessage: t('placeCreate.validation.currencyRequired')
       },
       {
         isValid: startDate && endDate,
         fieldId: "date-availability",
-        errorMessage: t('places:placeCreate.validation.datesRequired')
+        errorMessage: t('placeCreate.validation.datesRequired')
       },
       {
         customCheck: () => {
@@ -461,7 +461,7 @@ export default function PlacesFormPage() {
           return true;
         },
         fieldId: "date-availability",
-        errorMessage: t('places:placeCreate.validation.endDateAfterStart')
+        errorMessage: t('placeCreate.validation.endDateAfterStart')
       },
       {
         customCheck: () => {
@@ -469,7 +469,7 @@ export default function PlacesFormPage() {
           return blockedWeekdays.length < 7;
         },
         fieldId: "time-slots",
-        errorMessage: t('places:placeCreate.validation.weekdayRequired')
+        errorMessage: t('placeCreate.validation.weekdayRequired')
       },
       {
         customCheck: () => {
@@ -498,12 +498,12 @@ export default function PlacesFormPage() {
           return true;
         },
         fieldId: "time-slots",
-        errorMessage: t('places:placeCreate.validation.timeSlotsRequired')
+        errorMessage: t('placeCreate.validation.timeSlotsRequired')
       },
       {
         isValid: refundOptions && refundOptions.length > 0,
         fieldId: "refund-options",
-        errorMessage: t('places:placeCreate.validation.refundOptionsRequired')
+        errorMessage: t('placeCreate.validation.refundOptionsRequired')
       }
     ];
 
@@ -517,7 +517,7 @@ export default function PlacesFormPage() {
     // Validate and clean YouTube link
     const cleanedYouTubeLink = extractYouTubeVideoId(youtubeLink);
     if (youtubeLink && !cleanedYouTubeLink) {
-      scrollToAndHighlightField("youtube-section", t('places:placeCreate.validation.invalidYouTube'), setError);
+      scrollToAndHighlightField("youtube-section", t('placeCreate.validation.invalidYouTube'), setError);
       return;
     }
 
@@ -545,7 +545,7 @@ export default function PlacesFormPage() {
     // Ensure we have a valid currency ID from the database
     // Not just from a local defaultCurrencies object
     if (currency && (!currency.id || isNaN(parseInt(currency.id)))) {
-      setError(t('places:placeCreate.validation.invalidCurrency'));
+      setError(t('placeCreate.validation.invalidCurrency'));
       return;
     }
     
@@ -603,7 +603,7 @@ export default function PlacesFormPage() {
       console.log("Response after saving:", response.data);
     } catch (error) {
       console.error("Submission error:", error.response?.data || error);
-      setError(error.response?.data?.error || t('places:placeCreate.validation.submitFailed'));
+      setError(error.response?.data?.error || t('placeCreate.validation.submitFailed'));
     }
   }
 
@@ -681,9 +681,9 @@ export default function PlacesFormPage() {
         {/* Host Selection for Agents */}
         {user?.userType === 'agent' && (
           <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-2">{t('places:placeCreate.hostSelector.title')}</h3>
+            <h3 className="text-lg font-semibold mb-2">{t('placeCreate.hostSelector.title')}</h3>
             <p className="text-gray-600 text-sm mb-3">
-              {t('places:placeCreate.hostSelector.description')}
+              {t('placeCreate.hostSelector.description')}
             </p>
             <HostSelector
               selectedHost={selectedHost}
@@ -693,14 +693,14 @@ export default function PlacesFormPage() {
         )}
         
         {preInput(
-          "places:placeCreate.title",
+          "placeCreate.title",
           null,
           true // Required field
         )}
         <input
           id="place-title"
           type="text"
-          placeholder={t('places:placeCreate.titlePlaceholder')}
+          placeholder={t('placeCreate.titlePlaceholder')}
           value={title}
           onChange={(event) => setTitle(event.target.value)}
           className="w-full border my-2 py-2 px-3 rounded-2xl"
@@ -723,7 +723,7 @@ export default function PlacesFormPage() {
           placeId={id} // Pass the place ID to determine if this is creation or editing
         />
         
-        {preInput("places:placeCreate.photos")}
+        {preInput("placeCreate.photos")}
         <PhotoUploader
           addedPhotos={addedPhotos}
           setAddedPhotos={setAddedPhotos}
@@ -741,23 +741,23 @@ export default function PlacesFormPage() {
           preInput={preInput}
         />
         
-        {preInput("places:placeCreate.description")}
+        {preInput("placeCreate.description")}
         <textarea
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           className="w-full border my-2 py-2 px-3 rounded-2xl"
           rows={5}
-          placeholder={t('places:placeCreate.descriptionPlaceholder')}
+          placeholder={t('placeCreate.descriptionPlaceholder')}
         />
-        {preInput("places:placeCreate.perks")}
+        {preInput("placeCreate.perks")}
         <PerkSelections selectedPerks={perks} setPerks={setPerks} />
-        {preInput("places:placeCreate.extraInfo")}
+        {preInput("placeCreate.extraInfo")}
         <textarea
           value={extraInfo}
           onChange={(event) => setExtraInfo(event.target.value)}
           className="w-full border my-2 py-2 px-3 rounded-2xl"
           rows={4}
-          placeholder={t('places:placeCreate.extraInfoPlaceholder')}
+          placeholder={t('placeCreate.extraInfoPlaceholder')}
         />
         <AvailabilitySection
           startDate={startDate}
@@ -796,8 +796,8 @@ export default function PlacesFormPage() {
         />
         
         {preInput(
-          "places:placeCreate.refundOptions",
-          "places:placeCreate.refundOptionsDescription",
+          "placeCreate.refundOptions",
+          "placeCreate.refundOptionsDescription",
           true // Required field
         )}
         <RefundOptions
@@ -824,7 +824,7 @@ export default function PlacesFormPage() {
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            {t('places:placeCreate.saveButton')}
+            {t('placeCreate.saveButton')}
           </button>
         </div>
       </form>

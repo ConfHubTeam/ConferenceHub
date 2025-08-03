@@ -36,7 +36,7 @@ const WeekdayBlocker = ({ blockedWeekdays, setBlockedWeekdays }) => {
 
   return (
     <div className="mb-4">
-      <h4 className="text-sm font-medium text-gray-700 mb-2">{t("places:placeCreate.scheduleAvailability.blockWeekdays")}</h4>
+      <h4 className="text-sm font-medium text-gray-700 mb-2">{t("placeCreate.scheduleAvailability.blockWeekdays")}</h4>
       <div className="flex flex-wrap gap-2">
         {weekdays.map((day) => (
           <label key={day.key} className="flex items-center gap-1 p-2 border rounded-lg">
@@ -46,7 +46,7 @@ const WeekdayBlocker = ({ blockedWeekdays, setBlockedWeekdays }) => {
               onChange={(e) => handleWeekdayToggle(e.target.checked, day.index)}
               className="w-4 h-4 accent-blue-600"
             />
-            <span>{t(`places:placeCreate.scheduleAvailability.weekdays.${day.key}`)}</span>
+            <span>{t(`placeCreate.scheduleAvailability.weekdays.${day.key}`)}</span>
           </label>
         ))}
       </div>
