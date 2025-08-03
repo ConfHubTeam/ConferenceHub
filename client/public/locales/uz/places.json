@@ -23,6 +23,10 @@
   "form": {
     "title": "Joy ma'lumotlari",
     "titlePlaceholder": "Sarlavha, masalan: Boshqaruv konferens zali",
+    "hostSelector": {
+      "title": "Host tanlash",
+      "description": "Ushbu joyni qaysi host uchun yaratishni xohlayotganingizni tanlang."
+    },
     "name": "Joy nomi",
     "namePlaceholder": "Joy nomini kiriting",
     "description": "Tavsif",

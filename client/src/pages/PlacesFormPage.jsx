@@ -410,37 +410,37 @@ export default function PlacesFormPage() {
       ...(user?.userType === 'agent' ? [{
         isValid: selectedHost && selectedHost.id,
         fieldId: "host-selector",
-        errorMessage: t('places:validation.hostRequired')
+        errorMessage: t('places:form.validation.hostRequired')
       }] : []),
       {
         isValid: title.trim(),
         fieldId: "place-title",
-        errorMessage: t('places:validation.titleRequired')
+        errorMessage: t('places:form.validation.titleRequired')
       },
       {
         isValid: address.trim(),
         fieldId: "place-address", 
-        errorMessage: t('places:validation.addressRequired')
+        errorMessage: t('places:form.validation.addressRequired')
       },
       {
         isValid: price && parseFloat(price) > 0,
         fieldId: "pricing-capacity",
-        errorMessage: t('places:validation.priceRequired')
+        errorMessage: t('places:form.validation.priceRequired')
       },
       {
         isValid: fullDayDiscountPrice && parseFloat(fullDayDiscountPrice) > 0,
         fieldId: "pricing-capacity",
-        errorMessage: t('places:validation.fullDayPriceRequired')
+        errorMessage: t('places:form.validation.fullDayPriceRequired')
       },
       {
         isValid: currency,
         fieldId: "pricing-capacity",
-        errorMessage: t('places:validation.currencyRequired')
+        errorMessage: t('places:form.validation.currencyRequired')
       },
       {
         isValid: startDate && endDate,
         fieldId: "date-availability",
-        errorMessage: t('places:validation.datesRequired')
+        errorMessage: t('places:form.validation.datesRequired')
       },
       {
         customCheck: () => {
@@ -450,7 +450,7 @@ export default function PlacesFormPage() {
           return true;
         },
         fieldId: "date-availability",
-        errorMessage: t('places:validation.endDateAfterStart')
+        errorMessage: t('places:form.validation.endDateAfterStart')
       },
       {
         customCheck: () => {
@@ -458,7 +458,7 @@ export default function PlacesFormPage() {
           return blockedWeekdays.length < 7;
         },
         fieldId: "time-slots",
-        errorMessage: t('places:validation.weekdayRequired')
+        errorMessage: t('places:form.validation.weekdayRequired')
       },
       {
         customCheck: () => {
@@ -487,12 +487,12 @@ export default function PlacesFormPage() {
           return true;
         },
         fieldId: "time-slots",
-        errorMessage: t('places:validation.timeSlotsRequired')
+        errorMessage: t('places:form.validation.timeSlotsRequired')
       },
       {
         isValid: refundOptions && refundOptions.length > 0,
         fieldId: "refund-options",
-        errorMessage: t('places:validation.refundOptionsRequired')
+        errorMessage: t('places:form.validation.refundOptionsRequired')
       }
     ];
 
@@ -506,7 +506,7 @@ export default function PlacesFormPage() {
     // Validate and clean YouTube link
     const cleanedYouTubeLink = extractYouTubeVideoId(youtubeLink);
     if (youtubeLink && !cleanedYouTubeLink) {
-      scrollToAndHighlightField("youtube-section", t('places:validation.invalidYouTube'), setError);
+      scrollToAndHighlightField("youtube-section", t('places:form.validation.invalidYouTube'), setError);
       return;
     }
 
@@ -534,7 +534,7 @@ export default function PlacesFormPage() {
     // Ensure we have a valid currency ID from the database
     // Not just from a local defaultCurrencies object
     if (currency && (!currency.id || isNaN(parseInt(currency.id)))) {
-      setError(t('places:validation.invalidCurrency'));
+      setError(t('places:form.validation.invalidCurrency'));
       return;
     }
     
@@ -592,7 +592,7 @@ export default function PlacesFormPage() {
       console.log("Response after saving:", response.data);
     } catch (error) {
       console.error("Submission error:", error.response?.data || error);
-      setError(error.response?.data?.error || t('places:validation.submitFailed'));
+      setError(error.response?.data?.error || t('places:form.validation.submitFailed'));
     }
   }
 
@@ -651,9 +651,9 @@ export default function PlacesFormPage() {
         {/* Host Selection for Agents */}
         {user?.userType === 'agent' && (
           <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-2">Select Host</h3>
+            <h3 className="text-lg font-semibold mb-2">{t('places:form.hostSelector.title')}</h3>
             <p className="text-gray-600 text-sm mb-3">
-              Choose which host you want to create this place for.
+              {t('places:form.hostSelector.description')}
             </p>
             <HostSelector
               selectedHost={selectedHost}

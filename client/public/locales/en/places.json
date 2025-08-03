@@ -23,6 +23,10 @@
   "form": {
     "title": "Property Information",
     "titlePlaceholder": "Title, for example: Executive Conference Room",
+    "hostSelector": {
+      "title": "Select Host",
+      "description": "Choose which host you want to create this place for."
+    },
     "name": "Property Name",
     "namePlaceholder": "Enter property name",
     "description": "Description",
