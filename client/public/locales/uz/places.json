@@ -79,6 +79,42 @@
       "hour": "soat",
       "hourSingular": "soat",
       "hourPlural": "soat"
+    },
+    "scheduleAvailability": {
+      "title": "Jadval va mavjudlik",
+      "blockWeekdays": "Hafta kunlarini bloklash:",
+      "blockSpecificDates": "Muayyan sanalarni bloklash",
+      "showBlockSpecificDates": "Muayyan sanalarni bloklashni ko'rsatish",
+      "hideBlockSpecificDates": "Muayyan sanalarni bloklashni yashirish",
+      "timeSlotsTitle": "Hafta kunlari bo'yicha vaqt oralig'i",
+      "from": "Dan",
+      "to": "Gacha",
+      "select": "Tanlash",
+      "selectStartTimeFirst": "Avval boshlanish vaqtini tanlang",
+      "notAvailable": "Mavjud emas",
+      "selectDatesToBlock": "Bloklash uchun sanalarni tanlang",
+      "clearAllBlockedDates": "Barcha bloklangan sanalarni tozalash",
+      "dateCurrentlyBlocked": "sana hozirda bloklangan",
+      "datesCurrentlyBlocked": "sana hozirda bloklangan",
+      "dateSelected": "sana bloklandi",
+      "datesSelected": "sana bloklandi",
+      "clearAll": "Hammasini tozalash",
+      "weekdays": {
+        "sunday": "Yakshanba",
+        "monday": "Dushanba",
+        "tuesday": "Seshanba",
+        "wednesday": "Chorshanba", 
+        "thursday": "Payshanba",
+        "friday": "Juma",
+        "saturday": "Shanba",
+        "sun": "Ya",
+        "mon": "Du",
+        "tue": "Se",
+        "wed": "Cho",
+        "thu": "Pa", 
+        "fri": "Ju",
+        "sat": "Sh"
+      }
     }
   },
   "listing": {

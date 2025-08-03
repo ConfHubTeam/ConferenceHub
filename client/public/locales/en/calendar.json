@@ -93,6 +93,9 @@
     },
     "buttons": {
       "close": "Close"
-    }
+    },
+    "dateSelected": "date blocked",
+    "datesSelected": "dates blocked", 
+    "clearAll": "Clear all"
   }
 }

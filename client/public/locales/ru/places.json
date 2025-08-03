@@ -79,6 +79,42 @@
       "hour": "час",
       "hourSingular": "час",
       "hourPlural": "часов"
+    },
+    "scheduleAvailability": {
+      "title": "Расписание и доступность",
+      "blockWeekdays": "Заблокировать дни недели:",
+      "blockSpecificDates": "Заблокировать определенные даты",
+      "showBlockSpecificDates": "Показать блокировку определенных дат",
+      "hideBlockSpecificDates": "Скрыть блокировку определенных дат",
+      "timeSlotsTitle": "Временные слоты по дням недели",
+      "from": "С",
+      "to": "До",
+      "select": "Выбрать",
+      "selectStartTimeFirst": "Сначала выберите время начала",
+      "notAvailable": "Недоступно",
+      "selectDatesToBlock": "Выберите даты для блокировки",
+      "clearAllBlockedDates": "Очистить все заблокированные даты",
+      "dateCurrentlyBlocked": "дата в настоящее время заблокирована",
+      "datesCurrentlyBlocked": "дат в настоящее время заблокированы",
+      "dateSelected": "дата заблокирована",
+      "datesSelected": "дат заблокировано",
+      "clearAll": "Очистить все",
+      "weekdays": {
+        "sunday": "Воскресенье",
+        "monday": "Понедельник",
+        "tuesday": "Вторник", 
+        "wednesday": "Среда",
+        "thursday": "Четверг",
+        "friday": "Пятница",
+        "saturday": "Суббота",
+        "sun": "Вс",
+        "mon": "Пн",
+        "tue": "Вт",
+        "wed": "Ср", 
+        "thu": "Чт",
+        "fri": "Пт",
+        "sat": "Сб"
+      }
     }
   },
   "listing": {
