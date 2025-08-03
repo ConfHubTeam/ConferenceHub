@@ -20,7 +20,7 @@
     "cottage": "Дача",
     "townhouse": "Таунхаус"
   },
-  "form": {
+  "placeCreate": {
     "title": "Информация о недвижимости",
     "titlePlaceholder": "Заголовок, например: Исполнительный конференц-зал",
     "hostSelector": {

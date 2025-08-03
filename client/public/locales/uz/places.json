@@ -20,7 +20,7 @@
     "cottage": "Kottej",
     "townhouse": "Shahar uyi"
   },
-  "form": {
+  "placeCreate": {
     "title": "Joy ma'lumotlari",
     "titlePlaceholder": "Sarlavha, masalan: Boshqaruv konferens zali",
     "hostSelector": {

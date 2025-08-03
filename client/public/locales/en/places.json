@@ -20,7 +20,7 @@
     "cottage": "Cottage",
     "townhouse": "Townhouse"
   },
-  "form": {
+  "placeCreate": {
     "title": "Property Information",
     "titlePlaceholder": "Title, for example: Executive Conference Room",
     "hostSelector": {

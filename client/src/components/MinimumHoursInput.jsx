@@ -22,7 +22,7 @@ const MinimumHoursInput = ({ minimumHours, setMinimumHours }) => {
 
   // Format the display value
   const formatDisplayValue = (hours) => {
-    return `${hours} ${hours === 1 ? t("places:form.pricingAndCapacity.hourSingular") : t("places:form.pricingAndCapacity.hourPlural")}`;
+    return `${hours} ${hours === 1 ? t("places:placeCreate.pricingAndCapacity.hourSingular") : t("places:placeCreate.pricingAndCapacity.hourPlural")}`;
   };
 
   // Handle option selection
@@ -68,7 +68,7 @@ const MinimumHoursInput = ({ minimumHours, setMinimumHours }) => {
   return (
     <div className="w-full">
       <label htmlFor="minimumHours" className="block mb-2 text-sm font-medium text-gray-700">
-        {t("places:form.pricingAndCapacity.minimumBooking")}
+        {t("places:placeCreate.pricingAndCapacity.minimumBooking")}
       </label>
       <div className="relative">
         <div
