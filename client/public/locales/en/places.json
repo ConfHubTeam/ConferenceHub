@@ -54,6 +54,12 @@
     "ownerEmail": "Owner email",
     "refundOptions": "Refund Options",
     "refundOptionsDescription": "Select the refund and cancellation policies for your conference room.",
+    "dateAvailability": {
+      "title": "Available dates",
+      "clearSelectedPeriod": "Clear selected period",
+      "selectedPeriod": "Selected Period",
+      "daysSelected": "{{count}} days selected"
+    },
     "saveButton": "Save Conference Room"
   },
   "listing": {

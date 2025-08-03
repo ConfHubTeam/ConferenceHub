@@ -54,6 +54,12 @@
     "ownerEmail": "Email владельца",
     "refundOptions": "Варианты возврата",
     "refundOptionsDescription": "Выберите политику возврата и отмены для вашего конференц-зала.",
+    "dateAvailability": {
+      "title": "Доступные даты",
+      "clearSelectedPeriod": "Очистить выбранный период",
+      "selectedPeriod": "Выбранный период",
+      "daysSelected": "{{count}} дней выбрано"
+    },
     "saveButton": "Сохранить конференц-зал"
   },
   "listing": {

@@ -120,6 +120,13 @@
       "cancel": "Отменить"
     }
   },
+  "selectedDates": {
+    "title": "Выбранные слоты бронирования",
+    "titleWithCount": "Выбранные слоты бронирования ({{count}})",
+    "clearAll": "Очистить все",
+    "editTime": "Изменить время",
+    "removeDate": "Удалить дату"
+  },
   "status": {
     "pending": "В ожидании",
     "confirmed": "Подтверждено",

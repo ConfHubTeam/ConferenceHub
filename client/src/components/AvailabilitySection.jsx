@@ -60,10 +60,6 @@ export default function AvailabilitySection({
 }) {
   return (
     <>
-      {preInput(
-        true // Required field
-      )}
-      
       <div className="grid gap-3 grid-cols-1 md:grid-cols-2 mt-2">
         {/* Left column: Calendar + Pricing and Capacity */}
         <div className="flex flex-col gap-3">

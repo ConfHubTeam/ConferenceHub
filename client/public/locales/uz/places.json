@@ -54,6 +54,12 @@
     "ownerEmail": "Egasi elektron pochtasi",
     "refundOptions": "Qaytarish variantlari",
     "refundOptionsDescription": "Konferens zalingiz uchun qaytarish va bekor qilish siyosatlarini tanlang.",
+    "dateAvailability": {
+      "title": "Mavjud sanalar",
+      "clearSelectedPeriod": "Tanlangan davrani tozalash",
+      "selectedPeriod": "Tanlangan davr",
+      "daysSelected": "{{count}} kun tanlandi"
+    },
     "saveButton": "Konferens zalini saqlash"
   },
   "listing": {
