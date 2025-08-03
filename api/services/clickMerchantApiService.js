@@ -2,8 +2,8 @@ const axios = require('axios');
 const crypto = require('crypto');
 
 /**
- * Click.uz Merchant API Service for checking payment status
- * This allows us to pull payment status instead of relying on webhooks
+ * Click.uz Merchant API Service for Invoice Flow
+ * Handles invoice creation and status checking using Click.uz Invoice API
  */
 
 class ClickMerchantApiService {
@@ -33,46 +33,55 @@ class ClickMerchantApiService {
   }
 
   /**
-   * Check payment status by merchant transaction ID
-   * @param {string} merchantTransId - Your booking reference (e.g., REQ-MDEKEZCM-PL1R2)
-   * @param {string} paymentDate - Payment date in YYYY-MM-DD format (optional, defaults to today)
-   * @returns {Promise<Object>} Payment status response
+   * Main payment status check method for polling
+   * Uses invoice status API to check if payment has been completed
+   * @param {Object} booking - Booking object with invoice data
+   * @param {string} booking.clickInvoiceId - Invoice ID from Click.uz
+   * @returns {Promise<Object>} Payment status result
    */
-  async checkPaymentStatusByMerchantTransId(merchantTransId, paymentDate = null) {
-    try {
-      if (!paymentDate) {
-        // Default to today's date
-        paymentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-      }
-
-      const url = `${this.apiUrl}/payment/status_by_mti/${this.serviceId}/${merchantTransId}/${paymentDate}`;
-      
-      console.log(`🔍 Checking Click.uz payment status for: ${merchantTransId} on ${paymentDate}`);
-      
-      const response = await axios.get(url, {
-        headers: this.generateAuthHeader(),
-        timeout: 15000
-      });
-
-      console.log('✅ Click.uz API response:', response.data);
-
-      return {
-        success: response.data.error_code === 0,
-        data: response.data,
-        isPaid: response.data.payment_status === 1, // 1 = successful payment
-        paymentId: response.data.payment_id,
-        merchantTransId: response.data.merchant_trans_id,
-        errorCode: response.data.error_code,
-        errorNote: response.data.error_note
-      };
-
-    } catch (error) {
-      console.error('❌ Click.uz API error:', error.response?.data || error.message);
-      
+  async checkPaymentStatus(booking) {
+    console.log(`🔍 Checking payment status for booking: ${booking.id}`);
+    
+    if (!booking.clickInvoiceId) {
       return {
         success: false,
-        error: error.response?.data || error.message,
-        isPaid: false
+        isPaid: false,
+        error: 'No invoice ID found for booking'
+      };
+    }
+
+    // Check invoice status using the invoice ID
+    console.log(`📄 Checking invoice status for ID: ${booking.clickInvoiceId}`);
+    const invoiceResult = await this.checkInvoiceStatus(booking.clickInvoiceId);
+    
+    if (invoiceResult.success && invoiceResult.isPaid) {
+      return {
+        success: true,
+        isPaid: true,
+        paymentId: invoiceResult.paymentId,
+        method: 'invoice_status',
+        data: invoiceResult.data,
+        invoiceStatus: invoiceResult.invoiceStatus,
+        invoiceStatusNote: invoiceResult.invoiceStatusNote
+      };
+    } else if (invoiceResult.success) {
+      // Invoice exists but not paid yet
+      return {
+        success: true,
+        isPaid: false,
+        method: 'invoice_status',
+        data: invoiceResult.data,
+        invoiceStatus: invoiceResult.invoiceStatus,
+        invoiceStatusNote: invoiceResult.invoiceStatusNote,
+        details: invoiceResult
+      };
+    } else {
+      // Error checking invoice
+      return {
+        success: false,
+        isPaid: false,
+        error: invoiceResult.error,
+        errorCode: invoiceResult.errorCode
       };
     }
   }
@@ -130,7 +139,7 @@ class ClickMerchantApiService {
   }
 
   /**
-   * Check invoice status by invoice ID
+   * Check invoice status by invoice ID (Primary payment checking method)
    * @param {string} invoiceId - Click invoice ID
    * @returns {Promise<Object>} Invoice status response
    */
@@ -147,13 +156,37 @@ class ClickMerchantApiService {
 
       console.log('✅ Click.uz invoice status response:', response.data);
 
+      // Handle response format based on documentation
+      const errorCode = response.data.error_code;
+      const errorNote = response.data.error_note;
+      
+      // Status can be either 'invoice_status' or 'status' field
+      const status = response.data.invoice_status ?? response.data.status;
+      const statusNote = response.data.invoice_status_note ?? response.data.status_note ?? '';
+      const paymentId = response.data.payment_id;
+
+      // Determine if payment is successful based on documentation
+      // Status codes: 0=Created, 1=Processing, 2=Payment successful, 3=Cancelled, 4=Failed, 5=Expired, -99=Deleted
+      const isPaid = status === 2 && paymentId;
+      const isSuccess = errorCode >= 0; // Negative error codes indicate API errors
+
       return {
-        success: response.data.error_code === 0,
+        success: isSuccess,
         data: response.data,
-        invoiceStatus: response.data.invoice_status,
-        invoiceStatusNote: response.data.invoice_status_note,
-        errorCode: response.data.error_code,
-        errorNote: response.data.error_note
+        isPaid: isPaid,
+        paymentId: paymentId,
+        invoiceStatus: status,
+        invoiceStatusNote: statusNote,
+        errorCode: errorCode,
+        errorNote: errorNote,
+        // Additional helper properties for easier status checking
+        isCreated: status === 0,
+        isProcessing: status === 1,
+        isSuccessful: status === 2,
+        isCancelled: status === 3,
+        isFailed: status === 4,
+        isExpired: status === 5,
+        isDeleted: status === -99
       };
 
     } catch (error) {
@@ -162,80 +195,12 @@ class ClickMerchantApiService {
       return {
         success: false,
         error: error.response?.data || error.message,
-        invoiceStatus: null
+        isPaid: false,
+        invoiceStatus: null,
+        paymentId: null,
+        errorCode: error.response?.data?.error_code || null
       };
     }
-  }
-
-  /**
-   * Check payment status by Click payment ID
-   * @param {string} paymentId - Click payment ID
-   * @returns {Promise<Object>} Payment status response
-   */
-  async checkPaymentStatusByPaymentId(paymentId) {
-    try {
-      const url = `${this.apiUrl}/payment/status/${this.serviceId}/${paymentId}`;
-      
-      console.log(`🔍 Checking Click.uz payment status for payment ID: ${paymentId}`);
-      
-      const response = await axios.get(url, {
-        headers: this.generateAuthHeader(),
-        timeout: 15000
-      });
-
-      console.log('✅ Click.uz API response:', response.data);
-
-      return {
-        success: response.data.error_code === 0,
-        data: response.data,
-        isPaid: response.data.payment_status === 1,
-        paymentId: response.data.payment_id,
-        paymentStatus: response.data.payment_status,
-        errorCode: response.data.error_code,
-        errorNote: response.data.error_note
-      };
-
-    } catch (error) {
-      console.error('❌ Click.uz API error:', error.response?.data || error.message);
-      
-      return {
-        success: false,
-        error: error.response?.data || error.message,
-        isPaid: false
-      };
-    }
-  }
-
-  /**
-   * Check payment status for multiple dates (helpful if unsure of payment date)
-   * @param {string} merchantTransId - Your booking reference
-   * @param {number} daysBack - Number of days to check back (default: 3)
-   * @returns {Promise<Object>} Payment status response
-   */
-  async checkPaymentStatusMultipleDates(merchantTransId, daysBack = 3) {
-    console.log(`🔍 Checking payment status for ${merchantTransId} across ${daysBack} days`);
-    
-    for (let i = 0; i <= daysBack; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const paymentDate = date.toISOString().split('T')[0];
-      
-      const result = await this.checkPaymentStatusByMerchantTransId(merchantTransId, paymentDate);
-      
-      if (result.success && result.isPaid) {
-        console.log(`✅ Found payment on ${paymentDate}:`, result.data);
-        return result;
-      }
-      
-      // Small delay to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
-    
-    return {
-      success: false,
-      isPaid: false,
-      error: `No successful payment found for ${merchantTransId} in the last ${daysBack} days`
-    };
   }
 }
 

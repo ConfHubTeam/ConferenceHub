@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 /**
  * MinimumHoursInput Component
@@ -7,6 +8,7 @@ import { useState, useEffect } from "react";
  * Range: 1-5 hours, default: 1 hour
  */
 const MinimumHoursInput = ({ minimumHours, setMinimumHours }) => {
+  const { t } = useTranslation("places");
   const [localValue, setLocalValue] = useState(minimumHours || 1);
   const [isOpen, setIsOpen] = useState(false);
   const options = [1, 2, 3, 4, 5];
@@ -20,7 +22,7 @@ const MinimumHoursInput = ({ minimumHours, setMinimumHours }) => {
 
   // Format the display value
   const formatDisplayValue = (hours) => {
-    return `${hours} hour${hours !== 1 ? "s" : ""}`;
+    return `${hours} ${hours === 1 ? t("form.pricingAndCapacity.hourSingular") : t("form.pricingAndCapacity.hourPlural")}`;
   };
 
   // Handle option selection
@@ -66,7 +68,7 @@ const MinimumHoursInput = ({ minimumHours, setMinimumHours }) => {
   return (
     <div className="w-full">
       <label htmlFor="minimumHours" className="block mb-2 text-sm font-medium text-gray-700">
-        Min. booking hrs
+        {t("form.pricingAndCapacity.minimumBooking")}
       </label>
       <div className="relative">
         <div

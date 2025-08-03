@@ -93,6 +93,9 @@
     },
     "buttons": {
       "close": "Закрыть"
-    }
+    },
+    "dateSelected": "дата заблокирована",
+    "datesSelected": "дат заблокировано",
+    "clearAll": "Очистить все"
   }
 }

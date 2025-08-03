@@ -35,10 +35,8 @@ class PaymentStatusService {
         };
       }
 
-      // Check payment status via Click Merchant API
-      const paymentResult = await this.clickMerchantApi.checkPaymentStatusByMerchantTransId(
-        booking.uniqueRequestId
-      );
+      // Use simplified payment check (invoice status only)
+      const paymentResult = await this.clickMerchantApi.checkPaymentStatus(booking);
 
       if (paymentResult.success && paymentResult.isPaid) {
         // Payment confirmed - update booking
@@ -48,17 +46,31 @@ class PaymentStatusService {
           success: true,
           isPaid: true,
           paymentId: paymentResult.paymentId,
+          method: paymentResult.method,
           bookingStatus: 'approved',
-          message: 'Payment confirmed and booking approved'
+          message: `Payment confirmed via ${paymentResult.method} and booking approved`
         };
-      } else {
-        // Payment not found or not completed
+      } else if (paymentResult.success && !paymentResult.isPaid) {
+        // API call successful but payment not completed
+        const statusMessage = this._getPaymentStatusMessage(paymentResult);
+        
         return {
           success: true,
           isPaid: false,
           bookingStatus: booking.status,
-          message: 'Payment not completed yet',
-          error: paymentResult.error
+          method: paymentResult.method,
+          message: statusMessage,
+          invoiceStatus: paymentResult.invoiceStatus,
+          invoiceStatusNote: paymentResult.invoiceStatusNote
+        };
+      } else {
+        // API call failed or payment not found
+        return {
+          success: true,
+          isPaid: false,
+          bookingStatus: booking.status,
+          message: 'Payment status could not be determined',
+          error: paymentResult.error || 'Unknown error'
         };
       }
 
@@ -69,6 +81,39 @@ class PaymentStatusService {
         error: error.message
       };
     }
+  }
+
+  /**
+   * Get user-friendly payment status message
+   * @param {Object} paymentResult - Payment result from API
+   * @returns {string} Status message
+   * @private
+   */
+  _getPaymentStatusMessage(paymentResult) {
+    if (paymentResult.method === 'invoice_status' && paymentResult.invoiceStatus !== undefined) {
+      const status = paymentResult.invoiceStatus;
+      
+      switch (status) {
+        case 0:
+          return 'Invoice created - waiting for payment';
+        case 1:
+          return 'Payment is being processed';
+        case 2:
+          return 'Payment completed successfully';
+        case 3:
+          return 'Payment was cancelled';
+        case 4:
+          return 'Payment failed';
+        case 5:
+          return 'Payment expired';
+        case -99:
+          return 'Invoice was deleted';
+        default:
+          return `Unknown payment status: ${status}`;
+      }
+    }
+    
+    return 'Payment not completed yet';
   }
 
   /**

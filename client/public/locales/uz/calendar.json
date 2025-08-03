@@ -93,6 +93,9 @@
     },
     "buttons": {
       "close": "Yopish"
-    }
+    },
+    "dateSelected": "sana bloklandi",
+    "datesSelected": "sana bloklandi",
+    "clearAll": "Hammasini tozalash"
   }
 }

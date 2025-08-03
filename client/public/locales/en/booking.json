@@ -120,6 +120,13 @@
       "cancel": "Cancel"
     }
   },
+  "selectedDates": {
+    "title": "Selected Booking Slots",
+    "titleWithCount": "Selected Booking Slots ({{count}})",
+    "clearAll": "Clear All",
+    "editTime": "Edit time",
+    "removeDate": "Remove date"
+  },
   "status": {
     "pending": "Pending",
     "confirmed": "Confirmed",

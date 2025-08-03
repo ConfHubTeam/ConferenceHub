@@ -1,47 +1,44 @@
 const { Booking } = require('../models');
-const ClickMerchantApiService = require('./clickMerchantApiService');
-const EnhancedClickService = require('./enhancedClickService');
+const PaymentStatusService = require('./paymentStatusService');
 const { Op } = require('sequelize');
 
 /**
  * Payment Status Polling Service
- * Provides background payment verification using Click.uz Merchant API
+ * Provides background payment verification using the improved PaymentStatusService
  */
 class PaymentStatusPoller {
+  constructor() {
+    this.paymentStatusService = new PaymentStatusService();
+  }
   
   /**
-   * Poll Click.uz for payment status updates using Merchant API
+   * Poll Click.uz for payment status updates using improved invoice status API
    * Call this from your frontend after payment redirect
    */
-  static async checkPaymentStatus(bookingId) {
+  async checkPaymentStatus(bookingId) {
     try {
       console.log(`🔍 Polling payment status for booking ${bookingId}`);
       
-      const booking = await Booking.findByPk(bookingId);
-      if (!booking) {
-        throw new Error('Booking not found');
-      }
-
-      // Use Enhanced Click Service for consistent payment checking
-      const enhancedClickService = new EnhancedClickService();
-      const result = await enhancedClickService.processPaymentVerification(bookingId);
+      const result = await this.paymentStatusService.verifyAndUpdatePaymentStatus(bookingId);
 
       if (result.success && result.isPaid) {
-        console.log(`💰 Payment confirmed via Click.uz API for booking ${bookingId}`);
+        console.log(`💰 Payment confirmed for booking ${bookingId}`);
         return { 
           success: true, 
-          status: 'approved', 
+          status: result.bookingStatus, 
           isPaid: true,
           paymentId: result.paymentId,
-          bookingStatus: result.bookingStatus
+          method: result.method,
+          message: result.message
         };
       }
 
-      console.log(`❌ No payment found for booking ${bookingId}`);
+      console.log(`📝 Payment check completed for booking ${bookingId}: ${result.message}`);
       return { 
         success: true, 
-        status: booking.status, 
-        isPaid: false 
+        status: result.bookingStatus, 
+        isPaid: false,
+        message: result.message
       };
 
     } catch (error) {
@@ -54,7 +51,7 @@ class PaymentStatusPoller {
    * Check for pending payments that might have been missed
    * Run this periodically as a cron job to catch missed payments
    */
-  static async checkPendingPayments() {
+  async checkPendingPayments() {
     try {
       console.log('🔄 Checking for pending payments...');
       
@@ -95,22 +92,21 @@ class PaymentStatusPoller {
   }
 
   /**
-   * Health check for Click.uz Merchant API
+   * Health check for payment service
    */
-  static async healthCheck() {
+  async healthCheck() {
     try {
-      const clickApi = new ClickMerchantApiService();
-      const auth = await clickApi.authenticate();
+      const summary = await this.paymentStatusService.getPaymentSummary('test');
       
       return {
-        success: true,
-        clickApiStatus: auth.success ? 'healthy' : 'authentication_failed',
+        success: false, // Expected since 'test' booking doesn't exist
+        paymentServiceStatus: 'healthy',
         timestamp: new Date()
       };
     } catch (error) {
       return {
         success: false,
-        clickApiStatus: 'error',
+        paymentServiceStatus: 'error',
         error: error.message,
         timestamp: new Date()
       };

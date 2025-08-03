@@ -120,6 +120,13 @@
       "cancel": "Bekor qilish"
     }
   },
+  "selectedDates": {
+    "title": "Tanlangan bron oralig'i",
+    "titleWithCount": "Tanlangan bron oralig'i ({{count}})",
+    "clearAll": "Hammasini tozalash",
+    "editTime": "Vaqtni o'zgartirish",
+    "removeDate": "Sanani o'chirish"
+  },
   "status": {
     "pending": "Kutilmoqda",
     "confirmed": "Tasdiqlangan",

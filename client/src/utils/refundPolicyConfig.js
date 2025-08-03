@@ -1,8 +1,10 @@
 /**
- * Centralized Refund Policy Configuration
+ * Centralized Refund Policy Configuration with Translation Support
  * Single source of truth for all refund policy wording, rules, and metadata
  * Used by both frontend and backend to ensure consistency
  */
+
+import { getTranslationData } from "../i18n/helpers/translationHelpers";
 
 // Valid refund option keys - used for validation
 export const VALID_REFUND_OPTIONS = [
@@ -24,75 +26,41 @@ export const PROTECTION_PLAN_CONFIG = {
   },
 };
 
-// Centralized refund policy metadata - single source of truth for all wording
-export const REFUND_POLICY_METADATA = {
+// Icons and visual metadata (language-independent)
+const POLICY_VISUAL_METADATA = {
   'flexible_14_day': {
-    value: 'flexible_14_day',
-    label: 'Flexible 14-Day',
-    shortLabel: 'Flexible',
-    description: 'Full refund if canceled 14+ days before check-in',
-    shortDescription: 'Full refund (14+ days notice)',
-    detailedDescription: 'Get a full refund if you cancel your booking at least 14 days before your scheduled check-in time.',
     icon: '✅',
     type: 'flexible',
     refundRules: [
       { minHours: 336, refundPercent: 100 }, // 14 days
       { minHours: 0, refundPercent: 0 }
-    ],
-    adminDescription: 'Guests receive 100% refund for cancellations made 14+ days in advance'
+    ]
   },
   'moderate_7_day': {
-    value: 'moderate_7_day',
-    label: 'Moderate 7-Day',
-    shortLabel: 'Moderate',
-    description: '50% refund if canceled 7+ days before check-in',
-    shortDescription: '50% refund (7+ days notice)',
-    detailedDescription: 'Get a 50% refund if you cancel your booking at least 7 days before your scheduled check-in time.',
     icon: '⚡',
     type: 'moderate',
     refundRules: [
       { minHours: 168, refundPercent: 50 }, // 7 days
       { minHours: 0, refundPercent: 0 }
-    ],
-    adminDescription: 'Guests receive 50% refund for cancellations made 7+ days in advance'
+    ]
   },
   'strict': {
-    value: 'strict',
-    label: 'Strict',
-    shortLabel: 'Strict',
-    description: 'No refund if canceled less than 6 days before check-in',
-    shortDescription: 'No refund (<6 days notice)',
-    detailedDescription: 'No refund available if cancellation is made less than 6 days before check-in.',
     icon: '🔒',
     type: 'strict',
     refundRules: [
       { minHours: 144, refundPercent: 50 }, // 6 days for partial
       { minHours: 48, refundPercent: 25 }, // 2 days for minimal
       { minHours: 0, refundPercent: 0 }
-    ],
-    adminDescription: 'Limited refunds: 50% for 6+ days notice, 25% for 2+ days notice'
+    ]
   },
   'non_refundable': {
-    value: 'non_refundable',
-    label: 'Non-refundable',
-    shortLabel: 'Non-refundable',
-    description: 'No refunds under any condition',
-    shortDescription: 'No refunds allowed',
-    detailedDescription: 'This booking is non-refundable. No refunds will be provided regardless of cancellation timing.',
     icon: '❌',
     type: 'strict',
     refundRules: [
       { minHours: 0, refundPercent: 0 }
-    ],
-    adminDescription: 'No refunds allowed under any circumstances'
+    ]
   },
   'reschedule_only': {
-    value: 'reschedule_only',
-    label: 'Reschedule',
-    shortLabel: 'Reschedule',
-    description: 'No refund, but reschedule allowed with 3+ days notice',
-    shortDescription: 'Reschedule allowed (3+ days notice)',
-    detailedDescription: 'No monetary refunds available, but you can reschedule your booking if you provide at least 3 days notice.',
     icon: '🔄',
     type: 'moderate',
     refundRules: [
@@ -101,19 +69,11 @@ export const REFUND_POLICY_METADATA = {
     rescheduleRules: [
       { minHours: 72, allowed: true }, // 3 days
       { minHours: 0, allowed: false }
-    ],
-    adminDescription: 'No refunds, but guests can reschedule with 3+ days notice'
+    ]
   },
   'client_protection_plan': {
-    value: 'client_protection_plan',
-    label: 'Protection Plan Available',
-    shortLabel: 'Protection Plan',
-    description: `Add ${PROTECTION_PLAN_CONFIG.PROTECTION_PERCENTAGE}% fee for anytime cancellation protection`,
-    shortDescription: `Protection plan available (+${PROTECTION_PLAN_CONFIG.PROTECTION_PERCENTAGE}%)`,
-    detailedDescription: `For an additional ${PROTECTION_PLAN_CONFIG.PROTECTION_PERCENTAGE}% fee, you can cancel anytime and receive a full refund according to the base policy or better.`,
     icon: '🛡️',
-    type: 'protection',
-    adminDescription: `Guests can add ${PROTECTION_PLAN_CONFIG.PROTECTION_PERCENTAGE}% protection plan for enhanced cancellation coverage`
+    type: 'protection'
   }
 };
 
@@ -127,57 +87,65 @@ export const CONFLICTING_OPTIONS = {
   'client_protection_plan': ['non_refundable'] // Protection plan can work with reschedule_only but not with non_refundable
 };
 
-// Human-readable policy summaries for different contexts
-export const POLICY_SUMMARIES = {
-  client: {
-    'flexible_14_day': 'You can cancel up to 14 days before check-in for a full refund.',
-    'moderate_7_day': 'You can cancel up to 7 days before check-in for a 50% refund.',
-    'strict': 'Limited refund available only with significant advance notice.',
-    'non_refundable': 'This booking cannot be refunded once confirmed.',
-    'reschedule_only': 'You cannot get a refund, but you can reschedule with 3+ days notice.',
-    'client_protection_plan': `Protection plan active - enhanced cancellation coverage for ${PROTECTION_PLAN_CONFIG.PROTECTION_PERCENTAGE}% fee.`
-  },
-  host: {
-    'flexible_14_day': 'Guests receive full refunds for cancellations 14+ days in advance.',
-    'moderate_7_day': 'Guests receive 50% refunds for cancellations 7+ days in advance.',
-    'strict': 'Limited guest refunds - you retain most of the booking value.',
-    'non_refundable': 'No refunds to guests - you receive full booking value.',
-    'reschedule_only': 'No refunds, but guests may reschedule with advance notice.',
-    'client_protection_plan': `Guests can purchase ${PROTECTION_PLAN_CONFIG.PROTECTION_PERCENTAGE}% protection plan for better cancellation terms.`
-  },
-  admin: {
-    'flexible_14_day': 'Liberal refund policy - higher guest satisfaction, potential revenue loss.',
-    'moderate_7_day': 'Balanced refund policy - moderate protection for both parties.',
-    'strict': 'Conservative refund policy - protects host revenue, may reduce bookings.',
-    'non_refundable': 'No refund policy - maximum host protection, lowest guest flexibility.',
-    'reschedule_only': 'Reschedule-focused policy - retains bookings while allowing changes.',
-    'client_protection_plan': `Optional protection upsell - generates ${PROTECTION_PLAN_CONFIG.PROTECTION_PERCENTAGE}% additional revenue.`
-  }
+/**
+ * Get translated refund policy metadata
+ * @param {string} language - Language code (en, ru, uz)
+ * @returns {Object} - Translated policy metadata
+ */
+export const getTranslatedRefundPolicyMetadata = (language = 'en') => {
+  const translationData = getTranslationData('refundPolicies', language);
+  const policies = {};
+  
+  VALID_REFUND_OPTIONS.forEach(option => {
+    const visual = POLICY_VISUAL_METADATA[option];
+    const translated = translationData?.policies?.[option] || {};
+    
+    policies[option] = {
+      value: option,
+      label: translated.label || option,
+      shortLabel: translated.shortLabel || translated.label || option,
+      description: option === 'client_protection_plan' 
+        ? translated.description?.replace('{{percentage}}', PROTECTION_PLAN_CONFIG.PROTECTION_PERCENTAGE) || `Add ${PROTECTION_PLAN_CONFIG.PROTECTION_PERCENTAGE}% fee for protection`
+        : translated.description || 'Description not available',
+      shortDescription: translated.shortDescription || translated.description || 'Description not available',
+      detailedDescription: option === 'client_protection_plan'
+        ? translated.detailedDescription?.replace('{{percentage}}', PROTECTION_PLAN_CONFIG.PROTECTION_PERCENTAGE) || `For an additional ${PROTECTION_PLAN_CONFIG.PROTECTION_PERCENTAGE}% fee, enhanced coverage`
+        : translated.detailedDescription || translated.description || 'Description not available',
+      ...visual
+    };
+  });
+  
+  return policies;
 };
 
 /**
- * Get display data for refund options
+ * Get display data for refund options with translations
  * @param {Array} refundOptions - Array of refund option strings from place
+ * @param {string} language - Language code
  * @returns {Array} - Array of display objects for the refund options
  */
-export const getRefundPolicyDisplayData = (refundOptions = []) => {
+export const getRefundPolicyDisplayData = (refundOptions = [], language = 'en') => {
   if (!Array.isArray(refundOptions) || refundOptions.length === 0) {
     return [];
   }
 
+  const translatedMetadata = getTranslatedRefundPolicyMetadata(language);
+  
   return refundOptions
-    .map(option => REFUND_POLICY_METADATA[option])
+    .map(option => translatedMetadata[option])
     .filter(Boolean); // Remove any undefined options
 };
 
 /**
  * Get human-readable policy summary for specific user type
  * @param {string} policyKey - Refund policy key
- * @param {string} userType - 'client', 'host', or 'admin'
+ * @param {string} userType - 'client', 'host', or 'admin' (currently returns description)
+ * @param {string} language - Language code
  * @returns {string} - Human-readable summary
  */
-export const getPolicySummary = (policyKey, userType = 'client') => {
-  return POLICY_SUMMARIES[userType]?.[policyKey] || REFUND_POLICY_METADATA[policyKey]?.description || 'Policy information not available';
+export const getPolicySummary = (policyKey, userType = 'client', language = 'en') => {
+  const translatedMetadata = getTranslatedRefundPolicyMetadata(language);
+  return translatedMetadata[policyKey]?.description || 'Policy information not available';
 };
 
 /**
@@ -221,9 +189,10 @@ export const getProtectionPlanRate = () => {
 /**
  * Get the primary refund policy (excluding protection plan)
  * @param {Array} refundOptions - Array of refund option strings from place
+ * @param {string} language - Language code
  * @returns {Object|null} - Primary refund policy metadata or null
  */
-export const getPrimaryRefundPolicy = (refundOptions = []) => {
+export const getPrimaryRefundPolicy = (refundOptions = [], language = 'en') => {
   if (!Array.isArray(refundOptions) || refundOptions.length === 0) {
     return null;
   }
@@ -235,17 +204,20 @@ export const getPrimaryRefundPolicy = (refundOptions = []) => {
     return null;
   }
 
+  const translatedMetadata = getTranslatedRefundPolicyMetadata(language);
   // Return the first policy (they should be mutually exclusive anyway)
-  return REFUND_POLICY_METADATA[actualPolicies[0]] || null;
+  return translatedMetadata[actualPolicies[0]] || null;
 };
 
 /**
  * Get refund policy display info for a specific policy
  * @param {string} policyKey - The refund policy key
+ * @param {string} language - Language code
  * @returns {Object} - Policy display information
  */
-export const getRefundPolicyDisplayInfo = (policyKey) => {
-  return REFUND_POLICY_METADATA[policyKey] || {
+export const getRefundPolicyDisplayInfo = (policyKey, language = 'en') => {
+  const translatedMetadata = getTranslatedRefundPolicyMetadata(language);
+  return translatedMetadata[policyKey] || {
     label: 'Unknown Policy',
     description: 'Policy information not available',
     type: 'unknown'
@@ -265,10 +237,11 @@ export const validateRefundOptionConflicts = (refundOptions = []) => {
     
     for (const conflictingOption of conflictingOptions) {
       if (refundOptions.includes(conflictingOption)) {
+        const translatedMetadata = getTranslatedRefundPolicyMetadata();
         conflicts.push({
           option,
           conflictsWith: conflictingOption,
-          message: `"${REFUND_POLICY_METADATA[option]?.label}" conflicts with "${REFUND_POLICY_METADATA[conflictingOption]?.label}"`
+          message: `"${translatedMetadata[option]?.label}" conflicts with "${translatedMetadata[conflictingOption]?.label}"`
         });
       }
     }
@@ -281,8 +254,9 @@ export const validateRefundOptionConflicts = (refundOptions = []) => {
 };
 
 // Export the metadata for backend compatibility
-export const getRefundOptionsMetadata = () => {
-  return Object.values(REFUND_POLICY_METADATA).map(policy => ({
+export const getRefundOptionsMetadata = (language = 'en') => {
+  const translatedMetadata = getTranslatedRefundPolicyMetadata(language);
+  return Object.values(translatedMetadata).map(policy => ({
     value: policy.value,
     label: policy.label,
     description: policy.description
@@ -290,4 +264,4 @@ export const getRefundOptionsMetadata = () => {
 };
 
 // Backward compatibility exports
-export const REFUND_OPTION_METADATA = REFUND_POLICY_METADATA;
+export const REFUND_OPTION_METADATA = getTranslatedRefundPolicyMetadata;

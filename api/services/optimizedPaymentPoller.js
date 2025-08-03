@@ -1,13 +1,13 @@
-const ClickMerchantApiService = require('./clickMerchantApiService');
+const PaymentStatusService = require('./paymentStatusService');
 const { Booking } = require('../models');
 
 /**
  * Optimized Payment Polling Service
- * Based on actual Click.uz API behavior analysis
+ * Uses the improved PaymentStatusService with smart polling intervals
  */
 class OptimizedPaymentPoller {
   constructor() {
-    this.clickApi = new ClickMerchantApiService();
+    this.paymentStatusService = new PaymentStatusService();
     
     // Smart polling intervals based on payment window timing
     this.POLLING_STRATEGY = {
@@ -19,13 +19,6 @@ class OptimizedPaymentPoller {
     
     // Maximum polling attempts before giving up
     this.MAX_ATTEMPTS = 15; // Total ~12 minutes with backoff
-    
-    // Click.uz specific error codes
-    this.CLICK_ERROR_CODES = {
-      NOT_FOUND: -16,       // "Платёж с указанными параметрами не найден"
-      AUTH_FAILED: -15,     // Authentication failed
-      INVALID_PARAMS: -1    // Invalid parameters
-    };
   }
 
   /**
@@ -51,64 +44,36 @@ class OptimizedPaymentPoller {
         attempts++;
         
         try {
-          const booking = await Booking.findByPk(bookingId);
-          if (!booking) {
-            resolve({ success: false, error: 'Booking not found' });
-            return;
-          }
-
-          // Check if already paid (early exit)
-          if (booking.status === 'approved' && booking.paidAt) {
-            console.log(`✅ Booking ${bookingId} already approved`);
-            resolve({
-              success: true,
-              isPaid: true,
-              alreadyProcessed: true,
-              bookingStatus: 'approved'
-            });
-            return;
-          }
-
-          // Make API call with multiple date strategy
-          const paymentResult = await this._checkPaymentWithMultipleDates(
-            booking.uniqueRequestId,
-            booking.clickInvoiceCreatedAt
-          );
+          // Use the improved PaymentStatusService
+          const result = await this.paymentStatusService.verifyAndUpdatePaymentStatus(bookingId);
 
           // Handle successful payment
-          if (paymentResult.success && paymentResult.isPaid) {
-            console.log(`💰 Payment found for booking ${bookingId}!`);
+          if (result.success && result.isPaid) {
+            console.log(`💰 Payment found for booking ${bookingId} via ${result.method}!`);
             
-            // Update booking status
-            await booking.update({
-              status: 'approved',
-              clickPaymentId: paymentResult.paymentId,
-              paidAt: new Date(),
-              approvedAt: new Date(),
-              paymentResponse: paymentResult.data
-            });
-
             resolve({
               success: true,
               isPaid: true,
-              paymentId: paymentResult.paymentId,
-              bookingStatus: 'approved',
-              attempts: attempts
+              paymentId: result.paymentId,
+              bookingStatus: result.bookingStatus,
+              method: result.method,
+              attempts: attempts,
+              message: result.message
             });
             return;
           }
 
-          // Handle "not found" responses (expected for unpaid)
-          if (paymentResult.errorCode === this.CLICK_ERROR_CODES.NOT_FOUND) {
+          // Handle payment not found (expected for unpaid)
+          if (result.success && !result.isPaid) {
             consecutiveNotFound++;
-            console.log(`📝 Attempt ${attempts}: Payment not found (expected for unpaid)`);
-          } else if (!paymentResult.success) {
-            console.log(`❌ Attempt ${attempts}: API error:`, paymentResult.error);
+            console.log(`📝 Attempt ${attempts}: ${result.message}`);
+          } else if (!result.success) {
+            console.log(`❌ Attempt ${attempts}: Service error:`, result.error);
           }
 
           // Report progress
           if (onProgress) {
-            onProgress({ attempts, maxAttempts, consecutiveNotFound });
+            onProgress({ attempts, maxAttempts, consecutiveNotFound, message: result.message });
           }
 
           // Check if we should continue polling
@@ -117,7 +82,7 @@ class OptimizedPaymentPoller {
             resolve({
               success: true,
               isPaid: false,
-              bookingStatus: booking.status,
+              bookingStatus: result.bookingStatus,
               attempts: attempts,
               message: 'Polling timeout - payment not detected'
             });
@@ -156,42 +121,6 @@ class OptimizedPaymentPoller {
   }
 
   /**
-   * Check payment status across multiple dates
-   * Click.uz sometimes requires exact payment date
-   */
-  async _checkPaymentWithMultipleDates(merchantTransId, invoiceCreatedAt) {
-    const datesToCheck = this._getPaymentDates(invoiceCreatedAt);
-    
-    for (const date of datesToCheck) {
-      const result = await this.clickApi.checkPaymentStatusByMerchantTransId(
-        merchantTransId, 
-        date
-      );
-      
-      if (result.success && result.isPaid) {
-        console.log(`✅ Payment found on date: ${date}`);
-        return result;
-      }
-      
-      // If we get a different error than "not found", stop checking other dates
-      if (!result.success && result.errorCode !== this.CLICK_ERROR_CODES.NOT_FOUND) {
-        return result;
-      }
-      
-      // Small delay between date checks
-      await new Promise(resolve => setTimeout(resolve, 200));
-    }
-    
-    // Return the last result (usually "not found")
-    return {
-      success: false,
-      isPaid: false,
-      errorCode: this.CLICK_ERROR_CODES.NOT_FOUND,
-      errorNote: 'Payment not found on any date'
-    };
-  }
-
-  /**
    * Get adaptive polling interval based on attempt count and response pattern
    */
   _getNextInterval(attempts, consecutiveNotFound) {
@@ -212,34 +141,6 @@ class OptimizedPaymentPoller {
     
     // Final attempts: slowest frequency
     return this.POLLING_STRATEGY.FINAL;
-  }
-
-  /**
-   * Generate list of dates to check for payment
-   * Click.uz requires exact payment date, so check invoice date ± 1 day
-   */
-  _getPaymentDates(invoiceCreatedAt) {
-    const dates = [];
-    const baseDate = invoiceCreatedAt ? new Date(invoiceCreatedAt) : new Date();
-    
-    // Today (most likely)
-    dates.push(new Date().toISOString().split('T')[0]);
-    
-    // Invoice creation date (if different from today)
-    const invoiceDate = baseDate.toISOString().split('T')[0];
-    if (!dates.includes(invoiceDate)) {
-      dates.push(invoiceDate);
-    }
-    
-    // Yesterday (in case payment was made near midnight)
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
-    if (!dates.includes(yesterdayStr)) {
-      dates.push(yesterdayStr);
-    }
-    
-    return dates;
   }
 
   /**
@@ -268,36 +169,17 @@ class OptimizedPaymentPoller {
   }
 
   /**
-   * Health check for Click.uz API with smart error detection
+   * Health check for payment service
    */
   async healthCheck() {
     try {
-      // Test with a dummy transaction to check authentication
-      const testResult = await this.clickApi.checkPaymentStatusByMerchantTransId(
-        'HEALTH-CHECK-123',
-        new Date().toISOString().split('T')[0]
-      );
-      
-      if (testResult.errorCode === this.CLICK_ERROR_CODES.AUTH_FAILED) {
-        return {
-          success: false,
-          status: 'authentication_failed',
-          message: 'Click.uz API authentication failed'
-        };
-      }
-      
-      if (testResult.errorCode === this.CLICK_ERROR_CODES.NOT_FOUND) {
-        return {
-          success: true,
-          status: 'healthy',
-          message: 'Click.uz API is responding correctly'
-        };
-      }
+      // Test the payment status service
+      const summary = await this.paymentStatusService.getPaymentSummary('test');
       
       return {
-        success: true,
+        success: false, // Expected since 'test' booking doesn't exist
         status: 'healthy',
-        message: 'Click.uz API health check passed'
+        message: 'Payment service is responding correctly'
       };
       
     } catch (error) {

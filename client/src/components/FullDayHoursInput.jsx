@@ -1,12 +1,14 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function FullDayHoursInput({ fullDayHours, setFullDayHours }) {
+  const { t } = useTranslation("places");
   const [isOpen, setIsOpen] = useState(false);
   const options = Array.from({ length: 24 }, (_, i) => i + 1);
   
   // Format the display value
   const formatDisplayValue = (hours) => {
-    return `${hours} hour${hours !== 1 ? "s" : ""}`;
+    return `${hours} ${hours === 1 ? t("form.pricingAndCapacity.hourSingular") : t("form.pricingAndCapacity.hourPlural")}`;
   };
 
   // Handle option selection
@@ -49,7 +51,7 @@ export default function FullDayHoursInput({ fullDayHours, setFullDayHours }) {
   return (
     <div className="w-full">
       <label htmlFor="fullDayHours" className="block mb-2 text-sm font-medium text-gray-700">
-        Full day considered
+        {t("form.pricingAndCapacity.fullDayConsidered")}
       </label>
       <div className="relative">
         <div

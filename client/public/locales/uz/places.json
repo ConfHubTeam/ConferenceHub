@@ -23,6 +23,10 @@
   "form": {
     "title": "Joy ma'lumotlari",
     "titlePlaceholder": "Sarlavha, masalan: Boshqaruv konferens zali",
+    "hostSelector": {
+      "title": "Host tanlash",
+      "description": "Ushbu joyni qaysi host uchun yaratishni xohlayotganingizni tanlang."
+    },
     "name": "Joy nomi",
     "namePlaceholder": "Joy nomini kiriting",
     "description": "Tavsif",
@@ -54,7 +58,68 @@
     "ownerEmail": "Egasi elektron pochtasi",
     "refundOptions": "Qaytarish variantlari",
     "refundOptionsDescription": "Konferens zalingiz uchun qaytarish va bekor qilish siyosatlarini tanlang.",
-    "saveButton": "Konferens zalini saqlash"
+    "dateAvailability": {
+      "title": "Mavjud sanalar",
+      "clearSelectedPeriod": "Tanlangan davrani tozalash",
+      "selectedPeriod": "Tanlangan davr",
+      "daysSelected": "{{count}} kun tanlandi"
+    },
+    "saveButton": "Konferens zalini saqlash",
+    "pricingAndCapacity": {
+      "title": "Narx va sig'im",
+      "pricePerHour": "Soat uchun narx",
+      "fullDayDiscountPrice": "To'liq kun chegirma narxi",
+      "cooldownPeriod": "Tanafus davri",
+      "maxAttendees": "Maksimal ishtirokchilar",
+      "fullDayConsidered": "To'liq kun hisoblanadi",
+      "minimumBooking": "Minimal bron qilish",
+      "conferenceSize": "Konferens zali o'lchami (m²)",
+      "conferenceSizePlaceholder": "Xona o'lchamini kiriting",
+      "isThisHotel": "Bu mehmonxonami?",
+      "toggleHotelMode": "Mehmonxona rejimini o'zgartirish",
+      "yes": "Ha",
+      "no": "Yo'q",
+      "hours": "soat",
+      "hour": "soat",
+      "hourSingular": "soat",
+      "hourPlural": "soat"
+    },
+    "scheduleAvailability": {
+      "title": "Jadval va mavjudlik",
+      "blockWeekdays": "Hafta kunlarini bloklash:",
+      "blockSpecificDates": "Muayyan sanalarni bloklash",
+      "showBlockSpecificDates": "Muayyan sanalarni bloklashni ko'rsatish",
+      "hideBlockSpecificDates": "Muayyan sanalarni bloklashni yashirish",
+      "timeSlotsTitle": "Hafta kunlari bo'yicha vaqt oralig'i",
+      "from": "Dan",
+      "to": "Gacha",
+      "select": "Tanlash",
+      "selectStartTimeFirst": "Boshlanish vaqtini tanlang",
+      "notAvailable": "Mavjud emas",
+      "selectDatesToBlock": "Bloklash uchun sanalarni tanlang",
+      "clearAllBlockedDates": "Barcha bloklangan sanalarni tozalash",
+      "dateCurrentlyBlocked": "sana hozirda bloklangan",
+      "datesCurrentlyBlocked": "sana hozirda bloklangan",
+      "dateSelected": "sana bloklandi",
+      "datesSelected": "sana bloklandi",
+      "clearAll": "Hammasini tozalash",
+      "weekdays": {
+        "sunday": "Yakshanba",
+        "monday": "Dushanba",
+        "tuesday": "Seshanba",
+        "wednesday": "Chorshanba", 
+        "thursday": "Payshanba",
+        "friday": "Juma",
+        "saturday": "Shanba",
+        "sun": "Ya",
+        "mon": "Du",
+        "tue": "Se",
+        "wed": "Cho",
+        "thu": "Pa", 
+        "fri": "Ju",
+        "sat": "Sh"
+      }
+    }
   },
   "listing": {
     "details": "Joy tafsilotlari",
@@ -288,5 +353,21 @@
   "placeFilters": {
     "searchLabel": "Konferens xonalaringizni qidiring",
     "searchPlaceholder": "Mulk nomi yoki manzil bo'yicha qidiring..."
+  },
+  "validation": {
+    "hostRequired": "Iltimos, joy yaratish uchun host tanlang",
+    "titleRequired": "Sarlavha majburiy",
+    "addressRequired": "Manzil majburiy",
+    "priceRequired": "Soatiga narx majburiy va 0 dan katta bo'lishi kerak",
+    "fullDayPriceRequired": "To'liq kun chegirmali narxi majburiy va 0 dan katta bo'lishi kerak",
+    "currencyRequired": "Iltimos, valyuta tanlang",
+    "datesRequired": "Boshlanish sanasi va tugash sanasini tanlash kerak",
+    "endDateAfterStart": "Tugash sanasi boshlanish sanasidan keyin yoki teng bo'lishi kerak",
+    "weekdayRequired": "Kamida bitta hafta kuni mavjud bo'lishi kerak (bloklanmagan)",
+    "timeSlotsRequired": "Barcha mavjud hafta kunlari haqiqiy vaqt slotlariga ega bo'lishi kerak (boshlanish va tugash vaqti, boshlash tugashdan oldin)",
+    "refundOptionsRequired": "Kamida bitta qaytarish variantini tanlash kerak",
+    "invalidYouTube": "Noto'g'ri YouTube havolasi",
+    "invalidCurrency": "Noto'g'ri valyuta tanlandi. Iltimos, valyutani qayta tanlang.",
+    "submitFailed": "Jo'natish muvaffaqiyatsiz, iltimos keyinroq urinib ko'ring."
   }
 }

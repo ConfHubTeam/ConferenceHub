@@ -1,24 +1,37 @@
 import { format } from "date-fns";
 import { enUS, ru, uz } from "date-fns/locale";
 import i18n from "../i18n/config";
+import { getTranslatedRefundPolicyMetadata, getProtectionPlanPercentage } from "./refundPolicyConfig";
 
 /**
  * Helper functions for BookingDetailsPage
  */
 
 /**
- * Format refund options for display
+ * Format refund options for display using translations
  */
 export const formatRefundOption = (option) => {
-  const t = i18n.getFixedT(null, 'booking');
+  const currentLanguage = i18n.language || 'en';
+  const translatedMetadata = getTranslatedRefundPolicyMetadata(currentLanguage);
+  const policy = translatedMetadata[option];
   
+  if (policy) {
+    // For protection plan, include the percentage in the description
+    if (option === 'client_protection_plan') {
+      return policy.description;
+    }
+    return `${policy.label}: ${policy.description}`;
+  }
+  
+  // Fallback to i18n if policy not found in metadata
+  const t = i18n.getFixedT(null, 'booking');
   const optionMap = {
     'flexible_14_day': t('details.refundPolicy.options.flexible14Day', { default: 'Flexible 14-Day: Full refund if canceled 14+ days before check-in' }),
     'moderate_7_day': t('details.refundPolicy.options.moderate7Day', { default: 'Moderate 7-Day: 50% refund if canceled 7+ days before check-in' }),
     'strict': t('details.refundPolicy.options.strict', { default: 'Strict: No refund if canceled less than 6 days before check-in' }),
     'non_refundable': t('details.refundPolicy.options.nonRefundable', { default: 'Non-Refundable: No refunds allowed' }),
     'reschedule_only': t('details.refundPolicy.options.rescheduleOnly', { default: 'Reschedule Only: No refund, but reschedule allowed with 3+ days notice' }),
-    'client_protection_plan': t('details.refundPolicy.options.protectionPlan', { default: 'Client Protection Plan: Additional insurance coverage available' })
+    'client_protection_plan': t('details.refundPolicy.options.protectionPlan', { default: `Client Protection Plan: Additional insurance coverage available (+${getProtectionPlanPercentage()}%)` })
   };
   return optionMap[option] || option;
 };

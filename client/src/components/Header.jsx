@@ -220,7 +220,11 @@ export default function Header() {
                     <NotificationBell isMobile={true} />
                   </Link>
                   <Link 
-                    to={(user.userType === 'host' || user.userType === 'agent') ? "/account/user-places" : "/"}
+                    to={
+                      user.userType === 'agent' ? "/places" : 
+                      user.userType === 'host' ? "/account/user-places" : 
+                      "/"
+                    }
                     className="flex items-center py-3 px-2 hover:bg-gray-100 rounded-lg"
                     onClick={handleMenuLinkClick}
                   >
@@ -229,7 +233,11 @@ export default function Header() {
                         <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
                       </svg>
                     </span>
-                    {(user.userType === 'host' || user.userType === 'agent') ? t("accountNav.myListings") : t("accountNav.browseListings")}
+                    {
+                      user.userType === 'agent' ? t("accountNav.listings") : 
+                      user.userType === 'host' ? t("accountNav.myListings") : 
+                      t("accountNav.browseListings")
+                    }
                   </Link>
                 </>
               ) : (

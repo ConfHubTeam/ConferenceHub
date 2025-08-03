@@ -16,7 +16,8 @@ const NAMESPACES = [
   "profile",
   "reviews",
   "notifications",
-  "payments"
+  "payments",
+  "refundPolicies"
 ];
 
 i18n

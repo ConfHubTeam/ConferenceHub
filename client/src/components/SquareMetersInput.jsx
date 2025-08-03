@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const SquareMetersInput = ({ squareMeters, setSquareMeters }) => {
+  const { t } = useTranslation("places");
   const [isFocused, setIsFocused] = useState(false);
   
   const handleChange = (e) => {
@@ -21,7 +23,7 @@ const SquareMetersInput = ({ squareMeters, setSquareMeters }) => {
   return (
     <div className="w-full">
       <label className={`block text-sm font-medium mb-1 text-base`}>
-        Conference size (m²)
+        {t("form.pricingAndCapacity.conferenceSize")}
       </label>
       <div className="relative">
         <input
@@ -30,7 +32,7 @@ const SquareMetersInput = ({ squareMeters, setSquareMeters }) => {
           onChange={handleChange}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          placeholder="Enter room size"
+          placeholder={t("form.pricingAndCapacity.conferenceSizePlaceholder")}
           className="w-full px-3 py-2 border"
         />
       </div>

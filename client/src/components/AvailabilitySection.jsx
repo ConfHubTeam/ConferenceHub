@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import WeekdayBlocker from "./WeekdayBlocker";
 import DateAvailability from "./DateAvailability";
 import SpecificDateBlocker from "./SpecificDateBlocker";
@@ -58,12 +59,10 @@ export default function AvailabilitySection({
   // UI helper functions
   preInput
 }) {
+  const { t } = useTranslation("places");
+
   return (
     <>
-      {preInput(
-        true // Required field
-      )}
-      
       <div className="grid gap-3 grid-cols-1 md:grid-cols-2 mt-2">
         {/* Left column: Calendar + Pricing and Capacity */}
         <div className="flex flex-col gap-3">
@@ -103,7 +102,7 @@ export default function AvailabilitySection({
         
         {/* Right column: Time slot management section */}
         <div className="bg-white p-4 rounded-xl shadow-sm border">
-          <h3 className="text-lg font-semibold mb-2 text-gray-800">⏰ Schedule & Availability</h3>
+          <h3 className="text-lg font-semibold mb-2 text-gray-800">⏰ {t("form.scheduleAvailability.title")}</h3>
           
           {/* Weekday blocking component */}
           <WeekdayBlocker 

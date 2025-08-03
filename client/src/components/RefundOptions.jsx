@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { 
   getProtectionPlanPercentage, 
   getRefundOptionsMetadata,
@@ -16,11 +17,15 @@ export default function RefundOptions({
   isRequired = true,
   className = "" 
 }) {
+  const { t, i18n } = useTranslation('refundPolicies');
   const [refundOptions, setRefundOptions] = useState(selectedOptions);
+  
+  // Get current language for translations
+  const currentLanguage = i18n.language || 'en';
   
   // Get configurable protection percentage and metadata from centralized config
   const protectionPercentage = getProtectionPlanPercentage();
-  const refundOptionsMetadata = getRefundOptionsMetadata();
+  const refundOptionsMetadata = getRefundOptionsMetadata(currentLanguage);
 
   // Update local state when selectedOptions prop changes
   useEffect(() => {
@@ -99,11 +104,6 @@ export default function RefundOptions({
                   isDisabled && !isSelected ? 'text-gray-400' : 'text-gray-900'
                 }`}>
                   {option.label}
-                  {isDisabled && !isSelected && (
-                    <span className="ml-2 text-xs text-gray-400 font-normal">
-                      (conflicts with selected option)
-                    </span>
-                  )}
                 </div>
                 <div className={`text-sm mt-1 ${
                   isDisabled && !isSelected ? 'text-gray-300' : 'text-gray-500'
@@ -117,9 +117,9 @@ export default function RefundOptions({
       </div>
       
       {isRequired && refundOptions.length === 0 && (
-        <p className="text-red-500 text-sm mt-2">
-          Please select at least one refund option
-        </p>
+        <div className="text-red-500 text-sm mb-4">
+          {t("form.pleaseSelectOne", { ns: "refundPolicies" })}
+        </div>
       )}
       
       {hasProtectionPlanWarning() && (
@@ -129,29 +129,17 @@ export default function RefundOptions({
               <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
             <div>
-              <h4 className="font-medium text-yellow-800">Pricing Consideration</h4>
+              <h4 className="font-medium text-yellow-800">
+                {t("form.pricingConsideration", { ns: "refundPolicies" })}
+              </h4>
               <p className="text-sm text-yellow-700 mt-1">
-                Client Protection Plan with Non-refundable policy requires careful price validation. 
-                The {protectionPercentage}% protection fee should be clearly communicated to clients.
+                {t("form.protectionPlanWarning", { 
+                  ns: "refundPolicies", 
+                  percentage: protectionPercentage 
+                })}
               </p>
             </div>
           </div>
-        </div>
-      )}
-      
-      {refundOptions.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
-          <h4 className="font-medium text-blue-900 mb-2">Selected Refund Options:</h4>
-          <ul className="space-y-1">
-            {refundOptions.map(optionValue => {
-              const option = refundOptionsMetadata.find(opt => opt.value === optionValue);
-              return (
-                <li key={optionValue} className="text-sm text-blue-800">
-                  • {option?.label}
-                </li>
-              );
-            })}
-          </ul>
         </div>
       )}
     </div>
