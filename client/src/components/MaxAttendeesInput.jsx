@@ -6,7 +6,7 @@ export default function MaxAttendeesInput({ maxGuests, setMaxGuests }) {
   return (
     <div className="w-full">
       <label htmlFor="maxGuests" className="block mb-0 text-sm font-medium text-gray-700">
-        {t("places:form.pricingAndCapacity.maxAttendees")}
+        {t("places:placeCreate.pricingAndCapacity.maxAttendees")}
       </label>
       <input
         id="maxGuests"
