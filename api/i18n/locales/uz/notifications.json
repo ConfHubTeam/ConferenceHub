@@ -1,0 +1,18 @@
+{
+  "booking": {
+    "newRequest": "Mulkingiz uchun yangi band qilish so'rovi",
+    "confirmed": "Band qilishingiz tasdiqlandi",
+    "cancelled": "Band qilishingiz bekor qilindi",
+    "paymentReceived": "Band qilishingiz uchun to'lov qabul qilindi",
+    "reviewLeft": "Mulkingiz uchun yangi sharh qoldirildi"
+  },
+  "payment": {
+    "success": "To'lov muvaffaqiyatli",
+    "failed": "To'lov muvaffaqiyatsiz",
+    "refund": "Qaytarim qayta ishlandi"
+  },
+  "general": {
+    "welcome": "Platformamizga xush kelibsiz",
+    "newMessage": "Sizda yangi xabar bor"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "welcome": {
+    "subject": "Welcome to our platform",
+    "greeting": "Hello {{name}}!",
+    "body": "Thank you for joining us. We're excited to have you on board."
+  },
+  "booking": {
+    "confirmed": {
+      "subject": "Booking Confirmed - {{placeName}}",
+      "greeting": "Hello {{guestName}}!",
+      "body": "Your booking has been confirmed for {{placeName}} on {{date}} from {{startTime}} to {{endTime}}."
+    },
+    "cancelled": {
+      "subject": "Booking Cancelled - {{placeName}}",
+      "greeting": "Hello {{guestName}}!",
+      "body": "Your booking for {{placeName}} has been cancelled."
+    }
+  },
+  "payment": {
+    "success": {
+      "subject": "Payment Successful",
+      "body": "Your payment of {{amount}} has been processed successfully."
+    },
+    "failed": {
+      "subject": "Payment Failed",
+      "body": "Your payment could not be processed. Please try again."
+    }
+  }
+}

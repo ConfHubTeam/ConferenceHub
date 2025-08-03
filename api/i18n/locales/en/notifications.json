@@ -1,0 +1,18 @@
+{
+  "booking": {
+    "newRequest": "New booking request for your property",
+    "confirmed": "Your booking has been confirmed",
+    "cancelled": "Your booking has been cancelled",
+    "paymentReceived": "Payment received for your booking",
+    "reviewLeft": "New review left for your property"
+  },
+  "payment": {
+    "success": "Payment successful",
+    "failed": "Payment failed",
+    "refund": "Refund processed"
+  },
+  "general": {
+    "welcome": "Welcome to our platform",
+    "newMessage": "You have a new message"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "created": "Sharh muvaffaqiyatli yaratildi",
+  "updated": "Sharh muvaffaqiyatli yangilandi",
+  "deleted": "Sharh muvaffaqiyatli o'chirildi",
+  "notFound": "Sharh topilmadi",
+  "alreadyExists": "Siz bu mulk haqida allaqachon sharh qoldirgan ekansiz",
+  "cannotReview": "Siz faqat band qilgan mulklaringizni baholay olasiz",
+  "invalidRating": "Reyting 1 dan 5 gacha bo'lishi kerak",
+  "helpfulMarked": "Sharh foydali deb belgilandi",
+  "reportSubmitted": "Sharh haqida shikoyat muvaffaqiyatli yuborildi"
+}

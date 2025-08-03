@@ -1,0 +1,12 @@
+{
+  "created": "Band qilish muvaffaqiyatli yaratildi",
+  "updated": "Band qilish muvaffaqiyatli yangilandi",
+  "cancelled": "Band qilish muvaffaqiyatli bekor qilindi",
+  "confirmed": "Band qilish muvaffaqiyatli tasdiqlandi",
+  "notFound": "Band qilish topilmadi",
+  "alreadyExists": "Bu vaqt oralig'i uchun band qilish allaqachon mavjud",
+  "invalidDates": "Noto'g'ri band qilish sanalari",
+  "paymentRequired": "Band qilishni tasdiqlash uchun to'lov talab qilinadi",
+  "cannotCancel": "Hozirda band qilishni bekor qilish mumkin emas",
+  "refundProcessed": "Qaytarim muvaffaqiyatli qayta ishlandi"
+}

@@ -1,0 +1,12 @@
+{
+  "success": "To'lov muvaffaqiyatli qayta ishlandi",
+  "failed": "To'lovni qayta ishlash muvaffaqiyatsiz",
+  "cancelled": "To'lov bekor qilindi",
+  "refunded": "To'lov muvaffaqiyatli qaytarildi",
+  "pending": "To'lov kutilmoqda",
+  "invalidAmount": "Noto'g'ri to'lov miqdori",
+  "insufficientFunds": "Mablag' yetarli emas",
+  "cardDeclined": "Karta rad etildi",
+  "expiredCard": "Karta muddati tugagan",
+  "processingError": "To'lovni qayta ishlash xatosi"
+}

@@ -1,0 +1,11 @@
+{
+  "created": "Review created successfully",
+  "updated": "Review updated successfully",
+  "deleted": "Review deleted successfully",
+  "notFound": "Review not found",
+  "alreadyExists": "You have already reviewed this property",
+  "cannotReview": "You can only review properties you have booked",
+  "invalidRating": "Rating must be between 1 and 5",
+  "helpfulMarked": "Review marked as helpful",
+  "reportSubmitted": "Review report submitted successfully"
+}
