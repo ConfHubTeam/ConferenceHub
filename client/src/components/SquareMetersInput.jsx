@@ -23,7 +23,7 @@ const SquareMetersInput = ({ squareMeters, setSquareMeters }) => {
   return (
     <div className="w-full">
       <label className={`block text-sm font-medium mb-1 text-base`}>
-        {t("form.pricingAndCapacity.conferenceSize")}
+        {t("places:form.pricingAndCapacity.conferenceSize")}
       </label>
       <div className="relative">
         <input
@@ -32,7 +32,7 @@ const SquareMetersInput = ({ squareMeters, setSquareMeters }) => {
           onChange={handleChange}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          placeholder={t("form.pricingAndCapacity.conferenceSizePlaceholder")}
+          placeholder={t("places:form.pricingAndCapacity.conferenceSizePlaceholder")}
           className="w-full px-3 py-2 border"
         />
       </div>

@@ -55,7 +55,7 @@ function SpecificDateBlocker({
             />
             <span className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${showBlockSpecificDates ? 'transform translate-x-4' : ''}`}></span>
           </div>
-          <span>{t("form.scheduleAvailability.blockSpecificDates")}</span>
+          <span>{t("places:form.scheduleAvailability.blockSpecificDates")}</span>
         </label>
       </div>
       
@@ -63,14 +63,14 @@ function SpecificDateBlocker({
       {showBlockSpecificDates && (
         <div className="mb-2 border p-2 rounded-lg">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-medium">{t("form.scheduleAvailability.selectDatesToBlock")}:</h4>
+            <h4 className="text-sm font-medium">{t("places:form.scheduleAvailability.selectDatesToBlock")}:</h4>
             {blockedDates.length > 0 && (
               <button
                 type="button"
                 onClick={() => setBlockedDates([])}
                 className="text-sm text-red-600 hover:text-red-800 font-medium"
               >
-                {t("form.scheduleAvailability.clearAllBlockedDates")}
+                {t("places:form.scheduleAvailability.clearAllBlockedDates")}
               </button>
             )}
           </div>
