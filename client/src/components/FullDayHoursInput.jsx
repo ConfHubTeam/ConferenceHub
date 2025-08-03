@@ -8,7 +8,7 @@ export default function FullDayHoursInput({ fullDayHours, setFullDayHours }) {
   
   // Format the display value
   const formatDisplayValue = (hours) => {
-    return `${hours} ${hours === 1 ? t("places:placeCreate.pricingAndCapacity.hourSingular") : t("places:placeCreate.pricingAndCapacity.hourPlural")}`;
+    return `${hours} ${hours === 1 ? t("placeCreate.pricingAndCapacity.hourSingular") : t("placeCreate.pricingAndCapacity.hourPlural")}`;
   };
 
   // Handle option selection
@@ -51,7 +51,7 @@ export default function FullDayHoursInput({ fullDayHours, setFullDayHours }) {
   return (
     <div className="w-full">
       <label htmlFor="fullDayHours" className="block mb-2 text-sm font-medium text-gray-700">
-        {t("places:placeCreate.pricingAndCapacity.fullDayConsidered")}
+        {t("placeCreate.pricingAndCapacity.fullDayConsidered")}
       </label>
       <div className="relative">
         <div

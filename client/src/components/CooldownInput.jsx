@@ -10,7 +10,7 @@ export default function CooldownInput({ cooldownMinutes, setCooldownMinutes }) {
   // Format the display value - always show in hours for 1-12 hour range
   const formatDisplayValue = (minutes) => {
     const hours = Math.floor(minutes / 60);
-    return `${hours} ${hours === 1 ? t("places:placeCreate.pricingAndCapacity.hourSingular") : t("places:placeCreate.pricingAndCapacity.hourPlural")}`;
+    return `${hours} ${hours === 1 ? t("placeCreate.pricingAndCapacity.hourSingular") : t("placeCreate.pricingAndCapacity.hourPlural")}`;
   };
 
   // Handle option selection
@@ -53,7 +53,7 @@ export default function CooldownInput({ cooldownMinutes, setCooldownMinutes }) {
   return (
     <div className="w-full">
       <label htmlFor="cooldownMinutes" className="block mb-2 text-sm font-medium text-gray-700">
-        {t("places:placeCreate.pricingAndCapacity.cooldownPeriod")}
+        {t("placeCreate.pricingAndCapacity.cooldownPeriod")}
       </label>
       <div className="relative">
         <div
