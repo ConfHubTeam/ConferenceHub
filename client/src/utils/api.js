@@ -1,4 +1,5 @@
 import axios from 'axios';
+import i18n from '../i18n/config';
 
 // Determine the base URL based on the environment
 let baseURL = '';
@@ -19,13 +20,18 @@ const api = axios.create({
   withCredentials: true, // To handle cookies for authentication
 });
 
-// Add request interceptor to inject the token from localStorage into all requests
+// Add request interceptor to inject the token and language into all requests
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Add current language to the request headers
+    const currentLanguage = i18n.language || 'en';
+    config.headers['Accept-Language'] = currentLanguage;
+    
     return config;
   },
   (error) => {

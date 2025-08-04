@@ -44,6 +44,20 @@
     "maxGuests": "Максимум гостей",
     "amenities": "Удобства",
     "photos": "Фотографии",
+    "photosDescription": "Загрузите фотографии вашего конференц-зала",
+    "photoUpload": {
+      "maxPhotosError": "Максимум {{max}} фотографий разрешено. Вы можете добавить еще {{remaining}}.",
+      "uploadFailed": "Загрузка не удалась, попробуйте еще раз позже.",
+      "uploadProgress": "Загружается...",
+      "uploadButton": "Загрузить",
+      "photosCount": "{{current}}/{{max}} фотографий загружено. Осталось {{remaining}}."
+    },
+    "youtubeVideo": "YouTube видео",
+    "youtubeVideoDescription": "Добавьте видео с YouTube, чтобы продемонстрировать ваше пространство",
+    "youtubeVideoPlaceholder": "https://www.youtube.com/watch?v=example",
+    "matterportTour": "3D виртуальный тур (Matterport)",
+    "matterportTourDescription": "Добавьте ссылку на 3D виртуальный тур Matterport для погружения в пространство на 360°",
+    "matterportTourPlaceholder": "https://my.matterport.com/show/?m=example",
     "perks": "Преимущества",
     "extraInfo": "Дополнительная информация",
     "extraInfoPlaceholder": "Любая дополнительная информация, такая как правила бронирования, политика отмены или специальные инструкции.",
@@ -338,6 +352,31 @@
   "placePerks": {
     "whatThisPlaceOffers": "Что предлагает это место",
     "showAllAmenities": "Показать все {{count}} удобств"
+  },
+  "photoGallery": {
+    "close": "Закрыть",
+    "closePhotos": "Закрыть фото",
+    "media": "Медиа",
+    "showAllMedia": "Показать все медиа",
+    "video": "Видео",
+    "threeDTour": "3D",
+    "noPhotosVideos": "Нет фотографий или видео"
+  },
+  "deleteConfirmation": {
+    "confirmationRequired": "Требуется подтверждение",
+    "warningCannotUndo": "Внимание: Это действие нельзя отменить!",
+    "followingDataDeleted": "Следующие данные будут навсегда удалены:",
+    "typeDeleteConfirm": "Введите \"DELETE\" для подтверждения:",
+    "typeDeletePlaceholder": "Введите DELETE заглавными буквами",
+    "preventAccidental": "Это помогает предотвратить случайные удаления",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "deleting": "Удаление...",
+    "deleteConfirmation": "Подтверждение удаления"
+  },
+  "mapInfoWindow": {
+    "perHour": " / час",
+    "viewDetails": "Подробнее"
   },
   "common": {
     "error": "Ошибка"

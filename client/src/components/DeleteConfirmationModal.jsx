@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 /**
  * Reusable delete confirmation modal component
@@ -17,12 +18,13 @@ export default function DeleteConfirmationModal({
   isOpen,
   onClose,
   onDelete,
-  title = "Delete Confirmation",
+  title,
   itemToDelete,
   itemDetails = [],
   consequences = [],
   deleteInProgress = false,
 }) {
+  const { t } = useTranslation(['places']);
   const [confirmationText, setConfirmationText] = useState("");
   
   if (!isOpen) return null;
@@ -42,19 +44,28 @@ export default function DeleteConfirmationModal({
     onClose();
   };
 
+  // Get the modal title, fallback to translated default if not provided
+  const modalTitle = title || t('places:deleteConfirmation.deleteConfirmation');
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70] p-4">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full">
-        <h3 className="text-xl font-bold mb-4 text-red-600">{title} - Confirmation Required</h3>
+      <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
+        <h3 className="text-xl font-bold mb-4 text-red-600">
+          {modalTitle} - {t('places:deleteConfirmation.confirmationRequired')}
+        </h3>
         
         {/* Item details section */}
         {itemDetails.length > 0 && (
           <div className="mb-4 p-3 bg-gray-50 rounded border border-gray-200">
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-3">
               {itemDetails.map((detail, index) => (
-                <div key={index} className="flex items-center">
-                  <span className="text-gray-600 font-semibold w-20">{detail.label}:</span>
-                  <span>{typeof detail.value === "string" ? detail.value : detail.value}</span>
+                <div key={index} className="flex flex-col">
+                  <span className="text-gray-600 font-semibold text-sm mb-1">
+                    {detail.label}:
+                  </span>
+                  <span className="break-words text-gray-900 leading-relaxed">
+                    {typeof detail.value === "string" ? detail.value : detail.value}
+                  </span>
                 </div>
               ))}
             </div>
@@ -62,11 +73,15 @@ export default function DeleteConfirmationModal({
         )}
         
         <div className="mb-6">
-          <p className="font-semibold text-red-600 mb-2">Warning: This action cannot be undone!</p>
+          <p className="font-semibold text-red-600 mb-2">
+            {t('places:deleteConfirmation.warningCannotUndo')}
+          </p>
           
           {consequences.length > 0 && (
             <>
-              <p className="mb-4">The following data will be permanently deleted:</p>
+              <p className="mb-4">
+                {t('places:deleteConfirmation.followingDataDeleted')}
+              </p>
               <ul className="list-disc ml-6 mb-4 text-sm text-gray-600">
                 {consequences.map((consequence, index) => (
                   <li key={index}>{consequence}</li>
@@ -78,18 +93,18 @@ export default function DeleteConfirmationModal({
           {/* Type DELETE to confirm section */}
           <div className="mt-4 border-t pt-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Type "DELETE" to confirm:
+              {t('places:deleteConfirmation.typeDeleteConfirm')}
             </label>
             <input
               type="text"
               value={confirmationText}
               onChange={(e) => setConfirmationText(e.target.value)}
               className="w-full p-2 border rounded focus:ring-2 focus:ring-red-500 focus:border-red-500"
-              placeholder="Type DELETE in all caps"
+              placeholder={t('places:deleteConfirmation.typeDeletePlaceholder')}
               autoComplete="off"
             />
             <div className="text-sm mt-1 text-gray-500">
-              This helps prevent accidental deletions
+              {t('places:deleteConfirmation.preventAccidental')}
             </div>
           </div>
         </div>
@@ -100,7 +115,7 @@ export default function DeleteConfirmationModal({
             className="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
             disabled={deleteInProgress}
           >
-            Cancel
+            {t('places:deleteConfirmation.cancel')}
           </button>
           <button 
             onClick={handleDelete}
@@ -111,7 +126,7 @@ export default function DeleteConfirmationModal({
             }`}
             disabled={!isDeleteEnabled || deleteInProgress}
           >
-            {deleteInProgress ? "Deleting..." : "Delete"}
+            {deleteInProgress ? t('places:deleteConfirmation.deleting') : t('places:deleteConfirmation.delete')}
           </button>
         </div>
       </div>

@@ -108,6 +108,60 @@ function RegisterPage() {
     }
   }, [email]);
 
+  // Custom validation messages for HTML5 validation
+  useEffect(() => {
+    if (ready) {
+      // Override browser's default validation messages
+      const nameInput = document.getElementById('name');
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      
+      if (nameInput) {
+        nameInput.setCustomValidity('');
+        nameInput.oninvalid = function(e) {
+          if (nameInput.validity.valueMissing) {
+            nameInput.setCustomValidity(t("auth:validation.nameRequired"));
+          } else {
+            nameInput.setCustomValidity('');
+          }
+        };
+        nameInput.oninput = function() {
+          nameInput.setCustomValidity('');
+        };
+      }
+      
+      if (emailInput) {
+        emailInput.setCustomValidity('');
+        emailInput.oninvalid = function(e) {
+          if (emailInput.validity.valueMissing) {
+            emailInput.setCustomValidity(t("auth:validation.emailRequired"));
+          } else if (emailInput.validity.typeMismatch) {
+            emailInput.setCustomValidity(t("auth:validation.emailInvalid"));
+          } else {
+            emailInput.setCustomValidity('');
+          }
+        };
+        emailInput.oninput = function() {
+          emailInput.setCustomValidity('');
+        };
+      }
+      
+      if (passwordInput) {
+        passwordInput.setCustomValidity('');
+        passwordInput.oninvalid = function(e) {
+          if (passwordInput.validity.valueMissing) {
+            passwordInput.setCustomValidity(t("auth:validation.passwordRequired"));
+          } else {
+            passwordInput.setCustomValidity('');
+          }
+        };
+        passwordInput.oninput = function() {
+          passwordInput.setCustomValidity('');
+        };
+      }
+    }
+  }, [ready, t]);
+
   // Update password strength when password changes
   useEffect(() => {
     setPasswordStrength(checkPasswordStrength(password));

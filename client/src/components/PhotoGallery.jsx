@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import CloudinaryImage from "./CloudinaryImage";
 import YouTubeEmbed from "./YouTubeEmbed";
 import MatterportEmbed from "./MatterportEmbed";
 
 export default function PhotoGallery({placeDetail}) {
+  const { t } = useTranslation(['places']);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
@@ -129,7 +131,7 @@ export default function PhotoGallery({placeDetail}) {
                   d="M6 18L18 6M6 6l12 12"
                 />
               </svg>
-              {isMobile ? 'Close' : 'Close photos'}
+              {isMobile ? t('places:photoGallery.close') : t('places:photoGallery.closePhotos')}
             </button>
           </div>
           
@@ -305,7 +307,7 @@ export default function PhotoGallery({placeDetail}) {
                         </svg>
                       </div>
                       <div className="absolute bottom-1 left-1 right-1">
-                        <div className="text-white text-xs font-medium text-center bg-black/40 rounded px-1">3D</div>
+                        <div className="text-white text-xs font-medium text-center bg-black/40 rounded px-1">{t('places:photoGallery.threeDTour')}</div>
                       </div>
                     </div>
                   </div>
@@ -327,7 +329,7 @@ export default function PhotoGallery({placeDetail}) {
                       </div>
                       <div className="absolute bottom-1 left-1 right-1">
                         <div className="text-white text-xs font-semibold text-center bg-black/40 rounded px-1 py-0.5">
-                          Video
+                          {t('places:photoGallery.video')}
                         </div>
                       </div>
                     </div>
@@ -366,7 +368,7 @@ export default function PhotoGallery({placeDetail}) {
         </div>
       ) : (
         <div className="aspect-video bg-gray-200 flex items-center justify-center rounded-xl">
-          <span className="text-gray-500">No photos or videos available</span>
+          <span className="text-gray-500">{t('places:photoGallery.noPhotosVideos')}</span>
         </div>
       )}
       
@@ -389,7 +391,7 @@ export default function PhotoGallery({placeDetail}) {
             d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
           />
         </svg>
-        {isMobile ? 'Media' : 'Show all media'}
+        {isMobile ? t('places:photoGallery.media') : t('places:photoGallery.showAllMedia')}
       </button>
     </div>
   );

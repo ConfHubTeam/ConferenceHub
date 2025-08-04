@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import CloudinaryImage from "./CloudinaryImage";
 import api from "../utils/api";
 
 export default function PhotoUploader({ addedPhotos, setAddedPhotos }) {
+  const { t } = useTranslation(['places']);
   const [uploadError, setUploadError] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const MAX_PHOTOS = 6; // Set maximum number of photos to 4
@@ -14,7 +16,10 @@ export default function PhotoUploader({ addedPhotos, setAddedPhotos }) {
 
     // Check if maximum photos reached
     if (addedPhotos.length + files.length > MAX_PHOTOS) {
-      setUploadError(`Maximum ${MAX_PHOTOS} photos allowed. You can add ${MAX_PHOTOS - addedPhotos.length} more.`);
+      setUploadError(t('places:placeCreate.photoUpload.maxPhotosError', {
+        max: MAX_PHOTOS,
+        remaining: MAX_PHOTOS - addedPhotos.length
+      }));
       setIsUploading(false);
       return;
     }
@@ -33,7 +38,7 @@ export default function PhotoUploader({ addedPhotos, setAddedPhotos }) {
         return [...prev, ...uploadedFiles];
       });
     } catch (error) {
-      setUploadError("Upload failed, please try again later.");
+      setUploadError(t('places:placeCreate.photoUpload.uploadFailed'));
     } finally {
       setIsUploading(false);
     }
@@ -58,7 +63,11 @@ export default function PhotoUploader({ addedPhotos, setAddedPhotos }) {
       )}
       
       <div className="mt-2 mb-2 text-sm text-gray-600">
-        <p>{addedPhotos.length}/{MAX_PHOTOS} photos uploaded. {MAX_PHOTOS - addedPhotos.length} remaining.</p>
+        <p>{t('places:placeCreate.photoUpload.photosCount', {
+          current: addedPhotos.length,
+          max: MAX_PHOTOS,
+          remaining: MAX_PHOTOS - addedPhotos.length
+        })}</p>
         {isUploading}
       </div>
 
@@ -147,7 +156,7 @@ export default function PhotoUploader({ addedPhotos, setAddedPhotos }) {
             {isUploading ? (
               <>
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-600"></div>
-                <span>Uploading...</span>
+                <span>{t('places:placeCreate.photoUpload.uploadProgress')}</span>
               </>
             ) : (
               <>
@@ -165,7 +174,7 @@ export default function PhotoUploader({ addedPhotos, setAddedPhotos }) {
                     d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"
                   />
                 </svg>
-                <span>Upload</span>
+                <span>{t('places:placeCreate.photoUpload.uploadButton')}</span>
               </>
             )}
           </label>

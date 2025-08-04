@@ -333,6 +333,8 @@
     "payment": {
       "selectedMessage": "Your booking has been selected! You can now proceed with payment.",
       "pendingMessage": "Payment options will be available once your booking is selected by the host.",
+      "notAvailableTitle": "Payment Not Available",
+      "notAvailableMessage": "Payment will be available once the host selects your booking.",
       "providers": {
         "click": {
           "available": "Pay with Click",

@@ -723,7 +723,7 @@ export default function PlacesFormPage() {
           placeId={id} // Pass the place ID to determine if this is creation or editing
         />
         
-        {preInput("places:placeCreate.photos")}
+        {preInput("placeCreate.photos", "placeCreate.photosDescription")}
         <PhotoUploader
           addedPhotos={addedPhotos}
           setAddedPhotos={setAddedPhotos}

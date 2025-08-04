@@ -44,6 +44,20 @@
     "maxGuests": "Maximum guests",
     "amenities": "Amenities",
     "photos": "Photos",
+    "photosDescription": "Upload photos of your conference room",
+    "photoUpload": {
+      "maxPhotosError": "Maximum {{max}} photos allowed. You can add {{remaining}} more.",
+      "uploadFailed": "Upload failed, please try again later.",
+      "uploadProgress": "Uploading...",
+      "uploadButton": "Upload",
+      "photosCount": "{{current}}/{{max}} photos uploaded. {{remaining}} remaining."
+    },
+    "youtubeVideo": "YouTube Video",
+    "youtubeVideoDescription": "Add a YouTube video to showcase your space",
+    "youtubeVideoPlaceholder": "https://www.youtube.com/watch?v=example",
+    "matterportTour": "3D Virtual Tour (Matterport)",
+    "matterportTourDescription": "Add a Matterport 3D virtual tour link to provide an immersive 360° view of your space",
+    "matterportTourPlaceholder": "https://my.matterport.com/show/?m=example",
     "perks": "Perks",
     "extraInfo": "Extra info",
     "extraInfoPlaceholder": "Any additional information such as booking rules, cancellation policy, or special instructions.",
@@ -338,6 +352,31 @@
   "placePerks": {
     "whatThisPlaceOffers": "What this place offers",
     "showAllAmenities": "Show all {{count}} amenities"
+  },
+  "photoGallery": {
+    "close": "Close",
+    "closePhotos": "Close photos",
+    "media": "Media",
+    "showAllMedia": "Show all media",
+    "video": "Video",
+    "threeDTour": "3D",
+    "noPhotosVideos": "No photos or videos available"
+  },
+  "deleteConfirmation": {
+    "confirmationRequired": "Confirmation Required",
+    "warningCannotUndo": "Warning: This action cannot be undone!",
+    "followingDataDeleted": "The following data will be permanently deleted:",
+    "typeDeleteConfirm": "Type \"DELETE\" to confirm:",
+    "typeDeletePlaceholder": "Type DELETE in all caps",
+    "preventAccidental": "This helps prevent accidental deletions",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "deleteConfirmation": "Delete Confirmation"
+  },
+  "mapInfoWindow": {
+    "perHour": " / hour",
+    "viewDetails": "View details"
   },
   "common": {
     "error": "Error"
