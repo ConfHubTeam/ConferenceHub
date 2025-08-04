@@ -64,6 +64,12 @@ export default function ReviewForm({ placeId, onReviewSubmitted, existingReview 
   // Check if user has eligible bookings for this place
   const hasEligibleBookings = eligibleBookings.length > 0;
 
+  // Check if current user is the place owner (host cannot review their own place)
+  const isPlaceOwner = user && placeOwnerId && user.id === placeOwnerId;
+  
+  // Check if current user is an agent (assuming agents have a role property)
+  const isAgent = user && (user.role === 'agent' || user.userType === 'agent');
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
