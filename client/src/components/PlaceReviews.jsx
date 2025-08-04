@@ -7,9 +7,11 @@ import ReviewSortFilter from "./ReviewSortFilter";
 import ReviewForm from "./ReviewForm";
 import { UserContext } from "./UserContext";
 import { createReviewReply, updateReviewReply } from "../utils/api";
+import { useTranslation } from "../i18n/hooks/useTranslation";
 
 export default function PlaceReviews({ placeId, placeOwnerId }) {
   const { user } = useContext(UserContext);
+  const { t } = useTranslation("reviews");
   const {
     reviews,
     reviewStats,
@@ -119,7 +121,7 @@ export default function PlaceReviews({ placeId, placeOwnerId }) {
   if (!loading && reviewStats.totalReviews === 0) {
     return (
       <div className="mb-8">
-        <h2 className="text-xl md:text-2xl font-semibold mb-6">Reviews</h2>
+        <h2 className="text-xl md:text-2xl font-semibold mb-6">{t("title")}</h2>
         
         {/* Review Form for new users */}
         {!isPlaceOwner && (
@@ -135,7 +137,7 @@ export default function PlaceReviews({ placeId, placeOwnerId }) {
               <svg className="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
               </svg>
-              As the host of this place, you cannot leave a review.
+              {t("hostMessages.cannotReview")}
             </p>
           </div>
         )}
@@ -156,8 +158,8 @@ export default function PlaceReviews({ placeId, placeOwnerId }) {
               />
             </svg>
           </div>
-          <p className="text-gray-600 text-lg font-medium mb-2">No reviews yet</p>
-          <p className="text-gray-500 text-sm">Be the first to share your experience!</p>
+          <p className="text-gray-600 text-lg font-medium mb-2">{t("noReviews.title")}</p>
+          <p className="text-gray-500 text-sm">{t("noReviews.description")}</p>
         </div>
       </div>
     );
@@ -165,7 +167,7 @@ export default function PlaceReviews({ placeId, placeOwnerId }) {
 
   return (
     <div className="mb-8">
-      <h2 className="text-xl md:text-2xl font-semibold mb-6">Reviews</h2>
+      <h2 className="text-xl md:text-2xl font-semibold mb-6">{t("title")}</h2>
 
       {/* Review Form - show only if user hasn't reviewed yet and is not the place owner */}
       {!userReview && !isPlaceOwner && (
@@ -182,7 +184,7 @@ export default function PlaceReviews({ placeId, placeOwnerId }) {
             <svg className="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
             </svg>
-            As the host of this place, you cannot leave a review.
+            {t("hostMessages.cannotReview")}
           </p>
         </div>
       )}
@@ -196,7 +198,7 @@ export default function PlaceReviews({ placeId, placeOwnerId }) {
               <span className="text-2xl font-bold">{reviewStats.averageRating.toFixed(1)}</span>
             </div>
             <div className="text-gray-600">
-              {reviewStats.totalReviews} review{reviewStats.totalReviews !== 1 ? "s" : ""}
+              {t("stats.totalReviews", { count: reviewStats.totalReviews })}
             </div>
           </div>
 
@@ -246,7 +248,7 @@ export default function PlaceReviews({ placeId, placeOwnerId }) {
             disabled={loading}
             className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
-            {loading ? "Loading..." : "Load More Reviews"}
+            {loading ? t("loading.reviews") : t("loading.loadMore")}
           </button>
         </div>
       )}
@@ -291,16 +293,17 @@ export default function PlaceReviews({ placeId, placeOwnerId }) {
 
 // Simple report modal component for reporting reviews
 function ReportModal({ onClose, onSubmit }) {
+  const { t } = useTranslation("reviews");
   const [selectedReason, setSelectedReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const reasons = [
-    { value: "spam", label: "Spam" },
-    { value: "inappropriate", label: "Inappropriate content" },
-    { value: "fake", label: "Fake review" },
-    { value: "harassment", label: "Harassment" },
-    { value: "off_topic", label: "Off-topic" },
-    { value: "other", label: "Other" }
+    { value: "spam", label: t("reportModal.reasons.spam") },
+    { value: "inappropriate", label: t("reportModal.reasons.inappropriate") },
+    { value: "fake", label: t("reportModal.reasons.fake") },
+    { value: "harassment", label: t("reportModal.reasons.harassment") },
+    { value: "off_topic", label: t("reportModal.reasons.off_topic") },
+    { value: "other", label: t("reportModal.reasons.other") }
   ];
 
   const handleSubmit = async (e) => {
@@ -318,7 +321,7 @@ function ReportModal({ onClose, onSubmit }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-        <h3 className="text-lg font-semibold mb-4">Report Review</h3>
+        <h3 className="text-lg font-semibold mb-4">{t("reportModal.title")}</h3>
         <form onSubmit={handleSubmit}>
           <div className="space-y-2 mb-6">
             {reasons.map((reason) => (
@@ -349,14 +352,14 @@ function ReportModal({ onClose, onSubmit }) {
               disabled={submitting}
               className="flex-1 px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
             >
-              Cancel
+              {t("reportModal.buttons.cancel")}
             </button>
             <button
               type="submit"
               disabled={!selectedReason || submitting}
               className="flex-1 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
             >
-              {submitting ? "Submitting..." : "Report"}
+              {submitting ? t("reportModal.buttons.submitting") : t("reportModal.buttons.report")}
             </button>
           </div>
         </form>

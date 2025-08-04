@@ -1,6 +1,7 @@
 import { useState, useContext } from "react";
 import { UserContext } from "./UserContext";
 import StarRating from "./StarRating";
+import { useTranslation } from "../i18n/hooks/useTranslation";
 
 export default function ReviewCard({ 
   review, 
@@ -12,6 +13,7 @@ export default function ReviewCard({
   isLoading = false 
 }) {
   const { user } = useContext(UserContext);
+  const { t } = useTranslation("reviews");
   const [showFullComment, setShowFullComment] = useState(false);
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [isEditingReply, setIsEditingReply] = useState(false);
@@ -127,7 +129,7 @@ export default function ReviewCard({
           <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" clipRule="evenodd" />
           </svg>
-          {review.rating === 5 ? "Excellent" : "Great Review"}
+          {review.rating === 5 ? t("reviewCard.highRating.excellent") : t("reviewCard.highRating.great")}
         </div>
       )}
 
@@ -142,7 +144,7 @@ export default function ReviewCard({
           {/* User Info and Rating */}
           <div className="flex items-center gap-2 mb-1">
             <span className="font-semibold text-gray-900 truncate">
-              {review.User?.name || "Anonymous"}
+              {review.User?.name || t("reviewCard.anonymous")}
             </span>
             <span className="text-gray-400">•</span>
             <span className="text-sm text-gray-600 flex-shrink-0">
@@ -166,7 +168,7 @@ export default function ReviewCard({
               onClick={() => setShowFullComment(!showFullComment)}
               className="text-primary hover:text-orange-600 text-sm font-medium mt-2 focus:outline-none"
             >
-              {showFullComment ? "Show less" : "Show more"}
+              {showFullComment ? t("reviewCard.showLess") : t("reviewCard.showMore")}
             </button>
           )}
         </div>
@@ -178,7 +180,7 @@ export default function ReviewCard({
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-gray-900">
-                Host response
+                {t("reviewCard.hostResponse")}
               </span>
               <span className="text-xs text-gray-600">
                 {formatDate(review.Reply.created_at)}
@@ -190,7 +192,7 @@ export default function ReviewCard({
                 disabled={isLoading}
                 className="text-xs text-blue-600 hover:text-blue-800 transition-colors duration-200 disabled:opacity-50"
               >
-                Edit
+                {t("reviewCard.editReply")}
               </button>
             )}
           </div>
@@ -205,14 +207,14 @@ export default function ReviewCard({
         <div className="bg-gray-50 rounded-lg p-3 mb-3">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-sm font-semibold text-gray-900">
-              Edit host response
+              {t("hostReply.editTitle")}
             </span>
           </div>
           <form onSubmit={handleEditReplySubmit}>
             <textarea
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
-              placeholder="Edit your response to this review..."
+              placeholder={t("hostReply.editPlaceholder")}
               maxLength={500}
               rows={3}
               className="w-full p-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -220,7 +222,7 @@ export default function ReviewCard({
             />
             <div className="flex items-center justify-between mt-2">
               <span className="text-xs text-gray-500">
-                {replyText.length}/500 characters
+                {t("hostReply.characterCount", { current: replyText.length, max: 500 })}
               </span>
               <div className="flex gap-2">
                 <button
@@ -229,14 +231,14 @@ export default function ReviewCard({
                   disabled={isLoading}
                   className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 transition-colors duration-200 disabled:opacity-50"
                 >
-                  Cancel
+                  {t("hostReply.buttons.cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading || !replyText.trim() || replyText.length > 500}
                   className="px-4 py-1 bg-primary text-white text-sm rounded hover:bg-orange-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isLoading ? "Saving..." : "Save"}
+                  {isLoading ? t("hostReply.buttons.saving") : t("hostReply.buttons.save")}
                 </button>
               </div>
             </div>
@@ -249,14 +251,14 @@ export default function ReviewCard({
         <div className="bg-gray-50 rounded-lg p-3 mb-3">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-sm font-semibold text-gray-900">
-              Host response
+              {t("hostReply.title")}
             </span>
           </div>
           <form onSubmit={handleReplySubmit}>
             <textarea
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
-              placeholder="Respond to this review..."
+              placeholder={t("hostReply.placeholder")}
               maxLength={500}
               rows={3}
               className="w-full p-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -264,7 +266,7 @@ export default function ReviewCard({
             />
             <div className="flex items-center justify-between mt-2">
               <span className="text-xs text-gray-500">
-                {replyText.length}/500 characters
+                {t("hostReply.characterCount", { current: replyText.length, max: 500 })}
               </span>
               <div className="flex gap-2">
                 <button
@@ -273,14 +275,14 @@ export default function ReviewCard({
                   disabled={isLoading}
                   className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 transition-colors duration-200 disabled:opacity-50"
                 >
-                  Cancel
+                  {t("hostReply.buttons.cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading || !replyText.trim() || replyText.length > 500}
                   className="px-4 py-1 bg-primary text-white text-sm rounded hover:bg-orange-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isLoading ? "Posting..." : "Post Reply"}
+                  {isLoading ? t("hostReply.buttons.posting") : t("hostReply.buttons.post")}
                 </button>
               </div>
             </div>
@@ -316,9 +318,9 @@ export default function ReviewCard({
                 d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L9 7m5 3v10M7 20H5a2 2 0 01-2-2v-8a2 2 0 012-2h2m0 10v-10"
               />
             </svg>
-            <span>{review.isHelpful ? "Helpful ✓" : "Helpful"}</span>
+            <span>{review.isHelpful ? t("reviewCard.helpfulMarked") : t("reviewCard.helpful")}</span>
             {review.helpfulCount > 0 && (
-              <span className="text-xs">({review.helpfulCount})</span>
+              <span className="text-xs">{t("reviewCard.helpfulCount", { count: review.helpfulCount })}</span>
             )}
           </button>
         </div>
@@ -331,7 +333,7 @@ export default function ReviewCard({
               disabled={isLoading}
               className="text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200 disabled:opacity-50"
             >
-              Reply
+              {t("reviewCard.reply")}
             </button>
           )}
 
@@ -341,12 +343,12 @@ export default function ReviewCard({
               onClick={handleReportClick}
               className="text-xs text-gray-500 hover:text-red-500 transition-colors duration-200"
             >
-              Report
+              {t("reviewCard.report")}
             </button>
           )}
 
           {review.isReported && (
-            <span className="text-xs text-red-500">Reported</span>
+            <span className="text-xs text-red-500">{t("reviewCard.reported")}</span>
           )}
         </div>
       </div>

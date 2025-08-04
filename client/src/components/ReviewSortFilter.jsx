@@ -1,14 +1,18 @@
+import { useTranslation } from "../i18n/hooks/useTranslation";
+
 export default function ReviewSortFilter({ sortBy, onSortChange }) {
+  const { t } = useTranslation("reviews");
+  
   const sortOptions = [
-    { value: "newest", label: "Newest first" },
-    { value: "oldest", label: "Oldest first" },
-    { value: "highest", label: "Highest rated" },
-    { value: "lowest", label: "Lowest rated" }
+    { value: "newest", label: t("sorting.newest") },
+    { value: "oldest", label: t("sorting.oldest") },
+    { value: "highest", label: t("sorting.highest") },
+    { value: "lowest", label: t("sorting.lowest") }
   ];
 
   return (
     <div className="flex items-center gap-3">
-      <span className="text-sm font-medium text-gray-700">Sort by:</span>
+      <span className="text-sm font-medium text-gray-700">{t("sorting.label")}</span>
       <select
         value={sortBy}
         onChange={(e) => onSortChange(e.target.value)}

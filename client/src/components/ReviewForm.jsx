@@ -3,10 +3,12 @@ import { UserContext } from "./UserContext";
 import { useNotification } from "./NotificationContext";
 import InteractiveStarRating from "./InteractiveStarRating";
 import api from "../utils/api";
+import { useTranslation } from "../i18n/hooks/useTranslation";
 
-export default function ReviewForm({ placeId, onReviewSubmitted, existingReview = null, onCancel }) {
+export default function ReviewForm({ placeId, onReviewSubmitted, existingReview = null, onCancel, placeOwnerId }) {
   const { user } = useContext(UserContext);
   const { notify } = useNotification();
+  const { t } = useTranslation("reviews");
   const [rating, setRating] = useState(existingReview?.rating || 0);
   const [comment, setComment] = useState(existingReview?.comment || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,7 +49,7 @@ export default function ReviewForm({ placeId, onReviewSubmitted, existingReview 
       }
     } catch (error) {
       console.error("Error fetching eligible bookings:", error);
-      notify("Failed to load eligible bookings", "error");
+      notify(t("reviewForm.messages.loadBookingsError"), "error");
     } finally {
       setLoadingBookings(false);
     }
@@ -98,7 +100,7 @@ export default function ReviewForm({ placeId, onReviewSubmitted, existingReview 
 
       // Show success notification
       notify(
-        existingReview ? "Review updated successfully!" : "Review submitted successfully!",
+        existingReview ? t("reviewForm.messages.updateSuccess") : t("reviewForm.messages.submitSuccess"),
         "success"
       );
 
@@ -112,7 +114,7 @@ export default function ReviewForm({ placeId, onReviewSubmitted, existingReview 
 
     } catch (error) {
       console.error("Error submitting review:", error);
-      let errorMessage = "Failed to submit review. Please try again.";
+      let errorMessage = t("reviewForm.messages.submitError");
       
       if (error.response?.data?.error) {
         errorMessage = error.response.data.error;
@@ -150,7 +152,12 @@ export default function ReviewForm({ placeId, onReviewSubmitted, existingReview 
     return null;
   }
 
-  // Don't show form if user hasn't completed a booking for this place
+  // Don't show anything if user is agent or host (they shouldn't review)
+  if (isAgent || isPlaceOwner) {
+    return null;
+  }
+
+  // Don't show form if user hasn't completed a booking for this place (only for regular clients)
   if (user && !existingReview && !loadingBookings && !hasEligibleBookings) {
     return (
       <div className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -161,8 +168,8 @@ export default function ReviewForm({ placeId, onReviewSubmitted, existingReview 
             </svg>
           </div>
           <div>
-            <h3 className="font-medium text-gray-900">Complete a booking to leave a review</h3>
-            <p className="text-sm text-gray-600">Only guests who have stayed within the last month can write reviews</p>
+            <h3 className="font-medium text-gray-900">{t("reviewForm.eligibility.noBookings.title")}</h3>
+            <p className="text-sm text-gray-600">{t("reviewForm.eligibility.noBookings.description")}</p>
           </div>
         </div>
       </div>
@@ -175,7 +182,7 @@ export default function ReviewForm({ placeId, onReviewSubmitted, existingReview 
       <div className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
         <div className="flex items-center gap-3">
           <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-sm text-gray-600">Checking review eligibility...</span>
+          <span className="text-sm text-gray-600">{t("reviewForm.eligibility.checking")}</span>
         </div>
       </div>
     );
@@ -192,7 +199,7 @@ export default function ReviewForm({ placeId, onReviewSubmitted, existingReview 
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          Write a Review
+          {t("reviewForm.writeButton")}
         </button>
       </div>
     );
@@ -202,7 +209,7 @@ export default function ReviewForm({ placeId, onReviewSubmitted, existingReview 
     <div className="mb-8">
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <h3 className="text-lg font-semibold mb-6">
-          {existingReview ? "Edit Your Review" : "Write a Review"}
+          {existingReview ? t("reviewForm.editTitle") : t("reviewForm.title")}
         </h3>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -212,7 +219,7 @@ export default function ReviewForm({ placeId, onReviewSubmitted, existingReview 
               {loadingBookings ? (
                 <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md">
                   <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                  <span className="text-sm text-gray-600">Loading your bookings...</span>
+                  <span className="text-sm text-gray-600">{t("reviewForm.fields.booking.loading")}</span>
                 </div>
               ) : (
                 <select
@@ -221,16 +228,16 @@ export default function ReviewForm({ placeId, onReviewSubmitted, existingReview 
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   disabled={isSubmitting}
                 >
-                  <option value="">Select a booking...</option>
+                  <option value="">{t("reviewForm.fields.booking.placeholder")}</option>
                   {eligibleBookings.map((booking, index) => (
                     <option key={booking.id} value={booking.id}>
-                      Booking #{index + 1}
+                      {t("reviewForm.fields.booking.option", { number: index + 1 })}
                     </option>
                   ))}
                 </select>
               )}
               {!isValidBooking && selectedBookingId === "" && eligibleBookings.length > 1 && (
-                <p className="mt-2 text-sm text-red-600">Please select a booking to review</p>
+                <p className="mt-2 text-sm text-red-600">{t("reviewForm.fields.booking.error")}</p>
               )}
             </div>
           )}
@@ -238,7 +245,7 @@ export default function ReviewForm({ placeId, onReviewSubmitted, existingReview 
           {/* Rating Section */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
-              Overall Rating *
+              {t("reviewForm.fields.rating.label")} {t("reviewForm.fields.rating.required")}
             </label>
             <InteractiveStarRating
               rating={rating}
@@ -247,20 +254,20 @@ export default function ReviewForm({ placeId, onReviewSubmitted, existingReview 
               disabled={isSubmitting}
             />
             {!isValidRating && rating > 0 && (
-              <p className="mt-2 text-sm text-red-600">Please select a rating</p>
+              <p className="mt-2 text-sm text-red-600">{t("reviewForm.fields.rating.error")}</p>
             )}
           </div>
 
           {/* Comment Section */}
           <div>
             <label htmlFor="review-comment" className="block text-sm font-medium text-gray-700 mb-2">
-              Your Review *
+              {t("reviewForm.fields.comment.label")} {t("reviewForm.fields.comment.required")}
             </label>
             <textarea
               id="review-comment"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Share your experience with this conference room..."
+              placeholder={t("reviewForm.fields.comment.placeholder")}
               disabled={isSubmitting}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 resize-none"
               rows={4}
@@ -270,17 +277,17 @@ export default function ReviewForm({ placeId, onReviewSubmitted, existingReview 
               <div className="text-sm text-gray-500">
                 {comment.trim().length < MIN_COMMENT_LENGTH && comment.length > 0 && (
                   <span className="text-red-600">
-                    Minimum {MIN_COMMENT_LENGTH} characters required
+                    {t("reviewForm.fields.comment.minLength", { min: MIN_COMMENT_LENGTH })}
                   </span>
                 )}
                 {comment.trim().length >= MIN_COMMENT_LENGTH && (
                   <span className="text-green-600">
-                    ✓ Valid length
+                    {t("reviewForm.fields.comment.validLength")}
                   </span>
                 )}
               </div>
               <div className="text-sm text-gray-500">
-                {comment.length}/{MAX_COMMENT_LENGTH}
+                {t("reviewForm.fields.comment.characterCount", { current: comment.length, max: MAX_COMMENT_LENGTH })}
               </div>
             </div>
           </div>
@@ -300,7 +307,7 @@ export default function ReviewForm({ placeId, onReviewSubmitted, existingReview 
               disabled={isSubmitting}
               className="px-4 py-2 text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             >
-              Cancel
+              {t("reviewForm.buttons.cancel")}
             </button>
             <button
               type="submit"
@@ -310,10 +317,10 @@ export default function ReviewForm({ placeId, onReviewSubmitted, existingReview 
               {isSubmitting ? (
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  {existingReview ? "Updating..." : "Submitting..."}
+                  {existingReview ? t("reviewForm.buttons.updating") : t("reviewForm.buttons.submitting")}
                 </div>
               ) : (
-                existingReview ? "Update Review" : "Submit Review"
+                existingReview ? t("reviewForm.buttons.update") : t("reviewForm.buttons.submit")
               )}
             </button>
           </div>

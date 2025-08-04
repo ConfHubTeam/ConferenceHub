@@ -1,0 +1,130 @@
+{
+  "title": "Sharhlar",
+  "subtitle": "Mehmonlar sharhlari va reytinglari",
+  "noReviews": {
+    "title": "Hali sharhlar yo'q",
+    "description": "Tajribangiz bilan birinchi bo'lib bo'lishing!",
+    "emptyIcon": "Sharhlar yo'q belgisi"
+  },
+  "stats": {
+    "averageRating": "O'rtacha reyting",
+    "totalReviews": "{{count}} sharh",
+    "totalReviews_plural": "{{count}} sharh",
+    "ratingBreakdown": "Reytinglar taqsimoti"
+  },
+  "sorting": {
+    "label": "Tartiblash:",
+    "newest": "Avval yangisi",
+    "oldest": "Avval eskisi",
+    "highest": "Yuqori reyting",
+    "lowest": "Past reyting"
+  },
+  "reviewCard": {
+    "anonymous": "Anonim",
+    "showMore": "Ko'proq ko'rsatish",
+    "showLess": "Kamroq ko'rsatish",
+    "helpful": "Foydali",
+    "helpfulMarked": "Foydali ✓",
+    "helpfulCount": "({{count}})",
+    "report": "Shikoyat qilish",
+    "reported": "Shikoyat yuborildi",
+    "hostResponse": "Mezbon javobi",
+    "editReply": "Tahrirlash",
+    "reply": "Javob berish",
+    "highRating": {
+      "excellent": "Ajoyib",
+      "great": "Ajoyib sharh"
+    }
+  },
+  "hostReply": {
+    "title": "Mezbon javobi",
+    "editTitle": "Mezbon javobini tahrirlash",
+    "placeholder": "Ushbu sharhga javob bering...",
+    "editPlaceholder": "Ushbu sharhga javobingizni tahrirlang...",
+    "characterCount": "{{current}}/{{max}} belgi",
+    "buttons": {
+      "cancel": "Bekor qilish",
+      "post": "Javobni e'lon qilish",
+      "save": "Saqlash",
+      "posting": "E'lon qilinmoqda...",
+      "saving": "Saqlanmoqda..."
+    }
+  },
+  "reportModal": {
+    "title": "Sharhga shikoyat qilish",
+    "reasons": {
+      "spam": "Spam",
+      "inappropriate": "Nomaqbul tarkib",
+      "fake": "Soxta sharh",
+      "harassment": "Ta'qib qilish",
+      "off_topic": "Mavzudan tashqari",
+      "other": "Boshqa"
+    },
+    "buttons": {
+      "cancel": "Bekor qilish",
+      "report": "Shikoyat qilish",
+      "submitting": "Yuborilmoqda..."
+    }
+  },
+  "reviewForm": {
+    "title": "Sharh yozish",
+    "editTitle": "Sharhingizni tahrirlash",
+    "writeButton": "Sharh yozish",
+    "fields": {
+      "booking": {
+        "label": "Bronni tanlang...",
+        "placeholder": "Bronni tanlang...",
+        "loading": "Bronlaringiz yuklanmoqda...",
+        "error": "Sharh yozish uchun bronni tanlang",
+        "option": "Bron #{{number}}"
+      },
+      "rating": {
+        "label": "Umumiy reyting",
+        "required": "*",
+        "error": "Iltimos, reyting tanlang"
+      },
+      "comment": {
+        "label": "Sharhingiz",
+        "required": "*",
+        "placeholder": "Ushbu konferentsiya zalidagi tajribangiz bilan bo'lishing...",
+        "minLength": "Kamida {{min}} belgi talab qilinadi",
+        "validLength": "✓ To'g'ri uzunlik",
+        "characterCount": "{{current}}/{{max}}"
+      }
+    },
+    "buttons": {
+      "cancel": "Bekor qilish",
+      "submit": "Sharhni yuborish",
+      "update": "Sharhni yangilash",
+      "submitting": "Yuborilmoqda...",
+      "updating": "Yangilanmoqda..."
+    },
+    "eligibility": {
+      "noBookings": {
+        "title": "Sharh qoldirish uchun bronni yakunlang",
+        "description": "Faqat oxirgi oy ichida qolgan mehmonlar sharh yoza oladi"
+      },
+      "checking": "Sharh yozish huquqi tekshirilmoqda..."
+    },
+    "messages": {
+      "submitSuccess": "Sharh muvaffaqiyatli yuborildi!",
+      "updateSuccess": "Sharh muvaffaqiyatli yangilandi!",
+      "submitError": "Sharhni yuborib bo'lmadi. Qaytadan urinib ko'ring.",
+      "loadBookingsError": "Mos bronlarni yuklab bo'lmadi"
+    }
+  },
+  "hostMessages": {
+    "cannotReview": "Ushbu joyning mezboni sifatida siz sharh qoldira olmaysiz."
+  },
+  "loading": {
+    "reviews": "Yuklanmoqda...",
+    "loadMore": "Ko'proq sharhlarni yuklash"
+  },
+  "errors": {
+    "helpfulFailed": "Sharhni foydali deb belgilab bo'lmadi",
+    "reportFailed": "Sharhga shikoyat qilib bo'lmadi",
+    "replyFailed": "Javobni e'lon qilib bo'lmadi. Qaytadan urinib ko'ring.",
+    "editReplyFailed": "Javobni yangilab bo'lmadi. Qaytadan urinib ko'ring.",
+    "loadReviewsFailed": "Sharhlarni yuklab bo'lmadi"
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "title": "Reviews",
+  "subtitle": "Guest reviews and ratings",
+  "noReviews": {
+    "title": "No reviews yet",
+    "description": "Be the first to share your experience!",
+    "emptyIcon": "No reviews icon"
+  },
+  "stats": {
+    "averageRating": "Average rating",
+    "totalReviews": "{{count}} review",
+    "totalReviews_plural": "{{count}} reviews",
+    "ratingBreakdown": "Rating breakdown"
+  },
+  "sorting": {
+    "label": "Sort by:",
+    "newest": "Newest first",
+    "oldest": "Oldest first",
+    "highest": "Highest rated",
+    "lowest": "Lowest rated"
+  },
+  "reviewCard": {
+    "anonymous": "Anonymous",
+    "showMore": "Show more",
+    "showLess": "Show less",
+    "helpful": "Helpful",
+    "helpfulMarked": "Helpful ✓",
+    "helpfulCount": "({{count}})",
+    "report": "Report",
+    "reported": "Reported",
+    "hostResponse": "Host response",
+    "editReply": "Edit",
+    "reply": "Reply",
+    "highRating": {
+      "excellent": "Excellent",
+      "great": "Great Review"
+    }
+  },
+  "hostReply": {
+    "title": "Host response",
+    "editTitle": "Edit host response",
+    "placeholder": "Respond to this review...",
+    "editPlaceholder": "Edit your response to this review...",
+    "characterCount": "{{current}}/{{max}} characters",
+    "buttons": {
+      "cancel": "Cancel",
+      "post": "Post Reply",
+      "save": "Save",
+      "posting": "Posting...",
+      "saving": "Saving..."
+    }
+  },
+  "reportModal": {
+    "title": "Report Review",
+    "reasons": {
+      "spam": "Spam",
+      "inappropriate": "Inappropriate content", 
+      "fake": "Fake review",
+      "harassment": "Harassment",
+      "off_topic": "Off-topic",
+      "other": "Other"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "report": "Report",
+      "submitting": "Submitting..."
+    }
+  },
+  "reviewForm": {
+    "title": "Write a Review",
+    "editTitle": "Edit Your Review",
+    "writeButton": "Write a Review",
+    "fields": {
+      "booking": {
+        "label": "Select a booking...",
+        "placeholder": "Select a booking...",
+        "loading": "Loading your bookings...",
+        "error": "Please select a booking to review",
+        "option": "Booking #{{number}}"
+      },
+      "rating": {
+        "label": "Overall Rating",
+        "required": "*",
+        "error": "Please select a rating"
+      },
+      "comment": {
+        "label": "Your Review",
+        "required": "*",
+        "placeholder": "Share your experience with this conference room...",
+        "minLength": "Minimum {{min}} characters required",
+        "validLength": "✓ Valid length",
+        "characterCount": "{{current}}/{{max}}"
+      }
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "submit": "Submit Review", 
+      "update": "Update Review",
+      "submitting": "Submitting...",
+      "updating": "Updating..."
+    },
+    "eligibility": {
+      "noBookings": {
+        "title": "Complete a booking to leave a review",
+        "description": "Only guests who have stayed within the last month can write reviews"
+      },
+      "checking": "Checking review eligibility..."
+    },
+    "messages": {
+      "submitSuccess": "Review submitted successfully!",
+      "updateSuccess": "Review updated successfully!",
+      "submitError": "Failed to submit review. Please try again.",
+      "loadBookingsError": "Failed to load eligible bookings"
+    }
+  },
+  "hostMessages": {
+    "cannotReview": "As the host of this place, you cannot leave a review."
+  },
+  "loading": {
+    "reviews": "Loading...",
+    "loadMore": "Load More Reviews"
+  },
+  "errors": {
+    "helpfulFailed": "Failed to mark review as helpful",
+    "reportFailed": "Failed to report review",
+    "replyFailed": "Failed to post reply. Please try again.",
+    "editReplyFailed": "Failed to update reply. Please try again.",
+    "loadReviewsFailed": "Failed to load reviews"
+  }
+}
