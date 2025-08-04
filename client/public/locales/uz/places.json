@@ -384,7 +384,7 @@
     "tryAdjustingFilters": "Ko'proq natijalar ko'rish uchun filtrlarni o'zgartirib ko'ring.",
     "noRoomsListed": "Hali konferens xonalari ro'yxatga olinmagan.",
     "clearAllFilters": "Barcha filtrlarni tozalash",
-    "showingResults": "{{total}} konferens xonadan {{count}} tasi {{plural}}",
+    "showingResults": "{{total}} konferens xonadan {{count}} tasi",
     "byHost": "{{hostName}} tomonidan",
     "matching": "\"{{searchTerm}}\" ga mos",
     "host": "Mezbon"
