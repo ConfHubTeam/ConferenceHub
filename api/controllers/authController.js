@@ -17,7 +17,7 @@ const checkUserExists = async (req, res) => {
   const { email } = req.body;
   
   if (!email) {
-    return res.status(400).json({ error: "Email is required" });
+    return res.status(400).json({ error: req.t("auth:validation.emailRequired") });
   }
   
   try {
@@ -38,7 +38,7 @@ const register = async (req, res) => {
   // Validate email format
   const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   if (!emailRegex.test(String(email).toLowerCase())) {
-    return res.status(400).json({ error: "Invalid email format" });
+    return res.status(400).json({ error: req.t("auth:validation.emailInvalid") });
   }
   
   // Check if password is strong enough
@@ -52,16 +52,18 @@ const register = async (req, res) => {
     const hasSpecialChar = new RegExp(`[${allowedSpecialChars}]`).test(password);
     const hasMinLength = password.length >= 8;
     
-    let specificError = "Password must be at least 8 characters with uppercase, lowercase, number and special character";
+    let specificError = req.t("auth:password.weak");
     
     // If it has invalid special characters but meets all other requirements
     if (hasLowercase && hasUppercase && hasNumber && !hasSpecialChar && hasMinLength) {
-      specificError = `Password must include at least one of these special characters: ${allowedSpecialChars}`;
+      specificError = req.t("auth:password.specialChar", { chars: allowedSpecialChars });
+    } else {
+      // For security, don't be too specific about what's wrong
+      specificError = req.t("auth:password.requirements");
     }
     
     return res.status(400).json({ 
-      error: specificError,
-      allowedSpecialChars: allowedSpecialChars
+      error: specificError
     });
   }
   
@@ -69,7 +71,7 @@ const register = async (req, res) => {
     // Check if user already exists
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
-      return res.status(409).json({ error: "This email is already registered" });
+      return res.status(409).json({ error: req.t("auth:register.emailExists") });
     }
     
     const bcryptSalt = authConfig.bcrypt.generateSalt();
@@ -98,13 +100,13 @@ const login = async (req, res) => {
   
   // Check if required fields are provided
   if (!email || !password) {
-    return res.status(422).json({ error: "Email and password are required" });
+    return res.status(422).json({ error: req.t("auth:login.required") });
   }
   
   // Validate email format
   const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   if (!emailRegex.test(String(email).toLowerCase())) {
-    return res.status(422).json({ error: "Invalid email format" });
+    return res.status(422).json({ error: req.t("auth:validation.emailInvalid") });
   }
   
   try {
@@ -128,24 +130,16 @@ const login = async (req, res) => {
           }
         );
       } else {
-        const allowedSpecialChars = "@$!%*?&";
-        // Check if password might be failing due to special characters
-        const hasSpecialChar = new RegExp(`[${allowedSpecialChars}]`).test(password);
-        if (!hasSpecialChar && password.length >= 8) {
-          res.status(422).json({ 
-            error: "Password must include at least one special character",
-            allowedSpecialChars: allowedSpecialChars
-          });
-        } else {
-          res.status(422).json({ error: "Password is incorrect" });
-        }
+        // For security: don't specify if it's wrong password or user not found
+        res.status(422).json({ error: req.t("auth:validation.invalidCredentials") });
       }
     } else {
-      res.status(422).json({ error: "User not found" });
+      // For security: same message as wrong password
+      res.status(422).json({ error: req.t("auth:validation.invalidCredentials") });
     }
   } catch (e) {
     console.error("Login error:", e);
-    res.status(500).json({ error: "Login failed. Please try again." });
+    res.status(500).json({ error: req.t("auth:validation.loginFailed") });
   }
 };
 
@@ -180,7 +174,7 @@ const logout = (req, res) => {
     });
   }
   
-  res.json({ success: true, message: "Logged out successfully" });
+  res.json({ success: true, message: req.t("auth:logout.success") });
 };
 
 /**

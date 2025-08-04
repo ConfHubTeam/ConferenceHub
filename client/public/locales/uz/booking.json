@@ -333,6 +333,8 @@
     "payment": {
       "selectedMessage": "Sizning bron qilishingiz tanlandi! Endi to'lov bilan davom eta olasiz.",
       "pendingMessage": "To'lov variantlari broningiz joy egasi tomonidan tanlanganidan keyin mavjud bo'ladi.",
+      "notAvailableTitle": "To'lov qilish mavjud emas",
+      "notAvailableMessage": "Joy egasi ruhsat berganidan keyin to'lov usullari mavjud bo'ladi.",
       "providers": {
         "click": "Click orqali to'lash",
         "payme": "Payme orqali to'lash", 

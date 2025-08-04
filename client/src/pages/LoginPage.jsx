@@ -39,6 +39,45 @@ function LoginPageBase() {
       setEmailValid(true); // Don't show error for empty email
     }
   }, [email]);
+
+  // Custom validation messages for HTML5 validation
+  useEffect(() => {
+    if (ready) {
+      // Override browser's default validation messages
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      
+      if (emailInput) {
+        emailInput.setCustomValidity('');
+        emailInput.oninvalid = function(e) {
+          if (emailInput.validity.valueMissing) {
+            emailInput.setCustomValidity(t("auth:validation.emailRequired"));
+          } else if (emailInput.validity.typeMismatch) {
+            emailInput.setCustomValidity(t("auth:validation.emailInvalid"));
+          } else {
+            emailInput.setCustomValidity('');
+          }
+        };
+        emailInput.oninput = function() {
+          emailInput.setCustomValidity('');
+        };
+      }
+      
+      if (passwordInput) {
+        passwordInput.setCustomValidity('');
+        passwordInput.oninvalid = function(e) {
+          if (passwordInput.validity.valueMissing) {
+            passwordInput.setCustomValidity(t("auth:validation.passwordRequired"));
+          } else {
+            passwordInput.setCustomValidity('');
+          }
+        };
+        passwordInput.oninput = function() {
+          passwordInput.setCustomValidity('');
+        };
+      }
+    }
+  }, [ready, t]);
   
   // Fetch password requirements when component mounts
   useEffect(() => {
