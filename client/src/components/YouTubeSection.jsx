@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 // Helper function to validate and convert YouTube URL to embed format
 function extractYouTubeVideoId(url) {
@@ -24,12 +25,14 @@ function extractYouTubeVideoId(url) {
 }
 
 export default function YouTubeSection({ youtubeLink, setYoutubeLink, preInput }) {
+  const { t } = useTranslation(['places']);
+
   return (
     <div id="youtube-section">
-      {preInput("YouTube Video")}
+      {preInput("placeCreate.youtubeVideo", "placeCreate.youtubeVideoDescription")}
       <input
         type="text"
-        placeholder="https://www.youtube.com/watch?v=example"
+        placeholder={t('places:placeCreate.youtubeVideoPlaceholder')}
         value={youtubeLink}
         onChange={(event) => setYoutubeLink(event.target.value)}
         className="w-full border my-2 py-2 px-3 rounded-2xl"

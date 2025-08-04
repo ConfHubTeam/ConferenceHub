@@ -44,6 +44,20 @@
     "maxGuests": "Maksimal mehmonlar",
     "amenities": "Qulayliklar",
     "photos": "Rasmlar",
+    "photosDescription": "Konferens zalingizning rasmlarini yuklang",
+    "photoUpload": {
+      "maxPhotosError": "Maksimal {{max}} ta rasm ruxsat etilgan. Yana {{remaining}} ta qo'shishingiz mumkin.",
+      "uploadFailed": "Yuklash muvaffaqiyatsiz tugadi, keyinroq qayta urinib ko'ring.",
+      "uploadProgress": "Yuklanmoqda...",
+      "uploadButton": "Yuklash",
+      "photosCount": "{{current}}/{{max}} rasm yuklandi. {{remaining}} ta qoldi."
+    },
+    "youtubeVideo": "YouTube video",
+    "youtubeVideoDescription": "Makoningizni ko'rsatish uchun YouTube video qo'shing",
+    "youtubeVideoPlaceholder": "https://www.youtube.com/watch?v=example",
+    "matterportTour": "3D virtual tur (Matterport)",
+    "matterportTourDescription": "Makoningizni 360° ko'rish uchun Matterport 3D virtual tur havolasini qo'shing",
+    "matterportTourPlaceholder": "https://my.matterport.com/show/?m=example",
     "perks": "Imtiyozlar",
     "extraInfo": "Qo'shimcha ma'lumot",
     "extraInfoPlaceholder": "Bron qilish qoidalari, bekor qilish siyosati yoki maxsus ko'rsatmalar kabi har qanday qo'shimcha ma'lumot.",
@@ -322,6 +336,27 @@
   "placePerks": {
     "whatThisPlaceOffers": "Bu joy nimalarni taklif qiladi",
     "showAllAmenities": "Barcha {{count}} qulayliklarni ko'rsatish"
+  },
+  "photoGallery": {
+    "close": "Yopish",
+    "closePhotos": "Rasmlarni yopish",
+    "media": "Media",
+    "showAllMedia": "Barcha medialarni ko'rsatish",
+    "video": "Video",
+    "threeDTour": "3D",
+    "noPhotosVideos": "Rasm yoki videolar mavjud emas"
+  },
+  "deleteConfirmation": {
+    "confirmationRequired": "Tasdiqlash talab qilinadi",
+    "warningCannotUndo": "Ogohlantirish: Bu amalni bekor qilib bo'lmaydi!",
+    "followingDataDeleted": "Quyidagi ma'lumotlar butunlay o'chiriladi:",
+    "typeDeleteConfirm": "Tasdiqlash uchun \"DELETE\" yozing:",
+    "typeDeletePlaceholder": "DELETE ni katta harflar bilan yozing",
+    "preventAccidental": "Bu tasodifiy o'chirishlarning oldini olishga yordam beradi",
+    "cancel": "Bekor qilish",
+    "delete": "O'chirish",
+    "deleting": "O'chirilmoqda...",
+    "deleteConfirmation": "O'chirishni tasdiqlash"
   },
   "common": {
     "error": "Xato"

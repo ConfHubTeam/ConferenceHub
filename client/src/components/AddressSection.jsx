@@ -120,7 +120,7 @@ export default function AddressSection({
 
   return (
     <>
-      {preInput("Address")}
+      {preInput("placeCreate.address")}
       <div className="relative">
         <input
           id="place-address"

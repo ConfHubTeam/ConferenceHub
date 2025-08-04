@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 // Helper function to validate and convert Matterport URL to embed format
 function extractMatterportModelId(url) {
@@ -22,19 +23,18 @@ function extractMatterportModelId(url) {
 }
 
 export default function MatterportSection({ matterportLink, setMatterportLink, preInput }) {
+  const { t } = useTranslation(['places']);
+
   return (
     <div id="matterport-section">
-      {preInput("3D Virtual Tour (Matterport)")}
+      {preInput("placeCreate.matterportTour", "placeCreate.matterportTourDescription")}
       <input
         type="text"
-        placeholder="https://my.matterport.com/show/?m=example"
+        placeholder={t('places:placeCreate.matterportTourPlaceholder')}
         value={matterportLink}
         onChange={(event) => setMatterportLink(event.target.value)}
         className="w-full border my-2 py-2 px-3 rounded-2xl"
       />
-      <p className="text-sm text-gray-500 mt-1 mb-4">
-        Add a Matterport 3D virtual tour link to provide an immersive 360° view of your space.
-      </p>
     </div>
   );
 }
