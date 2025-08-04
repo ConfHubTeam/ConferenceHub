@@ -374,6 +374,10 @@
     "deleting": "Deleting...",
     "deleteConfirmation": "Delete Confirmation"
   },
+  "mapInfoWindow": {
+    "perHour": " / hour",
+    "viewDetails": "View details"
+  },
   "common": {
     "error": "Error"
   },

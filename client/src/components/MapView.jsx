@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, useMemo, memo } from "react";
 import { GoogleMap, useJsApiLoader, InfoWindow } from "@react-google-maps/api";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import CloudinaryImage from "./CloudinaryImage";
 import { useCurrency } from "../contexts/CurrencyContext";
 import { useMap } from "../contexts/MapContext";
@@ -58,6 +59,7 @@ const defaultCenter = {
 const libraries = ['places'];
 
 const MapView = memo(function MapView({ places, disableInfoWindow = false, hoveredPlaceId = null, onBoundsChanged = null }) {
+  const { t } = useTranslation("places");
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
@@ -327,8 +329,6 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false, hover
     const refZoom = previousZoomRef.current;
     const zoomToSet = savedZoom !== 12 ? savedZoom : (refZoom !== 12 ? refZoom : 12);
     
-    console.log('MapView onLoad - Setting zoom to:', zoomToSet, { savedZoom, refZoom });
-    
     map.setZoom(zoomToSet);
     setCurrentZoom(zoomToSet);
     previousZoomRef.current = zoomToSet; // Sync ref with set zoom
@@ -378,7 +378,6 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false, hover
       setTimeout(() => {
         const bounds = map.getBounds();
         if (bounds) {
-          console.log('MapView onLoad - Triggering initial bounds change');
           onBoundsChanged(bounds);
         }
       }, 100);
@@ -489,13 +488,6 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false, hover
         const shouldFitBounds = isFilterChange || 
                                 (!hasCustomZoom && map.getZoom() === 12) || 
                                 (isFilterChange && !areMarkersInCurrentView(markers, map));
-
-        console.log('Auto-fit decision:', { 
-          isFilterChange, 
-          hasCustomZoom, 
-          currentZoom: map.getZoom(), 
-          shouldFitBounds 
-        });
 
         if (shouldFitBounds) {
           // Fit bounds to show all filtered markers
@@ -731,7 +723,7 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false, hover
                     <PriceDisplay 
                       price={selectedPlace.price} 
                       currency={selectedPlace.currency} 
-                      suffix=" / hour"
+                      suffix={t("mapInfoWindow.perHour")}
                       priceClassName="text-xs font-bold" 
                       suffixClassName="text-gray-500 font-normal"
                       showOriginalPrice={true}

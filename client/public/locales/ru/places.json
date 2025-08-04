@@ -374,6 +374,10 @@
     "deleting": "Удаление...",
     "deleteConfirmation": "Подтверждение удаления"
   },
+  "mapInfoWindow": {
+    "perHour": " / час",
+    "viewDetails": "Подробнее"
+  },
   "common": {
     "error": "Ошибка"
   },

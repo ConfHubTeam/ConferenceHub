@@ -358,6 +358,10 @@
     "deleting": "O'chirilmoqda...",
     "deleteConfirmation": "O'chirishni tasdiqlash"
   },
+  "mapInfoWindow": {
+    "perHour": " / soat",
+    "viewDetails": "Batafsil"
+  },
   "common": {
     "error": "Xato"
   },
