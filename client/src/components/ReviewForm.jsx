@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { UserContext } from "./UserContext";
 import { useNotification } from "./NotificationContext";
 import InteractiveStarRating from "./InteractiveStarRating";
@@ -12,21 +12,55 @@ export default function ReviewForm({ placeId, onReviewSubmitted, existingReview 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [eligibleBookings, setEligibleBookings] = useState([]);
+  const [selectedBookingId, setSelectedBookingId] = useState("");
+  const [loadingBookings, setLoadingBookings] = useState(false);
 
   // Character limits
   const MIN_COMMENT_LENGTH = 10;
   const MAX_COMMENT_LENGTH = 1000;
 
+  // Fetch eligible bookings when component mounts
+  useEffect(() => {
+    if (user && !existingReview) {
+      fetchEligibleBookings();
+    }
+  }, [user, placeId]);
+
+  const fetchEligibleBookings = async () => {
+    try {
+      setLoadingBookings(true);
+      const response = await api.get("/reviews/eligibility/bookings");
+      
+      if (response.data.ok) {
+        // Filter bookings for the current place
+        const placeBookings = response.data.bookings.filter(
+          booking => booking.placeId === parseInt(placeId)
+        );
+        
+        setEligibleBookings(placeBookings);
+        
+        // Auto-select if only one booking available
+        if (placeBookings.length === 1) {
+          setSelectedBookingId(placeBookings[0].id.toString());
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching eligible bookings:", error);
+      notify("Failed to load eligible bookings", "error");
+    } finally {
+      setLoadingBookings(false);
+    }
+  };
+
   // Validation
   const isValidRating = rating >= 1 && rating <= 5;
   const isValidComment = comment.trim().length >= MIN_COMMENT_LENGTH && comment.trim().length <= MAX_COMMENT_LENGTH;
-  const isFormValid = isValidRating && isValidComment;
+  const isValidBooking = existingReview || selectedBookingId !== "";
+  const isFormValid = isValidRating && isValidComment && isValidBooking;
 
-  // TODO: In production, check if user has completed booking for this place
-  // const hasCompletedBooking = user?.bookings?.some(booking => 
-  //   booking.placeId === placeId && booking.status === 'completed'
-  // );
-  const hasCompletedBooking = true; // For testing - anyone can leave a review
+  // Check if user has eligible bookings for this place
+  const hasEligibleBookings = eligibleBookings.length > 0;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,6 +76,11 @@ export default function ReviewForm({ placeId, onReviewSubmitted, existingReview 
         rating,
         comment: comment.trim()
       };
+
+      // Add bookingId for new reviews
+      if (!existingReview) {
+        reviewData.bookingId = parseInt(selectedBookingId);
+      }
 
       let response;
       if (existingReview) {
@@ -67,6 +106,7 @@ export default function ReviewForm({ placeId, onReviewSubmitted, existingReview 
       if (!existingReview) {
         setRating(0);
         setComment("");
+        setSelectedBookingId("");
         setShowForm(false);
       }
 
@@ -94,6 +134,7 @@ export default function ReviewForm({ placeId, onReviewSubmitted, existingReview 
       // Clear form
       setRating(0);
       setComment("");
+      setSelectedBookingId("");
       setShowForm(false);
     }
     setError("");
@@ -109,8 +150,8 @@ export default function ReviewForm({ placeId, onReviewSubmitted, existingReview 
     return null;
   }
 
-  // Don't show form if user hasn't completed a booking (TODO: enable for production)
-  if (!hasCompletedBooking) {
+  // Don't show form if user hasn't completed a booking for this place
+  if (user && !existingReview && !loadingBookings && !hasEligibleBookings) {
     return (
       <div className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
         <div className="flex items-center gap-3">
@@ -121,15 +162,27 @@ export default function ReviewForm({ placeId, onReviewSubmitted, existingReview 
           </div>
           <div>
             <h3 className="font-medium text-gray-900">Complete a booking to leave a review</h3>
-            <p className="text-sm text-gray-600">Only guests who have stayed can write reviews</p>
+            <p className="text-sm text-gray-600">Only guests who have stayed within the last month can write reviews</p>
           </div>
         </div>
       </div>
     );
   }
 
-  // If editing existing review or form is not shown, show the toggle button
-  if (!existingReview && !showForm) {
+  // Show loading state while checking eligibility
+  if (user && !existingReview && loadingBookings) {
+    return (
+      <div className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="flex items-center gap-3">
+          <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-sm text-gray-600">Checking review eligibility...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // If editing existing review or form is not shown, show the toggle button (only if eligible bookings exist)
+  if (!existingReview && !showForm && hasEligibleBookings) {
     return (
       <div className="mb-8">
         <button
@@ -153,6 +206,35 @@ export default function ReviewForm({ placeId, onReviewSubmitted, existingReview 
         </h3>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Booking Selection Section - Only for new reviews */}
+          {!existingReview && eligibleBookings.length > 1 && (
+            <div>
+              {loadingBookings ? (
+                <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md">
+                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-sm text-gray-600">Loading your bookings...</span>
+                </div>
+              ) : (
+                <select
+                  value={selectedBookingId}
+                  onChange={(e) => setSelectedBookingId(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  disabled={isSubmitting}
+                >
+                  <option value="">Select a booking...</option>
+                  {eligibleBookings.map((booking, index) => (
+                    <option key={booking.id} value={booking.id}>
+                      Booking #{index + 1}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {!isValidBooking && selectedBookingId === "" && eligibleBookings.length > 1 && (
+                <p className="mt-2 text-sm text-red-600">Please select a booking to review</p>
+              )}
+            </div>
+          )}
+
           {/* Rating Section */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">

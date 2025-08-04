@@ -6,7 +6,7 @@
  */
 
 const { Op } = require("sequelize");
-const { Booking, Review } = require("../models");
+const { Review, User, Place, Booking } = require("../models");
 
 /**
  * Review eligibility statuses
@@ -40,14 +40,19 @@ const checkReviewEligibility = async (userId, placeId, placeOwnerId) => {
       };
     }
 
-    // Find all completed approved bookings for this user and place
+    // Calculate date 30 days ago
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // Find all completed approved bookings for this user and place within last 30 days
     const completedBookings = await Booking.findAll({
       where: {
         userId,
         placeId,
         status: "approved",
         checkOutDate: {
-          [Op.lt]: new Date() // Booking must be past checkout date
+          [Op.lt]: new Date(), // Booking must be past checkout date
+          [Op.gte]: thirtyDaysAgo // Booking must be within last 30 days
         }
       },
       order: [["checkOutDate", "DESC"]] // Most recent first
@@ -132,20 +137,25 @@ const checkReviewEligibility = async (userId, placeId, placeOwnerId) => {
  */
 const getEligibleBookingsForReview = async (userId) => {
   try {
-    // Find all completed approved bookings
+    // Calculate date 30 days ago
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    // Find all completed approved bookings within the last 30 days
     const completedBookings = await Booking.findAll({
       where: {
         userId,
         status: "approved",
         checkOutDate: {
-          [Op.lt]: new Date()
+          [Op.lt]: new Date(), // Booking must be past checkout date
+          [Op.gte]: thirtyDaysAgo // Booking must be within last 30 days
         }
       },
       include: [
         {
-          model: require("../models/places"),
-          as: "Place",
-          attributes: ["id", "title", "address", "photos", "userId"]
+          model: Place,
+          as: "place",
+          attributes: ["id", "title", "address", "photos", "ownerId"]
         }
       ],
       order: [["checkOutDate", "DESC"]]
@@ -155,7 +165,7 @@ const getEligibleBookingsForReview = async (userId) => {
     const eligibleBookings = [];
     for (const booking of completedBookings) {
       // Skip own places
-      if (booking.Place.userId === userId) {
+      if (booking.place.ownerId === userId) {
         continue;
       }
 
