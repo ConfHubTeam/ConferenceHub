@@ -462,7 +462,14 @@
         "status": "Holat"
       },
       "status": {
-        "unknown": "NOMA'LUM"
+        "unknown": "NOMA'LUM",
+        "created": "Yaratilgan",
+        "processing": "Jarayonda", 
+        "success": "Muvaffaqiyatli",
+        "cancelled": "Bekor qilingan",
+        "failed": "Muvaffaqiyatsiz",
+        "expired": "Muddati tugagan",
+        "deleted": "O'chirilgan"
       }
     }
   }

@@ -489,7 +489,14 @@
         "status": "Status"
       },
       "status": {
-        "unknown": "UNKNOWN"
+        "unknown": "UNKNOWN",
+        "created": "Created",
+        "processing": "Processing", 
+        "success": "Success",
+        "cancelled": "Cancelled",
+        "failed": "Failed",
+        "expired": "Expired",
+        "deleted": "Deleted"
       }
     }
   }

@@ -54,26 +54,44 @@ const PaymentResponseDisplay = ({ paymentResponse, bookingId, booking }) => {
     if (typeof status === 'number') {
       switch (status) {
         case 0:
-          return 'Created';
+          return t('details.paymentResponse.status.created');
         case 1:
-          return 'Processing';
+          return t('details.paymentResponse.status.processing');
         case 2:
-          return 'Success';
+          return t('details.paymentResponse.status.success');
         case 3:
-          return 'Cancelled';
+          return t('details.paymentResponse.status.cancelled');
         case 4:
-          return 'Failed';
+          return t('details.paymentResponse.status.failed');
         case 5:
-          return 'Expired';
+          return t('details.paymentResponse.status.expired');
         case -99:
-          return 'Deleted';
+          return t('details.paymentResponse.status.deleted');
         default:
           return `Status ${status}`;
       }
     }
     
     // Handle string statuses
-    return status?.toString()?.charAt(0)?.toUpperCase() + status?.toString()?.slice(1)?.toLowerCase() || 'Unknown';
+    const statusLower = status?.toString()?.toLowerCase();
+    switch (statusLower) {
+      case 'created':
+        return t('details.paymentResponse.status.created');
+      case 'processing':
+        return t('details.paymentResponse.status.processing');
+      case 'success':
+        return t('details.paymentResponse.status.success');
+      case 'cancelled':
+        return t('details.paymentResponse.status.cancelled');
+      case 'failed':
+        return t('details.paymentResponse.status.failed');
+      case 'expired':
+        return t('details.paymentResponse.status.expired');
+      case 'deleted':
+        return t('details.paymentResponse.status.deleted');
+      default:
+        return status?.toString()?.charAt(0)?.toUpperCase() + status?.toString()?.slice(1)?.toLowerCase() || t('details.paymentResponse.status.unknown');
+    }
   };
 
   const getStatusColor = (status) => {

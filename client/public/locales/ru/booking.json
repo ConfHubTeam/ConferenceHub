@@ -462,7 +462,14 @@
         "status": "Статус"
       },
       "status": {
-        "unknown": "НЕИЗВЕСТНО"
+        "unknown": "НЕИЗВЕСТНО",
+        "created": "Создан",
+        "processing": "Обработка",
+        "success": "Успешно",
+        "cancelled": "Отменен",
+        "failed": "Неудачно",
+        "expired": "Истек",
+        "deleted": "Удален"
       }
     }
   }
