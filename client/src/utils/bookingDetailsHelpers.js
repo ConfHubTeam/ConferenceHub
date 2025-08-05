@@ -215,8 +215,14 @@ export const calculateTotalPrice = (booking) => {
 /**
  * Get payment section visibility
  */
-export const shouldShowPaymentSection = (user) => {
-  return user?.userType === 'client';
+export const shouldShowPaymentSection = (user, booking) => {
+  // Only show to clients
+  if (user?.userType !== 'client') return false;
+  
+  // Don't show payment section for confirmed/approved bookings
+  if (booking?.status === 'approved' || booking?.status === 'confirmed') return false;
+  
+  return true;
 };
 
 /**
@@ -356,7 +362,7 @@ export const getSidebarSections = (booking, user, actionButtons) => {
   });
   
   // Show payment section for clients
-  if (shouldShowPaymentSection(user)) {
+  if (shouldShowPaymentSection(user, booking)) {
     sections.push({
       type: 'payment',
       component: 'PaymentSection',

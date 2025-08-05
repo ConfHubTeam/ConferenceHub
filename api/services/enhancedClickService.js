@@ -241,9 +241,8 @@ class EnhancedClickService {
         };
       }
 
-      // Check payment status using merchant API
-      const merchantTransId = booking.uniqueRequestId;
-      const apiResult = await this.merchantApi.checkPaymentStatusByMerchantTransId(merchantTransId);
+      // Check payment status using merchant API with invoice ID
+      const apiResult = await this.merchantApi.checkPaymentStatus(booking);
 
       if (apiResult.success && apiResult.data?.payment_id) {
         // Payment found and successful

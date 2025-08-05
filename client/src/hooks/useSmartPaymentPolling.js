@@ -35,15 +35,23 @@ const CLICK_STATUS = {
   SUCCESSFUL: 2
 };
 
-export const useSmartPaymentPolling = (bookingId, onPaymentSuccess, onPaymentError) => {
+export const useSmartPaymentPolling = (bookingId, onPaymentSuccess, onPaymentError, options = {}) => {
   const [isPolling, setIsPolling] = useState(false);
   const [pollingSince, setPollingSince] = useState(null);
   const [lastCheck, setLastCheck] = useState(null);
   const [errorCount, setErrorCount] = useState(0);
   const [paymentStatus, setPaymentStatus] = useState(null);
+  const [hasBeenStopped, setHasBeenStopped] = useState(false);
   
   const timeoutRef = useRef(null);
   const startTimeRef = useRef(null);
+
+  // Configuration options
+  const {
+    autoRestart = true, // Automatically restart polling on page load/refresh
+    enablePageVisibilityRestart = true, // Restart when page becomes visible again
+    restartStatuses = ['pending', 'selected'] // Booking statuses that should trigger auto restart
+  } = options;
 
   // Clear timeout on unmount
   useEffect(() => {
@@ -69,6 +77,7 @@ export const useSmartPaymentPolling = (bookingId, onPaymentSuccess, onPaymentErr
       // Stop polling if payment completed OR booking manually approved
       if ((success && isPaid) || (booking?.status === 'approved' && booking?.paidAt)) {
         setIsPolling(false);
+        setHasBeenStopped(false); // Reset stopped state on successful completion
         onPaymentSuccess?.(response.data);
         if (manuallyApproved) {
           console.log('✅ Polling stopped: Booking manually approved by agent');
@@ -92,7 +101,7 @@ export const useSmartPaymentPolling = (bookingId, onPaymentSuccess, onPaymentErr
         setErrorCount(prev => prev + 1);
         
         if (errorCount >= POLLING_CONFIG.MAX_ERRORS) {
-          setIsPolling(false);
+          stopPolling('max_errors');
           onPaymentError?.(`Too many errors. Last error: ${errorNote}`);
           return;
         }
@@ -112,7 +121,7 @@ export const useSmartPaymentPolling = (bookingId, onPaymentSuccess, onPaymentErr
       setErrorCount(prev => prev + 1);
       
       if (errorCount >= POLLING_CONFIG.MAX_ERRORS) {
-        setIsPolling(false);
+        stopPolling('network_errors');
         onPaymentError?.('Network error during payment verification');
         return;
       }
@@ -129,7 +138,7 @@ export const useSmartPaymentPolling = (bookingId, onPaymentSuccess, onPaymentErr
     // Check if we've exceeded maximum polling duration
     const elapsed = Date.now() - startTimeRef.current;
     if (elapsed >= POLLING_CONFIG.MAX_DURATION) {
-      setIsPolling(false);
+      stopPolling('timeout');
       onPaymentError?.('Payment verification timeout');
       return;
     }
@@ -148,20 +157,83 @@ export const useSmartPaymentPolling = (bookingId, onPaymentSuccess, onPaymentErr
     setPollingSince(new Date());
     setErrorCount(0);
     setPaymentStatus(null);
+    setHasBeenStopped(false);
     startTimeRef.current = Date.now();
     
     // Start with immediate check
     setTimeout(checkPaymentStatus, POLLING_CONFIG.IMMEDIATE_CHECK);
   }, [isPolling, checkPaymentStatus]);
 
-  const stopPolling = useCallback(() => {
+  const stopPolling = useCallback((reason = 'manual') => {
     setIsPolling(false);
     setPollingSince(null);
+    if (reason === 'timeout' || reason === 'manual') {
+      setHasBeenStopped(true);
+    }
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
   }, []);
+
+  // Enhanced restart polling function
+  const restartPolling = useCallback(async () => {
+    if (isPolling || !bookingId) return;
+    
+    try {
+      // Check current booking status before restarting
+      const response = await api.post(`/bookings/${bookingId}/check-payment-smart`);
+      const { booking } = response.data;
+      
+      if (booking && restartStatuses.includes(booking.status)) {
+        console.log(`🔄 Restarting payment polling for booking ${bookingId} (status: ${booking.status})`);
+        setHasBeenStopped(false);
+        startPolling();
+        return true;
+      } else {
+        console.log(`ℹ️ Not restarting polling for booking ${bookingId} (status: ${booking?.status})`);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error checking booking status for restart:', error);
+      return false;
+    }
+  }, [bookingId, isPolling, restartStatuses, startPolling]);
+
+  // Auto-restart polling on page visibility change (when user returns to tab)
+  useEffect(() => {
+    if (!enablePageVisibilityRestart || !bookingId) return;
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden && hasBeenStopped && !isPolling) {
+        console.log('📱 Page became visible, checking if polling should restart...');
+        restartPolling();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [enablePageVisibilityRestart, bookingId, hasBeenStopped, isPolling, restartPolling]);
+
+  // Auto-restart polling on component mount/page refresh
+  useEffect(() => {
+    if (!autoRestart || !bookingId || isPolling) return;
+
+    const autoRestartOnMount = async () => {
+      // Small delay to ensure component is fully mounted
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      if (!isPolling && !hasBeenStopped) {
+        console.log('🔄 Auto-restarting polling on page load/refresh...');
+        restartPolling();
+      }
+    };
+
+    autoRestartOnMount();
+  }, [autoRestart, bookingId, isPolling, hasBeenStopped, restartPolling]);
 
   return {
     isPolling,
@@ -169,8 +241,10 @@ export const useSmartPaymentPolling = (bookingId, onPaymentSuccess, onPaymentErr
     lastCheck,
     errorCount,
     paymentStatus,
+    hasBeenStopped,
     startPolling,
-    stopPolling
+    stopPolling,
+    restartPolling
   };
 };
 

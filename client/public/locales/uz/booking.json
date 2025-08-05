@@ -455,7 +455,11 @@
         "timestamp": "Vaqt belgisi:",
         "errorCode": "Xato kodi:",
         "fullClickResponse": "To'liq Click javobi:",
-        "completeResponse": "To'liq to'lov javobi obyekti:"
+        "completeResponse": "To'liq to'lov javobi obyekti:",
+        "paymentDate": "To'lov sanasi:",
+        "paymentId": "To'lov Invoice ID:",
+        "provider": "{{provider}} to'lovi",
+        "status": "Holat"
       },
       "status": {
         "unknown": "NOMA'LUM"

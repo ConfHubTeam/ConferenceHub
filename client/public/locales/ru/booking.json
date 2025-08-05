@@ -455,7 +455,11 @@
         "timestamp": "Временная метка:",
         "errorCode": "Код ошибки:",
         "fullClickResponse": "Полный ответ Click:",
-        "completeResponse": "Полный объект ответа оплаты:"
+        "completeResponse": "Полный объект ответа оплаты:",
+        "paymentDate": "Дата платежа:",
+        "paymentId": "ID счета платежа:",
+        "provider": "Платеж {{provider}}",
+        "status": "Статус"
       },
       "status": {
         "unknown": "НЕИЗВЕСТНО"
