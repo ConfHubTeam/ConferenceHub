@@ -482,10 +482,21 @@
         "timestamp": "Timestamp:",
         "errorCode": "Error Code:",
         "fullClickResponse": "Full Click Response:",
-        "completeResponse": "Complete Payment Response Object:"
+        "completeResponse": "Complete Payment Response Object:",
+        "paymentDate": "Payment Date:",
+        "paymentId": "Payment Invoice ID:",
+        "provider": "{{provider}} Payment",
+        "status": "Status"
       },
       "status": {
-        "unknown": "UNKNOWN"
+        "unknown": "UNKNOWN",
+        "created": "Created",
+        "processing": "Processing", 
+        "success": "Success",
+        "cancelled": "Cancelled",
+        "failed": "Failed",
+        "expired": "Expired",
+        "deleted": "Deleted"
       }
     }
   }

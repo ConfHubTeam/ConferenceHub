@@ -74,8 +74,8 @@ export default function BookingDetailsPage() {
   const [showModal, setShowModal] = useState(false);
   const [modalConfig, setModalConfig] = useState({});
 
-  // Smart payment polling hook - runs silently in background
-  const { startPolling } = useSmartPaymentPolling(
+  // Smart payment polling hook - runs silently in background with auto-restart
+  const { startPolling, restartPolling, isPolling, hasBeenStopped } = useSmartPaymentPolling(
     bookingId,
     // onPaymentSuccess - handles both Click.uz payments and manual agent approvals
     (paymentData) => {
@@ -91,8 +91,19 @@ export default function BookingDetailsPage() {
     },
     // onPaymentError
     (errorMessage) => {
-      // Silently log errors, don't show to user
+      // Silently log errors, don't show to user unless critical
       console.warn(`Payment verification error: ${errorMessage}`);
+      
+      // Only show user-facing notification for critical errors
+      if (errorMessage.includes('timeout')) {
+        console.log('💡 Payment verification timeout - polling will auto-restart on page interaction');
+      }
+    },
+    // Options for enhanced restart behavior
+    {
+      autoRestart: true, // Auto restart on page load/refresh
+      enablePageVisibilityRestart: true, // Restart when page becomes visible
+      restartStatuses: ['pending', 'selected'] // Only restart for these statuses
     }
   );
 
@@ -516,7 +527,7 @@ export default function BookingDetailsPage() {
             </PricingSection>
 
             {/* Payment Section - Only for clients */}
-            {shouldShowPaymentSection(user) && (
+            {shouldShowPaymentSection(user, booking) && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">
                   {t('details.sections.payment', 'Payment')}
@@ -605,6 +616,7 @@ export default function BookingDetailsPage() {
               <PaymentResponseDisplay 
                 paymentResponse={booking.paymentResponse}
                 bookingId={booking.id}
+                booking={booking}
               />
             )}
             </div>

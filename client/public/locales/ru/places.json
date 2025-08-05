@@ -400,7 +400,7 @@
     "tryAdjustingFilters": "Попробуйте изменить фильтры для большего количества результатов.",
     "noRoomsListed": "Конференц-залы еще не размещены.",
     "clearAllFilters": "Очистить все фильтры",
-    "showingResults": "Показано {{count}} из {{total}} конференц-зал{{plural}}",
+    "showingResults": "Показано {{count}} из {{total}}",
     "byHost": "от {{hostName}}",
     "matching": "соответствующий \"{{searchTerm}}\"",
     "host": "Хозяин"
