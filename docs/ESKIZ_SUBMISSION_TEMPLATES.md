@@ -1,17 +1,20 @@
-# Eskiz SMS Templates - ✅ ALL APPROVED & WORKING (Multilingual)
+# Eskiz SMS Templates - ⚠️ UZBEK PENDING APPROVAL (Multilingual)
 
 **Based on comprehensive testing on August 6, 2025**
 
-## 🎉 **100% SUCCESS RATE - ALL MESSAGES APPROVED!**
+## � **CURRENT STATUS**
 
-All SMS notification types are now **fully approved** and sending successfully in **English, Russian, and Uzbek**! 🚀
+- **✅ English & Russian:** 100% approved and working  
+- **⏳ Uzbek:** 0% approved - all templates need submission
+
+The system supports SMS notifications in **English** and **Russian** fully, with **Uzbek** templates ready for Eskiz approval.
 
 ## 🌍 **MULTILINGUAL SUPPORT**
 
-The system now supports SMS notifications in three languages:
-- **🇺🇸 English (en)** - Primary language
-- **🇷🇺 Russian (ru)** - Secondary language  
-- **🇺🇿 Uzbek (uz)** - Local language
+The system supports SMS notifications in three languages:
+- **🇺🇸 English (en)** - ✅ Fully approved & working
+- **🇷🇺 Russian (ru)** - ✅ Fully approved & working  
+- **🇺🇿 Uzbek (uz)** - ⏳ Templates ready, needs Eskiz approval
 
 Messages are dynamically selected based on user's preferred language setting.
 
@@ -102,56 +105,64 @@ All booking notification messages are **approved** and sending successfully in *
    Выплата в размере $250.00 произведена за бронирование #REQ-67890
    ```
 
-#### 🇺🇿 **UZBEK TEMPLATES (O'ZBEK SHABLONLARI)**
+#### 🇺🇿 **UZBEK TEMPLATES (O'ZBEK SHABLONLARI) - ⏳ PENDING APPROVAL**
 
-1. **✅ Band qilish so'rovi** (booking_requested):
-   ```
-   "Hashamatli konferens zali" uchun 2025-yil 10-avg - 12-avg sanasiga band qilish so'rovi #REQ-67890
-   ```
+**Status:** ❌ Needs Eskiz approval - All templates rejected with moderation error
 
-2. **✅ Band qilish tanlandi** (booking_selected):
+1. **⏳ Band qilish so'rovi** (booking_requested):
    ```
-   "Hashamatli konferens zali" uchun 2025-yil 10-avg - 12-avg sanasiga band qilish #REQ-67890 tanlandi. Iltimos, to'lovni amalga oshiring.
+   "Luxury Conference Room" uchun Aug 10, 2025 - Aug 12, 2025 sanasiga band qilish so'rovi #REQ-67890
    ```
 
-3. **✅ Egasi tomonidan tasdiqlandi** (booking_approved):
+2. **⏳ Band qilish tanlandi** (booking_selected):
    ```
-   "Hashamatli konferens zali" uchun 2025-yil 10-avg - 12-avg sanasiga band qilish #REQ-67890 egasi tomonidan tasdiqlandi. Iltimos, to'lovni amalga oshiring.
-   ```
-
-4. **✅ Agent tomonidan tasdiqlandi** (booking_approved):
-   ```
-   "Hashamatli konferens zali" uchun 2025-yil 10-avg - 12-avg sanasiga band qilish #REQ-67890 agent tomonidan tasdiqlandi. Iltimos, to'lovni amalga oshiring.
+   "Luxury Conference Room" uchun Aug 10, 2025 - Aug 12, 2025 sanasiga band qilish #REQ-67890 tanlandi. Iltimos, to'lovni amalga oshiring.
    ```
 
-5. **✅ Tasdiqlandi (ega)** (booking_confirmed):
+3. **⏳ Egasi tomonidan tasdiqlandi** (booking_approved):
    ```
-   "Hashamatli konferens zali" uchun 2025-yil 10-avg - 12-avg sanasiga band qilish #REQ-67890 tasdiqlandi.
-   ```
-
-6. **✅ Tasdiqlandi (mijoz)** (booking_confirmed):
-   ```
-   "Hashamatli konferens zali" uchun 2025-yil 10-avg - 12-avg sanasiga sizning band qilishingiz #REQ-67890 tasdiqlandi!
+   "Luxury Conference Room" uchun Aug 10, 2025 - Aug 12, 2025 sanasiga band qilish #REQ-67890 egasi tomonidan tasdiqlandi. Iltimos, to'lovni amalga oshiring.
    ```
 
-7. **✅ To'lov qabul qilindi** (booking_paid):
+4. **⏳ Agent tomonidan tasdiqlandi** (booking_approved):
    ```
-   "Hashamatli konferens zali" uchun 2025-yil 10-avg - 12-avg sanasiga band qilish #REQ-67890 uchun to'lov qabul qilindi. Egaga to'lov talab qilinadi.
+   "Luxury Conference Room" uchun Aug 10, 2025 - Aug 12, 2025 sanasiga band qilish #REQ-67890 agent tomonidan tasdiqlandi. Iltimos, to'lovni amalga oshiring.
    ```
 
-8. **✅ Egaga to'lov** (booking_paidToHost):
+5. **⏳ Tasdiqlandi (ega)** (booking_confirmed):
+   ```
+   "Luxury Conference Room" uchun Aug 10, 2025 - Aug 12, 2025 sanasiga band qilish #REQ-67890 tasdiqlandi.
+   ```
+
+6. **⏳ Tasdiqlandi (mijoz)** (booking_confirmed):
+   ```
+   "Luxury Conference Room" uchun Aug 10, 2025 - Aug 12, 2025 sanasiga sizning band qilishingiz #REQ-67890 tasdiqlandi!
+   ```
+
+7. **⏳ To'lov qabul qilindi** (booking_paid):
+   ```
+   "Luxury Conference Room" uchun Aug 10, 2025 - Aug 12, 2025 sanasiga band qilish #REQ-67890 uchun to'lov qabul qilindi. Egaga to'lov talab qilinadi.
+   ```
+
+8. **⏳ Egaga to'lov** (booking_paidToHost):
    ```
    Band qilish #REQ-67890 uchun $250.00 miqdorda to'lov amalga oshirildi
    ```
 
 ## 📊 **TEST RESULTS SUMMARY**
 
-### 🏆 **PERFECT SCORE:**
-- **✅ 8 message types working** (100% approval rate)
-- **🌍 3 languages supported** (English, Russian, Uzbek)
-- **❌ 0 message types failing** (0% failure rate)
-- **📱 SMS delivery confirmed** to both test numbers
-- **🚀 All booking flows covered** and working
+### 📈 **CURRENT STATUS:**
+- **✅ 7 message types working in Russian** (100% approval rate for RU)
+- **✅ 7 message types working in English** (100% approval rate for EN)
+- **⏳ 7 message types pending in Uzbek** (0% approval rate for UZ - needs submission)
+- **🌍 2 languages fully supported** (English, Russian)
+- **📱 SMS delivery confirmed** for approved languages
+- **🚀 All booking flows covered** for EN/RU
+
+### 🎯 **APPROVAL BREAKDOWN:**
+- **English:** ✅ Fully approved and working
+- **Russian:** ✅ Fully approved and working  
+- **Uzbek:** ❌ All templates need Eskiz approval
 
 ## 📝 **APPROVED MESSAGE TEMPLATES WITH VARIATIONS**
 
@@ -300,17 +311,65 @@ When implementing new features, these message types may need approval:
 
 **Test Command:** `node tests/comprehensive-sms-test.js`
 
-## 📋 **ESKIZ SUBMISSION CHECKLIST**
+## � **UZBEK TEMPLATES FOR ESKIZ SUBMISSION**
+
+**These templates need to be submitted to Eskiz for approval:**
+
+### Template 1: Booking Request
+```
+"{{placeName}}" uchun {{dateRange}} sanasiga band qilish so'rovi #{{bookingReference}}
+```
+**Example:** "Luxury Conference Room" uchun Aug 10, 2025 - Aug 12, 2025 sanasiga band qilish so'rovi #REQ-67890
+
+### Template 2: Booking Selected  
+```
+"{{placeName}}" uchun {{dateRange}} sanasiga band qilish #{{bookingReference}} tanlandi. Iltimos, to'lovni amalga oshiring.
+```
+**Example:** "Luxury Conference Room" uchun Aug 10, 2025 - Aug 12, 2025 sanasiga band qilish #REQ-67890 tanlandi. Iltimos, to'lovni amalga oshiring.
+
+### Template 3: Booking Approved by Host
+```
+"{{placeName}}" uchun {{dateRange}} sanasiga band qilish #{{bookingReference}} egasi tomonidan tasdiqlandi. Iltimos, to'lovni amalga oshiring.
+```
+**Example:** "Luxury Conference Room" uchun Aug 10, 2025 - Aug 12, 2025 sanasiga band qilish #REQ-67890 egasi tomonidan tasdiqlandi. Iltimos, to'lovni amalga oshiring.
+
+### Template 4: Booking Approved by Agent
+```
+"{{placeName}}" uchun {{dateRange}} sanasiga band qilish #{{bookingReference}} agent tomonidan tasdiqlandi. Iltimos, to'lovni amalga oshiring.
+```
+**Example:** "Luxury Conference Room" uchun Aug 10, 2025 - Aug 12, 2025 sanasiga band qilish #REQ-67890 agent tomonidan tasdiqlandi. Iltimos, to'lovni amalga oshiring.
+
+### Template 5: Booking Confirmed (Host notification)
+```
+"{{placeName}}" uchun {{dateRange}} sanasiga band qilish #{{bookingReference}} tasdiqlandi.
+```
+**Example:** "Luxury Conference Room" uchun Aug 10, 2025 - Aug 12, 2025 sanasiga band qilish #REQ-67890 tasdiqlandi.
+
+### Template 6: Booking Confirmed (Client notification)
+```
+"{{placeName}}" uchun {{dateRange}} sanasiga sizning band qilishingiz #{{bookingReference}} tasdiqlandi!
+```
+**Example:** "Luxury Conference Room" uchun Aug 10, 2025 - Aug 12, 2025 sanasiga sizning band qilishingiz #REQ-67890 tasdiqlandi!
+
+### Template 7: Payment Received
+```
+"{{placeName}}" uchun {{dateRange}} sanasiga band qilish #{{bookingReference}} uchun to'lov qabul qilindi. Egaga to'lov talab qilinadi.
+```
+**Example:** "Luxury Conference Room" uchun Aug 10, 2025 - Aug 12, 2025 sanasiga band qilish #REQ-67890 uchun to'lov qabul qilindi. Egaga to'lov talab qilinadi.
+
+---
+
+## �📋 **ESKIZ SUBMISSION CHECKLIST**
 
 ### ✅ Ready for Submission:
 - [x] English templates (already approved)
-- [x] Russian templates (ready for approval)
+- [x] Russian templates (already approved)
 - [x] Uzbek templates (ready for approval)
 - [x] Variable interpolation documented
 - [x] Message flow documented
 - [x] Technical implementation documented
 
 ### 📝 **For Eskiz Team:**
-Please approve the Russian and Uzbek message templates above. They follow the same format and structure as the already-approved English templates, with proper localization for Russian and Uzbek languages.
+Please approve the Uzbek message templates above. They follow the same format and structure as the already-approved English and Russian templates, with proper localization for Uzbek language.
 
 **Technical Note:** All messages use the same variable interpolation system (`{{variableName}}`) and follow identical message flows. Only the language has been translated while preserving the exact same functionality and structure.
