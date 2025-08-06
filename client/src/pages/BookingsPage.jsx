@@ -39,6 +39,10 @@ export default function BookingsPage() {
     total: 0
   });
 
+  // Cleanup modal state
+  const [showCleanupModal, setShowCleanupModal] = useState(false);
+  const [isCleaningUp, setIsCleaningUp] = useState(false);
+
   // Set initial status filter based on user type (all user types default to pending)
   useEffect(() => {
     setStatusFilter('pending');
@@ -76,7 +80,7 @@ export default function BookingsPage() {
     } catch (error) {
       console.error("Error loading bookings:", error);
       if (user?.userType === "host") {
-        notify("Error loading booking requests", "error");
+        notify("messages.bookingLoadError", "error");
       }
       setLoading(false);
     }
@@ -275,10 +279,41 @@ export default function BookingsPage() {
     return filteredBookings.slice(startIndex, endIndex);
   }
 
-  // Helper function to clear all filters
-  const clearAllFilters = () => {
-    setSearchTerm("");
-    setStatusFilter("pending"); // Reset to default
+  // Handle cleanup expired bookings (Agent only)
+  const handleCleanupExpired = () => {
+    setShowCleanupModal(true);
+  };
+
+  const confirmCleanupExpired = async () => {
+    if (user?.userType !== 'agent') {
+      notify(t('errors.accessDenied'), 'error');
+      return;
+    }
+
+    setIsCleaningUp(true);
+    try {
+      const response = await api.post('/bookings/cleanup-expired');
+      
+      if (response.data.success) {
+        const { deletedCount, message } = response.data;
+        notify(message, 'success');
+        
+        // Reload bookings to reflect changes
+        await loadBookings();
+      } else {
+        notify(response.data.message || t('errors.cleanupFailed'), 'error');
+      }
+    } catch (error) {
+      console.error('Error cleaning up expired bookings:', error);
+      notify(error.response?.data?.message || t('errors.cleanupFailed'), 'error');
+    } finally {
+      setIsCleaningUp(false);
+      setShowCleanupModal(false);
+    }
+  };
+
+  const cancelCleanup = () => {
+    setShowCleanupModal(false);
   };
 
   // Calculate pagination info for all user types
@@ -333,7 +368,7 @@ export default function BookingsPage() {
               sortOrder={sortOrder}
               setSortOrder={setSortOrder}
               stats={stats}
-              onClearAllFilters={clearAllFilters}
+              onCleanupExpired={handleCleanupExpired}
             />
 
             {/* Bookings list */}
@@ -415,7 +450,6 @@ export default function BookingsPage() {
               sortOrder={sortOrder}
               setSortOrder={setSortOrder}
               stats={stats}
-              onClearAllFilters={clearAllFilters}
             />
 
             {/* Booking requests list */}
@@ -522,7 +556,6 @@ export default function BookingsPage() {
               sortOrder={sortOrder}
               setSortOrder={setSortOrder}
               stats={stats}
-              onClearAllFilters={clearAllFilters}
             />
 
             {/* Bookings list */}
@@ -592,6 +625,66 @@ export default function BookingsPage() {
           </div>
         )}
       </div>
+
+      {/* Cleanup Confirmation Modal */}
+      {showCleanupModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3 text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <svg
+                  className="h-6 w-6 text-red-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg leading-6 font-medium text-gray-900 mt-5">
+                {t('filters.cleanupConfirmation.title')}
+              </h3>
+              <div className="mt-2 px-7 py-3">
+                <p className="text-sm text-gray-500">
+                  {t('filters.cleanupConfirmation.message')}
+                </p>
+              </div>
+              <div className="items-center px-4 py-3">
+                <button
+                  onClick={confirmCleanupExpired}
+                  disabled={isCleaningUp}
+                  className="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isCleaningUp ? (
+                    <div className="flex items-center justify-center">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      {t('common.loading')}
+                    </div>
+                  ) : (
+                    t('filters.cleanupConfirmation.confirm')
+                  )}
+                </button>
+                <button
+                  onClick={cancelCleanup}
+                  disabled={isCleaningUp}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 mt-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {t('filters.cleanupConfirmation.cancel')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

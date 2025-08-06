@@ -126,5 +126,87 @@
     "replyFailed": "Javobni e'lon qilib bo'lmadi. Qaytadan urinib ko'ring.",
     "editReplyFailed": "Javobni yangilab bo'lmadi. Qaytadan urinib ko'ring.",
     "loadReviewsFailed": "Sharhlarni yuklab bo'lmadi"
+  },
+  "management": {
+    "title": "Sharhlarni boshqarish",
+    "search": {
+      "placeholder": "Joy nomi, sharhlovchi nomi yoki sharh mazmuni bo'yicha qidirish...",
+      "searching": "Qidirilmoqda...",
+      "matching": "\"{{term}}\" ga mos keluvchi"
+    },
+    "filters": {
+      "rating": {
+        "label": "Reyting bo'yicha filtr",
+        "all": "Barcha reytinglar",
+        "option": "{{rating}} yulduz"
+      },
+      "reported": {
+        "label": "Shikoyat bo'yicha filtr",
+        "all": "Barcha sharhlar",
+        "reported": "Faqat shikoyatli",
+        "notReported": "Shikoyatsiz"
+      },
+      "dateRange": {
+        "startDate": "Boshlanish sanasi",
+        "endDate": "Tugash sanasi",
+        "fromDate": "Dan: {{date}}",
+        "toDate": "Gacha: {{date}}"
+      },
+      "clearAll": "Barcha filtrlarni tozalash"
+    },
+    "table": {
+      "selectAll": "Barchasini tanlash",
+      "place": "Joy",
+      "reviewer": "Sharhlovchi",
+      "rating": "Reyting",
+      "review": "Sharh",
+      "date": "Sana",
+      "status": "Holat",
+      "actions": "Amallar",
+      "reports": "Shikoyatlar",
+      "helpful": "Foydali",
+      "visibleToPublic": "Ommaga ko'rinadigan",
+      "noReports": "Shikoyatlar yo'q",
+      "reportCount": "{{count}} shikoyat",
+      "reportCount_plural": "{{count}} shikoyat",
+      "latestReport": "So'nggi: {{reason}}",
+      "visible": "Ko'rinadigan",
+      "hidden": "Yashirilgan",
+      "unknownPlace": "Noma'lum joy",
+      "anonymous": "Anonim",
+      "byUser": "{{name}} tomonidan",
+      "noReviews": "Sharhlar topilmadi",
+      "loading": "Sharhlar yuklanmoqda...",
+      "adminNotes": "Administrator eslatmalari",
+      "tryAdjustingSearch": "Qidiruv shartlarini o'zgartirib ko'ring"
+    },
+    "actions": {
+      "edit": "Tahrirlash",
+      "save": "Saqlash",
+      "cancel": "Bekor qilish",
+      "delete": "O'chirish",
+      "bulkDelete": "Tanlanganlarni o'chirish",
+      "confirmDelete": "Bu sharhni o'chirishni xohlaysizmi?",
+      "confirmBulkDelete": "{{count}} ta tanlangan sharhni o'chirishni xohlaysizmi?",
+      "editReview": "Sharhni tahrirlash",
+      "adminNotes": "Administrator eslatmalari"
+    },
+    "pagination": {
+      "showing": "{{total}} sharhdan {{start}} dan {{end}} gacha ko'rsatilmoqda",
+      "page": "{{total}} dan {{current}} sahifa"
+    },
+    "messages": {
+      "accessDenied": "Kirish rad etildi. Faqat agentlar uchun.",
+      "updateSuccess": "Sharh muvaffaqiyatli yangilandi!",
+      "deleteSuccess": "Sharh(lar) muvaffaqiyatli o'chirildi!",
+      "updateError": "Sharhni yangilab bo'lmadi. Qaytadan urinib ko'ring.",
+      "deleteError": "Sharh(lar)ni o'chirib bo'lmadi. Qaytadan urinib ko'ring.",
+      "pleaseSelectReviews": "Avval sharhlarni tanlang",
+      "bulkDeleteSuccess": "{{count}} ta sharh muvaffaqiyatli o'chirildi",
+      "bulkDeleteError": "Tanlangan sharhlarni o'chirib bo'lmadi",
+      "loadError": "Sharhlarni yuklab bo'lmadi",
+      "editSuccess": "Sharh muvaffaqiyatli yangilandi!",
+      "editError": "Sharhni yangilab bo'lmadi. Qaytadan urinib ko'ring."
+    }
   }
 }

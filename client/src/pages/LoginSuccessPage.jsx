@@ -1,10 +1,12 @@
 import { useEffect, useContext, useState, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { UserContext } from '../components/UserContext';
 import { useNotification } from '../components/NotificationContext';
 import api from '../utils/api';
 
 export default function LoginSuccessPage() {
+  const { t } = useTranslation('common');
   const { setUser, user } = useContext(UserContext);
   const { notify } = useNotification();
   const navigate = useNavigate();
@@ -42,9 +44,9 @@ export default function LoginSuccessPage() {
         if (data) {
           setUser(data);
           if (newAccount) {
-            notify('Your conference hub account has been created successfully!', 'success');
+            notify('messages.accountCreatedSuccess', 'success');
           } else {
-            notify('Login successful!', 'success');
+            notify('messages.loginSuccessful', 'success');
           }
           setLoading(false);
           
@@ -54,11 +56,11 @@ export default function LoginSuccessPage() {
             navigate('/account');
           }, 1500);
         } else {
-          notify('Authentication failed. Please try again.', 'error');
+          notify('messages.authenticationFailed', 'error');
           navigate('/login');
         }
       } catch (error) {
-        notify('Authentication failed. Please try again.', 'error');
+        notify('messages.authenticationFailed', 'error');
         navigate('/login');
       }
     };

@@ -173,6 +173,14 @@
       "propertyName": "Joy nomi"
     },
     "filterByStatus": "Holat bo'yicha filtrlash",
+    "agentActions": "Agent harakatlari",
+    "cleanupExpiredBookings": "Muddati tugagan bronlarni o'chirish",
+    "cleanupConfirmation": {
+      "title": "Muddati tugagan bronlarni o'chirish",
+      "message": "Barcha muddati tugagan \"kutilayotgan\" va \"tanlangan\" bron so'rovlarini o'chirishni xohlaysizmi? Bu amalni bekor qilib bo'lmaydi.",
+      "confirm": "Ha, muddati tugagan bronlarni o'chirish",
+      "cancel": "Bekor qilish"
+    },
     "statusLabels": {
       "client": {
         "pending": "Kutilmoqda",

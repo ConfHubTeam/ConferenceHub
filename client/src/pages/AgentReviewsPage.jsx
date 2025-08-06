@@ -1,7 +1,9 @@
 import { useState, useEffect, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { UserContext } from "../components/UserContext";
 import { useNotification } from "../components/NotificationContext";
+import { useDateLocalization } from "../hooks/useDateLocalization";
 import AccountNav from "../components/AccountNav";
 import api from "../utils/api";
 import StarRating from "../components/StarRating";
@@ -15,9 +17,11 @@ import ActiveFilters, { FilterCreators } from "../components/ActiveFilters";
  * Implements DRY principles with reusable filter and action components
  */
 export default function AgentReviewsPage() {
+  const { t } = useTranslation("reviews");
   const { user } = useContext(UserContext);
-  const navigate = useNavigate();
   const { notify } = useNotification();
+  const { formatLocalizedDateTime } = useDateLocalization();
+  const navigate = useNavigate();
 
   // State management following single responsibility principle
   const [reviews, setReviews] = useState([]);
@@ -45,9 +49,9 @@ export default function AgentReviewsPage() {
   useEffect(() => {
     if (user && user.userType !== "agent") {
       navigate("/");
-      notify("Access denied. Agents only.", "error");
+      notify(t("management.messages.accessDenied"), "error");
     }
-  }, [user, navigate, notify]);
+  }, [user, navigate, notify, t]);
 
   // Debounce search term to avoid excessive API calls
   useEffect(() => {
@@ -90,7 +94,7 @@ export default function AgentReviewsPage() {
     } catch (error) {
       console.error("Error fetching reviews:", error);
       setError(error.response?.data?.error || "Failed to fetch reviews");
-      notify("Failed to fetch reviews", "error");
+      notify(t("management.messages.loadError"), "error");
     } finally {
       setLoading(false);
     }
@@ -130,28 +134,28 @@ export default function AgentReviewsPage() {
     
     if (filterRating !== "all") {
       filters.push({
-        label: `${filterRating} stars`,
+        label: t("management.filters.rating.option", { rating: filterRating }),
         onRemove: () => setFilterRating("all")
       });
     }
 
     if (filterReported !== "all") {
       filters.push({
-        label: filterReported === "reported" ? "Reported reviews" : "No reports",
+        label: filterReported === "reported" ? t("management.filters.reported.reported") : t("management.filters.reported.notReported"),
         onRemove: () => setFilterReported("all")
       });
     }
     
     if (startDate) {
       filters.push({
-        label: `From: ${startDate}`,
+        label: t("management.filters.dateRange.fromDate", { date: startDate }),
         onRemove: () => setStartDate("")
       });
     }
     
     if (endDate) {
       filters.push({
-        label: `To: ${endDate}`,
+        label: t("management.filters.dateRange.toDate", { date: endDate }),
         onRemove: () => setEndDate("")
       });
     }
@@ -175,25 +179,25 @@ export default function AgentReviewsPage() {
           throw new Error("Invalid action");
       }
 
-      notify(`Review ${action}ed successfully`, "success");
+      notify(t(`management.messages.${action}Success`), "success");
       
       // Refresh the current page
       fetchReviews(currentPage);
       
     } catch (error) {
       console.error(`Error ${action}ing review:`, error);
-      notify(error.response?.data?.error || `Failed to ${action} review`, "error");
+      notify(error.response?.data?.error || t(`management.messages.${action}Error`), "error");
     }
   };
 
   // Bulk delete action
   const handleBulkDelete = async () => {
     if (selectedReviews.length === 0) {
-      notify("Please select reviews first", "warning");
+      notify(t("management.messages.pleaseSelectReviews"), "warning");
       return;
     }
 
-    if (!window.confirm(`Are you sure you want to delete ${selectedReviews.length} selected review(s)?`)) {
+    if (!window.confirm(t("management.actions.confirmBulkDelete", { count: selectedReviews.length }))) {
       return;
     }
 
@@ -205,8 +209,8 @@ export default function AgentReviewsPage() {
       );
 
       await Promise.all(promises);
-      
-      notify(`${selectedReviews.length} reviews deleted successfully`, "success");
+
+      notify(t("management.messages.bulkDeleteSuccess", { count: selectedReviews.length }), "success");
       setSelectedReviews([]);
       
       // Refresh the current page
@@ -214,7 +218,7 @@ export default function AgentReviewsPage() {
       
     } catch (error) {
       console.error("Error in bulk delete:", error);
-      notify("Failed to delete selected reviews", "error");
+      notify(t("management.messages.bulkDeleteError"), "error");
     } finally {
       setLoading(false);
     }
@@ -253,22 +257,6 @@ export default function AgentReviewsPage() {
   const handleEditCancel = () => {
     setEditingReview(null);
     setEditForm({});
-  };
-
-  // Format date for display
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    try {
-      return new Date(dateString).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-      });
-    } catch {
-      return "Invalid Date";
-    }
   };
 
   // Truncate text for display
@@ -315,7 +303,7 @@ export default function AgentReviewsPage() {
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Search by place name, reviewer name, or review content..."
+                  placeholder={t("management.search.placeholder")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full p-3 pl-10 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
@@ -351,7 +339,7 @@ export default function AgentReviewsPage() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Searching...
+                    {t("management.search.searching")}
                   </div>
                 </div>
               )}
@@ -364,12 +352,12 @@ export default function AgentReviewsPage() {
                 onChange={(e) => setFilterRating(e.target.value)}
                 className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="all">All Ratings</option>
-                <option value="5">5 Stars</option>
-                <option value="4">4 Stars</option>
-                <option value="3">3 Stars</option>
-                <option value="2">2 Stars</option>
-                <option value="1">1 Star</option>
+                <option value="all">{t("management.filters.rating.all")}</option>
+                <option value="5">{t("management.filters.rating.option", { rating: 5 })}</option>
+                <option value="4">{t("management.filters.rating.option", { rating: 4 })}</option>
+                <option value="3">{t("management.filters.rating.option", { rating: 3 })}</option>
+                <option value="2">{t("management.filters.rating.option", { rating: 2 })}</option>
+                <option value="1">{t("management.filters.rating.option", { rating: 1 })}</option>
               </select>
 
               <select
@@ -377,9 +365,9 @@ export default function AgentReviewsPage() {
                 onChange={(e) => setFilterReported(e.target.value)}
                 className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="all">All Reviews</option>
-                <option value="reported">Reported Only</option>
-                <option value="no_reports">No Reports</option>
+                <option value="all">{t("management.filters.reported.all")}</option>
+                <option value="reported">{t("management.filters.reported.reported")}</option>
+                <option value="no_reports">{t("management.filters.reported.notReported")}</option>
               </select>
 
               <input
@@ -387,7 +375,7 @@ export default function AgentReviewsPage() {
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="Start Date"
+                placeholder={t("management.filters.dateRange.startDate")}
               />
 
               <input
@@ -395,7 +383,7 @@ export default function AgentReviewsPage() {
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="End Date"
+                placeholder={t("management.filters.dateRange.endDate")}
               />
             </div>
           </div>
@@ -403,21 +391,25 @@ export default function AgentReviewsPage() {
           {/* Results summary and bulk actions */}
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-600">
-              Showing {reviews.length} of {totalReviews} reviews
-              {searchTerm && ` matching "${searchTerm}"`}
+              {t("management.pagination.showing", { 
+                start: ((currentPage - 1) * reviewsPerPage) + 1, 
+                end: Math.min(currentPage * reviewsPerPage, totalReviews), 
+                total: totalReviews 
+              })}
+              {searchTerm && ` ${t("management.search.matching", { term: searchTerm })}`}
             </div>
             
             {selectedReviews.length > 0 && (
               <div className="flex items-center gap-3">
                 <span className="text-sm font-medium text-blue-900">
-                  {selectedReviews.length} selected
+                  {selectedReviews.length} {t("management.table.selectAll").toLowerCase()}
                 </span>
                 <button
                   onClick={handleBulkDelete}
                   disabled={loading}
                   className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 disabled:opacity-50"
                 >
-                  Delete Selected
+                  {t("management.actions.bulkDelete")}
                 </button>
               </div>
             )}
@@ -444,11 +436,11 @@ export default function AgentReviewsPage() {
                       className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
                     />
                   </th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">Review</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">Place & User</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">Reports</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">Date</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">Actions</th>
+                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">{t("management.table.review")}</th>
+                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">{t("management.table.place")} & {t("management.table.reviewer")}</th>
+                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">{t("management.table.reports")}</th>
+                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">{t("management.table.date")}</th>
+                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">{t("management.table.actions")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -459,9 +451,9 @@ export default function AgentReviewsPage() {
                         <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.562.562 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
                         </svg>
-                        <span>No reviews found</span>
+                        <span>{t("management.table.noReviews")}</span>
                         {searchTerm && (
-                          <p className="text-sm text-gray-400">Try adjusting your search terms</p>
+                          <p className="text-sm text-gray-400">{t("management.table.tryAdjustingSearch")}</p>
                         )}
                       </div>
                     </td>
@@ -489,11 +481,11 @@ export default function AgentReviewsPage() {
                                 onChange={(e) => setEditForm(prev => ({ ...prev, rating: parseInt(e.target.value) }))}
                                 className="border border-gray-300 rounded px-2 py-1 text-sm"
                               >
-                                <option value={1}>1 Star</option>
-                                <option value={2}>2 Stars</option>
-                                <option value={3}>3 Stars</option>
-                                <option value={4}>4 Stars</option>
-                                <option value={5}>5 Stars</option>
+                                <option value={1}>{t("management.filters.rating.option", { rating: 1 })}</option>
+                                <option value={2}>{t("management.filters.rating.option", { rating: 2 })}</option>
+                                <option value={3}>{t("management.filters.rating.option", { rating: 3 })}</option>
+                                <option value={4}>{t("management.filters.rating.option", { rating: 4 })}</option>
+                                <option value={5}>{t("management.filters.rating.option", { rating: 5 })}</option>
                               </select>
                             </div>
                             <textarea
@@ -501,14 +493,14 @@ export default function AgentReviewsPage() {
                               onChange={(e) => setEditForm(prev => ({ ...prev, comment: e.target.value }))}
                               className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                               rows="3"
-                              placeholder="Review comment..."
+                              placeholder={t("reviewForm.fields.comment.placeholder")}
                             />
                             <textarea
                               value={editForm.adminNotes}
                               onChange={(e) => setEditForm(prev => ({ ...prev, adminNotes: e.target.value }))}
                               className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                               rows="2"
-                              placeholder="Admin notes..."
+                              placeholder={t("management.table.adminNotes")}
                             />
                             <label className="flex items-center text-xs">
                               <input
@@ -517,7 +509,7 @@ export default function AgentReviewsPage() {
                                 onChange={(e) => setEditForm(prev => ({ ...prev, isVisible: e.target.checked }))}
                                 className="mr-1"
                               />
-                              Visible to public
+                              {t("management.table.visibleToPublic")}
                             </label>
                           </div>
                         ) : (
@@ -528,13 +520,13 @@ export default function AgentReviewsPage() {
                             </div>
                             <p className="text-sm text-gray-700">{truncateText(review.comment, 120)}</p>
                             {review.adminNotes && (
-                              <p className="text-xs text-gray-500 italic">Admin: {truncateText(review.adminNotes, 80)}</p>
+                              <p className="text-xs text-gray-500 italic">{t("management.table.adminNotes")}: {truncateText(review.adminNotes, 80)}</p>
                             )}
                             <div className="text-xs">
                               {review.isVisible ? (
-                                <span className="text-green-600">● Visible</span>
+                                <span className="text-green-600">● {t("management.table.visible")}</span>
                               ) : (
-                                <span className="text-red-600">● Hidden</span>
+                                <span className="text-red-600">● {t("management.table.hidden")}</span>
                               )}
                             </div>
                           </div>
@@ -553,14 +545,14 @@ export default function AgentReviewsPage() {
                             </Link>
                           ) : (
                             <p className="text-sm font-medium text-gray-900">
-                              Unknown Place
+                              {t("management.table.unknownPlace")}
                             </p>
                           )}
                           <p className="text-sm text-gray-600">
-                            by {review.User?.name || "Anonymous"}
+                            {t("management.table.byUser", { name: review.User?.name || t("management.table.anonymous") })}
                           </p>
                           <p className="text-xs text-gray-500">
-                            Helpful: {review.helpfulCount || 0}
+                            {t("management.table.helpful")}: {review.helpfulCount || 0}
                           </p>
                         </div>
                       </td>
@@ -570,22 +562,22 @@ export default function AgentReviewsPage() {
                         {review.reportCount > 0 ? (
                           <div className="space-y-1">
                             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                              {review.reportCount} report{review.reportCount !== 1 ? 's' : ''}
+                              {t("management.table.reportCount", { count: review.reportCount })}
                             </span>
                             {review.Reports && review.Reports.length > 0 && (
                               <div className="text-xs text-gray-600">
-                                Latest: {review.Reports[0].reason}
+                                {t("management.table.latestReport", { reason: review.Reports[0].reason })}
                               </div>
                             )}
                           </div>
                         ) : (
-                          <span className="text-xs text-gray-500">No reports</span>
+                          <span className="text-xs text-gray-500">{t("management.table.noReports")}</span>
                         )}
                       </td>
 
                       {/* Date */}
                       <td className="py-3 px-4 text-sm text-gray-600">
-                        {formatDate(review.created_at)}
+                        {formatLocalizedDateTime(review.created_at)}
                       </td>
 
                       {/* Actions */}
@@ -596,13 +588,13 @@ export default function AgentReviewsPage() {
                               onClick={handleEditSave}
                               className="text-green-600 hover:text-green-900 text-sm font-medium"
                             >
-                              Save
+                              {t("management.actions.save")}
                             </button>
                             <button
                               onClick={handleEditCancel}
                               className="text-gray-600 hover:text-gray-900 text-sm font-medium"
                             >
-                              Cancel
+                              {t("management.actions.cancel")}
                             </button>
                           </div>
                         ) : (
@@ -611,17 +603,17 @@ export default function AgentReviewsPage() {
                               onClick={() => handleEditStart(review)}
                               className="text-blue-600 hover:text-blue-900 text-sm font-medium"
                             >
-                              Edit
+                              {t("management.actions.edit")}
                             </button>
                             <button
                               onClick={() => {
-                                if (window.confirm("Are you sure you want to delete this review?")) {
+                                if (window.confirm(t("management.actions.confirmDelete"))) {
                                   handleIndividualAction(review.id, "delete");
                                 }
                               }}
                               className="text-red-600 hover:text-red-900 text-sm font-medium"
                             >
-                              Delete
+                              {t("management.actions.delete")}
                             </button>
                           </div>
                         )}

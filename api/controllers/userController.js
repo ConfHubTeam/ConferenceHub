@@ -1369,6 +1369,72 @@ const getHostReviews = async (req, res) => {
   }
 };
 
+/**
+ * Update user's preferred language for SMS notifications
+ */
+const updateLanguagePreference = async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+    const { preferredLanguage } = req.body;
+
+    // Validate language
+    const supportedLanguages = ["en", "ru", "uz"];
+    if (!preferredLanguage || !supportedLanguages.includes(preferredLanguage)) {
+      return res.status(400).json({ 
+        error: 'Invalid language. Supported languages: en, ru, uz' 
+      });
+    }
+
+    // Update user's preferred language
+    await User.update(
+      { preferredLanguage: preferredLanguage },
+      { where: { id: userData.id } }
+    );
+
+    // Fetch updated user data
+    const updatedUser = await User.findByPk(userData.id, {
+      attributes: [
+        'id', 'name', 'email', 'phoneNumber', 'userType', 'preferredLanguage',
+        'telegramId', 'telegramUsername', 'telegramFirstName',
+        'telegramPhotoUrl', 'telegramPhone', 'telegramLinked'
+      ]
+    });
+
+    res.json({
+      message: 'Language preference updated successfully',
+      user: updatedUser,
+      preferredLanguage: preferredLanguage
+    });
+  } catch (error) {
+    console.error("Error updating language preference:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/**
+ * Get user's current language preference
+ */
+const getLanguagePreference = async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+
+    const user = await User.findByPk(userData.id, {
+      attributes: ['preferredLanguage']
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({
+      preferredLanguage: user.preferredLanguage || 'en'
+    });
+  } catch (error) {
+    console.error("Error getting language preference:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -1379,5 +1445,7 @@ module.exports = {
   updateUser,
   getAdminContact,
   getHostStatistics,
-  getHostReviews
+  getHostReviews,
+  updateLanguagePreference,
+  getLanguagePreference
 };

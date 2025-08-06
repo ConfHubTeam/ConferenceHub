@@ -1,13 +1,28 @@
 import { createContext, useState, useContext } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export const NotificationContext = createContext({});
 
 export function NotificationProvider({ children }) {
   const [notification, setNotification] = useState(null);
+  const { t, ready } = useTranslation('common');
   
-  // Show a notification
-  const notify = (message, type = 'info') => {
-    setNotification({ message, type });
+  // Show a notification with optional translation support
+  const notify = (message, type = 'info', translationKey = null, translationOptions = {}) => {
+    let displayMessage = message;
+    
+    // If a translation key is provided and i18n is ready, use translated message
+    if (translationKey && ready) {
+      try {
+        displayMessage = t(translationKey, translationOptions);
+      } catch (error) {
+        // Fallback to original message if translation fails
+        console.warn('Translation failed for key:', translationKey, error);
+        displayMessage = message;
+      }
+    }
+    
+    setNotification({ message: displayMessage, type });
     
     // Auto-dismiss after 1.5 seconds (quick dismissal)
     setTimeout(() => {

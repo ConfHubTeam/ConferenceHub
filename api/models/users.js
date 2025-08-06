@@ -56,6 +56,15 @@ const User = sequelize.define('User', {
     type: DataTypes.ENUM('host', 'client', 'agent'),
     allowNull: false,
     defaultValue: 'client'
+  },
+  preferredLanguage: {
+    type: DataTypes.STRING(5),
+    allowNull: false,
+    defaultValue: 'en',
+    validate: {
+      isIn: [['en', 'ru', 'uz']]
+    },
+    comment: 'User\'s preferred language for notifications (en, ru, uz)'
   }
 }, {
   timestamps: true // Equivalent to Mongoose timestamps

@@ -471,14 +471,22 @@ export default function ProfilePage({}) {
         itemToDelete={user}
         itemDetails={[
           { label: t("profile:fields.fullName.label"), value: displayName },
-          { label: t("profile:fields.email.label"), value: user?.email && !user?.email.includes("telegram_") ? user?.email : t("profile:fields.email.noEmail") },
-          { label: t("profile:accountTypes." + user?.userType + ".label"), value: accountInfo.label }
+          { label: t("profile:fields.email.label"), value: user?.email && !user?.email.includes("telegram_") ? user?.email : t("profile:fields.email.noEmail") }
         ]}
-        consequences={[
-          ...t("profile:deleteConfirmation.consequences.common", { returnObjects: true }),
-          ...(user?.userType === 'host' ? t("profile:deleteConfirmation.consequences.host", { returnObjects: true }) : []),
-          ...(user?.userType === 'agent' ? t("profile:deleteConfirmation.consequences.agent", { returnObjects: true }) : [])
-        ]}
+        consequences={(() => {
+          const common = t("profile:deleteConfirmation.consequences.common", { returnObjects: true }) || [];
+          const host = user?.userType === 'host' ? (t("profile:deleteConfirmation.consequences.host", { returnObjects: true }) || []) : [];
+          const agent = user?.userType === 'agent' ? (t("profile:deleteConfirmation.consequences.agent", { returnObjects: true }) || []) : [];
+          
+          // Ensure we have arrays and flatten them properly
+          const allConsequences = [
+            ...(Array.isArray(common) ? common : []),
+            ...(Array.isArray(host) ? host : []),
+            ...(Array.isArray(agent) ? agent : [])
+          ];
+          
+          return allConsequences;
+        })()}
         deleteInProgress={isDeleting}
       />
     </div>

@@ -50,6 +50,12 @@ router.put("/:notificationId/read", markAsRead);
 router.put("/mark-all-read", markAllAsRead);
 
 /**
+ * DELETE /api/notifications/delete-all
+ * Delete all notifications for the authenticated user
+ */
+router.delete("/delete-all", require("../controllers/notificationController").deleteAllNotifications);
+
+/**
  * POST /api/notifications/test-sms
  * Test SMS notification service (development/testing purposes)
  */

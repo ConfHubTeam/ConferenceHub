@@ -12,6 +12,7 @@
 
 import { useState, useEffect, useContext, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { UserContext } from "../components/UserContext";
 import { useReviewNotifications } from "../contexts/ReviewNotificationContext";
 import { useNotification } from "../components/NotificationContext";
@@ -21,6 +22,7 @@ import Pagination from "../components/Pagination";
 export default function NotificationsPage() {
   const { user } = useContext(UserContext);
   const { notify } = useNotification();
+  const { t } = useTranslation("notifications");
   const [searchParams, setSearchParams] = useSearchParams();
   const {
     notifications,
@@ -30,6 +32,7 @@ export default function NotificationsPage() {
     loadNotifications,
     markAsRead,
     markAllAsRead,
+    deleteAllNotifications,
     getNotificationDisplayData
   } = useReviewNotifications();
 
@@ -39,6 +42,8 @@ export default function NotificationsPage() {
   const [itemsPerPage] = useState(20); // Keep this for consistency with backend
   const [loadingPage, setLoadingPage] = useState(false); // Loading state for page changes
   const [hasInitialized, setHasInitialized] = useState(false); // Track if we've made initial load attempt
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // Modal state for delete confirmation
+  const [deleteLoading, setDeleteLoading] = useState(false); // Loading state for delete operation
 
   /**
    * Load notifications with pagination - modified to not append data
@@ -67,7 +72,7 @@ export default function NotificationsPage() {
       setHasInitialized(true);
     } catch (error) {
       console.error("Error loading notifications:", error);
-      notify("Failed to load notifications", "error");
+      notify(t("page.loadError"), "error");
       // Still mark as initialized even on error to prevent infinite loops
       setHasInitialized(true);
     } finally {
@@ -107,9 +112,9 @@ export default function NotificationsPage() {
       // Navigation is handled by Link component
     } catch (error) {
       console.error("Error marking notification as read:", error);
-      notify("Failed to mark notification as read", "error");
+      notify(t("page.markSingleReadError"), "error");
     }
-  }, [markAsRead, notify]);
+  }, [markAsRead, notify, t]);
 
   /**
    * Mark all notifications as read
@@ -117,14 +122,49 @@ export default function NotificationsPage() {
   const handleMarkAllAsRead = useCallback(async () => {
     try {
       const updatedCount = await markAllAsRead();
-      notify(`${updatedCount} notifications marked as read`, "success");
+      notify(t("page.markReadSuccess", { count: updatedCount }), "success");
       // Reload notifications to reflect the change
       handleLoadNotifications(1, true);
     } catch (error) {
       console.error("Error marking all as read:", error);
-      notify("Failed to mark all notifications as read", "error");
+      notify(t("page.markReadError"), "error");
     }
-  }, [markAllAsRead, notify, handleLoadNotifications]);
+  }, [markAllAsRead, notify, handleLoadNotifications, t]);
+
+  /**
+   * Delete all notifications
+   */
+  const handleDeleteAllNotifications = useCallback(async () => {
+    setShowDeleteModal(true);
+  }, []);
+
+  /**
+   * Confirm delete all notifications
+   */
+  const handleConfirmDeleteAll = useCallback(async () => {
+    setDeleteLoading(true);
+    try {
+      const deletedCount = await deleteAllNotifications();
+      notify(t("page.deleteSuccess", { count: deletedCount }), "success");
+      // Reset to page 1 since all notifications are deleted
+      setCurrentPage(1);
+      setPagination(null);
+      setShowDeleteModal(false);
+      // No need to reload since state is already cleared
+    } catch (error) {
+      console.error("Error deleting all notifications:", error);
+      notify(t("page.deleteError"), "error");
+    } finally {
+      setDeleteLoading(false);
+    }
+  }, [deleteAllNotifications, notify, t]);
+
+  /**
+   * Cancel delete operation
+   */
+  const handleCancelDelete = useCallback(() => {
+    setShowDeleteModal(false);
+  }, []);
 
   /**
    * Filter change handler
@@ -241,10 +281,10 @@ export default function NotificationsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{t("page.title")}</h1>
             {unreadCount > 0 && (
               <p className="text-sm text-gray-600 mt-1">
-                {unreadCount} unread notification{unreadCount !== 1 ? "s" : ""}
+                {t("page.unreadCount", { count: unreadCount })}
               </p>
             )}
           </div>
@@ -261,7 +301,7 @@ export default function NotificationsPage() {
                     : "bg-white text-gray-700 hover:bg-gray-50"
                 }`}
               >
-                All
+                {t("page.all")}
               </button>
               <button
                 onClick={() => handleFilterChange("unread")}
@@ -271,19 +311,32 @@ export default function NotificationsPage() {
                     : "bg-white text-gray-700 hover:bg-gray-50"
                 }`}
               >
-                Unread {unreadCount > 0 && `(${unreadCount})`}
+                {t("page.unread")} {unreadCount > 0 && `(${unreadCount})`}
               </button>
             </div>
 
-            {/* Mark All as Read */}
-            {unreadCount > 0 && (
-              <button
-                onClick={handleMarkAllAsRead}
-                className="px-4 py-2 text-sm font-medium text-primary hover:text-orange-600 border border-primary hover:border-orange-600 rounded-lg transition-colors duration-200"
-              >
-                Mark All as Read
-              </button>
-            )}
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
+              {/* Mark All as Read */}
+              {unreadCount > 0 && (
+                <button
+                  onClick={handleMarkAllAsRead}
+                  className="px-4 py-2 text-sm font-medium text-primary hover:text-orange-600 border border-primary hover:border-orange-600 rounded-lg transition-colors duration-200"
+                >
+                  {t("page.markAllAsRead")}
+                </button>
+              )}
+
+              {/* Delete All */}
+              {notifications.length > 0 && (
+                <button
+                  onClick={handleDeleteAllNotifications}
+                  className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 border border-red-300 hover:border-red-400 rounded-lg transition-colors duration-200"
+                >
+                  {t("page.deleteAll")}
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -319,12 +372,12 @@ export default function NotificationsPage() {
                   </svg>
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  {filter === "unread" ? "No unread notifications" : "No notifications"}
+                  {filter === "unread" ? t("page.noUnreadNotifications") : t("page.noNotifications")}
                 </h3>
                 <p className="text-gray-500">
                   {filter === "unread" 
-                    ? "All your notifications have been read." 
-                    : "You'll receive notifications about reviews and replies here."
+                    ? t("page.allReadMessage") 
+                    : t("page.noNotificationsMessage")
                   }
                 </p>
               </div>
@@ -366,6 +419,56 @@ export default function NotificationsPage() {
           </>
         )}
       </div>
+
+      {/* Delete All Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+            {/* Modal Header */}
+            <div className="flex items-center mb-4">
+              <div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {t("page.deleteAllTitle")}
+              </h3>
+            </div>
+
+            {/* Modal Content */}
+            <div className="mb-6">
+              <p className="text-gray-600">
+                {t("page.deleteConfirmation")}
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                {t("page.deleteWarning")}
+              </p>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={handleCancelDelete}
+                disabled={deleteLoading}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              >
+                {t("page.cancel")}
+              </button>
+              <button
+                onClick={handleConfirmDeleteAll}
+                disabled={deleteLoading}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+              >
+                {deleteLoading && (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                )}
+                {deleteLoading ? t("page.deleting") : t("page.deleteConfirm")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

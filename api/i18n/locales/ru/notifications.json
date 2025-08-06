@@ -1,10 +1,38 @@
 {
+  "titles": {
+    "booking_requested": "Новый запрос на бронирование",
+    "booking_paid": "Платеж получен",
+    "booking_approved": "Бронирование одобрено",
+    "booking_confirmed": "Бронирование подтверждено",
+    "booking_selected": "Бронирование выбрано",
+    "booking_rejected": "Бронирование отклонено",
+    "booking_paid_to_host": "Платеж хосту"
+  },
+  "messages": {
+    "booking_requested": "Новый запрос на бронирование {{bookingReference}} для \"{{placeName}}\" на {{dateRange}}",
+    "booking_paid": "Платеж получен за бронирование {{bookingReference}} объекта \"{{placeName}}\" на {{dateRange}}. Требуется выплата хосту.",
+    "booking_approved_byHost": "Бронирование {{bookingReference}} для \"{{placeName}}\" на {{dateRange}} было одобрено хостом. Пожалуйста, произведите оплату.",
+    "booking_approved_byAgent": "Бронирование {{bookingReference}} для \"{{placeName}}\" на {{dateRange}} было одобрено агентом. Пожалуйста, произведите оплату.",
+    "booking_confirmed_host": "Бронирование {{bookingReference}} для \"{{placeName}}\" на {{dateRange}} подтверждено.",
+    "booking_confirmed_client": "Ваше бронирование {{bookingReference}} для \"{{placeName}}\" на {{dateRange}} подтверждено!",
+    "booking_selected": "Бронирование {{bookingReference}} для \"{{placeName}}\" на {{dateRange}} выбрано. Пожалуйста, произведите оплату.",
+    "booking_rejected": "Бронирование {{bookingReference}} для \"{{placeName}}\" на {{dateRange}} отклонено. Приносим извинения за неудобства.",
+    "booking_paid_to_host": "Выплата {{amount}} произведена за бронирование {{bookingReference}}"
+  },
   "booking": {
-    "newRequest": "Новый запрос на бронирование вашей недвижимости",
-    "confirmed": "Ваше бронирование подтверждено",
-    "cancelled": "Ваше бронирование отменено",
-    "paymentReceived": "Платеж получен за ваше бронирование",
-    "reviewLeft": "Новый отзыв оставлен для вашей недвижимости"
+    "requested": "Новый запрос на бронирование {{bookingReference}} для \"{{placeName}}\" на {{dateRange}}",
+    "paid": "Платеж получен за бронирование {{bookingReference}} объекта \"{{placeName}}\" на {{dateRange}}. Требуется выплата хосту.",
+    "approved": {
+      "byHost": "Бронирование {{bookingReference}} для \"{{placeName}}\" на {{dateRange}} было одобрено хостом. Пожалуйста, произведите оплату.",
+      "byAgent": "Бронирование {{bookingReference}} для \"{{placeName}}\" на {{dateRange}} было одобрено агентом. Пожалуйста, произведите оплату."
+    },
+    "confirmed": {
+      "host": "Бронирование {{bookingReference}} для \"{{placeName}}\" на {{dateRange}} подтверждено.",
+      "client": "Ваше бронирование {{bookingReference}} для \"{{placeName}}\" на {{dateRange}} подтверждено!"
+    },
+    "selected": "Бронирование {{bookingReference}} для \"{{placeName}}\" на {{dateRange}} выбрано. Пожалуйста, произведите оплату.",
+    "rejected": "Бронирование {{bookingReference}} для \"{{placeName}}\" на {{dateRange}} отклонено. Приносим извинения за неудобства.",
+    "paidToHost": "Выплата {{amount}} произведена за бронирование {{bookingReference}}"
   },
   "payment": {
     "success": "Платеж успешен",

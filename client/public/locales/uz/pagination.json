@@ -1,0 +1,13 @@
+{
+  "showing": "{{total}} tadan {{from}}-{{to}} {{items}} ko'rsatilmoqda",
+  "buttons": {
+    "previous": "Oldingi",
+    "next": "Keyingi"
+  },
+  "items": {
+    "users": "foydalanuvchilar",
+    "bookings": "bronlar",
+    "places": "joylar", 
+    "items": "elementlar"
+  }
+}

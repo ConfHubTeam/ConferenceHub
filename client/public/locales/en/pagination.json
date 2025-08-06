@@ -1,0 +1,13 @@
+{
+  "showing": "Showing {{from}}-{{to}} of {{total}} {{items}}",
+  "buttons": {
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "items": {
+    "users": "users",
+    "bookings": "bookings",
+    "places": "places",
+    "items": "items"
+  }
+}

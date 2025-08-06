@@ -228,7 +228,20 @@ class ReviewNotificationService {
       const count = await Notification.count({
         where: {
           userId: userId,
-          isRead: false
+          isRead: false,
+          // Only count notifications with proper translation structure
+          metadata: {
+            [Op.and]: [
+              { [Op.ne]: null },
+              // Check that metadata contains both translationKey and translationVariables
+              {
+                [Op.and]: [
+                  Notification.sequelize.literal("metadata::json->'translationKey' IS NOT NULL"),
+                  Notification.sequelize.literal("metadata::json->'translationVariables' IS NOT NULL")
+                ]
+              }
+            ]
+          }
         }
       });
 
@@ -261,7 +274,22 @@ class ReviewNotificationService {
       }
 
       const { count, rows: notifications } = await Notification.findAndCountAll({
-        where: whereClause,
+        where: {
+          ...whereClause,
+          // Only return notifications with proper translation structure
+          metadata: {
+            [Op.and]: [
+              { [Op.ne]: null },
+              // Check that metadata contains both translationKey and translationVariables
+              {
+                [Op.and]: [
+                  Notification.sequelize.literal("metadata::json->'translationKey' IS NOT NULL"),
+                  Notification.sequelize.literal("metadata::json->'translationVariables' IS NOT NULL")
+                ]
+              }
+            ]
+          }
+        },
         order: [["created_at", "DESC"]],
         limit: parseInt(limit),
         offset: parseInt(offset)
@@ -369,6 +397,31 @@ class ReviewNotificationService {
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
       throw new Error(`Failed to mark all notifications as read: ${error.message}`);
+    }
+  }
+
+  /**
+   * Delete all notifications for a user
+   * @param {number} userId - User ID
+   * @returns {Promise<number>} Number of deleted notifications
+   */
+  static async deleteAllNotifications(userId) {
+    if (!userId) {
+      throw new Error("User ID is required");
+    }
+
+    try {
+      const deletedCount = await Notification.destroy({
+        where: {
+          userId: userId
+        }
+      });
+
+      return deletedCount;
+
+    } catch (error) {
+      console.error("Error deleting all notifications:", error);
+      throw new Error(`Failed to delete all notifications: ${error.message}`);
     }
   }
 

@@ -1,0 +1,13 @@
+{
+  "showing": "Показано {{from}}-{{to}} из {{total}} {{items}}",
+  "buttons": {
+    "previous": "Предыдущая",
+    "next": "Следующая"
+  },
+  "items": {
+    "users": "пользователей",
+    "bookings": "бронирований",
+    "places": "мест",
+    "items": "элементов"
+  }
+}

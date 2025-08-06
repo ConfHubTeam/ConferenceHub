@@ -15,6 +15,10 @@ router.get("/profile", userController.getProfile);
 // Update user profile
 router.put("/profile", userController.updateProfile);
 
+// Language preference endpoints
+router.get("/language-preference", userController.getLanguagePreference);
+router.put("/language-preference", userController.updateLanguagePreference);
+
 // Get all users (agent only)
 router.get("/", userController.getAllUsers);
 router.get("/all", userController.getAllUsers); // Alias for /users endpoint

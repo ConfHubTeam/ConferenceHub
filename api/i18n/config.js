@@ -12,7 +12,8 @@ const NAMESPACES = [
   "auth",
   "booking",
   "payment",
-  "reviews"
+  "reviews",
+  "sms"
 ];
 
 // Initialize i18next for backend

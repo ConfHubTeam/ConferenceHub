@@ -1,8 +1,8 @@
 import { createContext, useContext, useState, useCallback, useMemo } from "react";
 import { format, isValid, parseISO } from "date-fns";
 import { useTranslation } from "react-i18next";
-import { formatSimpleDate } from "../utils/dateUtils";
-import { formatHourTo12, formatHourTo24 } from "../utils/TimeUtils";
+import { useDateLocalization } from "../hooks/useDateLocalization";
+import { formatHourTo12, formatHourTo24, formatHourLocalized } from "../utils/TimeUtils";
 
 /**
  * Context for date and time filtering
@@ -30,7 +30,8 @@ export const useDateTimeFilter = () => {
  * @returns {React.ReactElement} Provider component
  */
 export const DateTimeFilterProvider = ({ children }) => {
-  const { t } = useTranslation("search");
+  const { t, i18n } = useTranslation("search");
+  const { formatLocalizedDate } = useDateLocalization();
   // State for selected dates and time ranges (using Uzbekistan timezone for date awareness)
   const [selectedDates, setSelectedDates] = useState([]);
   const [startTime, setStartTime] = useState("00:00"); // Default to 12:00 AM (midnight)
@@ -98,9 +99,9 @@ export const DateTimeFilterProvider = ({ children }) => {
    */
   const getFormattedDate = useCallback(() => {
     if (selectedDates.length === 0) return "";
-    if (selectedDates.length === 1) return formatSimpleDate(selectedDates[0]);
+    if (selectedDates.length === 1) return formatLocalizedDate(selectedDates[0]);
     return t("form.multiple_dates", { count: selectedDates.length });
-  }, [selectedDates, t]);
+  }, [selectedDates, t, formatLocalizedDate]);
 
   /**
    * Formats the selected time range for display
@@ -108,8 +109,8 @@ export const DateTimeFilterProvider = ({ children }) => {
    */
   const getFormattedTimeRange = useCallback(() => {
     if (!startTime || !endTime) return "";
-    return `${formatHourTo12(startTime)} - ${formatHourTo12(endTime)}`;
-  }, [startTime, endTime]);
+    return `${formatHourLocalized(startTime, i18n.language)} - ${formatHourLocalized(endTime, i18n.language)}`;
+  }, [startTime, endTime, i18n.language]);
 
   /**
    * Checks if any date or time filter is active

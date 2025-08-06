@@ -7,7 +7,7 @@ import ReviewSortFilter from "./ReviewSortFilter";
 import ReviewForm from "./ReviewForm";
 import { UserContext } from "./UserContext";
 import { createReviewReply, updateReviewReply } from "../utils/api";
-import { useTranslation } from "../i18n/hooks/useTranslation";
+import { useTranslation } from "react-i18next";
 
 export default function PlaceReviews({ placeId, placeOwnerId }) {
   const { user } = useContext(UserContext);

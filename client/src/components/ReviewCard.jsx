@@ -1,7 +1,7 @@
 import { useState, useContext } from "react";
 import { UserContext } from "./UserContext";
 import StarRating from "./StarRating";
-import { useTranslation } from "../i18n/hooks/useTranslation";
+import { useTranslation } from "react-i18next";
 
 export default function ReviewCard({ 
   review, 

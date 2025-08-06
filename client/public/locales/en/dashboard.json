@@ -1,0 +1,144 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "across": "Across"
+  },
+  "agent": {
+    "title": "Agent Dashboard",
+    "loading": "Loading dashboard...",
+    "users": {
+      "title": "Users",
+      "clients": "Clients",
+      "hosts": "Hosts", 
+      "agents": "Agents",
+      "total": "Total"
+    },
+    "places": {
+      "title": "Conference Rooms",
+      "totalRooms": "Total Rooms",
+      "available": "Available"
+    },
+    "bookings": {
+      "title": "Bookings",
+      "pending": "Pending",
+      "approved": "Approved", 
+      "rejected": "Rejected",
+      "total": "Total"
+    },
+    "quickAccess": {
+      "title": "Quick Access",
+      "manageBookings": "Manage Bookings",
+      "viewUsers": "View Users",
+      "viewRooms": "View Conference Rooms"
+    }
+  },
+  "host": {
+    "title": "Host Dashboard",
+    "subtitle": "Manage your properties and track performance",
+    "managePlaces": "Manage Places",
+    "notifications": "Notifications",
+    "loading": "Loading...",
+    "error": {
+      "loadingDashboard": "Error Loading Dashboard",
+      "tryAgain": "Try Again"
+    },
+    "welcome": "Welcome back!",
+    "metrics": {
+      "totalPlaces": "Total Places",
+      "totalPaidBookings": "Total Paid Bookings",
+      "averageRating": "Average Rating"
+    },
+    "bookingStatus": {
+      "title": "Booking Status Overview",
+      "pending": "Pending",
+      "approved": "Approved",
+      "selected": "Selected",
+      "paid": "Paid",
+      "cancelled": "Cancelled",
+      "rejected": "Rejected"
+    },
+    "reviews": {
+      "title": "Review Analytics",
+      "subtitle": "Performance metrics across all your properties",
+      "viewAll": "View All Reviews →",
+      "totalReviews": "Total Reviews",
+      "averageRating": "Average Rating",
+      "thisMonth": "This Month",
+      "lastMonth": "Last Month",
+      "ratingDistribution": "Overall Rating Distribution",
+      "propertiesCount": "properties",
+      "property": "property",
+      "monthlyPerformance": "Monthly Performance",
+      "reviewsComparison": "Reviews comparison: This month vs Last month",
+      "noChange": "No change",
+      "growing": "Growing",
+      "declining": "Declining",
+      "performanceByProperty": "Performance by Property",
+      "ratingBreakdown": "Rating Breakdown",
+      "trend": "Trend",
+      "reviewsThisMonth": "Reviews This Month",
+      "reviewsLastMonth": "Reviews Last Month",
+      "positive": "Positive (4-5★)",
+      "critical": "Critical (1-2★)",
+      "viewPropertyDetails": "View Property Details & Reviews →",
+      "noReviews": {
+        "title": "No Reviews Yet",
+        "subtitle": "Your properties haven't received any reviews yet. Once guests start reviewing, you'll see detailed analytics here.",
+        "tips": "Tips to get your first reviews:",
+        "tip1": "• Provide excellent customer service",
+        "tip2": "• Ensure your property is clean and well-maintained",
+        "tip3": "• Respond quickly to guest inquiries",
+        "tip4": "• Follow up with guests after their stay"
+      }
+    },
+    "stats": {
+      "totalPlaces": "Total Places",
+      "activeBookings": "Active Bookings", 
+      "totalRevenue": "Total Revenue",
+      "averageRating": "Average Rating"
+    },
+    "recentBookings": {
+      "title": "Recent Bookings",
+      "noBookings": "No recent bookings",
+      "viewAll": "View All Bookings"
+    },
+    "analytics": {
+      "title": "Analytics Overview",
+      "bookingsThisMonth": "Bookings This Month",
+      "occupancyRate": "Occupancy Rate",
+      "revenueGrowth": "Revenue Growth"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "addNewPlace": "Add New Place",
+      "manageBookings": "Manage Bookings",
+      "viewReviews": "View Reviews",
+      "editProfile": "Edit Profile"
+    }
+  },
+  "reviews": {
+    "analytics": {
+      "title": "Review Analytics",
+      "totalReviews": "Total Reviews",
+      "averageRating": "Average Rating",
+      "avgReplyTime": "Avg Reply Time",
+      "recentActivity": "Recent Activity",
+      "days": "days",
+      "hours": "h",
+      "reviewsPerMonth": "Reviews per Month",
+      "ratingDistribution": "Rating Distribution",
+      "moderationStats": "Moderation Statistics", 
+      "hostReplyStatus": "Host Reply Status",
+      "topRatedPlaces": "Top 5 Rated Places",
+      "bottomRatedPlaces": "Bottom 5 Rated Places",
+      "mostActiveReviewers": "Most Active Reviewers",
+      "noData": "No data available",
+      "noDataMessage": "Once users start leaving reviews, analytics will appear here.",
+      "withReply": "With Reply",
+      "withoutReply": "Without Reply",
+      "reviews": "Reviews",
+      "name": "Name",
+      "email": "Email"
+    }
+  }
+}

@@ -38,8 +38,21 @@ export const formatHourTo12 = (hour24) => {
   return `${displayHour}:00 ${amPm}`;
 };
 
+// Convert 24-hour format to localized time format (12-hour for en, 24-hour for ru/uz)
+export const formatHourLocalized = (hour24, currentLanguage) => {
+  if (!hour24) return "";
+  
+  // For Russian and Uzbek, use 24-hour format
+  if (currentLanguage === 'ru' || currentLanguage === 'uz') {
+    return hour24;
+  }
+  
+  // For English, use 12-hour format
+  return formatHourTo12(hour24);
+};
+
 // Generate time options for select dropdowns
-export const generateTimeOptions = (startHour, endHour, minimumHours = 1, cooldownMinutes = 0) => {
+export const generateTimeOptions = (startHour, endHour, minimumHours = 1, cooldownMinutes = 0, currentLanguage = 'en') => {
   const options = [];
   const start = parseInt(startHour.split(":")[0], 10);
   const end = parseInt(endHour.split(":")[0], 10);
@@ -47,7 +60,7 @@ export const generateTimeOptions = (startHour, endHour, minimumHours = 1, cooldo
   // Generate all time slots from start to end for visual display and end time selection
   for (let i = start; i <= end; i++) {
     const hour24 = i.toString().padStart(2, "0") + ":00";
-    const hour12 = formatHourTo12(hour24);
+    const hour12 = formatHourLocalized(hour24, currentLanguage);
     options.push({ value: hour24, label: hour12 });
   }
   
@@ -55,7 +68,7 @@ export const generateTimeOptions = (startHour, endHour, minimumHours = 1, cooldo
 };
 
 // Generate start time options specifically (limited by cooldown and minimum duration)
-export const generateStartTimeOptions = (startHour, endHour, minimumHours = 1, cooldownMinutes = 0) => {
+export const generateStartTimeOptions = (startHour, endHour, minimumHours = 1, cooldownMinutes = 0, currentLanguage = 'en') => {
   const options = [];
   const start = parseInt(startHour.split(":")[0], 10);
   const end = parseInt(endHour.split(":")[0], 10);
@@ -73,7 +86,7 @@ export const generateStartTimeOptions = (startHour, endHour, minimumHours = 1, c
   
   for (let i = start; i <= latestStartHour; i++) {
     const hour24 = i.toString().padStart(2, "0") + ":00";
-    const hour12 = formatHourTo12(hour24);
+    const hour12 = formatHourLocalized(hour24, currentLanguage);
     options.push({ value: hour24, label: hour12 });
   }
   

@@ -12,7 +12,9 @@
  */
 
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { UserContext } from "../components/UserContext";
+import { processNotificationVariables } from "../utils/notificationFormatting";
 import api from "../utils/api";
 
 const ReviewNotificationContext = createContext();
@@ -27,6 +29,7 @@ export function useReviewNotifications() {
 
 export function ReviewNotificationProvider({ children }) {
   const { user } = useContext(UserContext);
+  const { t, i18n } = useTranslation("notifications");
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -76,6 +79,7 @@ export function ReviewNotificationProvider({ children }) {
 
       if (response.data.ok) {
         const newNotifications = response.data.notifications;
+        
         console.log("API Response - unreadOnly:", unreadOnly, "notifications count:", newNotifications.length, "append:", append);
         
         if (append) {
@@ -149,6 +153,28 @@ export function ReviewNotificationProvider({ children }) {
       }
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
+      throw error;
+    }
+  }, [user]);
+
+  /**
+   * Delete all notifications for the authenticated user
+   */
+  const deleteAllNotifications = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const response = await api.delete("/notifications/delete-all");
+      
+      if (response.data.ok) {
+        // Clear local state
+        setNotifications([]);
+        setUnreadCount(0);
+
+        return response.data.deletedCount;
+      }
+    } catch (error) {
+      console.error("Error deleting all notifications:", error);
       throw error;
     }
   }, [user]);
@@ -228,12 +254,55 @@ export function ReviewNotificationProvider({ children }) {
       return null;
     };
 
+    // Get translated title and message
+    const getTranslatedContent = () => {
+      // Only process notifications with new format (translationKey + translationVariables)
+      if (metadata?.translationKey && metadata?.translationVariables) {
+        const titleKey = `${metadata.translationKey}.title`;
+        const messageKey = `${metadata.translationKey}.message`;
+        
+        try {
+          // Process translation variables to format dates/times
+          const processedVariables = processNotificationVariables(
+            metadata.translationVariables,
+            t,
+            i18n.language
+          );
+          
+          const translatedTitle = t(titleKey, processedVariables);
+          const translatedMessage = t(messageKey, processedVariables);
+          
+          return {
+            title: translatedTitle,
+            message: translatedMessage
+          };
+        } catch (error) {
+          console.error("Error translating notification:", error);
+          return {
+            title: "Notification Error",
+            message: "Unable to display notification content"
+          };
+        }
+      }
+      
+      // This should not happen since we filter out legacy notifications now
+      console.error("Legacy notification passed through filter:", { id: notification.id, title });
+      return {
+        title: "Error",
+        message: "Invalid notification format"
+      };
+    };
+
+    const { title: translatedTitle, message: translatedMessage } = getTranslatedContent();
+
     return {
       ...notification,
+      title: translatedTitle,
+      message: translatedMessage,
       icon: getIcon(),
       relativeTime: formatRelativeTime(createdAt),
       link: getLink(),
-      excerpt: metadata?.reviewExcerpt || metadata?.replyExcerpt || message.substring(0, 100),
+      excerpt: metadata?.reviewExcerpt || metadata?.replyExcerpt || translatedMessage.substring(0, 100),
       metadata: {
         ...metadata,
         // Include additional display info for booking notifications
@@ -245,7 +314,7 @@ export function ReviewNotificationProvider({ children }) {
         ...(metadata?.dateTimeWindow && { dateTimeWindow: metadata.dateTimeWindow })
       }
     };
-  }, []);
+  }, [t]);
 
   /**
    * Start polling for new notifications
@@ -299,6 +368,7 @@ export function ReviewNotificationProvider({ children }) {
     loadUnreadCount,
     markAsRead,
     markAllAsRead,
+    deleteAllNotifications,
     getNotificationDisplayData,
 
     // Polling control

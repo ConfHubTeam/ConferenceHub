@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
  * @param {Array} props.itemDetails - Array of details to show about the item [{ label: "Title", value: "Room name" }]
  * @param {Array} props.consequences - Array of consequences of deletion ["All bookings will be deleted", etc.]
  * @param {boolean} props.deleteInProgress - Whether deletion is in progress
+ * @param {string} props.translationNamespace - The translation namespace to use (default: 'places')
  */
 export default function DeleteConfirmationModal({
   isOpen,
@@ -23,8 +24,9 @@ export default function DeleteConfirmationModal({
   itemDetails = [],
   consequences = [],
   deleteInProgress = false,
+  translationNamespace = 'places'
 }) {
-  const { t } = useTranslation(['places']);
+  const { t } = useTranslation([translationNamespace]);
   const [confirmationText, setConfirmationText] = useState("");
   
   if (!isOpen) return null;
@@ -45,7 +47,7 @@ export default function DeleteConfirmationModal({
   };
 
   // Get the modal title, fallback to translated default if not provided
-  const modalTitle = title || t('places:deleteConfirmation.deleteConfirmation');
+  const modalTitle = title || t(`${translationNamespace}:deleteConfirmation.deleteConfirmation`);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70] p-4">
@@ -74,13 +76,13 @@ export default function DeleteConfirmationModal({
         
         <div className="mb-6">
           <p className="font-semibold text-red-600 mb-2">
-            {t('places:deleteConfirmation.warningCannotUndo')}
+            {t(`${translationNamespace}:deleteConfirmation.warningCannotUndo`)}
           </p>
           
           {consequences.length > 0 && (
             <>
               <p className="mb-4">
-                {t('places:deleteConfirmation.followingDataDeleted')}
+                {t(`${translationNamespace}:deleteConfirmation.followingDataDeleted`)}
               </p>
               <ul className="list-disc ml-6 mb-4 text-sm text-gray-600">
                 {consequences.map((consequence, index) => (
@@ -93,7 +95,7 @@ export default function DeleteConfirmationModal({
           {/* Type DELETE to confirm section */}
           <div className="mt-4 border-t pt-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t('places:deleteConfirmation.typeDeleteConfirm')}
+              {t(`${translationNamespace}:deleteConfirmation.typeDeleteConfirm`)}
             </label>
             <input
               type="text"

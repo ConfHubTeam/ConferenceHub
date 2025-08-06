@@ -98,7 +98,9 @@
       "loginRequired": "Please log in to book a conference room",
       "cannotBookOwn": "You cannot book your own conference room",
       "clientsOnly": "Only clients can book conference rooms. Hosts and agents cannot make bookings.",
-      "reservationFailed": "Failed to make reservation. Please try again."
+      "reservationFailed": "Failed to make reservation. Please try again.",
+      "accessDenied": "Access denied. You don't have permission to perform this action.",
+      "cleanupFailed": "Failed to delete expired bookings. Please try again."
     }
   },
   "notifications": {
@@ -173,6 +175,14 @@
       "propertyName": "Property name"
     },
     "filterByStatus": "Filter by Status",
+    "agentActions": "Agent Actions",
+    "cleanupExpiredBookings": "Delete Expired Bookings",
+    "cleanupConfirmation": {
+      "title": "Delete Expired Bookings",
+      "message": "Are you sure you want to delete all expired pending and selected booking requests? This action cannot be undone.",
+      "confirm": "Yes, Delete Expired Bookings",
+      "cancel": "Cancel"
+    },
     "statusLabels": {
       "client": {
         "pending": "Pending",

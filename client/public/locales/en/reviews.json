@@ -126,5 +126,87 @@
     "replyFailed": "Failed to post reply. Please try again.",
     "editReplyFailed": "Failed to update reply. Please try again.",
     "loadReviewsFailed": "Failed to load reviews"
+  },
+  "management": {
+    "title": "Review Management",
+    "search": {
+      "placeholder": "Search by place name, reviewer name, or review content...",
+      "searching": "Searching...",
+      "matching": "matching \"{{term}}\""
+    },
+    "filters": {
+      "rating": {
+        "label": "Filter by Rating",
+        "all": "All Ratings",
+        "option": "{{rating}} Stars"
+      },
+      "reported": {
+        "label": "Filter by Reported",
+        "all": "All Reviews",
+        "reported": "Reported Only",
+        "notReported": "Not Reported"
+      },
+      "dateRange": {
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "fromDate": "From: {{date}}",
+        "toDate": "To: {{date}}"
+      },
+      "clearAll": "Clear All Filters"
+    },
+    "table": {
+      "selectAll": "Select All",
+      "place": "Place",
+      "reviewer": "Reviewer",
+      "rating": "Rating",
+      "review": "Review",
+      "date": "Date",
+      "status": "Status",
+      "actions": "Actions",
+      "reports": "Reports",
+      "helpful": "Helpful",
+      "visibleToPublic": "Visible to public",
+      "noReports": "No reports",
+      "reportCount": "{{count}} report",
+      "reportCount_plural": "{{count}} reports",
+      "latestReport": "Latest: {{reason}}",
+      "visible": "Visible",
+      "hidden": "Hidden",
+      "unknownPlace": "Unknown Place",
+      "anonymous": "Anonymous",
+      "byUser": "by {{name}}",
+      "noReviews": "No reviews found",
+      "loading": "Loading reviews...",
+      "adminNotes": "Admin Notes",
+      "tryAdjustingSearch": "Try adjusting your search terms"
+    },
+    "actions": {
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "bulkDelete": "Delete Selected",
+      "confirmDelete": "Are you sure you want to delete this review?",
+      "confirmBulkDelete": "Are you sure you want to delete {{count}} selected review(s)?",
+      "editReview": "Edit Review",
+      "adminNotes": "Admin Notes"
+    },
+    "pagination": {
+      "showing": "Showing {{start}} to {{end}} of {{total}} reviews",
+      "page": "Page {{current}} of {{total}}"
+    },
+    "messages": {
+      "accessDenied": "Access denied. Agents only.",
+      "updateSuccess": "Review updated successfully!",
+      "deleteSuccess": "Review(s) deleted successfully!",
+      "updateError": "Failed to update review. Please try again.",
+      "deleteError": "Failed to delete review(s). Please try again.",
+      "pleaseSelectReviews": "Please select reviews first",
+      "bulkDeleteSuccess": "{{count}} reviews deleted successfully",
+      "bulkDeleteError": "Failed to delete selected reviews",
+      "loadError": "Failed to fetch reviews",
+      "editSuccess": "Review updated successfully!",
+      "editError": "Failed to update review. Please try again."
+    }
   }
 }

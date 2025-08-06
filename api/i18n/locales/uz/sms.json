@@ -1,0 +1,17 @@
+{
+  "booking": {
+    "requested": "\"{{placeName}}\" uchun {{dateRange}} sanasiga band qilish so'rovi #{{bookingReference}}",
+    "selected": "\"{{placeName}}\" uchun {{dateRange}} sanasiga band qilish #{{bookingReference}} tanlandi. Iltimos, to'lovni amalga oshiring.",
+    "approved": {
+      "byHost": "\"{{placeName}}\" uchun {{dateRange}} sanasiga band qilish #{{bookingReference}} egasi tomonidan tasdiqlandi. Iltimos, to'lovni amalga oshiring.",
+      "byAgent": "\"{{placeName}}\" uchun {{dateRange}} sanasiga band qilish #{{bookingReference}} agent tomonidan tasdiqlandi. Iltimos, to'lovni amalga oshiring."
+    },
+    "confirmed": {
+      "host": "\"{{placeName}}\" uchun {{dateRange}} sanasiga band qilish #{{bookingReference}} tasdiqlandi.",
+      "client": "\"{{placeName}}\" uchun {{dateRange}} sanasiga sizning band qilishingiz #{{bookingReference}} tasdiqlandi!"
+    },
+    "paid": "\"{{placeName}}\" uchun {{dateRange}} sanasiga band qilish #{{bookingReference}} uchun to'lov qabul qilindi. Egaga to'lov talab qilinadi.",
+    "rejected": "\"{{placeName}}\" uchun {{dateRange}} sanasiga band qilish #{{bookingReference}} rad etildi.",
+    "paidToHost": "Band qilish #{{bookingReference}} uchun {{amount}} miqdorda to'lov amalga oshirildi"
+  }
+}
