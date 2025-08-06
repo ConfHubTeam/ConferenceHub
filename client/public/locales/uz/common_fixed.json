@@ -92,10 +92,7 @@
     "bookingLoadError": "Buyurtma so'rovlarini yuklashda xatolik",
     "selectItems": "Iltimos, avval elementlarni tanlang",
     "bulkDeleteSuccess": "{{count}} ta element muvaffaqiyatli o'chirildi",
-    "bulkDeleteFailed": "Tanlangan elementlarni o'chirib bo'lmadi",
-    "bookingRejectedSuccess": "Buyurtma muvaffaqiyatli rad etildi",
-    "bookingCancelledSuccess": "Buyurtma muvaffaqiyatli bekor qilindi",
-    "bookingStatusSuccess": "Buyurtma {{status}} muvaffaqiyatli"
+    "bulkDeleteFailed": "Tanlangan elementlarni o'chirib bo'lmadi"
   },
   "navigation": {
     "home": "Bosh sahifa",

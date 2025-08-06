@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { UserContext } from "../components/UserContext";
 import { useNotification } from "../components/NotificationContext";
 import api from "../utils/api";
@@ -13,6 +14,7 @@ import Pagination from "../components/Pagination";
  * Features pagination, sorting, filtering, and focused on pending requests.
  */
 export default function HostBookingManagementPage() {
+  const { t } = useTranslation('common');
   const { user } = useContext(UserContext);
   const { notify } = useNotification();
   
@@ -58,7 +60,7 @@ export default function HostBookingManagementPage() {
       calculateStats(data);
     } catch (error) {
       console.error("Error loading bookings:", error);
-      notify("Error loading booking requests", "error");
+      notify("messages.bookingLoadError", "error");
     } finally {
       setLoading(false);
     }

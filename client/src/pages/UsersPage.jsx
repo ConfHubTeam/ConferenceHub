@@ -170,9 +170,9 @@ export default function UsersPage() {
       // Handle specific error codes
       const errorData = error.response?.data;
       if (errorData?.code === 'PHONE_NUMBER_EXISTS') {
-        notify("A user with this phone number already exists", "error");
+        notify("messages.phoneNumberExists", "error");
       } else if (errorData?.code === 'INVALID_PHONE_FORMAT') {
-        notify("Please enter a valid phone number in international format", "error");
+        notify("messages.invalidPhoneFormat", "error");
       } else {
         notify(errorData?.error || t('notifications.updateFailed'), "error");
       }

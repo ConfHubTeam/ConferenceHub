@@ -1,4 +1,5 @@
 import { differenceInCalendarDays, parseISO } from "date-fns";
+import { useTranslation } from 'react-i18next';
 import DateDuration from "./DateDuration";
 import PriceDisplay from "./PriceDisplay";
 import { useContext, useState } from "react";
@@ -27,6 +28,7 @@ const parseDateSafely = (dateString) => {
 };
 
 export default function BookingCard({bookingDetail, onBookingUpdate, competingBookings = []}) {
+  const { t } = useTranslation('common');
   const { user } = useContext(UserContext);
   const { notify } = useNotification();
   const [isUpdating, setIsUpdating] = useState(false);
@@ -77,18 +79,18 @@ export default function BookingCard({bookingDetail, onBookingUpdate, competingBo
       
       if (modalConfig.status === 'rejected') {
         if (user?.userType === 'host') {
-          notify(`Booking rejected successfully`, "success");
+          notify("messages.bookingRejectedSuccess", "success");
         } else {
-          notify(`Booking cancelled successfully`, "success");
+          notify("messages.bookingCancelledSuccess", "success");
         }
       } else {
-        notify(`Booking ${modalConfig.status} successfully`, "success");
+        notify("messages.bookingStatusSuccess", "success", { status: modalConfig.status });
       }
       setShowModal(false);
     } catch (error) {
       setIsUpdating(false);
       setError(error.response?.data?.error || error.message);
-      notify(`Error: ${error.response?.data?.error || error.message}`, "error");
+      notify("notifications.error.operationFailed", "error");
     }
   };
 

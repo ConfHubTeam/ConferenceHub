@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import { UserContext } from "../components/UserContext";
 import { useNotification } from "../components/NotificationContext";
 import AccountNav from "../components/AccountNav";
@@ -15,6 +16,7 @@ import ActiveFilters, { FilterCreators } from "../components/ActiveFilters";
  * Implements DRY principles with reusable filter and action components
  */
 export default function AgentReviewsPage() {
+  const { t } = useTranslation('common');
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
   const { notify } = useNotification();
@@ -44,7 +46,7 @@ export default function AgentReviewsPage() {
   useEffect(() => {
     if (user && user.userType !== "agent") {
       navigate("/");
-      notify("Access denied. Agents only.", "error");
+      notify("messages.agentAccessOnly", "error");
     }
   }, [user, navigate, notify]);
 
@@ -79,7 +81,7 @@ export default function AgentReviewsPage() {
     } catch (error) {
       console.error("Error fetching reviews:", error);
       setError(error.response?.data?.error || "Failed to fetch reviews");
-      notify("Failed to fetch reviews", "error");
+      notify("messages.fetchReviewsError", "error");
     } finally {
       setLoading(false);
     }
@@ -163,21 +165,21 @@ export default function AgentReviewsPage() {
           throw new Error("Invalid action");
       }
 
-      notify(`Review ${action}ed successfully`, "success");
+      notify("messages.reviewActionSuccess", "success", { action });
       
       // Refresh the current page
       fetchReviews(currentPage);
       
     } catch (error) {
       console.error(`Error ${action}ing review:`, error);
-      notify(error.response?.data?.error || `Failed to ${action} review`, "error");
+      notify("notifications.error.operationFailed", "error");
     }
   };
 
   // Bulk delete action
   const handleBulkDelete = async () => {
     if (selectedReviews.length === 0) {
-      notify("Please select reviews first", "warning");
+      notify("notifications.warning.selectItems", "warning");
       return;
     }
 
@@ -194,7 +196,7 @@ export default function AgentReviewsPage() {
 
       await Promise.all(promises);
       
-      notify(`${selectedReviews.length} reviews deleted successfully`, "success");
+      notify("notifications.success.bulkDeleteSuccess", "success", { count: selectedReviews.length });
       setSelectedReviews([]);
       
       // Refresh the current page
@@ -202,7 +204,7 @@ export default function AgentReviewsPage() {
       
     } catch (error) {
       console.error("Error in bulk delete:", error);
-      notify("Failed to delete selected reviews", "error");
+      notify("notifications.error.bulkDeleteFailed", "error");
     } finally {
       setLoading(false);
     }

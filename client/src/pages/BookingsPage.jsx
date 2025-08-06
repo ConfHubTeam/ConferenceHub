@@ -80,7 +80,7 @@ export default function BookingsPage() {
     } catch (error) {
       console.error("Error loading bookings:", error);
       if (user?.userType === "host") {
-        notify("Error loading booking requests", "error");
+        notify("messages.bookingLoadError", "error");
       }
       setLoading(false);
     }
