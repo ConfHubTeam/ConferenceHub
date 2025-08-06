@@ -105,14 +105,14 @@ class BookingNotificationService {
         : '';
       
       const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
-        ? this._formatDate(booking.checkInDate)
-        : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
+        ? this._formatDate(booking.checkInDate, userLanguage)
+        : `${this._formatDate(booking.checkInDate, userLanguage)} - ${this._formatDate(booking.checkOutDate, userLanguage)}`;
 
       // Include unique booking ID and detailed date/time window in message
       const bookingReference = booking.uniqueRequestId || booking.id;
       
-      // Create localized message using i18n
-      const message = this._createLocalizedMessage("booking.requested", {
+      // Create localized SMS message using i18n (keep existing SMS logic)
+      const smsMessage = this._createLocalizedMessage("booking.requested", {
         bookingReference,
         placeName: place.title,
         dateRange: dateRange + timeSlotInfo
@@ -121,8 +121,24 @@ class BookingNotificationService {
       const result = await UnifiedNotificationService.createBookingNotification({
         userId: place.owner.id,
         type: "booking_requested",
-        title: "New Booking Request",
-        message: message,
+        // Store translation key for in-app notification (will be translated in UI)
+        translationKey: "booking_requested",
+        // Store variables for in-app translation (raw data for frontend formatting)
+        translationVariables: {
+          bookingReference,
+          placeName: place.title,
+          // Send raw date data for frontend formatting
+          checkInDate: booking.checkInDate,
+          checkOutDate: booking.checkOutDate,
+          isDateRange: booking.checkOutDate && booking.checkInDate !== booking.checkOutDate,
+          // Send raw time slot data for frontend formatting
+          timeSlots: booking.timeSlots && booking.timeSlots.length > 0 ? {
+            startTime: booking.timeSlots[0].startTime,
+            endTime: booking.timeSlots[booking.timeSlots.length - 1].endTime
+          } : null
+        },
+        // Keep SMS message as localized (existing SMS logic unchanged)
+        smsMessage: smsMessage,
         bookingId: booking.id,
         placeId: booking.placeId,
         additionalMetadata: {
@@ -188,10 +204,6 @@ class BookingNotificationService {
       const timeSlotInfo = booking.timeSlots && booking.timeSlots.length > 0 
         ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
         : '';
-      
-      const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
-        ? this._formatDate(booking.checkInDate)
-        : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
       // Create notifications for all agents
       const notifications = [];
@@ -199,8 +211,12 @@ class BookingNotificationService {
         // Get agent's preferred language (agents will use default English for now)
         const userLanguage = await this._getUserLanguage(agent.id);
         
-        // Create localized message using i18n
-        const message = this._createLocalizedMessage("booking.paid", {
+        const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
+          ? this._formatDate(booking.checkInDate, userLanguage)
+          : `${this._formatDate(booking.checkInDate, userLanguage)} - ${this._formatDate(booking.checkOutDate, userLanguage)}`;
+        
+        // Create localized SMS message using i18n (keep existing SMS logic)
+        const smsMessage = this._createLocalizedMessage("booking.paid", {
           bookingReference,
           placeName: place.title,
           dateRange: dateRange + timeSlotInfo
@@ -209,8 +225,16 @@ class BookingNotificationService {
         const result = await UnifiedNotificationService.createBookingNotification({
           userId: agent.id,
           type: "booking_paid",
-          title: "Payment Received",
-          message: message,
+          // Store translation key for in-app notification (will be translated in UI)
+          translationKey: "booking_paid",
+          // Store variables for in-app translation
+          translationVariables: {
+            bookingReference,
+            placeName: place.title,
+            dateRange: dateRange + timeSlotInfo
+          },
+          // Keep SMS message as localized (existing SMS logic unchanged)
+          smsMessage: smsMessage,
           bookingId: booking.id,
           placeId: booking.placeId,
           additionalMetadata: {
@@ -272,25 +296,42 @@ class BookingNotificationService {
         : '';
       
       const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
-        ? this._formatDate(booking.checkInDate)
-        : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
+        ? this._formatDate(booking.checkInDate, userLanguage)
+        : `${this._formatDate(booking.checkInDate, userLanguage)} - ${this._formatDate(booking.checkOutDate, userLanguage)}`;
 
-      // Create localized message using i18n
-      const messageKey = isAgentApproval ? "booking.approved.byAgent" : "booking.approved.byHost";
-      const message = this._createLocalizedMessage(messageKey, {
+      // Create localized SMS message using i18n (keep existing SMS logic)
+      const smsMessageKey = isAgentApproval ? "booking.approved.byAgent" : "booking.approved.byHost";
+      const smsMessage = this._createLocalizedMessage(smsMessageKey, {
         bookingReference,
         placeName: place.title,
         dateRange: dateRange + timeSlotInfo
       }, userLanguage);
 
-      const approverText = isAgentApproval ? "by an agent" : "by the host";
+      // Determine message key for in-app notification
+      const inAppMessageKey = isAgentApproval ? "messages.booking_approved_byAgent" : "messages.booking_approved_byHost";
       
       // Create notification for booking user (client)
       const result = await UnifiedNotificationService.createBookingNotification({
         userId: booking.userId,
         type: "booking_approved",
-        title: "Booking Approved",
-        message: message,
+        // Store translation key for in-app notification (will be translated in UI)
+        translationKey: "booking_approved",
+        // Store variables for in-app translation (raw data for frontend formatting)
+        translationVariables: {
+          bookingReference,
+          placeName: place.title,
+          // Send raw date data for frontend formatting
+          checkInDate: booking.checkInDate,
+          checkOutDate: booking.checkOutDate,
+          isDateRange: booking.checkOutDate && booking.checkInDate !== booking.checkOutDate,
+          // Send raw time slot data for frontend formatting
+          timeSlots: booking.timeSlots && booking.timeSlots.length > 0 ? {
+            startTime: booking.timeSlots[0].startTime,
+            endTime: booking.timeSlots[booking.timeSlots.length - 1].endTime
+          } : null
+        },
+        // Keep SMS message as localized (existing SMS logic unchanged)
+        smsMessage: smsMessage,
         bookingId: booking.id,
         placeId: booking.placeId,
         additionalMetadata: {
@@ -356,21 +397,38 @@ class BookingNotificationService {
         : '';
       
       const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
-        ? this._formatDate(booking.checkInDate)
-        : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
+        ? this._formatDate(booking.checkInDate, userLanguage)
+        : `${this._formatDate(booking.checkInDate, userLanguage)} - ${this._formatDate(booking.checkOutDate, userLanguage)}`;
 
-      // Create localized message using i18n
-      const message = this._createLocalizedMessage("booking.confirmed.host", {
+      // Create localized SMS message using i18n (keep existing SMS logic)
+      const smsMessage = this._createLocalizedMessage("booking.confirmed.host", {
         bookingReference,
         placeName: place.title,
         dateRange: dateRange + timeSlotInfo
       }, userLanguage);
+      
       // Create notification for place owner (host)
       const result = await UnifiedNotificationService.createBookingNotification({
         userId: place.owner.id,
         type: "booking_confirmed",
-        title: "Booking Confirmed",
-        message: message,
+        // Store translation key for in-app notification (will be translated in UI)
+        translationKey: "booking_confirmed",
+        // Store variables for in-app translation (raw data for frontend formatting)
+        translationVariables: {
+          bookingReference,
+          placeName: place.title,
+          // Send raw date data for frontend formatting
+          checkInDate: booking.checkInDate,
+          checkOutDate: booking.checkOutDate,
+          isDateRange: booking.checkOutDate && booking.checkInDate !== booking.checkOutDate,
+          // Send raw time slot data for frontend formatting
+          timeSlots: booking.timeSlots && booking.timeSlots.length > 0 ? {
+            startTime: booking.timeSlots[0].startTime,
+            endTime: booking.timeSlots[booking.timeSlots.length - 1].endTime
+          } : null
+        },
+        // Keep SMS message as localized (existing SMS logic unchanged)
+        smsMessage: smsMessage,
         bookingId: booking.id,
         placeId: booking.placeId,
         additionalMetadata: {
@@ -439,21 +497,30 @@ class BookingNotificationService {
         : '';
       
       const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
-        ? this._formatDate(booking.checkInDate)
-        : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
+        ? this._formatDate(booking.checkInDate, userLanguage)
+        : `${this._formatDate(booking.checkInDate, userLanguage)} - ${this._formatDate(booking.checkOutDate, userLanguage)}`;
 
-      // Create localized message using i18n
-      const message = this._createLocalizedMessage("booking.confirmed.client", {
+      // Create localized SMS message using i18n (keep existing SMS logic)
+      const smsMessage = this._createLocalizedMessage("booking.confirmed.client", {
         bookingReference,
         placeName: place.title,
         dateRange: dateRange + timeSlotInfo
       }, userLanguage);
+      
       // Create notification for client (booking user)
       const result = await UnifiedNotificationService.createBookingNotification({
         userId: booking.userId,
         type: "booking_confirmed",
-        title: "Booking Confirmed",
-        message: message,
+        // Store translation key for in-app notification (will be translated in UI)
+        translationKey: "booking_confirmed",
+        // Store variables for in-app translation
+        translationVariables: {
+          bookingReference,
+          placeName: place.title,
+          dateRange: dateRange + timeSlotInfo
+        },
+        // Keep SMS message as localized (existing SMS logic unchanged)
+        smsMessage: smsMessage,
         bookingId: booking.id,
         placeId: booking.placeId,
         additionalMetadata: {
@@ -509,23 +576,30 @@ class BookingNotificationService {
         : '';
       
       const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
-        ? this._formatDate(booking.checkInDate)
-        : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
+        ? this._formatDate(booking.checkInDate, userLanguage)
+        : `${this._formatDate(booking.checkInDate, userLanguage)} - ${this._formatDate(booking.checkOutDate, userLanguage)}`;
 
-      // Create localized message using i18n
-      const message = this._createLocalizedMessage("booking.selected", {
+      // Create localized SMS message using i18n (keep existing SMS logic)
+      const smsMessage = this._createLocalizedMessage("booking.selected", {
         bookingReference,
         placeName: place.title,
         dateRange: dateRange + timeSlotInfo
       }, userLanguage);
 
       // Create notification for booking user (client)
-      // Create notification for booking user (client)
       const result = await UnifiedNotificationService.createBookingNotification({
         userId: booking.userId,
         type: "booking_selected",
-        title: "Booking Selected",
-        message: message,
+        // Store translation key for in-app notification (will be translated in UI)
+        translationKey: "booking_selected",
+        // Store variables for in-app translation
+        translationVariables: {
+          bookingReference,
+          placeName: place.title,
+          dateRange: dateRange + timeSlotInfo
+        },
+        // Keep SMS message as localized (existing SMS logic unchanged)
+        smsMessage: smsMessage,
         bookingId: booking.id,
         placeId: booking.placeId,
         additionalMetadata: {
@@ -577,11 +651,11 @@ class BookingNotificationService {
         : '';
       
       const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
-        ? this._formatDate(booking.checkInDate)
-        : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
+        ? this._formatDate(booking.checkInDate, userLanguage)
+        : `${this._formatDate(booking.checkInDate, userLanguage)} - ${this._formatDate(booking.checkOutDate, userLanguage)}`;
 
-      // Create localized message using i18n
-      const message = this._createLocalizedMessage("booking.rejected", {
+      // Create localized SMS message using i18n (keep existing SMS logic)
+      const smsMessage = this._createLocalizedMessage("booking.rejected", {
         bookingReference,
         placeName: place.title,
         dateRange: dateRange + timeSlotInfo
@@ -591,8 +665,16 @@ class BookingNotificationService {
       const result = await UnifiedNotificationService.createBookingNotification({
         userId: booking.userId,
         type: "booking_rejected",
-        title: "Booking Rejected",
-        message: message,
+        // Store translation key for in-app notification (will be translated in UI)
+        translationKey: "booking_rejected",
+        // Store variables for in-app translation
+        translationVariables: {
+          bookingReference,
+          placeName: place.title,
+          dateRange: dateRange + timeSlotInfo
+        },
+        // Keep SMS message as localized (existing SMS logic unchanged)
+        smsMessage: smsMessage,
         bookingId: booking.id,
         placeId: booking.placeId,
         additionalMetadata: {
@@ -663,11 +745,11 @@ class BookingNotificationService {
         : '';
       
       const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
-        ? this._formatDate(booking.checkInDate)
-        : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
+        ? this._formatDate(booking.checkInDate, userLanguage)
+        : `${this._formatDate(booking.checkInDate, userLanguage)} - ${this._formatDate(booking.checkOutDate, userLanguage)}`;
 
-      // Create localized message using i18n
-      const message = this._createLocalizedMessage("booking.paidToHost", {
+      // Create localized SMS message using i18n (keep existing SMS logic)
+      const smsMessage = this._createLocalizedMessage("booking.paidToHost", {
         bookingReference,
         amount: formattedAmount
       }, userLanguage);
@@ -676,8 +758,15 @@ class BookingNotificationService {
       const result = await UnifiedNotificationService.createBookingNotification({
         userId: place.owner.id,
         type: "booking_paid_to_host",
-        title: "Payment Received",
-        message: message,
+        // Store translation key for in-app notification (will be translated in UI)
+        translationKey: "booking_paid_to_host",
+        // Store variables for in-app translation
+        translationVariables: {
+          bookingReference,
+          amount: formattedAmount
+        },
+        // Keep SMS message as localized (existing SMS logic unchanged)
+        smsMessage: smsMessage,
         bookingId: booking.id,
         placeId: booking.placeId,
         additionalMetadata: {
@@ -753,16 +842,27 @@ class BookingNotificationService {
   }
 
   /**
-   * Format date for display
+   * Format date for display with localization support
    * @param {Date|string} date - Date to format
+   * @param {string} language - Language code (en, ru, uz)
    * @returns {string} Formatted date
    */
-  static _formatDate(date) {
+  static _formatDate(date, language = "en") {
     if (!date) return "Unknown";
     
     try {
       const dateObj = new Date(date);
-      return dateObj.toLocaleDateString("en-US", {
+      
+      // Map language codes to locales
+      const localeMap = {
+        "en": "en-US",
+        "ru": "ru-RU", 
+        "uz": "uz-UZ"
+      };
+      
+      const locale = localeMap[language] || "en-US";
+      
+      return dateObj.toLocaleDateString(locale, {
         year: "numeric",
         month: "short",
         day: "numeric"

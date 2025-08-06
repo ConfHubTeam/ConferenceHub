@@ -1,0 +1,40 @@
+{
+  "booking_requested": {
+    "title": "New Booking Request",
+    "message": "New booking request {{bookingReference}} for \"{{placeName}}\" on {{dateRange}}{{timeRange}}"
+  },
+  "booking_paid": {
+    "title": "Payment Received", 
+    "message": "Payment received for booking {{bookingReference}} of \"{{placeName}}\" on {{dateRange}}{{timeRange}}. Payout to host required."
+  },
+  "booking_approved": {
+    "title": "Booking Approved",
+    "message": "Booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}}{{timeRange}} has been approved by the host. Please proceed with payment."
+  },
+  "booking_confirmed": {
+    "title": "Booking Confirmed",
+    "message": "Your booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}}{{timeRange}} has been confirmed!"
+  },
+  "booking_selected": {
+    "title": "Booking Selected",
+    "message": "Booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}}{{timeRange}} has been selected. Please proceed with payment."
+  },
+  "booking_rejected": {
+    "title": "Booking Declined",
+    "message": "Booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}}{{timeRange}} has been declined. We apologize for any inconvenience."
+  },
+  "booking_paid_to_host": {
+    "title": "💸 Payment to Host",
+    "message": "Payout of {{amount}} has been made for booking {{bookingReference}}"
+  },
+  "actions": {
+    "view": "View",
+    "dismiss": "Dismiss", 
+    "markAsRead": "Mark as Read"
+  },
+  "time": {
+    "from": "from",
+    "to": "to",
+    "at": "at"
+  }
+}

@@ -1,10 +1,38 @@
 {
+  "titles": {
+    "booking_requested": "Yangi band qilish so'rovi",
+    "booking_paid": "To'lov qabul qilindi",
+    "booking_approved": "Band qilish tasdiqlandi",
+    "booking_confirmed": "Band qilish tasdiqlandi",
+    "booking_selected": "Band qilish tanlandi",
+    "booking_rejected": "Band qilish rad etildi",
+    "booking_paid_to_host": "Uy egasiga to'lov"
+  },
+  "messages": {
+    "booking_requested": "Yangi band qilish so'rovi {{bookingReference}} \"{{placeName}}\" uchun {{dateRange}} kunlariga",
+    "booking_paid": "{{bookingReference}} band qilish uchun \"{{placeName}}\" obyekti {{dateRange}} kunlariga to'lov qabul qilindi. Uy egasiga to'lov kerak.",
+    "booking_approved_byHost": "{{bookingReference}} band qilish \"{{placeName}}\" uchun {{dateRange}} kunlariga uy egasi tomonidan tasdiqlandi. Iltimos, to'lovni amalga oshiring.",
+    "booking_approved_byAgent": "{{bookingReference}} band qilish \"{{placeName}}\" uchun {{dateRange}} kunlariga agent tomonidan tasdiqlandi. Iltimos, to'lovni amalga oshiring.",
+    "booking_confirmed_host": "{{bookingReference}} band qilish \"{{placeName}}\" uchun {{dateRange}} kunlariga tasdiqlandi.",
+    "booking_confirmed_client": "Sizning {{bookingReference}} band qilishingiz \"{{placeName}}\" uchun {{dateRange}} kunlariga tasdiqlandi!",
+    "booking_selected": "{{bookingReference}} band qilish \"{{placeName}}\" uchun {{dateRange}} kunlariga tanlandi. Iltimos, to'lovni amalga oshiring.",
+    "booking_rejected": "{{bookingReference}} band qilish \"{{placeName}}\" uchun {{dateRange}} kunlariga rad etildi. Noqulaylik uchun uzr so'raymiz.",
+    "booking_paid_to_host": "{{amount}} miqdorida to'lov {{bookingReference}} band qilish uchun amalga oshirildi"
+  },
   "booking": {
-    "newRequest": "Mulkingiz uchun yangi band qilish so'rovi",
-    "confirmed": "Band qilishingiz tasdiqlandi",
-    "cancelled": "Band qilishingiz bekor qilindi",
-    "paymentReceived": "Band qilishingiz uchun to'lov qabul qilindi",
-    "reviewLeft": "Mulkingiz uchun yangi sharh qoldirildi"
+    "requested": "Yangi band qilish so'rovi {{bookingReference}} \"{{placeName}}\" uchun {{dateRange}} kunlariga",
+    "paid": "{{bookingReference}} band qilish uchun \"{{placeName}}\" obyekti {{dateRange}} kunlariga to'lov qabul qilindi. Uy egasiga to'lov kerak.",
+    "approved": {
+      "byHost": "{{bookingReference}} band qilish \"{{placeName}}\" uchun {{dateRange}} kunlariga uy egasi tomonidan tasdiqlandi. Iltimos, to'lovni amalga oshiring.",
+      "byAgent": "{{bookingReference}} band qilish \"{{placeName}}\" uchun {{dateRange}} kunlariga agent tomonidan tasdiqlandi. Iltimos, to'lovni amalga oshiring."
+    },
+    "confirmed": {
+      "host": "{{bookingReference}} band qilish \"{{placeName}}\" uchun {{dateRange}} kunlariga tasdiqlandi.",
+      "client": "Sizning {{bookingReference}} band qilishingiz \"{{placeName}}\" uchun {{dateRange}} kunlariga tasdiqlandi!"
+    },
+    "selected": "{{bookingReference}} band qilish \"{{placeName}}\" uchun {{dateRange}} kunlariga tanlandi. Iltimos, to'lovni amalga oshiring.",
+    "rejected": "{{bookingReference}} band qilish \"{{placeName}}\" uchun {{dateRange}} kunlariga rad etildi. Noqulaylik uchun uzr so'raymiz.",
+    "paidToHost": "{{amount}} miqdorida to'lov {{bookingReference}} band qilish uchun amalga oshirildi"
   },
   "payment": {
     "success": "To'lov muvaffaqiyatli",

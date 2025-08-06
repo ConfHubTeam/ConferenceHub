@@ -1,0 +1,40 @@
+{
+  "booking_requested": {
+    "title": "Yangi band qilish so'rovi",
+    "message": "Yangi band qilish so'rovi {{bookingReference}} \"{{placeName}}\" uchun {{dateRange}}{{timeRange}} kunlariga"
+  },
+  "booking_paid": {
+    "title": "To'lov qabul qilindi",
+    "message": "{{bookingReference}} band qilish uchun \"{{placeName}}\" obyekti {{dateRange}}{{timeRange}} kunlariga to'lov qabul qilindi. Uy egasiga to'lov kerak."
+  },
+  "booking_approved": {
+    "title": "Band qilish tasdiqlandi",
+    "message": "{{bookingReference}} band qilish \"{{placeName}}\" uchun {{dateRange}}{{timeRange}} kunlariga uy egasi tomonidan tasdiqlandi. Iltimos, to'lovni amalga oshiring."
+  },
+  "booking_confirmed": {
+    "title": "Band qilish tasdiqlandi",
+    "message": "Sizning {{bookingReference}} band qilishingiz \"{{placeName}}\" uchun {{dateRange}}{{timeRange}} kunlariga tasdiqlandi!"
+  },
+  "booking_selected": {
+    "title": "Band qilish tanlandi",
+    "message": "{{bookingReference}} band qilish \"{{placeName}}\" uchun {{dateRange}}{{timeRange}} kunlariga tanlandi. Iltimos, to'lovni amalga oshiring."
+  },
+  "booking_rejected": {
+    "title": "Band qilish rad etildi",
+    "message": "{{bookingReference}} band qilish \"{{placeName}}\" uchun {{dateRange}}{{timeRange}} kunlariga rad etildi. Noqulaylik uchun uzr so'raymiz."
+  },
+  "booking_paid_to_host": {
+    "title": "Joy egasiga to'lov",
+    "message": "{{amount}} miqdorida to'lov {{bookingReference}} band qilish uchun amalga oshirildi"
+  },
+  "actions": {
+    "view": "Ko'rish",
+    "dismiss": "Yopish",
+    "markAsRead": "O'qilgan deb belgilash"
+  },
+  "time": {
+    "from": "dan",
+    "to": "gacha",
+    "at": "da"
+  }
+}

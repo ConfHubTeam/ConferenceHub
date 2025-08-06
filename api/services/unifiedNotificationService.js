@@ -35,11 +35,13 @@ class UnifiedNotificationService {
     title,
     message,
     metadata = {},
-    sendSMS = true
+    sendSMS = true,
+    smsMessage = null // New: pre-translated SMS message
   }) {
     try {
       console.log(`🔔 CREATING NOTIFICATION - User: ${userId}, Type: ${type}, SendSMS: ${sendSMS}`);
-      console.log(`📝 Message: ${message}`);
+      console.log(`📝 In-app message: ${message}`);
+      console.log(`📱 SMS message: ${smsMessage || 'Using in-app message'}`);
       
       // Create in-app notification first (primary channel)
       const notification = await Notification.create({
@@ -63,7 +65,7 @@ class UnifiedNotificationService {
       if (sendSMS && isBookingNotification) {
         console.log(`🚀 TRIGGERING ASYNC SMS - NotificationID: ${notification.id}, UserID: ${userId}`);
         // Don't await SMS to avoid blocking in-app notification
-        this.sendSMSNotification(notification.id, userId, type, metadata)
+        this.sendSMSNotification(notification.id, userId, type, metadata, smsMessage)
           .catch(error => {
             console.error(`❌ SMS notification failed for notification ${notification.id}:`, error.message);
           });
@@ -92,7 +94,7 @@ class UnifiedNotificationService {
    * @param {object} metadata - Notification metadata
    * @returns {Promise<object>} SMS sending result
    */
-  static async sendSMSNotification(notificationId, userId, type, metadata = {}) {
+  static async sendSMSNotification(notificationId, userId, type, metadata = {}, smsMessage = null) {
     try {
       console.log(`📱 SMS PROCESSING STARTED - NotificationID: ${notificationId}, UserID: ${userId}, Type: ${type}`);
       
@@ -108,22 +110,29 @@ class UnifiedNotificationService {
 
       console.log(`👤 User found - ID: ${user.id}, Name: ${user.name}, Phone: ${user.phoneNumber}`);
 
-      // Get the in-app notification message to use as SMS text (single source of truth)
-      const notification = await Notification.findByPk(notificationId, {
-        attributes: ["message"]
-      });
+      // Use pre-translated SMS message if provided, otherwise fall back to in-app notification message
+      let finalSMSMessage = smsMessage;
+      
+      if (!finalSMSMessage) {
+        console.log(`📝 No pre-translated SMS message provided, using in-app notification message as fallback`);
+        // Get the in-app notification message to use as SMS text (fallback for legacy support)
+        const notification = await Notification.findByPk(notificationId, {
+          attributes: ["message"]
+        });
 
-      if (!notification || !notification.message) {
-        console.log(`❌ SMS FAILED - No notification message found for ID: ${notificationId}`);
-        return { success: false, reason: "No notification message" };
+        if (!notification || !notification.message) {
+          console.log(`❌ SMS FAILED - No notification message found for ID: ${notificationId}`);
+          return { success: false, reason: "No notification message" };
+        }
+
+        finalSMSMessage = notification.message;
       }
 
-      const smsMessage = notification.message;
       console.log(`📞 SENDING SMS - User: ${userId} (${user.phoneNumber}), NotificationID: ${notificationId}`);
-      console.log(`📄 SMS Message: "${smsMessage}"`);
+      console.log(`📄 SMS Message: "${finalSMSMessage}"`);
 
       // Send SMS via Eskiz service
-      const smsResult = await eskizSMSService.sendSMS(user.phoneNumber, smsMessage);
+      const smsResult = await eskizSMSService.sendSMS(user.phoneNumber, finalSMSMessage);
 
       console.log(`📱 SMS RESULT - Success: ${smsResult.success}, RequestID: ${smsResult.requestId}, Error: ${smsResult.error || 'None'}`);
 
@@ -204,8 +213,11 @@ class UnifiedNotificationService {
   static async createBookingNotification({
     userId,
     type,
-    title,
-    message,
+    title, // Fallback title for legacy notifications
+    message, // Fallback message for legacy notifications
+    translationKey, // New: translation key for in-app notification (e.g., "booking_requested")
+    translationVariables, // New: variables for translation interpolation
+    smsMessage, // SMS message (always localized, different from in-app)
     bookingId,
     placeId,
     additionalMetadata = {}
@@ -213,16 +225,24 @@ class UnifiedNotificationService {
     const metadata = {
       bookingId,
       placeId,
+      // Store translation data for in-app notifications
+      translationKey,
+      translationVariables,
       ...additionalMetadata
     };
+
+    // Use fallback titles for database storage, frontend will translate dynamically
+    const notificationTitle = translationKey ? `${translationKey}.title` : title;
+    const notificationMessage = translationKey ? `${translationKey}.message` : message;
 
     return await this.createNotification({
       userId,
       type,
-      title,
-      message,
+      title: notificationTitle,
+      message: notificationMessage,
       metadata,
-      sendSMS: true
+      sendSMS: true,
+      smsMessage // Pass SMS message separately
     });
   }
 

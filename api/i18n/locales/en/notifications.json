@@ -1,14 +1,42 @@
 {
+  "titles": {
+    "booking_requested": "New Booking Request",
+    "booking_paid": "Payment Received",
+    "booking_approved": "Booking Approved", 
+    "booking_confirmed": "Booking Confirmed",
+    "booking_selected": "Booking Selected",
+    "booking_rejected": "Booking Declined",
+    "booking_paid_to_host": "Payment to Host"
+  },
+  "messages": {
+    "booking_requested": "New booking request {{bookingReference}} for \"{{placeName}}\" on {{dateRange}}",
+    "booking_paid": "Payment received for booking {{bookingReference}} of \"{{placeName}}\" on {{dateRange}}. Payout to host required.",
+    "booking_approved_byHost": "Booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been approved by the host. Please proceed with payment.",
+    "booking_approved_byAgent": "Booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been approved by an agent. Please proceed with payment.",
+    "booking_confirmed_host": "Booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been confirmed.",
+    "booking_confirmed_client": "Your booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been confirmed!",
+    "booking_selected": "Booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been selected. Please proceed with payment.",
+    "booking_rejected": "Booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been declined. We apologize for any inconvenience.",
+    "booking_paid_to_host": "Payout of {{amount}} has been made for booking {{bookingReference}}"
+  },
   "booking": {
-    "newRequest": "New booking request for your property",
-    "confirmed": "Your booking has been confirmed",
-    "cancelled": "Your booking has been cancelled",
-    "paymentReceived": "Payment received for your booking",
-    "reviewLeft": "New review left for your property"
+    "requested": "New booking request {{bookingReference}} for \"{{placeName}}\" on {{dateRange}}",
+    "paid": "Payment received for booking {{bookingReference}} of \"{{placeName}}\" on {{dateRange}}. Payout to host required.",
+    "approved": {
+      "byHost": "Booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been approved by the host. Please proceed with payment.",
+      "byAgent": "Booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been approved by an agent. Please proceed with payment."
+    },
+    "confirmed": {
+      "host": "Booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been confirmed.",
+      "client": "Your booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been confirmed!"
+    },
+    "selected": "Booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been selected. Please proceed with payment.",
+    "rejected": "Booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been declined. We apologize for any inconvenience.",
+    "paidToHost": "Payout of {{amount}} has been made for booking {{bookingReference}}"
   },
   "payment": {
     "success": "Payment successful",
-    "failed": "Payment failed",
+    "failed": "Payment failed", 
     "refund": "Refund processed"
   },
   "general": {
