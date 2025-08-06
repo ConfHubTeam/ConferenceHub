@@ -4,6 +4,7 @@ import { UserContext } from "../components/UserContext";
 import { useCurrency } from "../contexts/CurrencyContext";
 import { Navigate } from "react-router-dom";
 import AccountNav from "../components/AccountNav";
+import { useTranslation } from "react-i18next";
 import api from "../utils/api";
 import { formatPriceWithSymbol, convertCurrency } from "../utils/currencyUtils";
 import { 
@@ -42,6 +43,7 @@ const ReviewSummaryCard = ({ icon: Icon, iconBgColor, iconColor, value, label })
 const HostDashboardPage = () => {
   const { user, isReady } = useContext(UserContext);
   const { selectedCurrency, convertToSelectedCurrency } = useCurrency();
+  const { t } = useTranslation("dashboard");
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -67,7 +69,7 @@ const HostDashboardPage = () => {
 
   // Redirect if not authenticated or not a host
   if (!isReady) {
-    return <div className="px-14"><p>Loading...</p></div>;
+    return <div className="px-14"><p>{t("common.loading")}</p></div>;
   }
 
   if (isReady && !user) {
@@ -120,13 +122,13 @@ const HostDashboardPage = () => {
             <div className="bg-red-50 border border-red-200 rounded-lg p-6">
               <div className="flex">
                 <div className="text-red-800">
-                  <h3 className="text-lg font-medium">Error Loading Dashboard</h3>
+                  <h3 className="text-lg font-medium">{t("host.error.loadingDashboard")}</h3>
                   <p className="mt-2 text-sm">{error}</p>
                   <button
                     onClick={fetchHostStatistics}
                     className="mt-4 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition duration-200"
                   >
-                    Try Again
+                    {t("host.error.tryAgain")}
                   </button>
                 </div>
               </div>
@@ -146,9 +148,9 @@ const HostDashboardPage = () => {
           <div className="mb-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Host Dashboard</h1>
+                <h1 className="text-3xl font-bold text-gray-900">{t("host.title")}</h1>
                 <p className="text-gray-600 mt-1">
-                  Manage your properties and track performance
+                  {t("host.subtitle")}
                 </p>
               </div>
               
@@ -159,14 +161,14 @@ const HostDashboardPage = () => {
                   className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition duration-200"
                 >
                   <HomeIcon className="w-5 h-5 mr-2" />
-                  Manage Places
+                  {t("host.managePlaces")}
                 </Link>
                 <Link
                   to="/account/notifications"
                   className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
                 >
                   <BellIcon className="w-5 h-5 mr-2" />
-                  Notifications
+                  {t("host.notifications")}
                 </Link>
               </div>
             </div>
@@ -179,7 +181,7 @@ const HostDashboardPage = () => {
             icon={HomeIcon} 
             iconBgColor="bg-blue-100" 
             iconColor="text-blue-600" 
-            title="Total Places" 
+            title={t("host.metrics.totalPlaces")} 
             value={stats?.places?.total || 0} 
           />
 
@@ -188,7 +190,7 @@ const HostDashboardPage = () => {
             icon={CalendarIcon} 
             iconBgColor="bg-green-100" 
             iconColor="text-green-600" 
-            title="Total Paid Bookings" 
+            title={t("host.metrics.totalPaidBookings")} 
             value={stats?.bookings?.total || 0} 
           />
 
@@ -197,7 +199,7 @@ const HostDashboardPage = () => {
             icon={StarIcon} 
             iconBgColor="bg-purple-100" 
             iconColor="text-purple-600" 
-            title="Average Rating" 
+            title={t("host.metrics.averageRating")} 
             value={`${stats?.reviews?.averageRating || "0.0"} ★`} 
           />
         </div>
@@ -205,7 +207,7 @@ const HostDashboardPage = () => {
         {/* Booking Status Overview */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
           <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Booking Status Overview</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{t("host.bookingStatus.title")}</h2>
           </div>
           <div className="p-6">
             <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
@@ -214,42 +216,42 @@ const HostDashboardPage = () => {
                 iconBgColor="bg-yellow-100" 
                 iconColor="text-yellow-600" 
                 count={stats?.bookings?.pending || 0} 
-                label="Pending" 
+                label={t("host.bookingStatus.pending")} 
               />
               <BookingStatusItem 
                 icon={CalendarIcon} 
                 iconBgColor="bg-green-100" 
                 iconColor="text-green-600" 
                 count={stats?.bookings?.approved || 0} 
-                label="Approved" 
+                label={t("host.bookingStatus.approved")} 
               />
               <BookingStatusItem 
                 icon={CalendarIcon} 
                 iconBgColor="bg-blue-100" 
                 iconColor="text-blue-600" 
                 count={stats?.bookings?.selected || 0} 
-                label="Selected" 
+                label={t("host.bookingStatus.selected")} 
               />
               <BookingStatusItem 
                 icon={CurrencyDollarIcon} 
                 iconBgColor="bg-emerald-100" 
                 iconColor="text-emerald-600" 
                 count={stats?.bookings?.total || 0} 
-                label="Paid" 
+                label={t("host.bookingStatus.paid")} 
               />
               <BookingStatusItem 
                 icon={CalendarIcon} 
                 iconBgColor="bg-gray-100" 
                 iconColor="text-gray-600" 
                 count={stats?.bookings?.cancelled || 0} 
-                label="Cancelled" 
+                label={t("host.bookingStatus.cancelled")} 
               />
               <BookingStatusItem 
                 icon={CalendarIcon} 
                 iconBgColor="bg-red-100" 
                 iconColor="text-red-600" 
                 count={stats?.bookings?.rejected || 0} 
-                label="Rejected" 
+                label={t("host.bookingStatus.rejected")} 
               />
             </div>
           </div>
@@ -260,14 +262,14 @@ const HostDashboardPage = () => {
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Review Analytics</h2>
-                <p className="text-sm text-gray-600 mt-1">Performance metrics across all your properties</p>
+                <h2 className="text-lg font-semibold text-gray-900">{t("host.reviews.title")}</h2>
+                <p className="text-sm text-gray-600 mt-1">{t("host.reviews.subtitle")}</p>
               </div>
               <Link 
                 to="/account/reviews"
                 className="text-sm text-primary hover:text-primary-dark font-medium hover:underline transition duration-200"
               >
-                View All Reviews →
+                {t("host.reviews.viewAll")}
               </Link>
             </div>
           </div>
@@ -279,7 +281,7 @@ const HostDashboardPage = () => {
                 iconBgColor="bg-purple-100" 
                 iconColor="text-purple-600" 
                 value={stats?.reviews?.total || 0} 
-                label="Total Reviews" 
+                label={t("host.reviews.totalReviews")} 
               />
               
               <ReviewSummaryCard 
@@ -287,7 +289,7 @@ const HostDashboardPage = () => {
                 iconBgColor="bg-yellow-100" 
                 iconColor="text-yellow-600" 
                 value={stats?.reviews?.averageRating || "0.0"} 
-                label="Average Rating" 
+                label={t("host.reviews.averageRating")} 
               />
               
               <ReviewSummaryCard 
@@ -295,7 +297,7 @@ const HostDashboardPage = () => {
                 iconBgColor="bg-green-100" 
                 iconColor="text-green-600" 
                 value={stats?.reviews?.reviewsThisMonth || 0} 
-                label="This Month" 
+                label={t("host.reviews.thisMonth")} 
               />
               
               <ReviewSummaryCard 
@@ -303,16 +305,16 @@ const HostDashboardPage = () => {
                 iconBgColor="bg-blue-100" 
                 iconColor="text-blue-600" 
                 value={stats?.reviews?.reviewsLastMonth || 0} 
-                label="Last Month" 
+                label={t("host.reviews.lastMonth")} 
               />
             </div>
 
             {/* Overall Rating Distribution */}
             <div className="border-t border-gray-200 pt-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900">Overall Rating Distribution</h3>
+                <h3 className="text-lg font-medium text-gray-900">{t("host.reviews.ratingDistribution")}</h3>
                 <div className="text-sm text-gray-500">
-                  Across {stats?.reviews?.placeSpecificStats?.length || 0} propert{stats?.reviews?.placeSpecificStats?.length === 1 ? 'y' : 'ies'}
+                  {t("common.across")} {stats?.reviews?.placeSpecificStats?.length || 0} {stats?.reviews?.placeSpecificStats?.length === 1 ? t("host.reviews.property") : t("host.reviews.propertiesCount")}
                 </div>
               </div>
               <div className="grid grid-cols-5 gap-4 mb-6">
@@ -333,11 +335,11 @@ const HostDashboardPage = () => {
             {/* Month-over-Month Comparison */}
             {stats?.reviews?.reviewsThisMonth !== undefined && stats?.reviews?.reviewsLastMonth !== undefined && (
               <div className="border-t border-gray-200 pt-6 mt-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Monthly Performance</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">{t("host.reviews.monthlyPerformance")}</h3>
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6">
                   <div className="flex items-center justify-between">
                     <div className="text-sm text-gray-600">
-                      Reviews comparison: This month vs Last month
+                      {t("host.reviews.reviewsComparison")}
                     </div>
                     <div className="flex items-center space-x-3">
                       {(() => {
@@ -351,7 +353,7 @@ const HostDashboardPage = () => {
                           return (
                             <span className="text-sm text-gray-600 flex items-center">
                               <span className="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
-                              No change
+                              {t("host.reviews.noChange")}
                             </span>
                           );
                         }
@@ -365,7 +367,7 @@ const HostDashboardPage = () => {
                               isPositive ? 'border-b-4 border-b-green-500' : 'border-t-4 border-t-red-500'
                             }`}></div>
                             <span className={`text-sm font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                              {isPositive ? 'Growing' : 'Declining'}
+                              {isPositive ? t("host.reviews.growing") : t("host.reviews.declining")}
                             </span>
                           </>
                         );
@@ -380,9 +382,9 @@ const HostDashboardPage = () => {
             {stats?.reviews?.placeSpecificStats && stats.reviews.placeSpecificStats.length > 0 && (
               <div className="border-t border-gray-200 pt-6 mt-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-medium text-gray-900">Performance by Property</h3>
+                  <h3 className="text-lg font-medium text-gray-900">{t("host.reviews.performanceByProperty")}</h3>
                   <div className="text-sm text-gray-500">
-                    {stats.reviews.placeSpecificStats.length} propert{stats.reviews.placeSpecificStats.length === 1 ? 'y' : 'ies'}
+                    {stats.reviews.placeSpecificStats.length} {stats.reviews.placeSpecificStats.length === 1 ? t("host.reviews.property") : t("host.reviews.propertiesCount")}
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -424,9 +426,9 @@ const HostDashboardPage = () => {
                         {/* Rating Distribution Visualization */}
                         <div className="mb-6">
                           <div className="flex items-center justify-between mb-3">
-                            <h4 className="text-sm font-semibold text-gray-700">Rating Breakdown</h4>
+                            <h4 className="text-sm font-semibold text-gray-700">{t("host.reviews.ratingBreakdown")}</h4>
                             <div className="flex items-center space-x-2">
-                              <span className="text-sm text-gray-500">Trend:</span>
+                              <span className="text-sm text-gray-500">{t("host.reviews.trend")}:</span>
                               <TrendIndicator trend={place.trend} />
                             </div>
                           </div>
@@ -453,11 +455,11 @@ const HostDashboardPage = () => {
                           <div className="grid grid-cols-2 gap-4">
                             <div className="text-center">
                               <div className="text-lg font-bold text-gray-900">{place.reviewsThisMonth}</div>
-                              <div className="text-xs text-gray-500">Reviews This Month</div>
+                              <div className="text-xs text-gray-500">{t("host.reviews.reviewsThisMonth")}</div>
                             </div>
                             <div className="text-center">
                               <div className="text-lg font-bold text-gray-900">{place.reviewsLastMonth}</div>
-                              <div className="text-xs text-gray-500">Reviews Last Month</div>
+                              <div className="text-xs text-gray-500">{t("host.reviews.reviewsLastMonth")}</div>
                             </div>
                           </div>
                           
@@ -469,13 +471,13 @@ const HostDashboardPage = () => {
                                   <div className="text-sm font-medium text-gray-700">
                                     {Math.round(((place.ratingDistribution[5]?.count || 0) + (place.ratingDistribution[4]?.count || 0)) / place.totalReviews * 100)}%
                                   </div>
-                                  <div className="text-xs text-gray-500">Positive (4-5★)</div>
+                                  <div className="text-xs text-gray-500">{t("host.reviews.positive")}</div>
                                 </div>
                                 <div>
                                   <div className="text-sm font-medium text-gray-700">
                                     {Math.round(((place.ratingDistribution[1]?.count || 0) + (place.ratingDistribution[2]?.count || 0)) / place.totalReviews * 100)}%
                                   </div>
-                                  <div className="text-xs text-gray-500">Critical (1-2★)</div>
+                                  <div className="text-xs text-gray-500">{t("host.reviews.critical")}</div>
                                 </div>
                               </div>
                             </div>
@@ -488,7 +490,7 @@ const HostDashboardPage = () => {
                             to={`/place/${place.placeId}`}
                             className="text-sm text-primary hover:text-primary-dark font-medium hover:underline transition duration-200"
                           >
-                            View Property Details & Reviews →
+                            {t("host.reviews.viewPropertyDetails")}
                           </Link>
                         </div>
                       </div>
@@ -502,15 +504,15 @@ const HostDashboardPage = () => {
             {(!stats?.reviews?.total || stats.reviews.total === 0) && (
               <div className="text-center py-12">
                 <StarIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Reviews Yet</h3>
-                <p className="text-gray-500 mb-6">Your properties haven't received any reviews yet. Once guests start reviewing, you'll see detailed analytics here.</p>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">{t("host.reviews.noReviews.title")}</h3>
+                <p className="text-gray-500 mb-6">{t("host.reviews.noReviews.subtitle")}</p>
                 <div className="bg-blue-50 rounded-lg p-4 max-w-md mx-auto">
-                  <h4 className="text-sm font-medium text-blue-900 mb-2">Tips to get your first reviews:</h4>
+                  <h4 className="text-sm font-medium text-blue-900 mb-2">{t("host.reviews.noReviews.tips")}</h4>
                   <ul className="text-sm text-blue-700 space-y-1">
-                    <li>• Provide excellent customer service</li>
-                    <li>• Ensure your property is clean and well-maintained</li>
-                    <li>• Respond quickly to guest inquiries</li>
-                    <li>• Follow up with guests after their stay</li>
+                    <li>{t("host.reviews.noReviews.tip1")}</li>
+                    <li>{t("host.reviews.noReviews.tip2")}</li>
+                    <li>{t("host.reviews.noReviews.tip3")}</li>
+                    <li>{t("host.reviews.noReviews.tip4")}</li>
                   </ul>
                 </div>
               </div>

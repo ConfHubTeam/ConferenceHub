@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -34,6 +35,7 @@ ChartJS.register(
  */
 export default function ReviewAnalytics({ reviewStats }) {
   const [chartData, setChartData] = useState({});
+  const { t } = useTranslation("dashboard");
 
   console.log('ReviewAnalytics received props:', reviewStats); // Debug log
 
@@ -68,7 +70,7 @@ export default function ReviewAnalytics({ reviewStats }) {
       }) || [],
       datasets: [
         {
-          label: "Reviews",
+          label: t("reviews.analytics.reviews"),
           data: reviewStats.reviewsPerMonth?.map(item => item.count) || [],
           borderColor: "rgb(59, 130, 246)",
           backgroundColor: "rgba(59, 130, 246, 0.1)",
@@ -102,7 +104,7 @@ export default function ReviewAnalytics({ reviewStats }) {
       ) || [],
       datasets: [
         {
-          label: "Reviews",
+          label: t("reviews.analytics.reviews"),
           data: reviewStats.moderationStats?.map(item => item.count) || [],
           backgroundColor: [
             "#f59e0b", // pending - amber
@@ -123,7 +125,7 @@ export default function ReviewAnalytics({ reviewStats }) {
   if (!reviewStats) {
     return (
       <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-        <h2 className="text-xl font-semibold mb-4">📊 Review Analytics</h2>
+        <h2 className="text-xl font-semibold mb-4">📊 {t("reviews.analytics.title")}</h2>
         <div className="animate-pulse space-y-4">
           <div className="h-32 bg-gray-200 rounded"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -139,12 +141,12 @@ export default function ReviewAnalytics({ reviewStats }) {
   if (reviewStats && reviewStats.total === 0) {
     return (
       <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-        <h2 className="text-xl font-semibold mb-6">📊 Review Analytics</h2>
+        <h2 className="text-xl font-semibold mb-6">📊 {t("reviews.analytics.title")}</h2>
         <div className="text-center py-12">
           <div className="text-6xl mb-4">📝</div>
-          <h3 className="text-xl font-semibold text-gray-600 mb-2">No Reviews Yet</h3>
+          <h3 className="text-xl font-semibold text-gray-600 mb-2">{t("host.reviews.noReviews.title")}</h3>
           <p className="text-gray-500">
-            Once users start leaving reviews, analytics will appear here.
+            {t("reviews.analytics.noDataMessage")}
           </p>
         </div>
       </div>
@@ -153,34 +155,34 @@ export default function ReviewAnalytics({ reviewStats }) {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-      <h2 className="text-xl font-semibold mb-6">📊 Review Analytics</h2>
+      <h2 className="text-xl font-semibold mb-6">📊 {t("reviews.analytics.title")}</h2>
       
       {/* Overview Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-blue-50 p-4 rounded-lg">
-          <div className="text-sm text-blue-600">Total Reviews</div>
+          <div className="text-sm text-blue-600">{t("reviews.analytics.totalReviews")}</div>
           <div className="text-2xl font-bold text-blue-800">{reviewStats.total}</div>
         </div>
         
         <div className="bg-green-50 p-4 rounded-lg">
-          <div className="text-sm text-green-600">Average Rating</div>
+          <div className="text-sm text-green-600">{t("reviews.analytics.averageRating")}</div>
           <div className="text-2xl font-bold text-green-800">
             {reviewStats.averagePlatformRating} ⭐
           </div>
         </div>
         
         <div className="bg-purple-50 p-4 rounded-lg">
-          <div className="text-sm text-purple-600">Avg Reply Time</div>
+          <div className="text-sm text-purple-600">{t("reviews.analytics.avgReplyTime")}</div>
           <div className="text-2xl font-bold text-purple-800">
-            {reviewStats.averageHostReplyTime ? `${reviewStats.averageHostReplyTime}h` : "N/A"}
+            {reviewStats.averageHostReplyTime ? `${reviewStats.averageHostReplyTime}${t("reviews.analytics.hours")}` : "N/A"}
           </div>
         </div>
         
         <div className="bg-orange-50 p-4 rounded-lg">
-          <div className="text-sm text-orange-600">Recent Activity</div>
+          <div className="text-sm text-orange-600">{t("reviews.analytics.recentActivity")}</div>
           <div className="text-2xl font-bold text-orange-800">
             {reviewStats.recentActivity}
-            <span className="text-sm font-normal"> (7 days)</span>
+            <span className="text-sm font-normal"> (7 {t("reviews.analytics.days")})</span>
           </div>
         </div>
       </div>
@@ -189,7 +191,7 @@ export default function ReviewAnalytics({ reviewStats }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Reviews per Month */}
         <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold mb-4">Reviews per Month</h3>
+          <h3 className="text-lg font-semibold mb-4">{t("reviews.analytics.reviewsPerMonth")}</h3>
           <div className="h-64">
             {chartData.monthly && (
               <Line
@@ -221,7 +223,7 @@ export default function ReviewAnalytics({ reviewStats }) {
 
         {/* Rating Distribution */}
         <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold mb-4">Rating Distribution</h3>
+          <h3 className="text-lg font-semibold mb-4">{t("reviews.analytics.ratingDistribution")}</h3>
           <div className="h-64">
             {chartData.rating && (
               <Pie
@@ -251,7 +253,7 @@ export default function ReviewAnalytics({ reviewStats }) {
       {/* Moderation Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold mb-4">Moderation Statistics</h3>
+          <h3 className="text-lg font-semibold mb-4">{t("reviews.analytics.moderationStats")}</h3>
           <div className="h-64">
             {chartData.moderation && (
               <Bar
@@ -280,12 +282,12 @@ export default function ReviewAnalytics({ reviewStats }) {
 
         {/* Reply Statistics */}
         <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold mb-4">Host Reply Status</h3>
+          <h3 className="text-lg font-semibold mb-4">{t("reviews.analytics.hostReplyStatus")}</h3>
           <div className="space-y-3">
             {reviewStats.reviewReplyStats?.map((stat, index) => (
               <div key={index} className="flex justify-between items-center">
                 <span className="capitalize">
-                  {stat.status.replace("_", " ")}
+                  {stat.status === "with_reply" ? t("reviews.analytics.withReply") : t("reviews.analytics.withoutReply")}
                 </span>
                 <div className="flex items-center">
                   <div className="w-24 bg-gray-200 rounded-full h-2 mr-2">
@@ -314,7 +316,7 @@ export default function ReviewAnalytics({ reviewStats }) {
         {/* Top Rated Places */}
         <div className="bg-green-50 p-4 rounded-lg">
           <h3 className="text-lg font-semibold mb-4 text-green-800">
-            🏆 Top 5 Rated Places
+            🏆 {t("reviews.analytics.topRatedPlaces")}
           </h3>
           <div className="space-y-2">
             {reviewStats.topRatedPlaces?.length > 0 ? (
@@ -329,7 +331,7 @@ export default function ReviewAnalytics({ reviewStats }) {
                       {place.title}
                     </div>
                     <div className="text-sm text-green-600">
-                      {place.review_count} reviews
+                      {place.review_count} {t("reviews.analytics.reviews")}
                     </div>
                   </div>
                   <div className="flex items-center ml-2">
@@ -349,7 +351,7 @@ export default function ReviewAnalytics({ reviewStats }) {
               ))
             ) : (
               <div className="text-green-600 text-center py-4">
-                No data available
+                {t("reviews.analytics.noData")}
               </div>
             )}
           </div>
@@ -358,7 +360,7 @@ export default function ReviewAnalytics({ reviewStats }) {
         {/* Lowest Rated Places */}
         <div className="bg-red-50 p-4 rounded-lg">
           <h3 className="text-lg font-semibold mb-4 text-red-800">
-            📉 Bottom 5 Rated Places
+            📉 {t("reviews.analytics.bottomRatedPlaces")}
           </h3>
           <div className="space-y-2">
             {reviewStats.lowestRatedPlaces?.length > 0 ? (
@@ -373,7 +375,7 @@ export default function ReviewAnalytics({ reviewStats }) {
                       {place.title}
                     </div>
                     <div className="text-sm text-red-600">
-                      {place.review_count} reviews
+                      {place.review_count} {t("reviews.analytics.reviews")}
                     </div>
                   </div>
                   <div className="flex items-center ml-2">
@@ -393,7 +395,7 @@ export default function ReviewAnalytics({ reviewStats }) {
               ))
             ) : (
               <div className="text-red-600 text-center py-4">
-                No data available
+                {t("reviews.analytics.noData")}
               </div>
             )}
           </div>
@@ -403,15 +405,15 @@ export default function ReviewAnalytics({ reviewStats }) {
       {/* Most Active Reviewers */}
       <div className="bg-blue-50 p-4 rounded-lg">
         <h3 className="text-lg font-semibold mb-4 text-blue-800">
-          👥 Most Active Reviewers
+          👥 {t("reviews.analytics.mostActiveReviewers")}
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-blue-200">
-                <th className="text-left py-2 text-blue-800">Name</th>
-                <th className="text-left py-2 text-blue-800">Email</th>
-                <th className="text-right py-2 text-blue-800">Reviews</th>
+                <th className="text-left py-2 text-blue-800">{t("reviews.analytics.name")}</th>
+                <th className="text-left py-2 text-blue-800">{t("reviews.analytics.email")}</th>
+                <th className="text-right py-2 text-blue-800">{t("reviews.analytics.reviews")}</th>
               </tr>
             </thead>
             <tbody>
@@ -428,7 +430,7 @@ export default function ReviewAnalytics({ reviewStats }) {
               ) : (
                 <tr>
                   <td colSpan="3" className="text-center py-4 text-blue-600">
-                    No data available
+                    {t("reviews.analytics.noData")}
                   </td>
                 </tr>
               )}

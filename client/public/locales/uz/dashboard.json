@@ -1,0 +1,144 @@
+{
+  "common": {
+    "loading": "Yuklanmoqda...",
+    "across": "Bo'ylab"
+  },
+  "agent": {
+    "title": "Agent paneli",
+    "loading": "Panel yuklanmoqda...",
+    "users": {
+      "title": "Foydalanuvchilar",
+      "clients": "Mijozlar",
+      "hosts": "Mezbon", 
+      "agents": "Agentlar",
+      "total": "Jami"
+    },
+    "places": {
+      "title": "Konferens zallari",
+      "totalRooms": "Jami zallar",
+      "available": "Mavjud"
+    },
+    "bookings": {
+      "title": "Bronlar",
+      "pending": "Kutilmoqda",
+      "approved": "Tasdiqlangan", 
+      "rejected": "Rad etilgan",
+      "total": "Jami"
+    },
+    "quickAccess": {
+      "title": "Tezkor kirish",
+      "manageBookings": "Bronlarni boshqarish",
+      "viewUsers": "Foydalanuvchilarni ko'rish",
+      "viewRooms": "Konferens zallarini ko'rish"
+    }
+  },
+  "host": {
+    "title": "Mezbon paneli",
+    "subtitle": "Joylaringizni boshqaring va samaradorlikni kuzating",
+    "managePlaces": "Joylarni boshqarish",
+    "notifications": "Bildirishnomalar",
+    "loading": "Yuklanmoqda...",
+    "error": {
+      "loadingDashboard": "Panelni yuklashda xatolik",
+      "tryAgain": "Qayta urinish"
+    },
+    "welcome": "Xush kelibsiz!",
+    "metrics": {
+      "totalPlaces": "Jami joylar",
+      "totalPaidBookings": "Jami to'langan bronlar",
+      "averageRating": "O'rtacha reyting"
+    },
+    "bookingStatus": {
+      "title": "Bron holati ko'rinishi",
+      "pending": "Kutilmoqda",
+      "approved": "Tasdiqlangan",
+      "selected": "Tanlangan",
+      "paid": "To'langan",
+      "cancelled": "Bekor qilingan",
+      "rejected": "Rad etilgan"
+    },
+    "reviews": {
+      "title": "Sharhlar analitikasi",
+      "subtitle": "Barcha joylaringiz bo'yicha samaradorlik ko'rsatkichlari",
+      "viewAll": "Barcha sharhlarni ko'rish →",
+      "totalReviews": "Jami sharhlar",
+      "averageRating": "O'rtacha reyting",
+      "thisMonth": "Ushbu oy",
+      "lastMonth": "O'tgan oy",
+      "ratingDistribution": "Umumiy reyting taqsimoti",
+      "propertiesCount": "joy",
+      "property": "joy",
+      "monthlyPerformance": "Oylik samaradorlik",
+      "reviewsComparison": "Sharhlar taqqoslash: ushbu oy va o'tgan oy",
+      "noChange": "O'zgarish yo'q",
+      "growing": "O'sish",
+      "declining": "Kamayish",
+      "performanceByProperty": "Joy bo'yicha samaradorlik",
+      "ratingBreakdown": "Reyting tahlili",
+      "trend": "Trend",
+      "reviewsThisMonth": "Ushbu oydagi sharhlar",
+      "reviewsLastMonth": "O'tgan oydagi sharhlar",
+      "positive": "Ijobiy (4-5★)",
+      "critical": "Tanqidiy (1-2★)",
+      "viewPropertyDetails": "Joy tafsilotlari va sharhlarni ko'rish →",
+      "noReviews": {
+        "title": "Hali sharhlar yo'q",
+        "subtitle": "Sizning joylaringiz hali sharhlar olmagan. Mehmonlar sharh qoldirishni boshlagach, bu yerda batafsil analitika ko'rinadi.",
+        "tips": "Birinchi sharhlarni olish uchun maslahatlar:",
+        "tip1": "• Mijozlarga ajoyib xizmat ko'rsating",
+        "tip2": "• Joyingiz toza va tartibli ekanligiga ishonch hosil qiling",
+        "tip3": "• Mehmonlar so'rovlariga tezda javob bering",
+        "tip4": "• Mehmonlar ketganidan keyin ular bilan bog'laning"
+      }
+    },
+    "stats": {
+      "totalPlaces": "Jami joylar",
+      "activeBookings": "Faol bronlar", 
+      "totalRevenue": "Jami daromad",
+      "averageRating": "O'rtacha reyting"
+    },
+    "recentBookings": {
+      "title": "So'nggi bronlar",
+      "noBookings": "So'nggi bronlar yo'q",
+      "viewAll": "Barcha bronlarni ko'rish"
+    },
+    "analytics": {
+      "title": "Analitika ko'rinishi",
+      "bookingsThisMonth": "Ushbu oydagi bronlar",
+      "occupancyRate": "Band bo'lish darajasi",
+      "revenueGrowth": "Daromad o'sishi"
+    },
+    "quickActions": {
+      "title": "Tezkor amallar",
+      "addNewPlace": "Yangi joy qo'shish",
+      "manageBookings": "Bronlarni boshqarish",
+      "viewReviews": "Sharhlarni ko'rish",
+      "editProfile": "Profilni tahrirlash"
+    }
+  },
+  "reviews": {
+    "analytics": {
+      "title": "Sharhlar analitikasi",
+      "totalReviews": "Jami sharhlar",
+      "averageRating": "O'rtacha reyting",
+      "avgReplyTime": "O'rt. javob vaqti",
+      "recentActivity": "So'nggi faollik",
+      "days": "kun",
+      "hours": "s",
+      "reviewsPerMonth": "Oylik sharhlar",
+      "ratingDistribution": "Reyting taqsimoti",
+      "moderationStats": "Moderatsiya statistikasi", 
+      "hostReplyStatus": "Mezbon javob holati",
+      "topRatedPlaces": "Top-5 reytingli joylar",
+      "bottomRatedPlaces": "5 ta past reytingli joy",
+      "mostActiveReviewers": "Eng faol sharhlovchilar",
+      "noData": "Ma'lumot yo'q",
+      "noDataMessage": "Foydalanuvchilar sharh qoldirishni boshlagach, bu yerda analitika paydo bo'ladi.",
+      "withReply": "Javob bilan",
+      "withoutReply": "Javobsiz",
+      "reviews": "Sharhlar",
+      "name": "Ism",
+      "email": "Email"
+    }
+  }
+}
