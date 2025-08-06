@@ -526,6 +526,48 @@ const checkPaymentStatusSmart = async (req, res) => {
   }
 };
 
+/**
+ * Manual cleanup of expired bookings (Agent only)
+ * Deletes all expired "pending" and "selected" bookings
+ */
+const manualCleanupExpiredBookings = async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+
+    // Only agents can perform manual cleanup
+    if (userData.userType !== 'agent') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only agents can perform booking cleanup.'
+      });
+    }
+
+    console.log(`🧹 Agent ${userData.name} (${userData.email}) initiated manual cleanup of expired bookings`);
+
+    // Perform the cleanup
+    const deletedCount = await cleanupExpiredBookings();
+
+    console.log(`✅ Manual cleanup completed: ${deletedCount} expired bookings deleted`);
+
+    res.json({
+      success: true,
+      deletedCount,
+      message: deletedCount > 0 
+        ? `Successfully deleted ${deletedCount} expired booking${deletedCount === 1 ? '' : 's'}`
+        : 'No expired bookings found to delete',
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('❌ Error during manual booking cleanup:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to cleanup expired bookings',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   createBooking,
   getBookings,
@@ -537,5 +579,6 @@ module.exports = {
   getBookingById,
   markPaidToHost,
   checkPaymentStatus,
-  checkPaymentStatusSmart
+  checkPaymentStatusSmart,
+  manualCleanupExpiredBookings
 };
