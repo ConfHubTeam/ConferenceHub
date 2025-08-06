@@ -208,5 +208,64 @@
       "editSuccess": "Отзыв успешно обновлен!",
       "editError": "Не удалось обновить отзыв. Попробуйте еще раз."
     }
+  },
+  "rating": {
+    "labels": {
+      "poor": "Плохо",
+      "fair": "Неплохо",
+      "good": "Хорошо",
+      "veryGood": "Очень хорошо",
+      "excellent": "Отлично"
+    },
+    "ariaLabel": "Оценить на {{count}} звезд{{s}}",
+    "stars": "{{count}} звезда",
+    "stars_plural": "{{count}} звезд"
+  },
+  "placeholders": {
+    "reviewComment": "Комментарий отзыва...",
+    "adminNotes": "Заметки администратора..."
+  },
+  "visibility": {
+    "visibleToPublic": "Видимый для публики",
+    "public": "Публичный",
+    "hidden": "Скрытый"
+  },
+  "reports": {
+    "count": "{{count}} жалоба",
+    "count_plural": "{{count}} жалоб",
+    "latest": "Последняя",
+    "none": "Нет"
+  },
+  "confirmations": {
+    "deleteReview": "Вы уверены, что хотите удалить этот отзыв?"
+  },
+  "unknownPlace": "Неизвестное место",
+  "adminNote": "Администратор",
+  "byUser": "от {{name}}",
+  "table": {
+    "loading": "Загрузка отзывов...",
+    "noReviewsFound": "Отзывы не найдены",
+    "adjustFilters": "Попробуйте изменить фильтры, чтобы увидеть больше результатов",
+    "selectAll": "Выбрать все ({{count}} выбрано)",
+    "headers": {
+      "reviewDetails": "Детали отзыва",
+      "placeAndUser": "Место и пользователь",
+      "reports": "Жалобы",
+      "date": "Дата",
+      "actions": "Действия"
+    }
+  },
+  "actions": {
+    "edit": "Редактировать",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить"
+  },
+  "pagination": {
+    "showingResults": "Показано {{from}} до {{to}} из {{total}} отзывов",
+    "first": "Первая",
+    "previous": "Предыдущая",
+    "next": "Следующая",
+    "last": "Последняя"
   }
 }

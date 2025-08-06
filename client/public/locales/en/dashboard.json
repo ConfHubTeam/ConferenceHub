@@ -140,5 +140,22 @@
       "name": "Name",
       "email": "Email"
     }
+  },
+  "trend": {
+    "up": "Trending up",
+    "down": "Trending down", 
+    "stable": "Stable"
+  },
+  "trends": {
+    "thisMonth": "this month"
+  },
+  "performance": {
+    "excellent": "Excellent",
+    "great": "Great",
+    "good": "Good", 
+    "fair": "Fair",
+    "average": "Average",
+    "poor": "Poor",
+    "noData": "No Data"
   }
 }

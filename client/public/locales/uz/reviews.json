@@ -208,5 +208,64 @@
       "editSuccess": "Sharh muvaffaqiyatli yangilandi!",
       "editError": "Sharhni yangilab bo'lmadi. Qaytadan urinib ko'ring."
     }
+  },
+  "rating": {
+    "labels": {
+      "poor": "Yomon",
+      "fair": "O'rtacha",
+      "good": "Yaxshi",
+      "veryGood": "Juda yaxshi",
+      "excellent": "Ajoyib"
+    },
+    "ariaLabel": "{{count}} yulduz{{s}} baholash",
+    "stars": "{{count}} yulduz",
+    "stars_plural": "{{count}} yulduz"
+  },
+  "placeholders": {
+    "reviewComment": "Sharh izohi...",
+    "adminNotes": "Administrator eslatmalari..."
+  },
+  "visibility": {
+    "visibleToPublic": "Ommaga ko'rinadigan",
+    "public": "Ochiq",
+    "hidden": "Yashirilgan"
+  },
+  "reports": {
+    "count": "{{count}} shikoyat",
+    "count_plural": "{{count}} shikoyat",
+    "latest": "So'nggi",
+    "none": "Yo'q"
+  },
+  "confirmations": {
+    "deleteReview": "Bu sharhni o'chirishni xohlaysizmi?"
+  },
+  "unknownPlace": "Noma'lum joy",
+  "adminNote": "Administrator",
+  "byUser": "{{name}} tomonidan",
+  "table": {
+    "loading": "Sharhlar yuklanmoqda...",
+    "noReviewsFound": "Sharhlar topilmadi",
+    "adjustFilters": "Ko'proq natijalar ko'rish uchun filtrlarni o'zgartirib ko'ring",
+    "selectAll": "Barchasini tanlash ({{count}} tanlandi)",
+    "headers": {
+      "reviewDetails": "Sharh tafsilotlari",
+      "placeAndUser": "Joy va foydalanuvchi",
+      "reports": "Shikoyatlar",
+      "date": "Sana",
+      "actions": "Amallar"
+    }
+  },
+  "actions": {
+    "edit": "Tahrirlash",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "delete": "O'chirish"
+  },
+  "pagination": {
+    "showingResults": "{{total}} sharhdan {{from}} dan {{to}} gacha ko'rsatilmoqda",
+    "first": "Birinchi",
+    "previous": "Oldingi",
+    "next": "Keyingi",
+    "last": "So'nggi"
   }
 }

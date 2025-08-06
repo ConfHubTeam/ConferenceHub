@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function InteractiveStarRating({ 
   rating, 
@@ -7,6 +8,7 @@ export default function InteractiveStarRating({
   disabled = false,
   showLabel = true 
 }) {
+  const { t } = useTranslation(["reviews", "common"]);
   const [hoverRating, setHoverRating] = useState(0);
 
   const sizeClasses = {
@@ -18,11 +20,11 @@ export default function InteractiveStarRating({
   const starSize = sizeClasses[size] || sizeClasses.lg;
 
   const ratingLabels = {
-    1: "Poor",
-    2: "Fair", 
-    3: "Good",
-    4: "Very Good",
-    5: "Excellent"
+    1: t("reviews:rating.labels.poor"),
+    2: t("reviews:rating.labels.fair"), 
+    3: t("reviews:rating.labels.good"),
+    4: t("reviews:rating.labels.veryGood"),
+    5: t("reviews:rating.labels.excellent")
   };
 
   const handleMouseEnter = (star) => {
@@ -56,7 +58,7 @@ export default function InteractiveStarRating({
               key={star}
               type="button"
               disabled={disabled}
-              aria-label={`Rate ${star} star${star !== 1 ? 's' : ''}`}
+              aria-label={t("reviews:rating.ariaLabel", { count: star })}
               className={`transition-colors duration-150 ${
                 disabled ? "cursor-not-allowed" : "cursor-pointer"
               } ${isActive ? "text-yellow-400" : "text-gray-300"} hover:scale-110 transform transition-transform focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 rounded`}

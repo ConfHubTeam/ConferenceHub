@@ -1,6 +1,8 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 const TrendIndicator = ({ trend }) => {
+  const { t } = useTranslation(["dashboard", "common"]);
   const isPositive = trend > 0;
   const isNeutral = trend === 0;
   
@@ -8,7 +10,7 @@ const TrendIndicator = ({ trend }) => {
     return (
       <span className="text-sm text-gray-500 flex items-center">
         <span className="w-2 h-2 bg-gray-400 rounded-full mr-1"></span>
-        Stable
+        {t("dashboard:trends.stable")}
       </span>
     );
   }
@@ -20,7 +22,7 @@ const TrendIndicator = ({ trend }) => {
       <div className={`w-0 h-0 border-l-2 border-r-2 border-transparent mr-1 ${
         isPositive ? "border-b-2 border-b-green-500" : "border-t-2 border-t-red-500"
       }`}></div>
-      {isPositive ? "+" : ""}{trend} this month
+      {isPositive ? "+" : ""}{trend} {t("dashboard:trends.thisMonth")}
     </span>
   );
 };

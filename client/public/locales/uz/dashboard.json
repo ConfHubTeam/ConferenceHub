@@ -140,5 +140,22 @@
       "name": "Ism",
       "email": "Email"
     }
+  },
+  "trend": {
+    "up": "O'sib bormoqda",
+    "down": "Kamayib bormoqda", 
+    "stable": "Barqaror"
+  },
+  "trends": {
+    "thisMonth": "shu oyda"
+  },
+  "performance": {
+    "excellent": "Ajoyib",
+    "great": "Ajoyib",
+    "good": "Yaxshi",
+    "fair": "O'rtacha",
+    "average": "O'rtacha", 
+    "poor": "Yomon",
+    "noData": "Ma'lumot yo'q"
   }
 }

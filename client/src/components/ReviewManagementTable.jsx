@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import StarRating from "./StarRating";
 
 /**
@@ -17,6 +18,7 @@ export default function ReviewManagementTable({
   pagination,
   onPageChange
 }) {
+  const { t } = useTranslation(["reviews", "common"]);
   const [editingReview, setEditingReview] = useState(null);
   const [editForm, setEditForm] = useState({});
 
@@ -58,7 +60,7 @@ export default function ReviewManagementTable({
 
   // Format date for display
   const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
+    if (!dateString) return t("common:dateTime.notAvailable");
     try {
       return new Date(dateString).toLocaleDateString("en-US", {
         year: "numeric",
@@ -68,7 +70,7 @@ export default function ReviewManagementTable({
         minute: "2-digit"
       });
     } catch {
-      return "Invalid Date";
+      return t("common:dateTime.invalidDate");
     }
   };
 
@@ -89,7 +91,7 @@ export default function ReviewManagementTable({
 
   // Truncate text for display
   const truncateText = (text, maxLength = 100) => {
-    if (!text) return "N/A";
+    if (!text) return t("common:notAvailable");
     return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
   };
 
@@ -101,7 +103,7 @@ export default function ReviewManagementTable({
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          <span className="text-gray-600 font-medium">Loading reviews...</span>
+          <span className="text-gray-600 font-medium">{t("reviews:table.loading")}</span>
         </div>
       </div>
     );
@@ -114,8 +116,8 @@ export default function ReviewManagementTable({
           <svg className="w-12 h-12 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.562.562 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
           </svg>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No reviews found</h3>
-          <p className="text-gray-500">Try adjusting your filters to see more results</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">{t("reviews:table.noReviewsFound")}</h3>
+          <p className="text-gray-500">{t("reviews:table.adjustFilters")}</p>
         </div>
       </div>
     );
@@ -135,7 +137,7 @@ export default function ReviewManagementTable({
                 className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
               />
               <span className="ml-2 text-sm font-medium text-gray-700">
-                Select All ({selectedReviews.length} selected)
+                {t("reviews:table.selectAll", { count: selectedReviews.length })}
               </span>
             </label>
           </div>
@@ -164,7 +166,7 @@ export default function ReviewManagementTable({
                             className="text-sm border border-gray-300 rounded px-2 py-1"
                           >
                             {[1, 2, 3, 4, 5].map(num => (
-                              <option key={num} value={num}>{num} Star{num !== 1 ? 's' : ''}</option>
+                              <option key={num} value={num}>{t("reviews:rating.stars", { count: num })}</option>
                             ))}
                           </select>
                         ) : (
@@ -174,8 +176,8 @@ export default function ReviewManagementTable({
                           {editingReview === review.id ? editForm.rating : review.rating}/5
                         </span>
                       </div>
-                      <p className="text-sm font-medium text-gray-900">{review.Place?.title || "Unknown Place"}</p>
-                      <p className="text-xs text-gray-600">by {review.User?.name || "Anonymous"}</p>
+                      <p className="text-sm font-medium text-gray-900">{review.Place?.title || t("reviews:unknownPlace")}</p>
+                      <p className="text-xs text-gray-600">{t("reviews:byUser", { name: review.User?.name || t("common:anonymous") })}</p>
                     </div>
                     <span className="text-xs text-gray-500">{formatDate(review.created_at)}</span>
                   </div>
@@ -189,14 +191,14 @@ export default function ReviewManagementTable({
                           onChange={(e) => setEditForm(prev => ({ ...prev, comment: e.target.value }))}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm resize-none"
                           rows="3"
-                          placeholder="Review comment..."
+                          placeholder={t("reviews:placeholders.reviewComment")}
                         />
                         <textarea
                           value={editForm.adminNotes}
                           onChange={(e) => setEditForm(prev => ({ ...prev, adminNotes: e.target.value }))}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm resize-none"
                           rows="2"
-                          placeholder="Admin notes..."
+                          placeholder={t("reviews:placeholders.adminNotes")}
                         />
                         <label className="flex items-center text-sm">
                           <input
@@ -205,7 +207,7 @@ export default function ReviewManagementTable({
                             onChange={(e) => setEditForm(prev => ({ ...prev, isVisible: e.target.checked }))}
                             className="mr-2"
                           />
-                          <span className="text-gray-700">Visible to public</span>
+                          <span className="text-gray-700">{t("reviews:visibility.visibleToPublic")}</span>
                         </label>
                       </div>
                     ) : (
@@ -215,12 +217,12 @@ export default function ReviewManagementTable({
                         </p>
                         {review.adminNotes && (
                           <p className="text-xs text-gray-500 italic bg-gray-50 p-2 rounded">
-                            Admin: {truncateText(review.adminNotes, 80)}
+                            {t("reviews:adminNote")}: {truncateText(review.adminNotes, 80)}
                           </p>
                         )}
                         <div className="flex items-center justify-between text-xs">
                           <span className={review.isVisible ? "text-green-600" : "text-red-600"}>
-                            {review.isVisible ? "● Public" : "● Hidden"}
+                            {review.isVisible ? `● ${t("reviews:visibility.public")}` : `● ${t("reviews:visibility.hidden")}`}
                           </span>
                           <span className="text-gray-500">👍 {review.helpfulCount || 0}</span>
                         </div>
@@ -232,11 +234,11 @@ export default function ReviewManagementTable({
                   {review.reportCount > 0 && (
                     <div className="bg-red-50 border border-red-200 rounded-md p-2">
                       <span className="text-xs font-medium text-red-800">
-                        ⚠️ {review.reportCount} report{review.reportCount !== 1 ? 's' : ''}
+                        ⚠️ {t("reviews:reports.count", { count: review.reportCount })}
                       </span>
                       {review.Reports && review.Reports.length > 0 && (
                         <p className="text-xs text-red-600 mt-1">
-                          Latest: {review.Reports[0].reason}
+                          {t("reviews:reports.latest")}: {review.Reports[0].reason}
                         </p>
                       )}
                     </div>
@@ -250,13 +252,13 @@ export default function ReviewManagementTable({
                           onClick={handleEditSave}
                           className="flex-1 bg-green-600 text-white text-sm font-medium py-2 px-3 rounded-md hover:bg-green-700 transition-colors"
                         >
-                          Save
+                          {t("reviews:actions.save")}
                         </button>
                         <button
                           onClick={handleEditCancel}
                           className="flex-1 bg-gray-300 text-gray-700 text-sm font-medium py-2 px-3 rounded-md hover:bg-gray-400 transition-colors"
                         >
-                          Cancel
+                          {t("reviews:actions.cancel")}
                         </button>
                       </>
                     ) : (
@@ -265,17 +267,17 @@ export default function ReviewManagementTable({
                           onClick={() => handleEditStart(review)}
                           className="flex-1 bg-blue-600 text-white text-sm font-medium py-2 px-3 rounded-md hover:bg-blue-700 transition-colors"
                         >
-                          Edit
+                          {t("reviews:actions.edit")}
                         </button>
                         <button
                           onClick={() => {
-                            if (window.confirm("Are you sure you want to delete this review?")) {
+                            if (window.confirm(t("reviews:confirmations.deleteReview"))) {
                               onIndividualAction(review.id, "delete");
                             }
                           }}
                           className="flex-1 bg-red-600 text-white text-sm font-medium py-2 px-3 rounded-md hover:bg-red-700 transition-colors"
                         >
-                          Delete
+                          {t("reviews:actions.delete")}
                         </button>
                       </>
                     )}
@@ -302,19 +304,19 @@ export default function ReviewManagementTable({
                   />
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Review Details
+                  {t("reviews:table.headers.reviewDetails")}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Place & User
+                  {t("reviews:table.headers.placeAndUser")}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Reports
+                  {t("reviews:table.headers.reports")}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date
+                  {t("reviews:table.headers.date")}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  {t("reviews:table.headers.actions")}
                 </th>
               </tr>
             </thead>
@@ -342,7 +344,7 @@ export default function ReviewManagementTable({
                             className="text-sm border border-gray-300 rounded px-2 py-1"
                           >
                             {[1, 2, 3, 4, 5].map(num => (
-                              <option key={num} value={num}>{num} Star{num !== 1 ? 's' : ''}</option>
+                              <option key={num} value={num}>{t("reviews:rating.stars", { count: num })}</option>
                             ))}
                           </select>
                         ) : (
@@ -360,14 +362,14 @@ export default function ReviewManagementTable({
                             onChange={(e) => setEditForm(prev => ({ ...prev, comment: e.target.value }))}
                             className="w-full px-2 py-1 border border-gray-300 rounded text-sm resize-none"
                             rows="3"
-                            placeholder="Review comment..."
+                            placeholder={t("reviews:placeholders.reviewComment")}
                           />
                           <textarea
                             value={editForm.adminNotes}
                             onChange={(e) => setEditForm(prev => ({ ...prev, adminNotes: e.target.value }))}
                             className="w-full px-2 py-1 border border-gray-300 rounded text-sm resize-none"
                             rows="2"
-                            placeholder="Admin notes..."
+                            placeholder={t("reviews:placeholders.adminNotes")}
                           />
                           <label className="flex items-center text-xs">
                             <input
@@ -376,7 +378,7 @@ export default function ReviewManagementTable({
                               onChange={(e) => setEditForm(prev => ({ ...prev, isVisible: e.target.checked }))}
                               className="mr-1"
                             />
-                            <span className="text-gray-700">Visible to public</span>
+                            <span className="text-gray-700">{t("reviews:visibility.visibleToPublic")}</span>
                           </label>
                         </div>
                       ) : (
@@ -386,12 +388,12 @@ export default function ReviewManagementTable({
                           </p>
                           {review.adminNotes && (
                             <p className="text-xs text-gray-500 italic bg-gray-50 p-1 rounded">
-                              Admin: {truncateText(review.adminNotes, 60)}
+                              {t("reviews:adminNote")}: {truncateText(review.adminNotes, 60)}
                             </p>
                           )}
                           <div className="flex items-center text-xs space-x-3">
                             <span className={review.isVisible ? "text-green-600" : "text-red-600"}>
-                              {review.isVisible ? "● Public" : "● Hidden"}
+                              {review.isVisible ? `● ${t("reviews:visibility.public")}` : `● ${t("reviews:visibility.hidden")}`}
                             </span>
                             <span className="text-gray-500">👍 {review.helpfulCount || 0}</span>
                           </div>
@@ -404,10 +406,10 @@ export default function ReviewManagementTable({
                   <td className="px-4 py-3">
                     <div className="space-y-1">
                       <p className="text-sm font-medium text-gray-900 truncate max-w-32">
-                        {review.Place?.title || "Unknown Place"}
+                        {review.Place?.title || t("reviews:unknownPlace")}
                       </p>
                       <p className="text-sm text-gray-600 truncate">
-                        {review.User?.name || "Anonymous"}
+                        {review.User?.name || t("common:anonymous")}
                       </p>
                     </div>
                   </td>
@@ -417,7 +419,7 @@ export default function ReviewManagementTable({
                     {review.reportCount > 0 ? (
                       <div className="space-y-1">
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                          {review.reportCount} report{review.reportCount !== 1 ? 's' : ''}
+                          {t("reviews:reports.count", { count: review.reportCount })}
                         </span>
                         {review.Reports && review.Reports.length > 0 && (
                           <p className="text-xs text-gray-600 truncate max-w-24">
@@ -426,7 +428,7 @@ export default function ReviewManagementTable({
                         )}
                       </div>
                     ) : (
-                      <span className="text-xs text-gray-500">None</span>
+                      <span className="text-xs text-gray-500">{t("reviews:reports.none")}</span>
                     )}
                   </td>
 
@@ -443,13 +445,13 @@ export default function ReviewManagementTable({
                           onClick={handleEditSave}
                           className="text-green-600 hover:text-green-900 text-sm font-medium transition-colors"
                         >
-                          Save
+                          {t("reviews:actions.save")}
                         </button>
                         <button
                           onClick={handleEditCancel}
                           className="text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors"
                         >
-                          Cancel
+                          {t("reviews:actions.cancel")}
                         </button>
                       </div>
                     ) : (
@@ -457,20 +459,20 @@ export default function ReviewManagementTable({
                         <button
                           onClick={() => handleEditStart(review)}
                           className="text-blue-600 hover:text-blue-900 text-sm font-medium transition-colors"
-                          title="Edit"
+                          title={t("reviews:actions.edit")}
                         >
-                          Edit
+                          {t("reviews:actions.edit")}
                         </button>
                         <button
                           onClick={() => {
-                            if (window.confirm("Are you sure you want to delete this review?")) {
+                            if (window.confirm(t("reviews:confirmations.deleteReview"))) {
                               onIndividualAction(review.id, "delete");
                             }
                           }}
                           className="text-red-600 hover:text-red-900 text-sm font-medium transition-colors"
-                          title="Delete"
+                          title={t("reviews:actions.delete")}
                         >
-                          Delete
+                          {t("reviews:actions.delete")}
                         </button>
                       </div>
                     )}
@@ -488,9 +490,11 @@ export default function ReviewManagementTable({
           <div className="flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0">
             {/* Results info */}
             <div className="text-sm text-gray-700">
-              Showing <span className="font-medium">{((pagination.currentPage - 1) * pagination.reviewsPerPage) + 1}</span> to{" "}
-              <span className="font-medium">{Math.min(pagination.currentPage * pagination.reviewsPerPage, pagination.totalReviews)}</span> of{" "}
-              <span className="font-medium">{pagination.totalReviews}</span> reviews
+              {t("reviews:pagination.showingResults", {
+                from: (pagination.currentPage - 1) * pagination.reviewsPerPage + 1,
+                to: Math.min(pagination.currentPage * pagination.reviewsPerPage, pagination.totalReviews),
+                total: pagination.totalReviews
+              })}
             </div>
             
             {/* Pagination controls */}
@@ -500,14 +504,14 @@ export default function ReviewManagementTable({
                 disabled={pagination.currentPage === 1}
                 className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                First
+                {t("reviews:pagination.first")}
               </button>
               <button
                 onClick={() => onPageChange(pagination.currentPage - 1)}
                 disabled={pagination.currentPage === 1}
                 className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Previous
+                {t("reviews:pagination.previous")}
               </button>
               
               {/* Page numbers */}
@@ -545,14 +549,14 @@ export default function ReviewManagementTable({
                 disabled={pagination.currentPage === pagination.totalPages}
                 className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Next
+                {t("reviews:pagination.next")}
               </button>
               <button
                 onClick={() => onPageChange(pagination.totalPages)}
                 disabled={pagination.currentPage === pagination.totalPages}
                 className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Last
+                {t("reviews:pagination.last")}
               </button>
             </div>
           </div>
