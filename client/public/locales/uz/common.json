@@ -73,10 +73,12 @@
     "confirmDelete": "Haqiqatan ham bu elementni o'chirmoqchimisiz?",
     "unsavedChanges": "Saqlanmagan o'zgarishlar mavjud. Davom etmoqchimisiz?",
     "requiredField": "Bu maydon to'ldirilishi shart",
-    "invalidFormat": "Noto'g'ri format",
-    "passwordMismatch": "Parollar mos kelmadi",
-    "emailInvalid": "Iltimos, to'g'ri elektron pochta manzilini kiriting",
-    "phoneInvalid": "Iltimos, to'g'ri telefon raqamini kiriting"
+        "invalidFormat": "Noto'g'ri format",
+    "passwordMismatch": "Parollar mos kelmaydi",
+    "emailInvalid": "Iltimos, to'g'ri email manzilini kiriting",
+    "phoneInvalid": "Iltimos, to'g'ri telefon raqamini kiriting",
+    "loginRequired": "Bildirishnomalarni ko'rish uchun tizimga kiring",
+    "goToLogin": "Tizimga kirish"
   },
   "navigation": {
     "home": "Bosh sahifa",

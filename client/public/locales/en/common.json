@@ -77,7 +77,9 @@
     "invalidFormat": "Invalid format",
     "passwordMismatch": "Passwords do not match",
     "emailInvalid": "Please enter a valid email address",
-    "phoneInvalid": "Please enter a valid phone number"
+    "phoneInvalid": "Please enter a valid phone number",
+    "loginRequired": "Please log in to view notifications",
+    "goToLogin": "Go to Login"
   },
   "navigation": {
     "home": "Home",

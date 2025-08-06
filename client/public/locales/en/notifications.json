@@ -36,5 +36,30 @@
     "from": "from",
     "to": "to",
     "at": "at"
+  },
+  "page": {
+    "title": "Notifications",
+    "unread": "Unread",
+    "all": "All",
+    "markAllAsRead": "Mark All as Read",
+    "deleteAll": "Delete All",
+    "noNotifications": "No notifications",
+    "noUnreadNotifications": "No unread notifications",
+    "noNotificationsMessage": "You'll receive notifications about reviews and replies here.",
+    "allReadMessage": "All your notifications have been read.",
+    "deleteConfirmation": "Are you sure you want to delete all notifications? This action cannot be undone.",
+    "deleteSuccess": "{{count}} notifications deleted",
+    "markReadSuccess": "{{count}} notifications marked as read",
+    "loadError": "Failed to load notifications",
+    "markReadError": "Failed to mark all notifications as read",
+    "deleteError": "Failed to delete all notifications",
+    "markSingleReadError": "Failed to mark notification as read",
+    "unreadCount": "{{count}} unread notification",
+    "unreadCount_plural": "{{count}} unread notifications",
+    "deleteAllTitle": "Delete All Notifications",
+    "deleteWarning": "This will permanently remove all your notifications.",
+    "cancel": "Cancel",
+    "deleteConfirm": "Delete All",
+    "deleting": "Deleting..."
   }
 }

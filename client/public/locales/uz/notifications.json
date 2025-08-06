@@ -36,5 +36,30 @@
     "from": "dan",
     "to": "gacha",
     "at": "da"
+  },
+  "page": {
+    "title": "Bildirishnomalar",
+    "unread": "O'qilmagan",
+    "all": "Barchasi",
+    "markAllAsRead": "Barchasini o'qilgan deb belgilash",
+    "deleteAll": "Barchasini o'chirish",
+    "noNotifications": "Bildirishnomalar yo'q",
+    "noUnreadNotifications": "O'qilmagan bildirishnomalar yo'q",
+    "noNotificationsMessage": "Bu yerda sharhlar va javoblar haqida bildirishnomalar olasiz.",
+    "allReadMessage": "Barcha bildirishnomalaringiz o'qilgan.",
+    "deleteConfirmation": "Barcha bildirishnomalarni o'chirishni xohlaysizmi? Bu amalni bekor qilib bo'lmaydi.",
+    "deleteSuccess": "{{count}} ta bildirishnoma o'chirildi",
+    "markReadSuccess": "{{count}} ta bildirishnoma o'qilgan deb belgilandi",
+    "loadError": "Bildirishnomalarni yuklashda xatolik",
+    "markReadError": "Barcha bildirishnomalarni o'qilgan deb belgilashda xatolik",
+    "deleteError": "Barcha bildirishnomalarni o'chirishda xatolik",
+    "markSingleReadError": "Bildirishnomani o'qilgan deb belgilashda xatolik",
+    "unreadCount": "{{count}} ta o'qilmagan bildirishnoma",
+    "unreadCount_plural": "{{count}} ta o'qilmagan bildirishnoma",
+    "deleteAllTitle": "Barcha bildirishnomalarni o'chirish",
+    "deleteWarning": "Bu barcha bildirishnomalaringizni butunlay o'chiradi.",
+    "cancel": "Bekor qilish",
+    "deleteConfirm": "Barchasini o'chirish",
+    "deleting": "O'chirilmoqda..."
   }
 }

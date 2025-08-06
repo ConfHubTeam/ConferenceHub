@@ -78,18 +78,14 @@ export function ReviewNotificationProvider({ children }) {
       });
 
       if (response.data.ok) {
-        const rawNotifications = response.data.notifications;
-        // Filter out legacy notifications - only show notifications with proper translation structure
-        const newNotifications = rawNotifications.filter(notification => 
-          notification.metadata?.translationKey && notification.metadata?.translationVariables
-        );
+        const newNotifications = response.data.notifications;
         
-        console.log("API Response - unreadOnly:", unreadOnly, "total notifications:", rawNotifications.length, "valid notifications:", newNotifications.length, "append:", append);
+        console.log("API Response - unreadOnly:", unreadOnly, "notifications count:", newNotifications.length, "append:", append);
         
         if (append) {
           setNotifications(prev => [...prev, ...newNotifications]);
         } else {
-          console.log("Replacing notifications with:", newNotifications.length, "valid items");
+          console.log("Replacing notifications with:", newNotifications.length, "items");
           setNotifications(newNotifications);
         }
 
@@ -157,6 +153,28 @@ export function ReviewNotificationProvider({ children }) {
       }
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
+      throw error;
+    }
+  }, [user]);
+
+  /**
+   * Delete all notifications for the authenticated user
+   */
+  const deleteAllNotifications = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const response = await api.delete("/notifications/delete-all");
+      
+      if (response.data.ok) {
+        // Clear local state
+        setNotifications([]);
+        setUnreadCount(0);
+
+        return response.data.deletedCount;
+      }
+    } catch (error) {
+      console.error("Error deleting all notifications:", error);
       throw error;
     }
   }, [user]);
@@ -350,6 +368,7 @@ export function ReviewNotificationProvider({ children }) {
     loadUnreadCount,
     markAsRead,
     markAllAsRead,
+    deleteAllNotifications,
     getNotificationDisplayData,
 
     // Polling control

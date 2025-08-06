@@ -124,6 +124,32 @@ const markAllAsRead = async (req, res) => {
 };
 
 /**
+ * Delete all notifications for the authenticated user
+ * DELETE /api/notifications/delete-all
+ * Authenticated users only
+ */
+const deleteAllNotifications = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const deletedCount = await ReviewNotificationService.deleteAllNotifications(userId);
+
+    res.json({
+      ok: true,
+      message: `${deletedCount} notifications deleted`,
+      deletedCount
+    });
+
+  } catch (error) {
+    console.error("Error deleting all notifications:", error);
+    res.status(500).json({
+      ok: false,
+      error: "Failed to delete all notifications"
+    });
+  }
+};
+
+/**
  * Test SMS service connectivity and send test SMS
  * POST /api/notifications/test-sms
  * Authenticated users only (development/testing purposes)
@@ -181,5 +207,6 @@ module.exports = {
   getUserNotifications,
   markAsRead,
   markAllAsRead,
+  deleteAllNotifications,
   testSMS
 };
