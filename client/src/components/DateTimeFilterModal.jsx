@@ -5,7 +5,7 @@ import { useSearchParams as useRouterSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useDateTimeFilter } from "../contexts/DateTimeFilterContext";
 import MultiDateCalendar from "./MultiDateCalendar";
-import { formatHourTo12 } from "../utils/TimeUtils";
+import { formatHourTo12, formatHourLocalized } from "../utils/TimeUtils";
 import { getCurrentDateObjectInUzbekistan } from "../utils/uzbekistanTimezoneUtils";
 
 /**
@@ -28,7 +28,7 @@ import { getCurrentDateObjectInUzbekistan } from "../utils/uzbekistanTimezoneUti
  * @param {Function} props.onClose - Function to call when closing the modal
  */
 export default function DateTimeFilterModal({ isOpen, onClose }) {
-  const { t } = useTranslation("search");
+  const { t, i18n } = useTranslation("search");
   const {
     selectedDates,
     startTime,
@@ -282,7 +282,7 @@ export default function DateTimeFilterModal({ isOpen, onClose }) {
                         value={time}
                         disabled={tempEndTime && time >= tempEndTime}
                       >
-                        {formatHourTo12(time)}
+                        {formatHourLocalized(time, i18n.language)}
                       </option>
                     ))}
                   </select>
@@ -308,7 +308,7 @@ export default function DateTimeFilterModal({ isOpen, onClose }) {
                         value={time}
                         disabled={tempStartTime && time <= tempStartTime}
                       >
-                        {formatHourTo12(time)}
+                        {formatHourLocalized(time, i18n.language)}
                       </option>
                     ))}
                   </select>

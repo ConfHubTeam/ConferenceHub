@@ -1,0 +1,80 @@
+{
+  "title": "Foydalanuvchilarni boshqarish",
+  "search": {
+    "placeholder": "Ism, email yoki telefon raqami bo'yicha qidirish...",
+    "noResults": "Foydalanuvchilar topilmadi",
+    "noResultsHelp": "Qidiruv so'zlarini o'zgartirib ko'ring",
+    "showing": "{{total}} tadan {{count}} ta foydalanuvchi ko'rsatilmoqda",
+    "matching": "\"{{term}}\" ga mos"
+  },
+  "filters": {
+    "all": "Barchasi",
+    "clients": "Mijozlar",
+    "hosts": "Hostlar",
+    "agents": "Agentlar"
+  },
+  "table": {
+    "headers": {
+      "id": "ID",
+      "name": "Ism",
+      "email": "Email",
+      "phone": "Telefon",
+      "type": "Turi",
+      "joined": "Qo'shilgan",
+      "actions": "Amallar"
+    },
+    "noPhone": "Telefon yo'q",
+    "noUsersOnPage": "Bu sahifada foydalanuvchilar yo'q"
+  },
+  "userTypes": {
+    "client": "Mijoz",
+    "host": "Host", 
+    "agent": "Agent"
+  },
+  "actions": {
+    "bookings": "Bronlar",
+    "edit": "Tahrirlash",
+    "delete": "O'chirish",
+    "viewBookings": "Foydalanuvchi bronlarini ko'rish",
+    "editUser": "Foydalanuvchi ma'lumotlarini tahrirlash",
+    "deleteUser": "Foydalanuvchini o'chirish"
+  },
+  "deleteModal": {
+    "title": "Foydalanuvchini o'chirish",
+    "consequences": {
+      "account": "Foydalanuvchi hisobi va profil ma'lumotlari",
+      "bookings": "Ularning barcha bronlari",
+      "hostRooms": "Ushbu hostga tegishli barcha konferens-zallar",
+      "hostBookings": "Ularning zallariga bog'liq barcha bronlar"
+    },
+    "labels": {
+      "name": "Ism",
+      "email": "Email",
+      "phone": "Telefon",
+      "role": "Rol",
+      "joined": "Qo'shilgan",
+      "noPhone": "Telefon raqami yo'q"
+    }
+  },
+  "editModal": {
+    "title": "Foydalanuvchini tahrirlash",
+    "saving": "Saqlanmoqda...",
+    "fields": {
+      "name": "Ism",
+      "email": "Email",
+      "phone": "Telefon raqami",
+      "userType": "Foydalanuvchi turi"
+    },
+    "validation": {
+      "nameRequired": "Ism talab qilinadi",
+      "emailRequired": "Email talab qilinadi",
+      "emailInvalid": "Iltimos, to'g'ri email manzilini kiriting"
+    }
+  },
+  "notifications": {
+    "userUpdated": "Foydalanuvchi muvaffaqiyatli yangilandi",
+    "userDeleted": "Foydalanuvchi muvaffaqiyatli o'chirildi",
+    "updateFailed": "Foydalanuvchini yangilash amalga oshmadi",
+    "deleteFailed": "Foydalanuvchini o'chirish amalga oshmadi"
+  }
+}

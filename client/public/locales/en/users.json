@@ -1,0 +1,80 @@
+{
+  "title": "User Management",
+  "search": {
+    "placeholder": "Search by name, email, or phone number...",
+    "noResults": "No users found",
+    "noResultsHelp": "Try adjusting your search terms",
+    "showing": "Showing {{count}} of {{total}} users",
+    "matching": "matching \"{{term}}\""
+  },
+  "filters": {
+    "all": "All",
+    "clients": "Clients",
+    "hosts": "Hosts",
+    "agents": "Agents"
+  },
+  "table": {
+    "headers": {
+      "id": "ID",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "type": "Type",
+      "joined": "Joined",
+      "actions": "Actions"
+    },
+    "noPhone": "No phone",
+    "noUsersOnPage": "No users on this page"
+  },
+  "userTypes": {
+    "client": "Client",
+    "host": "Host", 
+    "agent": "Agent"
+  },
+  "actions": {
+    "bookings": "Bookings",
+    "edit": "Edit",
+    "delete": "Delete",
+    "viewBookings": "View user's bookings",
+    "editUser": "Edit user details",
+    "deleteUser": "Delete user"
+  },
+  "deleteModal": {
+    "title": "Delete User",
+    "consequences": {
+      "account": "User's account and profile information",
+      "bookings": "All of their bookings",
+      "hostRooms": "All conference rooms owned by this host",
+      "hostBookings": "All bookings associated with their rooms"
+    },
+    "labels": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "role": "Role",
+      "joined": "Joined",
+      "noPhone": "No phone number"
+    }
+  },
+  "editModal": {
+    "title": "Edit User",
+    "saving": "Saving...",
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone Number",
+      "userType": "User Type"
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address"
+    }
+  },
+  "notifications": {
+    "userUpdated": "User updated successfully",
+    "userDeleted": "User deleted successfully",
+    "updateFailed": "Failed to update user",
+    "deleteFailed": "Failed to delete user"
+  }
+}

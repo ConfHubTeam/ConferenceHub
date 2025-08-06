@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { enUS, ru, uz } from "date-fns/locale";
 import { formatCurrency, getCurrencySymbol } from "../utils/currencyUtils";
-import { formatHourTo12 } from "../utils/TimeUtils";
+import { formatHourTo12, formatHourLocalized } from "../utils/TimeUtils";
 
 /**
  * Custom hook for formatting filter values with translation support
@@ -38,7 +38,7 @@ export const useFilterFormatting = () => {
       const formattedDate = format(selectedDates[0], "MMM d", { locale: getDateLocale() });
       // Include time information if available
       if (startTime && endTime) {
-        return `${formattedDate}, ${formatHourTo12(startTime)}-${formatHourTo12(endTime)}`;
+        return `${formattedDate}, ${formatHourLocalized(startTime, i18n.language)}-${formatHourLocalized(endTime, i18n.language)}`;
       }
       return formattedDate;
     }

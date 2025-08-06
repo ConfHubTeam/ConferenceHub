@@ -56,7 +56,7 @@ export default function TimeSlotModal({
       );
     } else {
       // Fallback to regular time generation
-      availableOptions = generateTimeOptions(timeSlots.start, timeSlots.end, minimumHours, cooldownMinutes)
+      availableOptions = generateTimeOptions(timeSlots.start, timeSlots.end, minimumHours, cooldownMinutes, i18n.language)
         .map(option => {
           // Check if this time is in the past for the editing date
           // Add validation to prevent invalid time value errors
@@ -171,7 +171,7 @@ export default function TimeSlotModal({
     }
     
     // Fallback to regular generation
-    const startOptions = generateStartTimeOptions(timeSlots.start, timeSlots.end, minimumHours, cooldownMinutes);
+    const startOptions = generateStartTimeOptions(timeSlots.start, timeSlots.end, minimumHours, cooldownMinutes, i18n.language);
     
     return startOptions.map(option => {
       // Check if this time is in the past for the editing date

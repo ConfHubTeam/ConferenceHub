@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 /**
  * Pagination Component
@@ -14,6 +15,7 @@ export default function Pagination({
   totalItems,
   itemName = "items" // Default to "items" if not specified
 }) {
+  const { t } = useTranslation('pagination');
   if (totalPages <= 1) return null;
 
   const getPageNumbers = () => {
@@ -55,7 +57,12 @@ export default function Pagination({
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 p-4 bg-white border border-gray-200 rounded-lg">
       {/* Results info */}
       <div className="text-sm text-gray-600">
-        Showing {showingFrom}-{showingTo} of {totalItems} {itemName}
+        {t('showing', { 
+          from: showingFrom, 
+          to: showingTo, 
+          total: totalItems,
+          items: t(`items.${itemName}`, itemName)
+        })}
       </div>
       
       {/* Pagination controls */}
@@ -66,7 +73,7 @@ export default function Pagination({
           disabled={currentPage === 1}
           className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Previous
+          {t('buttons.previous')}
         </button>
         
         {/* Page numbers */}
@@ -97,7 +104,7 @@ export default function Pagination({
           disabled={currentPage === totalPages}
           className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Next
+          {t('buttons.next')}
         </button>
       </div>
     </div>

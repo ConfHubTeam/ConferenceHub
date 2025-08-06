@@ -279,12 +279,6 @@ export default function BookingsPage() {
     return filteredBookings.slice(startIndex, endIndex);
   }
 
-  // Helper function to clear all filters
-  const clearAllFilters = () => {
-    setSearchTerm("");
-    setStatusFilter("pending"); // Reset to default
-  };
-
   // Handle cleanup expired bookings (Agent only)
   const handleCleanupExpired = () => {
     setShowCleanupModal(true);
@@ -374,7 +368,6 @@ export default function BookingsPage() {
               sortOrder={sortOrder}
               setSortOrder={setSortOrder}
               stats={stats}
-              onClearAllFilters={clearAllFilters}
               onCleanupExpired={handleCleanupExpired}
             />
 
@@ -457,7 +450,6 @@ export default function BookingsPage() {
               sortOrder={sortOrder}
               setSortOrder={setSortOrder}
               stats={stats}
-              onClearAllFilters={clearAllFilters}
             />
 
             {/* Booking requests list */}
@@ -564,7 +556,6 @@ export default function BookingsPage() {
               sortOrder={sortOrder}
               setSortOrder={setSortOrder}
               stats={stats}
-              onClearAllFilters={clearAllFilters}
             />
 
             {/* Bookings list */}

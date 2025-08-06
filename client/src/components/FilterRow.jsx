@@ -8,7 +8,7 @@ import { useSizeFilter, SIZE_RANGES } from "../contexts/SizeFilterContext";
 import { usePerksFilter } from "../contexts/PerksFilterContext";
 import { usePoliciesFilter } from "../contexts/PoliciesFilterContext";
 import { formatCurrency, getCurrencySymbol } from "../utils/currencyUtils";
-import { formatHourTo12 } from "../utils/TimeUtils";
+import { formatHourTo12, formatHourLocalized } from "../utils/TimeUtils";
 import { format } from "date-fns";
 import { enUS, ru, uz } from "date-fns/locale";
 import DateTimeFilterModal from "./DateTimeFilterModal";
@@ -100,7 +100,7 @@ export default function FilterRow({
       const formattedDate = format(selectedDates[0], "MMM d", { locale: getDateLocale() });
       // Include time information if available
       if (startTime && endTime) {
-        return `${formattedDate}, ${formatHourTo12(startTime)}-${formatHourTo12(endTime)}`;
+        return `${formattedDate}, ${formatHourLocalized(startTime, i18n.language)}-${formatHourLocalized(endTime, i18n.language)}`;
       }
       return formattedDate;
     }

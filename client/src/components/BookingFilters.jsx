@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import ActiveFilters, { FilterCreators } from "./ActiveFilters";
 import StatusFilter from "./StatusFilter";
 
 export default function BookingFilters({
@@ -15,27 +14,11 @@ export default function BookingFilters({
   sortOrder,
   setSortOrder,
   stats,
-  onClearAllFilters,
   onCleanupExpired // Add cleanup callback prop
 }) {
   const { t } = useTranslation('booking');
   const location = useLocation();
   const navigate = useNavigate();
-
-  // Helper function to get active filters
-  const getActiveFilters = () => {
-    const filters = [];
-    
-    if (searchTerm) {
-      filters.push(FilterCreators.search(searchTerm, () => setSearchTerm("")));
-    }
-    
-    if (statusFilter !== "pending" && statusFilter !== "all") {
-      filters.push(FilterCreators.status(statusFilter, () => setStatusFilter("pending")));
-    }
-    
-    return filters;
-  };
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 lg:p-6 mb-4 sm:mb-6">
@@ -138,12 +121,6 @@ export default function BookingFilters({
           </div>
         )}
       </div>
-      
-      {/* Active Filters */}
-      <ActiveFilters 
-        filters={getActiveFilters()}
-        onClearAllFilters={onClearAllFilters}
-      />
     </div>
   );
 }

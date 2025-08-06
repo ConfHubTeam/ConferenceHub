@@ -1,18 +1,20 @@
 import { useContext, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import AccountNav from "../components/AccountNav";
 import api from "../utils/api";
 import { UserContext } from "../components/UserContext";
 import { Navigate } from "react-router-dom";
-import { format } from "date-fns";
 import { useNotification } from "../components/NotificationContext";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import EditUserModal from "../components/EditUserModal";
 import Pagination from "../components/Pagination";
-import ActiveFilters, { FilterCreators } from "../components/ActiveFilters";
+import { useDateLocalization } from "../hooks/useDateLocalization";
 
 export default function UsersPage() {
   const { user } = useContext(UserContext);
   const { notify } = useNotification();
+  const { t } = useTranslation('users');
+  const { formatLocalizedDate } = useDateLocalization();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filteredUsers, setFilteredUsers] = useState([]);
@@ -121,27 +123,6 @@ export default function UsersPage() {
   const showingFrom = totalUsers > 0 ? startIndex + 1 : 0;
   const showingTo = Math.min(endIndex, totalUsers);
 
-  // Helper function to clear all filters
-  const clearAllFilters = () => {
-    setSearchTerm("");
-    setFilterType("all");
-  };
-
-  // Helper function to get active filters for the ActiveFilters component
-  const getActiveFilters = () => {
-    const filters = [];
-    
-    if (searchTerm) {
-      filters.push(FilterCreators.search(searchTerm, () => setSearchTerm("")));
-    }
-    
-    if (filterType !== "all") {
-      filters.push(FilterCreators.userType(filterType, () => setFilterType("all")));
-    }
-    
-    return filters;
-  };
-
   // Get user type badge class
   const getUserTypeClass = (userType) => {
     switch(userType) {
@@ -175,7 +156,7 @@ export default function UsersPage() {
     try {
       await api.put(`/users/${editUser.id}`, formData);
       
-      notify("User updated successfully", "success");
+      notify(t('notifications.userUpdated'), "success");
       setIsEditModalOpen(false);
       setEditUser(null);
       
@@ -193,7 +174,7 @@ export default function UsersPage() {
       } else if (errorData?.code === 'INVALID_PHONE_FORMAT') {
         notify("Please enter a valid phone number in international format", "error");
       } else {
-        notify(errorData?.error || "Error updating user", "error");
+        notify(errorData?.error || t('notifications.updateFailed'), "error");
       }
     } finally {
       setIsSavingEdit(false);
@@ -237,14 +218,14 @@ export default function UsersPage() {
       
       // Remove user from state
       setUsers(prevUsers => prevUsers.filter(user => user.id !== deleteUserId));
-      notify("User deleted successfully", "success");
+      notify(t('notifications.userDeleted'), "success");
       
       // Reset delete state
       setDeleteUserId(null);
       setSelectedUser(null);
     } catch (error) {
       console.error("Error deleting user:", error);
-      notify(error.response?.data?.error || "Error deleting user", "error");
+      notify(error.response?.data?.error || t('notifications.deleteFailed'), "error");
     } finally {
       setIsDeleting(false);
     }
@@ -276,7 +257,7 @@ export default function UsersPage() {
             <div className="w-full lg:w-1/2">
               <input
                 type="text"
-                placeholder="Search by name, email, or phone number..."
+                placeholder={t('search.placeholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -289,7 +270,7 @@ export default function UsersPage() {
                   filterType === 'all' ? 'bg-primary text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                 }`}
               >
-                All ({users.length})
+                {t('filters.all')} ({users.length})
               </button>
               <button 
                 onClick={() => setFilterType('client')}
@@ -297,7 +278,7 @@ export default function UsersPage() {
                   filterType === 'client' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                 }`}
               >
-                Clients ({users.filter(u => u.userType === 'client').length})
+                {t('filters.clients')} ({users.filter(u => u.userType === 'client').length})
               </button>
               <button 
                 onClick={() => setFilterType('host')}
@@ -305,7 +286,7 @@ export default function UsersPage() {
                   filterType === 'host' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                 }`}
               >
-                Hosts ({users.filter(u => u.userType === 'host').length})
+                {t('filters.hosts')} ({users.filter(u => u.userType === 'host').length})
               </button>
               <button 
                 onClick={() => setFilterType('agent')}
@@ -313,22 +294,16 @@ export default function UsersPage() {
                   filterType === 'agent' ? 'bg-purple-500 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                 }`}
               >
-                Agents ({users.filter(u => u.userType === 'agent').length})
+                {t('filters.agents')} ({users.filter(u => u.userType === 'agent').length})
               </button>
             </div>
           </div>
           
           {/* Results summary */}
           <div className="text-sm text-gray-600">
-            Showing {currentUsers.length} of {totalUsers} users
-            {searchTerm && ` matching "${searchTerm}"`}
+            {t('search.showing', { count: currentUsers.length, total: totalUsers })}
+            {searchTerm && ` ${t('search.matching', { term: searchTerm })}`}
           </div>
-          
-          {/* Active filters */}
-          <ActiveFilters 
-            filters={getActiveFilters()}
-            onClearAllFilters={clearAllFilters}
-          />
         </div>
         
         {/* Edit User Modal */}
@@ -346,25 +321,25 @@ export default function UsersPage() {
             isOpen={true}
             onClose={closeDeleteModal}
             onDelete={deleteUser}
-            title="Delete User"
+            title={t('deleteModal.title')}
             itemToDelete={selectedUser}
             itemDetails={[
-              { label: "Name", value: selectedUser.name },
-              { label: "Email", value: selectedUser.email },
-              { label: "Phone", value: selectedUser.phoneNumber || "No phone number" },
-              { label: "Role", value: (
+              { label: t('deleteModal.labels.name'), value: selectedUser.name },
+              { label: t('deleteModal.labels.email'), value: selectedUser.email },
+              { label: t('deleteModal.labels.phone'), value: selectedUser.phoneNumber || t('deleteModal.labels.noPhone') },
+              { label: t('deleteModal.labels.role'), value: (
                 <span className={`px-2 py-0.5 text-xs rounded-full ${getUserTypeClass(selectedUser.userType)}`}>
-                  {selectedUser.userType.charAt(0).toUpperCase() + selectedUser.userType.slice(1)}
+                  {t(`userTypes.${selectedUser.userType}`)}
                 </span>
               )},
-              { label: "Joined", value: format(new Date(selectedUser.createdAt), 'MMM d, yyyy') }
+              { label: t('deleteModal.labels.joined'), value: formatLocalizedDate(new Date(selectedUser.createdAt)) }
             ]}
             consequences={[
-              "User's account and profile information",
-              "All of their bookings",
+              t('deleteModal.consequences.account'),
+              t('deleteModal.consequences.bookings'),
               ...(selectedUser.userType === 'host' ? [
-                "All conference rooms owned by this host",
-                "All bookings associated with their rooms"
+                t('deleteModal.consequences.hostRooms'),
+                t('deleteModal.consequences.hostBookings')
               ] : [])
             ]}
             deleteInProgress={isDeleting}
@@ -377,13 +352,13 @@ export default function UsersPage() {
             <table className="w-full">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">ID</th>
+                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">{t('table.headers.id')}</th>
                   <th 
                     className="py-3 px-4 text-left text-sm font-semibold text-gray-600 cursor-pointer hover:text-gray-800 select-none"
                     onClick={() => handleSort('name')}
                   >
                     <div className="flex items-center gap-1">
-                      Name
+                      {t('table.headers.name')}
                       {sortBy === 'name' && (
                         <span className="text-primary">
                           {sortOrder === 'asc' ? '↑' : '↓'}
@@ -396,7 +371,7 @@ export default function UsersPage() {
                     onClick={() => handleSort('email')}
                   >
                     <div className="flex items-center gap-1">
-                      Email
+                      {t('table.headers.email')}
                       {sortBy === 'email' && (
                         <span className="text-primary">
                           {sortOrder === 'asc' ? '↑' : '↓'}
@@ -404,13 +379,13 @@ export default function UsersPage() {
                       )}
                     </div>
                   </th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">Phone</th>
+                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">{t('table.headers.phone')}</th>
                   <th 
                     className="py-3 px-4 text-left text-sm font-semibold text-gray-600 cursor-pointer hover:text-gray-800 select-none"
                     onClick={() => handleSort('userType')}
                   >
                     <div className="flex items-center gap-1">
-                      Type
+                      {t('table.headers.type')}
                       {sortBy === 'userType' && (
                         <span className="text-primary">
                           {sortOrder === 'asc' ? '↑' : '↓'}
@@ -423,7 +398,7 @@ export default function UsersPage() {
                     onClick={() => handleSort('createdAt')}
                   >
                     <div className="flex items-center gap-1">
-                      Joined
+                      {t('table.headers.joined')}
                       {sortBy === 'createdAt' && (
                         <span className="text-primary">
                           {sortOrder === 'asc' ? '↑' : '↓'}
@@ -431,7 +406,7 @@ export default function UsersPage() {
                       )}
                     </div>
                   </th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">Actions</th>
+                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">{t('table.headers.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -443,13 +418,13 @@ export default function UsersPage() {
                           <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                           </svg>
-                          <span>No users found</span>
+                          <span>{t('search.noResults')}</span>
                           {searchTerm && (
-                            <p className="text-sm text-gray-400">Try adjusting your search terms</p>
+                            <p className="text-sm text-gray-400">{t('search.noResultsHelp')}</p>
                           )}
                         </div>
                       ) : (
-                        "No users on this page"
+                        t('table.noUsersOnPage')
                       )}
                     </td>
                   </tr>
@@ -466,43 +441,43 @@ export default function UsersPage() {
                       <td className="py-4 px-4">
                         <div className="text-sm text-gray-900">
                           {userItem.phoneNumber || (
-                            <span className="text-gray-400 italic">No phone</span>
+                            <span className="text-gray-400 italic">{t('table.noPhone')}</span>
                           )}
                         </div>
                       </td>
                       <td className="py-4 px-4">
                         <span className={`px-3 py-1 text-xs font-medium rounded-full ${getUserTypeClass(userItem.userType)}`}>
-                          {userItem.userType.charAt(0).toUpperCase() + userItem.userType.slice(1)}
+                          {t(`userTypes.${userItem.userType}`)}
                         </span>
                       </td>
                       <td className="py-4 px-4 text-sm text-gray-900">
-                        {format(new Date(userItem.createdAt), 'MMM d, yyyy')}
+                        {formatLocalizedDate(new Date(userItem.createdAt))}
                       </td>
                       <td className="py-4 px-4">
                         <div className="flex flex-wrap gap-2">
                           <a 
                             href={`/account/bookings?userId=${userItem.id}`} 
                             className="text-primary hover:text-primary-dark text-sm font-medium transition-colors"
-                            title="View user's bookings"
+                            title={t('actions.viewBookings')}
                           >
-                            Bookings
+                            {t('actions.bookings')}
                           </a>
                           <button
                             onClick={() => handleEditUser(userItem)}
                             className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
-                            title="Edit user details"
+                            title={t('actions.editUser')}
                           >
-                            Edit
+                            {t('actions.edit')}
                           </button>
                           {/* Don't allow deleting yourself */}
                           {userItem.id !== user?.id && (
                             <button 
                               onClick={() => !cooldown && confirmDelete(userItem.id)}
                               className="text-orange-600 hover:text-orange-800 text-sm font-medium transition-colors"
-                              title="Delete user"
+                              title={t('actions.deleteUser')}
                               disabled={cooldown}
                             >
-                              Delete
+                              {t('actions.delete')}
                             </button>
                           )}
                         </div>
