@@ -126,5 +126,87 @@
     "replyFailed": "Не удалось опубликовать ответ. Попробуйте еще раз.",
     "editReplyFailed": "Не удалось обновить ответ. Попробуйте еще раз.",
     "loadReviewsFailed": "Не удалось загрузить отзывы"
+  },
+  "management": {
+    "title": "Управление отзывами",
+    "search": {
+      "placeholder": "Поиск по названию места, имени рецензента или содержанию отзыва...",
+      "searching": "Поиск...",
+      "matching": "соответствует \"{{term}}\""
+    },
+    "filters": {
+      "rating": {
+        "label": "Фильтр по рейтингу",
+        "all": "Все рейтинги",
+        "option": "{{rating}} звезд"
+      },
+      "reported": {
+        "label": "Фильтр по жалобам",
+        "all": "Все отзывы",
+        "reported": "Только с жалобами",
+        "notReported": "Без жалоб"
+      },
+      "dateRange": {
+        "startDate": "Дата начала",
+        "endDate": "Дата окончания",
+        "fromDate": "С: {{date}}",
+        "toDate": "До: {{date}}"
+      },
+      "clearAll": "Очистить все фильтры"
+    },
+    "table": {
+      "selectAll": "Выбрать все",
+      "place": "Место",
+      "reviewer": "Рецензент",
+      "rating": "Рейтинг",
+      "review": "Отзыв",
+      "date": "Дата",
+      "status": "Статус",
+      "actions": "Действия",
+      "reports": "Жалобы",
+      "helpful": "Полезно",
+      "visibleToPublic": "Видимый для публики",
+      "noReports": "Нет жалоб",
+      "reportCount": "{{count}} жалоба",
+      "reportCount_plural": "{{count}} жалоб",
+      "latestReport": "Последняя: {{reason}}",
+      "visible": "Видимый",
+      "hidden": "Скрытый",
+      "unknownPlace": "Неизвестное место",
+      "anonymous": "Аноним",
+      "byUser": "от {{name}}",
+      "noReviews": "Отзывы не найдены",
+      "loading": "Загрузка отзывов...",
+      "adminNotes": "Заметки администратора",
+      "tryAdjustingSearch": "Попробуйте изменить условия поиска"
+    },
+    "actions": {
+      "edit": "Редактировать",
+      "save": "Сохранить",
+      "cancel": "Отмена",
+      "delete": "Удалить",
+      "bulkDelete": "Удалить выбранные",
+      "confirmDelete": "Вы уверены, что хотите удалить этот отзыв?",
+      "confirmBulkDelete": "Вы уверены, что хотите удалить {{count}} выбранных отзыва(ов)?",
+      "editReview": "Редактировать отзыв",
+      "adminNotes": "Заметки администратора"
+    },
+    "pagination": {
+      "showing": "Показано {{start}} до {{end}} из {{total}} отзывов",
+      "page": "Страница {{current}} из {{total}}"
+    },
+    "messages": {
+      "accessDenied": "Доступ запрещен. Только для агентов.",
+      "updateSuccess": "Отзыв успешно обновлен!",
+      "deleteSuccess": "Отзыв(ы) успешно удален(ы)!",
+      "updateError": "Не удалось обновить отзыв. Попробуйте еще раз.",
+      "deleteError": "Не удалось удалить отзыв(ы). Попробуйте еще раз.",
+      "pleaseSelectReviews": "Сначала выберите отзывы",
+      "bulkDeleteSuccess": "{{count}} отзывов успешно удалено",
+      "bulkDeleteError": "Не удалось удалить выбранные отзывы",
+      "loadError": "Не удалось загрузить отзывы",
+      "editSuccess": "Отзыв успешно обновлен!",
+      "editError": "Не удалось обновить отзыв. Попробуйте еще раз."
+    }
   }
 }

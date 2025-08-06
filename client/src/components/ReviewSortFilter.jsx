@@ -1,4 +1,4 @@
-import { useTranslation } from "../i18n/hooks/useTranslation";
+import { useTranslation } from "react-i18next";
 
 export default function ReviewSortFilter({ sortBy, onSortChange }) {
   const { t } = useTranslation("reviews");

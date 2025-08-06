@@ -73,7 +73,7 @@ export const formatSimpleDate = (date, languageCode = 'en') => {
  */
 export const formatDateTime = (date, languageCode = 'en') => {
   const timeFormat = getTimeFormat(languageCode);
-  return formatDate(date, `MMM d, yyyy 'at' ${timeFormat}`, languageCode);
+  return formatDate(date, `MMM d, yyyy ', ' ${timeFormat}`, languageCode);
 };
 
 /**

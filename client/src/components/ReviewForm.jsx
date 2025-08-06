@@ -3,7 +3,7 @@ import { UserContext } from "./UserContext";
 import { useNotification } from "./NotificationContext";
 import InteractiveStarRating from "./InteractiveStarRating";
 import api from "../utils/api";
-import { useTranslation } from "../i18n/hooks/useTranslation";
+import { useTranslation } from "react-i18next";
 
 export default function ReviewForm({ placeId, onReviewSubmitted, existingReview = null, onCancel, placeOwnerId }) {
   const { user } = useContext(UserContext);
