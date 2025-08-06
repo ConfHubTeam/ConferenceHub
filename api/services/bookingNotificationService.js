@@ -56,10 +56,10 @@
  * Implements DRY principle by centralizing booking notification creation logic
  */
 
-const { Notification, User, Place, Booking } = require("../models");
+const { Notification, User, Place, Booking, Currency } = require("../models");
 const AgentService = require("./agentService");
 const UnifiedNotificationService = require("./unifiedNotificationService");
-const { translate } = require("../i18n/config");
+const { translate, formatCurrency } = require("../i18n/config");
 
 class BookingNotificationService {
   /**
@@ -78,13 +78,13 @@ class BookingNotificationService {
         include: [{
           model: User,
           as: "owner",
-          attributes: ["id", "name", "email"]
+          attributes: ["id", "name", "email", "preferredLanguage"]
         }]
       });
 
       // Get booking user information
       const bookingUser = await User.findByPk(booking.userId, {
-        attributes: ["id", "name", "email"]
+        attributes: ["id", "name", "email", "preferredLanguage"]
       });
 
       if (!place || !place.owner || !bookingUser) {
@@ -163,12 +163,12 @@ class BookingNotificationService {
         include: [{
           model: User,
           as: "owner",
-          attributes: ["id", "name", "email"]
+          attributes: ["id", "name", "email", "preferredLanguage"]
         }]
       });
 
       const bookingUser = await User.findByPk(booking.userId, {
-        attributes: ["id", "name", "email"]
+        attributes: ["id", "name", "email", "preferredLanguage"]
       });
 
       if (!place || !place.owner || !bookingUser) {
@@ -254,7 +254,7 @@ class BookingNotificationService {
         include: [{
           model: User,
           as: "owner",
-          attributes: ["id", "name", "email"]
+          attributes: ["id", "name", "email", "preferredLanguage"]
         }]
       });
 
@@ -329,12 +329,12 @@ class BookingNotificationService {
         include: [{
           model: User,
           as: "owner",
-          attributes: ["id", "name", "email"]
+          attributes: ["id", "name", "email", "preferredLanguage"]
         }]
       });
 
       const bookingUser = await User.findByPk(booking.userId, {
-        attributes: ["id", "name", "email"]
+        attributes: ["id", "name", "email", "preferredLanguage"]
       });
 
       if (!place || !place.owner || !bookingUser) {
@@ -412,12 +412,12 @@ class BookingNotificationService {
         include: [{
           model: User,
           as: "owner",
-          attributes: ["id", "name", "email"]
+          attributes: ["id", "name", "email", "preferredLanguage"]
         }]
       });
 
       const bookingUser = await User.findByPk(booking.userId, {
-        attributes: ["id", "name", "email"]
+        attributes: ["id", "name", "email", "preferredLanguage"]
       });
 
       if (!place || !place.owner || !bookingUser) {
@@ -627,11 +627,18 @@ class BookingNotificationService {
 
     try {
       const place = await Place.findByPk(booking.placeId, {
-        include: [{
-          model: User,
-          as: "owner",
-          attributes: ["id", "name", "email"]
-        }]
+        include: [
+          {
+            model: User,
+            as: "owner",
+            attributes: ["id", "name", "email", "preferredLanguage"]
+          },
+          {
+            model: Currency,
+            as: "currency",
+            attributes: ["id", "charCode", "name"]
+          }
+        ]
       });
 
       if (!place || !place.owner) {
@@ -643,7 +650,12 @@ class BookingNotificationService {
 
       // Include unique booking ID and amount
       const bookingReference = booking.uniqueRequestId || booking.id;
-      const amount = booking.totalPrice || "N/A";
+      const amount = booking.totalPrice || 0;
+      
+      // Get currency from the place's currency setting, not from user language
+      // This ensures the currency matches what the booking was actually made in
+      const currency = place.currency?.charCode || "USD"; // Default to USD if no currency found
+      const formattedAmount = formatCurrency(amount, userLanguage, currency);
       
       // Include date/time window calculation following same pattern as other methods
       const timeSlotInfo = booking.timeSlots && booking.timeSlots.length > 0 
@@ -657,7 +669,7 @@ class BookingNotificationService {
       // Create localized message using i18n
       const message = this._createLocalizedMessage("booking.paidToHost", {
         bookingReference,
-        amount: `$${amount}.00`
+        amount: formattedAmount
       }, userLanguage);
 
       // Create notification for host about payment received
