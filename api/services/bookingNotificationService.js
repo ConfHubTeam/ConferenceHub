@@ -4,9 +4,54 @@
  * Follows SOLID principles:
  * - Single Responsibility: Handles only booking notification logic
  * - Open/Closed: Extensible for new booking notification types
- * - Liskov Substitution: Can be extended with different notification strategies
+ * - Liskov Substitution:       if (!place || !place.owner) {
+        throw new Error("Place or place owner not found for booking approval notification");
+      }
+
+      // Get user's preferred language
+      const userLanguage = await this._getUserLanguage(booking.userId);
+
+      // Include unique booking ID and date/time window in message
+      const bookingReference = booking.uniqueRequestId || booking.id;
+      const timeSlotInfo = booking.timeSlots && booking.timeSlots.length > 0 
+        ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
+        : '';
+      
+      const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
+        ? this._formatDate(booking.checkInDate)
+        : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
+
+      // Create localized message using i18n
+      const messageKey = isAgentApproval ? "booking.approved.byAgent" : "booking.approved.byHost";
+      const message = this._createLocalizedMessage(messageKey, {
+        bookingReference,
+        placeName: place.title,
+        dateRange: dateRange + timeSlotInfo
+      }, userLanguage); with different notification strategies
  * - Interface Segregation: Focused interface for booking notification operations
- * - Dependency Inversion: Depends on abstractions, not concrete implementations
+ * - Dependency Inversion: Depends on abstraction      if (!place) {
+        throw new Error("Place not found for booking selected notification");
+      }
+
+      // Get user's preferred language
+      const userLanguage = await this._getUserLanguage(booking.userId);
+
+      // Include unique booking ID and date/time window in message
+      const bookingReference = booking.uniqueRequestId || booking.id;
+      const timeSlotInfo = booking.timeSlots && booking.timeSlots.length > 0 
+        ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
+        : '';
+      
+      const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
+        ? this._formatDate(booking.checkInDate)
+        : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
+
+      // Create localized message using i18n
+      const message = this._createLocalizedMessage("booking.selected", {
+        bookingReference,
+        placeName: place.title,
+        dateRange: dateRange + timeSlotInfo
+      }, userLanguage); implementations
  * 
  * Implements DRY principle by centralizing booking notification creation logic
  */
@@ -14,6 +59,7 @@
 const { Notification, User, Place, Booking } = require("../models");
 const AgentService = require("./agentService");
 const UnifiedNotificationService = require("./unifiedNotificationService");
+const { translate } = require("../i18n/config");
 
 class BookingNotificationService {
   /**
@@ -50,6 +96,9 @@ class BookingNotificationService {
         return null;
       }
 
+      // Get user's preferred language
+      const userLanguage = await this._getUserLanguage(place.owner.id);
+
       // Create notification for place owner (host)
       const timeSlotInfo = booking.timeSlots && booking.timeSlots.length > 0 
         ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
@@ -62,11 +111,18 @@ class BookingNotificationService {
       // Include unique booking ID and detailed date/time window in message
       const bookingReference = booking.uniqueRequestId || booking.id;
       
+      // Create localized message using i18n
+      const message = this._createLocalizedMessage("booking.requested", {
+        bookingReference,
+        placeName: place.title,
+        dateRange: dateRange + timeSlotInfo
+      }, userLanguage);
+      
       const result = await UnifiedNotificationService.createBookingNotification({
         userId: place.owner.id,
         type: "booking_requested",
         title: "New Booking Request",
-        message: `Booking #${bookingReference} requested for "${place.title}" on ${dateRange}${timeSlotInfo}`,
+        message: message,
         bookingId: booking.id,
         placeId: booking.placeId,
         additionalMetadata: {
@@ -140,11 +196,21 @@ class BookingNotificationService {
       // Create notifications for all agents
       const notifications = [];
       for (const agent of agents) {
+        // Get agent's preferred language (agents will use default English for now)
+        const userLanguage = await this._getUserLanguage(agent.id);
+        
+        // Create localized message using i18n
+        const message = this._createLocalizedMessage("booking.paid", {
+          bookingReference,
+          placeName: place.title,
+          dateRange: dateRange + timeSlotInfo
+        }, userLanguage);
+
         const result = await UnifiedNotificationService.createBookingNotification({
           userId: agent.id,
           type: "booking_paid",
           title: "Payment Received",
-          message: `Payment received for booking #${bookingReference} of "${place.title}" on ${dateRange}${timeSlotInfo}. Payout to host required.`,
+          message: message,
           bookingId: booking.id,
           placeId: booking.placeId,
           additionalMetadata: {
@@ -196,6 +262,9 @@ class BookingNotificationService {
         throw new Error("Place or owner not found");
       }
 
+      // Get user's preferred language
+      const userLanguage = await this._getUserLanguage(booking.userId);
+
       // Include unique booking ID and date/time window in message
       const bookingReference = booking.uniqueRequestId || booking.id;
       const timeSlotInfo = booking.timeSlots && booking.timeSlots.length > 0 
@@ -206,6 +275,14 @@ class BookingNotificationService {
         ? this._formatDate(booking.checkInDate)
         : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
+      // Create localized message using i18n
+      const messageKey = isAgentApproval ? "booking.approved.byAgent" : "booking.approved.byHost";
+      const message = this._createLocalizedMessage(messageKey, {
+        bookingReference,
+        placeName: place.title,
+        dateRange: dateRange + timeSlotInfo
+      }, userLanguage);
+
       const approverText = isAgentApproval ? "by an agent" : "by the host";
       
       // Create notification for booking user (client)
@@ -213,7 +290,7 @@ class BookingNotificationService {
         userId: booking.userId,
         type: "booking_approved",
         title: "Booking Approved",
-        message: `Booking #${bookingReference} for "${place.title}" on ${dateRange}${timeSlotInfo} has been approved ${approverText}. Please proceed with payment.`,
+        message: message,
         bookingId: booking.id,
         placeId: booking.placeId,
         additionalMetadata: {
@@ -269,6 +346,9 @@ class BookingNotificationService {
         return null;
       }
 
+      // Get user's preferred language
+      const userLanguage = await this._getUserLanguage(place.owner.id);
+
       // Include unique booking ID and date/time window in message
       const bookingReference = booking.uniqueRequestId || booking.id;
       const timeSlotInfo = booking.timeSlots && booking.timeSlots.length > 0 
@@ -279,12 +359,18 @@ class BookingNotificationService {
         ? this._formatDate(booking.checkInDate)
         : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
+      // Create localized message using i18n
+      const message = this._createLocalizedMessage("booking.confirmed.host", {
+        bookingReference,
+        placeName: place.title,
+        dateRange: dateRange + timeSlotInfo
+      }, userLanguage);
       // Create notification for place owner (host)
       const result = await UnifiedNotificationService.createBookingNotification({
         userId: place.owner.id,
         type: "booking_confirmed",
         title: "Booking Confirmed",
-        message: `Booking #${bookingReference} for "${place.title}" on ${dateRange}${timeSlotInfo} has been confirmed.`,
+        message: message,
         bookingId: booking.id,
         placeId: booking.placeId,
         additionalMetadata: {
@@ -343,6 +429,9 @@ class BookingNotificationService {
         return null;
       }
 
+      // Get user's preferred language
+      const userLanguage = await this._getUserLanguage(booking.userId);
+
       // Include unique booking ID and date/time window in message
       const bookingReference = booking.uniqueRequestId || booking.id;
       const timeSlotInfo = booking.timeSlots && booking.timeSlots.length > 0 
@@ -353,12 +442,18 @@ class BookingNotificationService {
         ? this._formatDate(booking.checkInDate)
         : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
+      // Create localized message using i18n
+      const message = this._createLocalizedMessage("booking.confirmed.client", {
+        bookingReference,
+        placeName: place.title,
+        dateRange: dateRange + timeSlotInfo
+      }, userLanguage);
       // Create notification for client (booking user)
       const result = await UnifiedNotificationService.createBookingNotification({
         userId: booking.userId,
         type: "booking_confirmed",
         title: "Booking Confirmed",
-        message: `Your booking #${bookingReference} for "${place.title}" on ${dateRange}${timeSlotInfo} has been confirmed!`,
+        message: message,
         bookingId: booking.id,
         placeId: booking.placeId,
         additionalMetadata: {
@@ -404,6 +499,9 @@ class BookingNotificationService {
         throw new Error("Place not found");
       }
 
+      // Get user's preferred language
+      const userLanguage = await this._getUserLanguage(booking.userId);
+
       // Include unique booking ID and date/time window in message
       const bookingReference = booking.uniqueRequestId || booking.id;
       const timeSlotInfo = booking.timeSlots && booking.timeSlots.length > 0 
@@ -414,12 +512,20 @@ class BookingNotificationService {
         ? this._formatDate(booking.checkInDate)
         : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
+      // Create localized message using i18n
+      const message = this._createLocalizedMessage("booking.selected", {
+        bookingReference,
+        placeName: place.title,
+        dateRange: dateRange + timeSlotInfo
+      }, userLanguage);
+
+      // Create notification for booking user (client)
       // Create notification for booking user (client)
       const result = await UnifiedNotificationService.createBookingNotification({
         userId: booking.userId,
         type: "booking_selected",
         title: "Booking Selected",
-        message: `Booking #${bookingReference} for "${place.title}" on ${dateRange}${timeSlotInfo} has been selected. Please proceed with payment.`,
+        message: message,
         bookingId: booking.id,
         placeId: booking.placeId,
         additionalMetadata: {
@@ -461,6 +567,9 @@ class BookingNotificationService {
         throw new Error("Place not found");
       }
 
+      // Get user's preferred language
+      const userLanguage = await this._getUserLanguage(booking.userId);
+
       // Include unique booking ID and date/time window in message
       const bookingReference = booking.uniqueRequestId || booking.id;
       const timeSlotInfo = booking.timeSlots && booking.timeSlots.length > 0 
@@ -471,12 +580,19 @@ class BookingNotificationService {
         ? this._formatDate(booking.checkInDate)
         : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
+      // Create localized message using i18n
+      const message = this._createLocalizedMessage("booking.rejected", {
+        bookingReference,
+        placeName: place.title,
+        dateRange: dateRange + timeSlotInfo
+      }, userLanguage);
+
       // Create notification for booking user (client)
       const result = await UnifiedNotificationService.createBookingNotification({
         userId: booking.userId,
         type: "booking_rejected",
         title: "Booking Rejected",
-        message: `Booking #${bookingReference} for "${place.title}" on ${dateRange}${timeSlotInfo} has been rejected.`,
+        message: message,
         bookingId: booking.id,
         placeId: booking.placeId,
         additionalMetadata: {
@@ -522,8 +638,14 @@ class BookingNotificationService {
         throw new Error("Place or owner not found");
       }
 
-      // Include unique booking ID and date/time window in message
+      // Get user's preferred language
+      const userLanguage = await this._getUserLanguage(place.owner.id);
+
+      // Include unique booking ID and amount
       const bookingReference = booking.uniqueRequestId || booking.id;
+      const amount = booking.totalPrice || "N/A";
+      
+      // Include date/time window calculation following same pattern as other methods
       const timeSlotInfo = booking.timeSlots && booking.timeSlots.length > 0 
         ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
         : '';
@@ -532,12 +654,18 @@ class BookingNotificationService {
         ? this._formatDate(booking.checkInDate)
         : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
 
+      // Create localized message using i18n
+      const message = this._createLocalizedMessage("booking.paidToHost", {
+        bookingReference,
+        amount: `$${amount}.00`
+      }, userLanguage);
+
       // Create notification for host about payment received
       const result = await UnifiedNotificationService.createBookingNotification({
         userId: place.owner.id,
         type: "booking_paid_to_host",
         title: "Payment Received",
-        message: `Payment received for booking #${bookingReference} of "${place.title}" on ${dateRange}${timeSlotInfo}.`,
+        message: message,
         bookingId: booking.id,
         placeId: booking.placeId,
         additionalMetadata: {
@@ -560,6 +688,55 @@ class BookingNotificationService {
     } catch (error) {
       console.error("Error creating booking paid to host notification:", error);
       throw new Error(`Failed to create booking paid to host notification: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get user's preferred language or fallback to Russian
+   * @param {number} userId - User ID
+   * @returns {Promise<string>} Language code (en, ru, uz)
+   */
+  static async _getUserLanguage(userId) {
+    try {
+      const user = await User.findByPk(userId, {
+        attributes: ["preferredLanguage"]
+      });
+      
+      const supportedLanguages = ["en", "ru", "uz"];
+      const userLang = user?.preferredLanguage || "ru";
+      
+      return supportedLanguages.includes(userLang) ? userLang : "ru";
+    } catch (error) {
+      console.error("Error getting user language:", error);
+      return "ru"; // Fallback to Russian
+    }
+  }
+
+  /**
+   * Create localized SMS message using i18n templates
+   * @param {string} messageKey - Translation key (e.g., "booking.requested")
+   * @param {Object} variables - Variables for interpolation
+   * @param {string} language - Language code
+   * @returns {string} Localized message
+   */
+  static _createLocalizedMessage(messageKey, variables, language = "ru") {
+    try {
+      return translate(messageKey, {
+        lng: language,
+        ns: "sms",
+        ...variables
+      });
+    } catch (error) {
+      console.error(`Error creating localized message for key ${messageKey}:`, error);
+      // Fallback to Russian if translation fails
+      if (language !== "ru") {
+        return translate(messageKey, {
+          lng: "ru",
+          ns: "sms",
+          ...variables
+        });
+      }
+      return `Error: Missing translation for ${messageKey}`;
     }
   }
 

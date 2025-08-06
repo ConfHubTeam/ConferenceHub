@@ -25,7 +25,7 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    lng: "en", // Default language
+    lng: undefined, // Let LanguageDetector determine the language
     fallbackLng: "en",
     debug: process.env.NODE_ENV === "development",
 
@@ -33,20 +33,20 @@ i18n
     ns: NAMESPACES,
     defaultNS: "common",
 
-    // Language detection options
+    // Language detection options - enhanced for better persistence
     detection: {
       order: [
-        "localStorage",
+        "localStorage", 
         "sessionStorage",
         "navigator",
-        "htmlTag",
-        "path",
-        "subdomain"
+        "htmlTag"
       ],
-      lookupLocalStorage: "i18nextLng",
-      lookupSessionStorage: "i18nextLng",
+      lookupLocalStorage: "preferred-language", // Match our LanguageContext key
+      lookupSessionStorage: "current-language", // Match our LanguageContext key
       caches: ["localStorage", "sessionStorage"],
-      excludeCacheFor: ["cimode"], // Don't cache in development mode
+      excludeCacheFor: ["cimode"],
+      // Check specific keys and ensure they persist
+      checkWhitelist: true,
     },
 
     // Backend configuration for lazy loading

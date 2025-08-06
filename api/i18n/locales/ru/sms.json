@@ -1,0 +1,17 @@
+{
+  "booking": {
+    "requested": "Запрос на бронирование #{{bookingReference}} для \"{{placeName}}\" на {{dateRange}}",
+    "selected": "Бронирование #{{bookingReference}} для \"{{placeName}}\" на {{dateRange}} выбрано. Пожалуйста, произведите оплату.",
+    "approved": {
+      "byHost": "Бронирование #{{bookingReference}} для \"{{placeName}}\" на {{dateRange}} одобрено хозяином. Пожалуйста, произведите оплату.",
+      "byAgent": "Бронирование #{{bookingReference}} для \"{{placeName}}\" на {{dateRange}} одобрено агентом. Пожалуйста, произведите оплату."
+    },
+    "confirmed": {
+      "host": "Бронирование #{{bookingReference}} для \"{{placeName}}\" на {{dateRange}} подтверждено.",
+      "client": "Ваше бронирование #{{bookingReference}} для \"{{placeName}}\" на {{dateRange}} подтверждено!"
+    },
+    "paid": "Платеж получен за бронирование #{{bookingReference}} для \"{{placeName}}\" на {{dateRange}}. Требуется выплата хозяину.",
+    "rejected": "Бронирование #{{bookingReference}} для \"{{placeName}}\" на {{dateRange}} отклонено.",
+    "paidToHost": "Выплата в размере {{amount}} произведена за бронирование #{{bookingReference}}"
+  }
+}

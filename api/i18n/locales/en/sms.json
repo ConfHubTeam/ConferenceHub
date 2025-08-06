@@ -1,0 +1,17 @@
+{
+  "booking": {
+    "requested": "Booking #{{bookingReference}} requested for \"{{placeName}}\" on {{dateRange}}",
+    "selected": "Booking #{{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been selected. Please proceed with payment.",
+    "approved": {
+      "byHost": "Booking #{{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been approved by the host. Please proceed with payment.",
+      "byAgent": "Booking #{{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been approved by an agent. Please proceed with payment."
+    },
+    "confirmed": {
+      "host": "Booking #{{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been confirmed.",
+      "client": "Your booking #{{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been confirmed!"
+    },
+    "paid": "Payment received for booking #{{bookingReference}} of \"{{placeName}}\" on {{dateRange}}. Payout to host required.",
+    "rejected": "Booking #{{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been rejected.",
+    "paidToHost": "Payout of {{amount}} has been processed for booking #{{bookingReference}}"
+  }
+}
