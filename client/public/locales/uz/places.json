@@ -196,6 +196,8 @@
     "smokingAllowed": "Chekishga ruxsat"
   },
   "search_results": {
+    "loading": "Joylar yuklanmoqda...",
+    "places": "joylar",
     "no_results": "Joy topilmadi",
     "no_results_description": "Ko'proq variantlarni topish uchun qidiruv filtrlarini yoki sanalarni o'zgartirib ko'ring"
   },

@@ -140,5 +140,22 @@
       "name": "Имя",
       "email": "Email"
     }
+  },
+  "trend": {
+    "up": "Растет",
+    "down": "Снижается", 
+    "stable": "Стабильно"
+  },
+  "trends": {
+    "thisMonth": "в этом месяце"
+  },
+  "performance": {
+    "excellent": "Отлично",
+    "great": "Отлично",
+    "good": "Хорошо",
+    "fair": "Неплохо", 
+    "average": "Средне",
+    "poor": "Плохо",
+    "noData": "Нет данных"
   }
 }
