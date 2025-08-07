@@ -247,7 +247,7 @@ export default function BookingCard({bookingDetail, onBookingUpdate, competingBo
                     <button 
                       onClick={() => showConfirmationModal('rejected')} 
                       disabled={isUpdating}
-                      className="w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 disabled:opacity-50"
+                      className="w-full bg-error-600 text-white py-2 px-4 rounded hover:bg-error-700 disabled:opacity-50"
                     >
                       {isUpdating ? 'Processing...' : 'Reject'}
                     </button>
@@ -255,7 +255,7 @@ export default function BookingCard({bookingDetail, onBookingUpdate, competingBo
                   
                   {/* Show info message for pending/selected bookings */}
                   {(bookingDetail.status === 'pending' || bookingDetail.status === 'selected') && (
-                    <div className="w-full bg-blue-50 border border-blue-200 rounded p-3 text-sm text-blue-800 mt-2">
+                    <div className="w-full bg-info-50 border border-info-200 rounded p-3 text-sm text-info-800 mt-2">
                       <p className="font-medium">Booking Management</p>
                       <p>Only agents can approve bookings. You can reject unwanted bookings.</p>
                       {bookingDetail.status === 'selected' && (
@@ -272,14 +272,14 @@ export default function BookingCard({bookingDetail, onBookingUpdate, competingBo
                   <button 
                     onClick={() => showConfirmationModal('approved')} 
                     disabled={isUpdating}
-                    className="flex-1 bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 disabled:opacity-50"
+                    className="flex-1 bg-success-600 text-white py-2 px-4 rounded hover:bg-success-700 disabled:opacity-50"
                   >
                     {isUpdating ? 'Processing...' : 'Approve (Agent)'}
                   </button>
                   <button 
                     onClick={() => showConfirmationModal('rejected')} 
                     disabled={isUpdating}
-                    className="flex-1 bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 disabled:opacity-50"
+                    className="flex-1 bg-error-600 text-white py-2 px-4 rounded hover:bg-error-700 disabled:opacity-50"
                   >
                     {isUpdating ? 'Processing...' : 'Reject'}
                   </button>
@@ -291,7 +291,7 @@ export default function BookingCard({bookingDetail, onBookingUpdate, competingBo
                 <button 
                   onClick={() => showConfirmationModal('rejected')} 
                   disabled={isUpdating}
-                  className="w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 disabled:opacity-50"
+                  className="w-full bg-error-600 text-white py-2 px-4 rounded hover:bg-error-700 disabled:opacity-50"
                 >
                   {isUpdating ? 'Cancelling...' : 'Cancel Booking'}
                 </button>
@@ -311,7 +311,7 @@ export default function BookingCard({bookingDetail, onBookingUpdate, competingBo
         message={modalConfig.message}
         confirmText="OK"
         cancelText="Cancel"
-        confirmButtonClass={modalConfig.status === "approved" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
+        confirmButtonClass={modalConfig.status === "approved" ? "bg-success-600 hover:bg-success-700" : "bg-error-600 hover:bg-error-700"}
         isLoading={isUpdating}
       />
     </>

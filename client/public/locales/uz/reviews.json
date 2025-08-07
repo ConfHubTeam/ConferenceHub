@@ -152,7 +152,9 @@
         "fromDate": "Dan: {{date}}",
         "toDate": "Gacha: {{date}}"
       },
-      "clearAll": "Barcha filtrlarni tozalash"
+      "hideOptions": "Variantlarni yashirish",
+      "moreOptions": "Ko'proq variantlar",
+      "clearAllFilters": "Barcha filtrlarni tozalash"
     },
     "table": {
       "selectAll": "Barchasini tanlash",

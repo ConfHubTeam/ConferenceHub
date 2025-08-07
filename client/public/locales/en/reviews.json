@@ -152,7 +152,9 @@
         "fromDate": "From: {{date}}",
         "toDate": "To: {{date}}"
       },
-      "clearAll": "Clear All Filters"
+      "hideOptions": "Hide Options",
+      "moreOptions": "More Options",
+      "clearAllFilters": "Clear All Filters"
     },
     "table": {
       "selectAll": "Select All ({{count}} selected)",
@@ -255,31 +257,5 @@
   },
   "unknownPlace": "Unknown Place",
   "adminNote": "Admin",
-  "byUser": "by {{name}}",
-  "table": {
-    "loading": "Loading reviews...",
-    "noReviewsFound": "No reviews found",
-    "adjustFilters": "Try adjusting your filters to see more results",
-    "selectAll": "Select All ({{count}} selected)",
-    "headers": {
-      "reviewDetails": "Review Details",
-      "placeAndUser": "Place & User",
-      "reports": "Reports",
-      "date": "Date",
-      "actions": "Actions"
-    }
-  },
-  "actions": {
-    "edit": "Edit",
-    "save": "Save",
-    "cancel": "Cancel",
-    "delete": "Delete"
-  },
-  "pagination": {
-    "showingResults": "Showing {{from}} to {{to}} of {{total}} reviews",
-    "first": "First",
-    "previous": "Previous",
-    "next": "Next",
-    "last": "Last"
-  }
+  "byUser": "by {{name}}"
 }

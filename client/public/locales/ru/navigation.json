@@ -37,7 +37,8 @@
     "reviews": "Отзывы",
     "myListings": "Мои объявления",
     "browseListings": "Обзор объявлений",
-    "listings": "Объявления"
+    "listings": "Объявления",
+    "more": "Ещё"
   },
   "mobileNavigation": {
     "browseSpaces": "Обзор пространств",

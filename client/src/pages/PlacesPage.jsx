@@ -78,7 +78,7 @@ export default function PlacesPage() {
     return (
       <div>
         <AccountNav />
-        <div className="px-8 py-4">
+        <div className="spacing-container spacing-section">
           <div className="animate-pulse flex space-x-4">
             <div className="flex-1 space-y-4 py-1">
               <div className="h-4 bg-gray-200 rounded w-3/4"></div>
@@ -96,7 +96,7 @@ export default function PlacesPage() {
   return (
     <div>
       <AccountNav />
-      <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
+      <div className="spacing-container spacing-section max-w-7xl mx-auto">
         {/* Page header */}
         <div className="mb-8">
           <div className="flex items-center justify-center">
@@ -104,7 +104,7 @@ export default function PlacesPage() {
             {/* Add new room button */}
             {user && user.userType === 'host' && (
               <Link
-                className="inline-flex items-center gap-2 bg-primary text-white py-4 px-8 rounded-full hover:bg-primary-dark transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="inline-flex items-center gap-2 bg-primary text-white py-2 px-4 sm:py-3 sm:px-6 rounded-full hover:bg-primary/90 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
                 to={"/account/places/new"}
               >
                 <svg
@@ -137,7 +137,7 @@ export default function PlacesPage() {
 
         {/* Places listing */}
         {filteredPlaces.length === 0 ? (
-          <div className="bg-white border border-gray-200 rounded-lg p-12 text-center">
+          <div className="bg-white border border-gray-200 rounded-lg spacing-content text-center">
             <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H9m0 0H5m4 0V9a2 2 0 012-2h2a2 2 0 012 2v8" />
             </svg>
@@ -160,7 +160,7 @@ export default function PlacesPage() {
             ) : (
               <Link
                 to="/account/places/new"
-                className="bg-primary text-white py-3 px-6 rounded-full hover:bg-primary-dark transition-all duration-200 inline-block font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="bg-primary text-white py-2 px-4 sm:py-2.5 sm:px-6 rounded-full hover:bg-primary/90 transition-all duration-200 inline-block font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
               >
                 {t('placesPage.addFirstRoom', 'Add Your First Room')}
               </Link>

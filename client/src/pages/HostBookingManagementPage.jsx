@@ -164,7 +164,7 @@ export default function HostBookingManagementPage() {
     return (
       <div>
         <AccountNav />
-        <div className="px-8 py-4">
+        <div className="spacing-container spacing-section">
           <div className="bg-red-50 border border-red-200 p-6 rounded-lg">
             <h3 className="text-xl font-semibold text-red-700 mb-2">Access Denied</h3>
             <p className="text-red-600">
@@ -181,7 +181,7 @@ export default function HostBookingManagementPage() {
     return (
       <div>
         <AccountNav />
-        <div className="px-8 py-4">
+        <div className="spacing-container spacing-section">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-gray-200 rounded w-1/3"></div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -135,10 +135,10 @@ function TelegramAuthBase() {
             <div className="flex flex-col gap-4 w-full">
               <button
                 onClick={() => handleRoleSelect('client')}
-                className="w-full py-4 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 flex items-center border-2 border-blue-500 hover:border-blue-600"
+                className="w-full py-3 px-4 sm:py-4 bg-info-500 text-white rounded-lg hover:bg-info-600 transition duration-200 flex items-center border-2 border-info-500 hover:border-info-600"
               >
                 <div className="bg-white p-2 rounded-full mr-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-info-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
@@ -146,7 +146,7 @@ function TelegramAuthBase() {
                   <span className="font-medium text-lg block">
                     {ready ? t("auth:roleSelector.guest") : "Client"}
                   </span>
-                  <span className="text-sm text-blue-100">
+                  <span className="text-sm text-info-100">
                     {ready ? t("auth:telegram.guestDescription") : "Find and book places to stay"}
                   </span>
                 </div>
@@ -154,10 +154,10 @@ function TelegramAuthBase() {
               
               <button
                 onClick={() => handleRoleSelect('host')}
-                className="w-full py-4 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-200 flex items-center border-2 border-green-500 hover:border-green-600"
+                className="w-full py-3 px-4 sm:py-4 bg-success-500 text-white rounded-lg hover:bg-success-600 transition duration-200 flex items-center border-2 border-success-500 hover:border-success-600"
               >
                 <div className="bg-white p-2 rounded-full mr-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-success-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                   </svg>
                 </div>

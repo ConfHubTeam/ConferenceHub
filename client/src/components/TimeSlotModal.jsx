@@ -553,7 +553,7 @@ export default function TimeSlotModal({
             <button
               onClick={onConfirm}
               disabled={!selectedStartTime || !selectedEndTime}
-              className="flex-1 py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
+              className="flex-1 py-2 px-4 sm:py-2.5 bg-info-600 text-white rounded-lg hover:bg-info-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
             >
               {isEditMode ? t("timeSlotModal.buttons.update") : t("timeSlotModal.buttons.add")}
             </button>

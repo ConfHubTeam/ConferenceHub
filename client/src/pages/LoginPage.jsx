@@ -163,7 +163,7 @@ function LoginPageBase() {
   }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 pt-10 sm:pt-12 md:pt-14">
+    <div className="spacing-container pt-8 sm:pt-10 md:pt-12">
       <div className="w-full max-w-sm mx-auto">
         <h1 
           className="text-2xl sm:text-3xl font-bold text-center mb-1 sm:mb-2 cursor-pointer" 
@@ -182,7 +182,7 @@ function LoginPageBase() {
         
         <form className="bg-white p-3 sm:p-6 rounded-xl shadow-sm" onSubmit={loginUser}>
           {error && (
-            <div className="bg-red-100 text-red-800 p-3 rounded-lg mb-4 text-sm">
+            <div className="bg-error-100 text-error-800 p-3 rounded-lg mb-4 text-sm">
               {error}
             </div>
           )}
@@ -197,11 +197,11 @@ function LoginPageBase() {
               placeholder={ready ? t("auth:login.emailPlaceholder") : "your@email.com"}
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className={`w-full px-3 py-1.5 sm:py-2 border ${emailValid ? 'border-gray-300' : 'border-red-500'} rounded-md focus:outline-none focus:ring-2 ${emailValid ? 'focus:ring-primary' : 'focus:ring-red-500'}`}
+              className={`w-full px-3 py-1.5 sm:py-2 border ${emailValid ? 'border-gray-300' : 'border-error-500'} rounded-md focus:outline-none focus:ring-2 ${emailValid ? 'focus:ring-primary' : 'focus:ring-error-500'}`}
               required
             />
             {!emailValid && email && (
-              <p className="text-red-500 text-xs mt-1">
+              <p className="text-error-500 text-xs mt-1">
                 {ready ? t("auth:validation.emailInvalid") : "Please enter a valid email address"}
               </p>
             )}

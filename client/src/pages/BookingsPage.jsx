@@ -334,7 +334,7 @@ export default function BookingsPage() {
     return (
       <div>
         <AccountNav />
-        <div className="px-8 py-4">
+        <div className="spacing-container spacing-section">
           <div className="animate-pulse flex space-x-4">
             <div className="flex-1 space-y-4 py-1">
               <div className="h-4 bg-gray-200 rounded w-3/4"></div>
@@ -352,10 +352,10 @@ export default function BookingsPage() {
   return (
     <div>
       <AccountNav />
-      <div className="px-8 py-4">
+      <div className="spacing-container spacing-section">
         {/* Agent view - Production-level booking management */}
         {user?.userType === 'agent' && (
-          <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
+          <div className="spacing-container spacing-section max-w-7xl mx-auto">
             {/* Filters and controls */}
             <BookingFilters
               user={user}
@@ -373,7 +373,7 @@ export default function BookingsPage() {
 
             {/* Bookings list */}
             {filteredBookings.length === 0 ? (
-              <div className="bg-white border border-gray-200 rounded-lg p-12 text-center">
+              <div className="bg-white border border-gray-200 rounded-lg spacing-content text-center">
                 <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
@@ -436,7 +436,7 @@ export default function BookingsPage() {
         
         {/* Host view - Production-level booking request management */}
         {user?.userType === 'host' && (
-          <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
+          <div className="spacing-container spacing-section max-w-7xl mx-auto">
 
             {/* Filters and controls */}
             <BookingFilters
@@ -454,7 +454,7 @@ export default function BookingsPage() {
 
             {/* Booking requests list */}
             {filteredBookings.length === 0 ? (
-              <div className="bg-white border border-gray-200 rounded-lg p-12 text-center">
+              <div className="bg-white border border-gray-200 rounded-lg spacing-content text-center">
                 <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
@@ -542,7 +542,7 @@ export default function BookingsPage() {
         
         {/* Client view */}
         {user?.userType === 'client' && (
-          <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
+          <div className="spacing-container spacing-section max-w-7xl mx-auto">
 
             {/* Filters and controls */}
             <BookingFilters
@@ -560,7 +560,7 @@ export default function BookingsPage() {
 
             {/* Bookings list */}
             {filteredBookings.length === 0 ? (
-              <div className="bg-white border border-gray-200 rounded-lg p-12 text-center">
+              <div className="bg-white border border-gray-200 rounded-lg spacing-content text-center">
                 <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
@@ -659,7 +659,7 @@ export default function BookingsPage() {
                 <button
                   onClick={confirmCleanupExpired}
                   disabled={isCleaningUp}
-                  className="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-error-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-error-700 focus:outline-none focus:ring-2 focus:ring-error-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isCleaningUp ? (
                     <div className="flex items-center justify-center">

@@ -54,7 +54,7 @@ export default function ProfilePage({}) {
   }, [location.search]); // Only depend on location.search, not the notify function
 
   if (!isReady) {
-    return <div className="px-14"><p>Loading...</p></div>;
+    return <div className="spacing-container"><p>Loading...</p></div>;
   }
 
   if (isReady && !user && !redirect) {
@@ -218,24 +218,24 @@ export default function ProfilePage({}) {
           label: t("profile:accountTypes.host.label"),
           description: t("profile:accountTypes.host.description"),
           icon: '🏢',
-          bgColor: 'bg-blue-50',
-          textColor: 'text-blue-700'
+          bgColor: 'bg-info-50',
+          textColor: 'text-info-700'
         };
       case 'agent':
         return {
           label: t("profile:accountTypes.agent.label"),
           description: t("profile:accountTypes.agent.description"),
           icon: '⚙️',
-          bgColor: 'bg-purple-50',
-          textColor: 'text-purple-700'
+          bgColor: 'bg-secondary/10',
+          textColor: 'text-secondary'
         };
       default:
         return {
           label: t("profile:accountTypes.client.label"),
           description: t("profile:accountTypes.client.description"),
           icon: '👤',
-          bgColor: 'bg-green-50',
-          textColor: 'text-green-700'
+          bgColor: 'bg-success-50',
+          textColor: 'text-success-700'
         };
     }
   };
@@ -246,11 +246,11 @@ export default function ProfilePage({}) {
     <div className="min-h-screen bg-white">
       <AccountNav />
       
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-6xl mx-auto spacing-container spacing-section">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Left Sidebar - Account Overview */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-sm border p-6 sticky top-8">
+            <div className="bg-white rounded-xl shadow-sm border spacing-card sticky top-4 sm:top-8">
               {/* Profile Header */}
               <div className="text-center mb-6">
                 <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
@@ -285,8 +285,8 @@ export default function ProfilePage({}) {
                 {user.telegramLinked !== undefined && (
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-gray-600">{t("profile:sections.overview.telegram.status")}</span>
-                    <span className={`font-medium flex items-center ${user.telegramLinked ? 'text-green-600' : 'text-gray-500'}`}>
-                      <div className={`w-2 h-2 rounded-full mr-2 ${user.telegramLinked ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                    <span className={`font-medium flex items-center ${user.telegramLinked ? 'text-success-600' : 'text-gray-500'}`}>
+                      <div className={`w-2 h-2 rounded-full mr-2 ${user.telegramLinked ? 'bg-success-500' : 'bg-gray-400'}`}></div>
                       {user.telegramLinked ? t("profile:sections.overview.telegram.connected") : t("profile:sections.overview.telegram.notConnected")}
                     </span>
                   </div>
@@ -340,7 +340,7 @@ export default function ProfilePage({}) {
                   {!isEditing && (
                     <button
                       onClick={startEditing}
-                      className="flex items-center space-x-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors"
+                      className="flex items-center space-x-2 bg-info-50 text-info-600 px-4 py-2 rounded-lg hover:bg-info-100 transition-colors"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -387,13 +387,13 @@ export default function ProfilePage({}) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-gray-700">
-                          {t("profile:fields.fullName.label")} <span className="text-red-500">*</span>
+                          {t("profile:fields.fullName.label")} <span className="text-error-500">*</span>
                         </label>
                         <input
                           type="text"
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                           placeholder={t("profile:fields.fullName.placeholder")}
                           disabled={isSaving}
                         />
@@ -433,7 +433,7 @@ export default function ProfilePage({}) {
                       </button>
                       <button
                         onClick={saveProfile}
-                        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                        className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors flex items-center space-x-2"
                         disabled={isSaving || !editName.trim()}
                       >
                         {isSaving ? (

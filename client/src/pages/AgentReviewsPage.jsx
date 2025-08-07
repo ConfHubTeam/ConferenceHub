@@ -5,6 +5,7 @@ import { UserContext } from "../components/UserContext";
 import { useNotification } from "../components/NotificationContext";
 import { useDateLocalization } from "../hooks/useDateLocalization";
 import AccountNav from "../components/AccountNav";
+import ReviewsFilters from "../components/ReviewsFilters";
 import api from "../utils/api";
 import StarRating from "../components/StarRating";
 import Pagination from "../components/Pagination";
@@ -288,134 +289,48 @@ export default function AgentReviewsPage() {
   return (
     <div>
       <AccountNav />
-      <div className="px-8">
+      <div className="spacing-container">
         {/* Error Display */}
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="bg-error-100 border border-error-400 text-error-700 spacing-card rounded mb-4">
             {error}
           </div>
         )}
 
-        {/* Search and filter controls */}
-        <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-          <div className="flex flex-col lg:flex-row gap-4 items-center justify-between mb-4">
-            <div className="w-full lg:w-1/2 relative">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder={t("management.search.placeholder")}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full p-3 pl-10 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
-                />
-                {searchTerm && (
-                  <button
-                    onClick={() => {
-                      setSearchTerm("");
-                      setDebouncedSearchTerm("");
-                    }}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center hover:text-gray-600 transition-colors duration-200"
-                  >
-                    <svg
-                      className="h-5 w-5 text-gray-400 hover:text-gray-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                )}
-              </div>
-              {searchTerm !== debouncedSearchTerm && (
-                <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                  <div className="flex items-center text-xs text-gray-500">
-                    <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-gray-500" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    {t("management.search.searching")}
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            {/* Filters */}
-            <div className="flex flex-wrap gap-2">
-              <select
-                value={filterRating}
-                onChange={(e) => setFilterRating(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="all">{t("management.filters.rating.all")}</option>
-                <option value="5">{t("management.filters.rating.option", { rating: 5 })}</option>
-                <option value="4">{t("management.filters.rating.option", { rating: 4 })}</option>
-                <option value="3">{t("management.filters.rating.option", { rating: 3 })}</option>
-                <option value="2">{t("management.filters.rating.option", { rating: 2 })}</option>
-                <option value="1">{t("management.filters.rating.option", { rating: 1 })}</option>
-              </select>
+        {/* Mobile-Friendly Search and Filter Controls */}
+        <ReviewsFilters
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          debouncedSearchTerm={debouncedSearchTerm}
+          filterRating={filterRating}
+          setFilterRating={setFilterRating}
+          filterReported={filterReported}
+          setFilterReported={setFilterReported}
+          startDate={startDate}
+          setStartDate={setStartDate}
+          endDate={endDate}
+          setEndDate={setEndDate}
+          clearAllFilters={clearAllFilters}
+          totalReviews={totalReviews}
+          selectedReviews={selectedReviews}
+          handleBulkDelete={handleBulkDelete}
+          loading={loading}
+        />
 
-              <select
-                value={filterReported}
-                onChange={(e) => setFilterReported(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="all">{t("management.filters.reported.all")}</option>
-                <option value="reported">{t("management.filters.reported.reported")}</option>
-                <option value="no_reports">{t("management.filters.reported.notReported")}</option>
-              </select>
-
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder={t("management.filters.dateRange.startDate")}
-              />
-
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder={t("management.filters.dateRange.endDate")}
-              />
-            </div>
+        {/* Results Summary - Desktop Only */}
+        <div className="hidden sm:flex items-center justify-between mb-4">
+          <div className="text-sm text-gray-600">
+            {t("management.pagination.showing", { 
+              start: ((currentPage - 1) * reviewsPerPage) + 1, 
+              end: Math.min(currentPage * reviewsPerPage, totalReviews), 
+              total: totalReviews 
+            })}
+            {searchTerm && ` ${t("management.search.matching", { term: searchTerm })}`}
           </div>
-          
-          {/* Results summary and bulk actions */}
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600">
-              {t("management.pagination.showing", { 
-                start: ((currentPage - 1) * reviewsPerPage) + 1, 
-                end: Math.min(currentPage * reviewsPerPage, totalReviews), 
-                total: totalReviews 
-              })}
-              {searchTerm && ` ${t("management.search.matching", { term: searchTerm })}`}
-            </div>
-            
-            {selectedReviews.length > 0 && (
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-blue-900">
-                  {selectedReviews.length} {t("management.table.selectAll").toLowerCase()}
-                </span>
-                <button
-                  onClick={handleBulkDelete}
-                  disabled={loading}
-                  className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 disabled:opacity-50"
-                >
-                  {t("management.actions.bulkDelete")}
-                </button>
-              </div>
-            )}
-          </div>
-          
-          {/* Active filters */}
+        </div>
+
+        {/* Active filters - Desktop Only */}
+        <div className="hidden sm:block">
           <ActiveFilters 
             filters={getActiveFilters()}
             onClearAllFilters={clearAllFilters}

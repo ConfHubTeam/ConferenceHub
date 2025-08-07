@@ -177,6 +177,8 @@
     "filterByStatus": "Filter by Status",
     "agentActions": "Agent Actions",
     "cleanupExpiredBookings": "Delete Expired Bookings",
+    "hideOptions": "Hide Options",
+    "moreOptions": "More Options",
     "cleanupConfirmation": {
       "title": "Delete Expired Bookings",
       "message": "Are you sure you want to delete all expired pending and selected booking requests? This action cannot be undone.",

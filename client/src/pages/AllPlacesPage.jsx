@@ -328,7 +328,7 @@ export default function AllPlacesPage() {
     return (
       <div>
         <AccountNav />
-        <div className="px-8 py-4">
+        <div className="spacing-container spacing-section">
           <div className="animate-pulse space-y-4">
             <div className="h-16 bg-gray-200 rounded-lg mb-6"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -345,7 +345,7 @@ export default function AllPlacesPage() {
   return (
     <div>
       <AccountNav />
-      <div className="px-8">
+      <div className="spacing-container">
         
         {/* Page header with Create Place button for agents */}
         <div className="mb-6">
@@ -404,7 +404,7 @@ export default function AllPlacesPage() {
         
         {/* Places listing */}
         {filteredPlaces.length === 0 ? (
-          <div className="bg-white p-8 rounded-lg shadow-md text-center">
+          <div className="bg-white spacing-card rounded-lg shadow-md text-center">
             <div className="w-16 h-16 mx-auto mb-4 text-gray-400">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H9m0 0H5m4 0V9a2 2 0 012-2h2a2 2 0 012 2v8" />
@@ -503,7 +503,7 @@ export default function AllPlacesPage() {
                       
                       {place.owner && (
                         <div className="flex items-center justify-between mt-3 pt-3 border-t">
-                          <span className="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full">
+                          <span className="bg-success-100 text-success-800 text-sm px-3 py-1 rounded-full">
                             {t('allPlacesPage.host', 'Host')}: {place.owner.name}
                           </span>
                           <span className="text-base text-primary font-semibold">

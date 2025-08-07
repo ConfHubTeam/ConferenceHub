@@ -89,15 +89,15 @@ export const getBookingInfoCards = (booking) => {
  * Get action button styles
  */
 export const getActionButtonClasses = (variant) => {
-  const baseClasses = "w-full py-3 px-4 rounded-lg font-medium transition-colors disabled:opacity-50";
+  const baseClasses = "w-full py-2 px-4 sm:py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50";
   
   switch (variant) {
     case "primary":
-      return `${baseClasses} bg-blue-600 text-white hover:bg-blue-700`;
+      return `${baseClasses} bg-info-600 text-white hover:bg-info-700`;
     case "success":
-      return `${baseClasses} bg-green-600 text-white hover:bg-green-700`;
+      return `${baseClasses} bg-success-600 text-white hover:bg-success-700`;
     case "danger":
-      return `${baseClasses} bg-red-600 text-white hover:bg-red-700`;
+      return `${baseClasses} bg-error-600 text-white hover:bg-error-700`;
     case "secondary":
       return `${baseClasses} bg-gray-400 text-white cursor-not-allowed`;
     default:
@@ -303,8 +303,8 @@ export const getModalConfiguration = (modalConfig, isUpdating) => {
         t('common.buttons.ok')),
     cancelText: t('common.buttons.cancel'),
     confirmButtonClass: modalConfig.status === "approved" || modalConfig.status === "selected"
-      ? "bg-green-600 hover:bg-green-700" 
-      : "bg-red-600 hover:bg-red-700",
+      ? "bg-success-600 hover:bg-success-700" 
+      : "bg-error-600 hover:bg-error-700",
     isLoading: isUpdating,
     showPaymentOptions: modalConfig.requiresPaymentCheck && !modalConfig.agentApproval
   };
@@ -344,8 +344,8 @@ export const getModalConfirmText = (agentApproval, requiresPaymentCheck) => {
  */
 export const getModalConfirmButtonClass = (status) => {
   return status === "approved" || status === "selected"
-    ? "bg-green-600 hover:bg-green-700" 
-    : "bg-red-600 hover:bg-red-700";
+    ? "bg-success-600 hover:bg-success-700" 
+    : "bg-error-600 hover:bg-error-700";
 };
 
 /**
