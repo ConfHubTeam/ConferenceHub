@@ -436,7 +436,7 @@ export default function UsersPage() {
                         <div className="text-sm font-medium text-gray-900">{userItem.name}</div>
                       </td>
                       <td className="py-4 px-4">
-                        <div className="text-sm text-gray-900 break-all">{userItem.email}</div>
+                        <div className="text-sm text-gray-900 whitespace-nowrap">{userItem.email}</div>
                       </td>
                       <td className="py-4 px-4">
                         <div className="text-sm text-gray-900">
