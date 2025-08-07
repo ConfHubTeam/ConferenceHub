@@ -37,7 +37,8 @@
     "reviews": "Reviews",
     "myListings": "My Listings",
     "browseListings": "Browse Listings",
-    "listings": "Listings"
+    "listings": "Listings",
+    "more": "More"
   },
   "mobileNavigation": {
     "browseSpaces": "Browse Spaces",
