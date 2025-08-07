@@ -43,7 +43,7 @@ function SpecificDateBlocker({
       {/* Block specific dates toggle */}
       <div className="flex items-center mb-3">
         <label className="flex items-center gap-2 cursor-pointer">
-          <div className={`relative inline-block w-10 h-6 rounded-full transition ${showBlockSpecificDates ? 'bg-blue-600' : 'bg-gray-300'}`}>
+          <div className={`relative inline-block w-10 h-6 rounded-full transition ${showBlockSpecificDates ? 'bg-info-600' : 'bg-gray-300'}`}>
             <input
               type="checkbox"
               className="absolute opacity-0 w-0 h-0"

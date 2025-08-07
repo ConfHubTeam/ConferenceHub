@@ -75,13 +75,13 @@ export default function PlaceCard({ place, showActions = true }) {
               <div className="flex gap-2 flex-shrink-0">
                 <Link 
                   to={`/account/places/${place.id}`}
-                  className="px-3 py-1 text-xs bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                  className="px-3 py-1 text-xs bg-success-500 text-white rounded-lg hover:bg-success-600 transition-colors"
                 >
                   {t("card.actions.edit")}
                 </Link>
                 <Link 
                   to={`/place/${place.id}`}
-                  className="px-3 py-1 text-xs bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                  className="px-3 py-1 text-xs bg-info-500 text-white rounded-lg hover:bg-info-600 transition-colors"
                 >
                   {t("card.actions.view")}
                 </Link>

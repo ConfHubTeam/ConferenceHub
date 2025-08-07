@@ -108,7 +108,7 @@ export default function PhotoGallery({placeDetail}) {
   if (showAllPhotos) {
     return (
       <div className="bg-black fixed inset-0 min-h-screen z-[70]">
-        <div className="bg-black p-2 md:p-8 flex flex-col h-full">
+        <div className="bg-black p-2 sm:p-4 md:p-6 lg:p-8 flex flex-col h-full">
           <div className="flex justify-between items-center mb-2 md:mb-4">
             <h2 className="text-white text-base md:text-2xl truncate max-w-[70%]">
               {placeDetail.title}

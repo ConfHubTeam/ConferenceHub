@@ -128,7 +128,7 @@ const HostReviewsPage = () => {
                   <p className="mt-2 text-sm">{error}</p>
                   <button
                     onClick={fetchHostReviews}
-                    className="mt-4 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition duration-200"
+                    className="mt-4 bg-error-600 text-white px-4 py-2 rounded-md hover:bg-error-700 transition duration-200"
                   >
                     Try Again
                   </button>
@@ -172,7 +172,7 @@ const HostReviewsPage = () => {
                   onClick={() => setFilter("high-rating")}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 ${
                     filter === "high-rating"
-                      ? "bg-green-600 text-white"
+                      ? "bg-success-600 text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
@@ -182,7 +182,7 @@ const HostReviewsPage = () => {
                   onClick={() => setFilter("low-rating")}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 ${
                     filter === "low-rating"
-                      ? "bg-red-600 text-white"
+                      ? "bg-error-600 text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
@@ -192,7 +192,7 @@ const HostReviewsPage = () => {
                   onClick={() => setFilter("recent")}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 ${
                     filter === "recent"
-                      ? "bg-blue-600 text-white"
+                      ? "bg-info-600 text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >

@@ -152,7 +152,9 @@
         "fromDate": "С: {{date}}",
         "toDate": "До: {{date}}"
       },
-      "clearAll": "Очистить все фильтры"
+      "hideOptions": "Скрыть опции",
+      "moreOptions": "Больше опций",
+      "clearAllFilters": "Очистить все фильтры"
     },
     "table": {
       "selectAll": "Выбрать все",

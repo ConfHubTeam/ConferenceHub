@@ -7,11 +7,58 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#f38129", // Changed from red to orange
+        // Primary brand colors
+        primary: "#f38129",
+        secondary: "#3b2881",
         normal: "#717171ff",
-        // Brand colors from the design
+        
+        // Brand colors (consistent naming)
         "brand-orange": "#f38129",
         "brand-purple": "#3b2881",
+        
+        // Semantic color tokens
+        success: {
+          50: "#f0fdf4",
+          100: "#dcfce7",
+          500: "#22c55e",
+          600: "#16a34a",
+          700: "#15803d",
+        },
+        warning: {
+          50: "#fffbeb",
+          100: "#fef3c7",
+          500: "#f59e0b",
+          600: "#d97706",
+          700: "#b45309",
+        },
+        error: {
+          50: "#fef2f2",
+          100: "#fee2e2",
+          500: "#ef4444",
+          600: "#dc2626",
+          700: "#b91c1c",
+        },
+        info: {
+          50: "#eff6ff",
+          100: "#dbeafe",
+          500: "#3b82f6",
+          600: "#2563eb",
+          700: "#1d4ed8",
+        },
+        
+        // Neutral grays (consistent system)
+        neutral: {
+          50: "#fafafa",
+          100: "#f5f5f5",
+          200: "#e5e5e5",
+          300: "#d4d4d4",
+          400: "#a3a3a3",
+          500: "#737373",
+          600: "#525252",
+          700: "#404040",
+          800: "#262626",
+          900: "#171717",
+        },
       },
       keyframes: {
         shake: {
@@ -42,6 +89,52 @@ export default {
         },
         '.scroll-smooth': {
           'scroll-behavior': 'smooth'
+        },
+        // Responsive spacing utilities following mobile-first approach
+        '.spacing-container': {
+          'padding-left': '1rem',
+          'padding-right': '1rem',
+          '@screen sm': {
+            'padding-left': '1.5rem',
+            'padding-right': '1.5rem',
+          },
+          '@screen lg': {
+            'padding-left': '2rem',
+            'padding-right': '2rem',
+          }
+        },
+        '.spacing-section': {
+          'padding-top': '1rem',
+          'padding-bottom': '1rem',
+          '@screen sm': {
+            'padding-top': '1.5rem',
+            'padding-bottom': '1.5rem',
+          },
+          '@screen lg': {
+            'padding-top': '2rem',
+            'padding-bottom': '2rem',
+          }
+        },
+        '.spacing-card': {
+          'padding': '1rem',
+          '@screen sm': {
+            'padding': '1.5rem',
+          },
+          '@screen lg': {
+            'padding': '2rem',
+          }
+        },
+        '.spacing-content': {
+          'padding': '1rem',
+          '@screen sm': {
+            'padding': '1.5rem',
+          },
+          '@screen md': {
+            'padding': '2rem',
+          },
+          '@screen lg': {
+            'padding': '2.5rem',
+          }
         }
       })
     }

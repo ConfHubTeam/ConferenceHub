@@ -72,27 +72,36 @@ const StatusButton = ({
   count, 
   isActive, 
   onClick,
+  size = "default",
   className = "" 
 }) => {
   const theme = COLOR_THEMES[color];
   const buttonClasses = isActive ? theme.active : theme.inactive;
   
+  // Size variants for different layouts
+  const sizeClasses = {
+    compact: "px-3 py-2 text-xs",
+    default: "px-3 sm:px-4 py-2 sm:py-2.5 text-sm",
+    large: "px-4 py-3 text-base"
+  };
+  
   return (
     <button
       onClick={() => onClick(status)}
       className={`
-        px-3 sm:px-4 py-2 sm:py-2.5 border-2 rounded-lg font-medium text-sm 
+        border-2 rounded-lg font-medium whitespace-nowrap
         transition-all duration-200 ease-in-out transform hover:scale-105
         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${color}-500
-        ${buttonClasses} ${className}
+        ${buttonClasses} ${sizeClasses[size]} ${className}
       `}
       aria-pressed={isActive}
       role="button"
     >
-      <span className="flex items-center gap-2">
-        {label}
+      <span className="flex items-center gap-1.5">
+        <span className="truncate">{label}</span>
         <span className={`
-          px-2 py-0.5 rounded-full text-xs font-semibold
+          px-1.5 py-0.5 rounded-full font-semibold
+          ${size === 'compact' ? 'text-xs' : 'text-xs'}
           ${isActive ? 'bg-white/20 text-white' : theme.badge}
         `}>
           {count}
@@ -112,7 +121,7 @@ export default function StatusFilter({
   onStatusChange, 
   stats,
   className = "",
-  size = "default" // "default" | "compact" | "large"
+  size = "default" // "compact" | "default" | "large"
 }) {
   const { t } = useTranslation('booking');
   const statusConfig = STATUS_CONFIG[userType] || STATUS_CONFIG.client;
@@ -124,10 +133,15 @@ export default function StatusFilter({
   
   // Size variants for different use cases
   const sizeClasses = {
-    compact: "gap-1 sm:gap-2",
+    compact: "gap-2",
     default: "gap-2 sm:gap-3", 
     large: "gap-3 sm:gap-4"
   };
+
+  // For compact size, use horizontal scroll to prevent overflow
+  const containerClasses = size === 'compact' 
+    ? `flex overflow-x-auto scrollbar-hide ${sizeClasses[size]} ${className}`
+    : `flex flex-wrap items-center ${sizeClasses[size]} ${className}`;
 
   const handleStatusClick = (status) => {
     if (typeof onStatusChange === "function") {
@@ -136,7 +150,7 @@ export default function StatusFilter({
   };
 
   return (
-    <div className={`flex flex-wrap items-center ${sizeClasses[size]} ${className}`} role="group" aria-label="Status filter">
+    <div className={containerClasses} role="group" aria-label="Status filter">
       {statusOrder.map((status) => {
         const config = statusConfig[status];
         
@@ -162,6 +176,8 @@ export default function StatusFilter({
             count={count}
             isActive={currentStatus === status}
             onClick={handleStatusClick}
+            size={size}
+            className={size === 'compact' ? 'flex-shrink-0' : ''}
           />
         );
       })}

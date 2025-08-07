@@ -173,7 +173,7 @@ const ReviewEligibilityDemo = ({ placeId }) => {
               <div className="mb-4">
                 <button
                   onClick={() => setSelectedBooking(relevantBookings[0])}
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                  className="bg-info-500 text-white px-4 py-2 rounded hover:bg-info-600"
                 >
                   Review your stay from {new Date(relevantBookings[0].checkInDate).toLocaleDateString()}
                 </button>
@@ -210,7 +210,7 @@ const ReviewEligibilityDemo = ({ placeId }) => {
 
                 <button
                   onClick={handleSubmitReview}
-                  className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
+                  className="bg-success-500 text-white px-6 py-2 rounded hover:bg-success-600"
                 >
                   Submit Review
                 </button>

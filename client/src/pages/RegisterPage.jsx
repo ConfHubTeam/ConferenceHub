@@ -328,7 +328,7 @@ function RegisterPage() {
   }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8">
+    <div className="spacing-container pt-3 sm:pt-4 lg:pt-6">
       <div className="w-full max-w-md lg:max-w-lg mx-auto">
         <h1 className="text-2xl sm:text-3xl font-bold text-center mb-0.5 sm:mb-1">
           {ready ? t("auth:register.title") : "Register"}
@@ -336,7 +336,7 @@ function RegisterPage() {
         
         <form className="bg-white p-3 sm:p-4 lg:p-5 rounded-xl shadow-sm" onSubmit={registerUser}>
           {error && (
-            <div className="bg-red-100 text-red-800 p-3 rounded-lg mb-4 text-sm">
+            <div className="bg-error-100 text-error-800 p-3 rounded-lg mb-4 text-sm">
               {error}
             </div>
           )}
@@ -367,11 +367,11 @@ function RegisterPage() {
                 placeholder={ready ? t("auth:register.emailPlaceholder") : "your@email.com"}
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                className={`w-full px-3 py-1 border ${emailValid ? 'border-gray-300' : 'border-red-500'} rounded-md focus:outline-none focus:ring-2 ${emailValid ? 'focus:ring-primary' : 'focus:ring-red-500'}`}
+                className={`w-full px-3 py-1 border ${emailValid ? 'border-gray-300' : 'border-error-500'} rounded-md focus:outline-none focus:ring-2 ${emailValid ? 'focus:ring-primary' : 'focus:ring-error-500'}`}
                 required
               />
               {!emailValid && email && (
-                <p className="text-red-500 text-xs mt-1">
+                <p className="text-error-500 text-xs mt-1">
                   {ready ? t("auth:validation.emailInvalid") : "Please enter a valid email address"}
                 </p>
               )}
@@ -390,7 +390,7 @@ function RegisterPage() {
               onChange={(event) => setPassword(event.target.value)}
               className={`w-full px-3 py-1 border ${
                 password ? (
-                  Object.values(passwordChecklist).every(v => v) ? 'border-green-500' : 'border-yellow-400'
+                  Object.values(passwordChecklist).every(v => v) ? 'border-success-500' : 'border-warning-400'
                 ) : 'border-gray-300'
               } rounded-md focus:outline-none focus:ring-2 focus:ring-primary`}
               required
@@ -400,12 +400,12 @@ function RegisterPage() {
                 <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
                   <div 
                     className={`h-full ${
-                      passwordStrength.score === 0 ? 'bg-red-500' : 
-                      passwordStrength.score === 1 ? 'bg-red-400' : 
-                      passwordStrength.score === 2 ? 'bg-yellow-400' : 
-                      passwordStrength.score === 3 ? 'bg-yellow-300' : 
-                      passwordStrength.score === 4 ? 'bg-green-400' : 
-                      'bg-green-500'
+                      passwordStrength.score === 0 ? 'bg-error-500' : 
+                      passwordStrength.score === 1 ? 'bg-error-400' : 
+                      passwordStrength.score === 2 ? 'bg-warning-500' : 
+                      passwordStrength.score === 3 ? 'bg-warning-400' : 
+                      passwordStrength.score === 4 ? 'bg-success-400' : 
+                      'bg-success-500'
                     }`}
                     style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
                   ></div>

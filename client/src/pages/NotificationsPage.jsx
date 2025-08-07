@@ -331,7 +331,7 @@ export default function NotificationsPage() {
               {notifications.length > 0 && (
                 <button
                   onClick={handleDeleteAllNotifications}
-                  className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 border border-red-300 hover:border-red-400 rounded-lg transition-colors duration-200"
+                  className="px-4 py-2 text-sm font-medium text-error-600 hover:text-error-700 border border-error-300 hover:border-error-400 rounded-lg transition-colors duration-200"
                 >
                   {t("page.deleteAll")}
                 </button>
@@ -349,12 +349,12 @@ export default function NotificationsPage() {
 
         {/* Error State */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <div className="bg-error-50 border border-error-200 rounded-lg p-4 mb-6">
             <div className="flex items-center">
-              <svg className="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-5 h-5 text-error-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
               </svg>
-              <span className="text-red-800">{error}</span>
+              <span className="text-error-700">{error}</span>
             </div>
           </div>
         )}
@@ -426,8 +426,8 @@ export default function NotificationsPage() {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
             {/* Modal Header */}
             <div className="flex items-center mb-4">
-              <div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
-                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex-shrink-0 w-10 h-10 bg-error-100 rounded-full flex items-center justify-center mr-3">
+                <svg className="w-6 h-6 text-error-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
               </div>
@@ -458,7 +458,7 @@ export default function NotificationsPage() {
               <button
                 onClick={handleConfirmDeleteAll}
                 disabled={deleteLoading}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
+                className="px-4 py-2 text-sm font-medium text-white bg-error-600 border border-transparent rounded-md hover:bg-error-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-error-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center"
               >
                 {deleteLoading && (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -492,7 +492,7 @@ function NotificationItem({ notification, onClick }) {
       className={`p-4 border rounded-lg transition-colors duration-200 cursor-pointer ${
         isRead
           ? "bg-white border-gray-200 hover:border-gray-300"
-          : "bg-blue-50 border-blue-200 hover:border-blue-300"
+          : "bg-info-50 border-info-200 hover:border-info-300"
       }`}
       onClick={onClick}
     >

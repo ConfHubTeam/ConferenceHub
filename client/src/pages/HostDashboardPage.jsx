@@ -126,7 +126,7 @@ const HostDashboardPage = () => {
                   <p className="mt-2 text-sm">{error}</p>
                   <button
                     onClick={fetchHostStatistics}
-                    className="mt-4 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition duration-200"
+                    className="mt-4 bg-error-600 text-white px-4 py-2 rounded-md hover:bg-error-700 transition duration-200"
                   >
                     {t("host.error.tryAgain")}
                   </button>
@@ -165,7 +165,7 @@ const HostDashboardPage = () => {
                 </Link>
                 <Link
                   to="/account/notifications"
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
+                  className="inline-flex items-center px-4 py-2 bg-info-600 text-white rounded-lg hover:bg-info-700 transition duration-200"
                 >
                   <BellIcon className="w-5 h-5 mr-2" />
                   {t("host.notifications")}

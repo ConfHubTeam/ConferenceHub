@@ -126,9 +126,9 @@ export default function UsersPage() {
   // Get user type badge class
   const getUserTypeClass = (userType) => {
     switch(userType) {
-      case 'host': return 'bg-green-100 text-green-800';
-      case 'agent': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-blue-100 text-blue-800';
+      case 'host': return 'bg-success-100 text-success-800';
+      case 'agent': return 'bg-secondary/10 text-secondary';
+      default: return 'bg-info-100 text-info-800';
     }
   };
 
@@ -236,7 +236,7 @@ export default function UsersPage() {
     return (
       <div>
         <AccountNav />
-        <div className="px-8 py-4">
+        <div className="spacing-container spacing-section">
           <div className="animate-pulse space-y-4">
             <div className="h-10 bg-gray-200 rounded w-full"></div>
             <div className="h-96 bg-gray-200 rounded"></div>
@@ -249,10 +249,10 @@ export default function UsersPage() {
   return (
     <div>
       <AccountNav />
-      <div className="px-8">
+      <div className="spacing-container">
        
         {/* Search and filter controls */}
-        <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+        <div className="bg-white spacing-card rounded-lg shadow-md mb-4 sm:mb-6">
           <div className="flex flex-col lg:flex-row gap-4 items-center justify-between mb-4">
             <div className="w-full lg:w-1/2">
               <input
@@ -275,7 +275,7 @@ export default function UsersPage() {
               <button 
                 onClick={() => setFilterType('client')}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  filterType === 'client' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                  filterType === 'client' ? 'bg-info-500 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                 }`}
               >
                 {t('filters.clients')} ({users.filter(u => u.userType === 'client').length})
@@ -283,7 +283,7 @@ export default function UsersPage() {
               <button 
                 onClick={() => setFilterType('host')}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  filterType === 'host' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                  filterType === 'host' ? 'bg-success-500 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                 }`}
               >
                 {t('filters.hosts')} ({users.filter(u => u.userType === 'host').length})
@@ -291,7 +291,7 @@ export default function UsersPage() {
               <button 
                 onClick={() => setFilterType('agent')}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  filterType === 'agent' ? 'bg-purple-500 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                  filterType === 'agent' ? 'bg-secondary text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                 }`}
               >
                 {t('filters.agents')} ({users.filter(u => u.userType === 'agent').length})
@@ -464,7 +464,7 @@ export default function UsersPage() {
                           </a>
                           <button
                             onClick={() => handleEditUser(userItem)}
-                            className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
+                            className="text-info-600 hover:text-info-800 text-sm font-medium transition-colors"
                             title={t('actions.editUser')}
                           >
                             {t('actions.edit')}

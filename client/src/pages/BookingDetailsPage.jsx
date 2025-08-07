@@ -654,14 +654,14 @@ export default function BookingDetailsPage() {
                 <button
                   onClick={() => handlePaymentConfirmation(true)}
                   disabled={isUpdating}
-                  className="w-full bg-green-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+                  className="w-full bg-success-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-success-700 disabled:opacity-50 transition-colors"
                 >
                   {t('details.actions.confirmations.paymentConfirmed')}
                 </button>
                 <button
                   onClick={() => handlePaymentConfirmation(false)}
                   disabled={isUpdating}
-                  className="w-full bg-yellow-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-yellow-700 disabled:opacity-50 transition-colors"
+                  className="w-full bg-warning-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-warning-700 disabled:opacity-50 transition-colors"
                 >
                   {t('details.actions.confirmations.approveWithoutPayment')}
                 </button>

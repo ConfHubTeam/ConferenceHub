@@ -13,7 +13,7 @@ export default function List(props) {
   const isHostViewingOwnRooms = user?.userType === 'host' && subpage === "user-places";
 
   return (
-    <div className="mt-4 px-4 md:px-8 lg:px-14">
+    <div className="mt-4 spacing-container">
       {/* Create a grid for desktop view when host is viewing own rooms */}
       <div className={isHostViewingOwnRooms ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : ''}>
         {props.places.length > 0 &&
@@ -184,13 +184,13 @@ export default function List(props) {
                     <div className="grid grid-cols-2 gap-2 mt-4">
                       <Link 
                         to={`/account/places/${place.id || place._id}`}
-                        className="bg-green-500 text-white py-2 px-3 rounded-lg text-center text-sm hover:bg-green-600"
+                        className="bg-success-500 text-white py-2 px-3 rounded-lg text-center text-sm hover:bg-success-600"
                       >
                         {t("list.actions.edit")}
                       </Link>
                       <Link 
                         to={`/place/${place.id || place._id}`}
-                        className="bg-blue-500 text-white py-2 px-3 rounded-lg text-center text-sm hover:bg-blue-600"
+                        className="bg-info-500 text-white py-2 px-3 rounded-lg text-center text-sm hover:bg-info-600"
                       >
                         {t("list.actions.view_details")}
                       </Link>

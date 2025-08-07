@@ -378,7 +378,7 @@ export default function AgentReviewsPage() {
                 <button
                   onClick={handleBulkDelete}
                   disabled={loading}
-                  className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 disabled:opacity-50"
+                  className="px-3 py-1 bg-error-600 text-white text-sm rounded hover:bg-error-700 disabled:opacity-50"
                 >
                   Delete Selected
                 </button>

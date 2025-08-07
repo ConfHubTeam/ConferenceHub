@@ -332,7 +332,7 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
         {/* Login to book button */}
         <button 
           onClick={handleLoginRedirect}
-          className="block w-full bg-primary text-white py-3 px-6 rounded-lg text-center font-medium hover:bg-primary-dark transition-colors"
+          className="block w-full bg-primary text-white py-2 px-4 sm:py-2.5 sm:px-6 rounded-lg text-center font-medium hover:bg-primary/90 transition-colors"
         >
           {selectedCalendarDates && selectedCalendarDates.length > 0
             ? t("widget.buttons.login")

@@ -72,9 +72,9 @@ export const ResponsiveContainer = ({ children, className = "" }) => {
   const { isMobile, isTablet } = useResponsive();
 
   const getPadding = () => {
-    if (isMobile) return "px-4 py-4";
-    if (isTablet) return "px-6 py-6";
-    return "px-8 py-8";
+    if (isMobile) return "px-3 py-3 sm:px-4 sm:py-4";
+    if (isTablet) return "px-4 py-4 sm:px-6 sm:py-6";
+    return "px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8";
   };
 
   return (
