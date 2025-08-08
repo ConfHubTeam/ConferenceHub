@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const Booking = require('./bookings');
 const User = require('./users');
 
 const Transaction = sequelize.define('Transaction', {
@@ -26,12 +25,32 @@ const Transaction = sequelize.define('Transaction', {
     defaultValue: DataTypes.NOW
   },
   provider: {
-    type: DataTypes.ENUM('payme'),
+    type: DataTypes.ENUM('payme', 'click'),
     allowNull: false,
     defaultValue: 'payme'
   },
 
-  // PAYME specific fields
+  // Provider-specific transaction ID
+  providerTransactionId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true
+  },
+
+  // Provider-specific data (JSON field for flexibility)
+  providerData: {
+    type: DataTypes.JSONB,
+    allowNull: true
+  },
+
+  // Currency support
+  currency: {
+    type: DataTypes.STRING(3),
+    allowNull: false,
+    defaultValue: 'UZS'
+  },
+
+  // PAYME specific fields (deprecated - use providerTransactionId)
   paymeTransId: {
     type: DataTypes.STRING,
     allowNull: true,
@@ -45,11 +64,22 @@ const Transaction = sequelize.define('Transaction', {
       unique: true,
       fields: ['paymeTransId'],
       where: { provider: 'payme' }
+    },
+    {
+      unique: true,
+      fields: ['providerTransactionId']
+    },
+    {
+      fields: ['provider', 'state']
+    },
+    {
+      fields: ['bookingId']
     }
   ]
 });
 
 Transaction.belongsTo(User, { foreignKey: 'userId', as: 'user' });
-Transaction.belongsTo(Booking, { foreignKey: 'bookingId', as: 'booking' });
+
+// Note: Booking relationship will be defined in models/index.js to avoid circular dependency
 
 module.exports = Transaction;
