@@ -18,6 +18,7 @@ const PaymeTransactionState = {
 class PaymeService {
   /**
    * Validates the parameters for performing a transaction.
+   * You need to check before payment. Is the amount correct? Is the ID correct? ....so on !
    */
   async checkPerformTransaction(params, id) {
     let { account, amount } = params;
@@ -27,12 +28,23 @@ class PaymeService {
     amount = Math.floor(amount / 100);
 
     if (amount !== booking.totalPrice) {
-      throw new PaymeTransactionError(PaymeError.InvalidAmount, id);
+      throw new PaymeTransactionError(PaymeError.InvalidAmount, id, {
+        orderAmount: amount,
+        expectedAmount: booking.totalPrice,
+      });
     }
+
+    // booking da yana nimalarnidur check qilish kerak.
+
+    return {
+      allow: true,
+      bookingId: booking.id,
+    };
   }
 
   /**
    * Checks the transaction status based on the provided parameters.
+   * 
    */
   async checkTransaction(params, id) {
     const transaction = await Transaction.findOne({
@@ -68,7 +80,7 @@ class PaymeService {
 
     // If the transaction already exists, check its state
     if (transaction) {
-      if (transaction.state !== PaymePaymeTransactionState.Pending) {
+      if (transaction.state !== PaymeTransactionState.Pending) {
         throw new PaymeTransactionError(PaymeError.CantDoOperation, id);
       }
 
@@ -79,7 +91,7 @@ class PaymeService {
       if (!expirationTime) {
         await Transaction.findOneAndUpdate(
           { paymeTransId: params.id },
-          { state: PaymePaymeTransactionState.PendingCanceled, reason: 4 }
+          { state: PaymeTransactionState.PendingCanceled, reason: 4 }
         );
         throw new PaymeTransactionError(PaymeError.CantDoOperation, id);
       }
@@ -87,11 +99,11 @@ class PaymeService {
       return {
         create_time: transaction.createDate,
         transaction: transaction.paymeTransId,
-        state: PaymePaymeTransactionState.Pending,
+        state: PaymeTransactionState.Pending,
       };
     }
 
-    const booking = await Booking.findById(account.booking_id);
+    const booking = await Booking.findByPk(account.booking_id);
     if (!booking) {
       throw new PaymeTransactionError(
         PaymeError.BookingNotFound,
@@ -105,9 +117,9 @@ class PaymeService {
       bookingId: account.booking_id,
     });
     if (transaction) {
-      if (transaction.state === PaymePaymeTransactionState.Paid)
+      if (transaction.state === PaymeTransactionState.Paid)
         throw new PaymeTransactionError(PaymeError.AlreadyDone, id);
-      if (transaction.state === PaymePaymeTransactionState.Pending)
+      if (transaction.state === PaymeTransactionState.Pending)
         throw new PaymeTransactionError(PaymeError.Pending, id);
     }
 
@@ -224,7 +236,7 @@ class PaymeService {
     const { from, to } = params;
 
     const transactions = await Transaction.find({
-      createDate: { $gte: from, $lte: to }
+      createDate: { $gte: from, $lte: to },
     });
 
     return transactions.map((transaction) => ({
@@ -232,20 +244,20 @@ class PaymeService {
       time: transaction.createDate,
       amount: transaction.amount,
       account: {
-        booking_id: transaction.bookingId
+        booking_id: transaction.bookingId,
       },
       create_time: transaction.createDate,
       perform_time: transaction.performDate,
       cancel_time: transaction.cancelDate,
       transaction: transaction.paymeTransId,
-      state: transaction.state
+      state: transaction.state,
     }));
   }
 
   /**
    * Retrieves the booking context based on the booking ID.
    */
-  static async _getBookingContext(bookingId, id) {
+  async _getBookingContext(bookingId, id) {
     if (!Number.isInteger(bookingId)) {
       throw new PaymeTransactionError(
         PaymeError.BookingNotFound,
@@ -254,7 +266,7 @@ class PaymeService {
       );
     }
 
-    const booking = await Booking.findById(bookingId);
+    const booking = await Booking.findByPk(bookingId);
     if (!booking) {
       throw new PaymeTransactionError(
         PaymeError.BookingNotFound,
@@ -263,7 +275,7 @@ class PaymeService {
       );
     }
 
-    const user = await User.findById(booking.userId);
+    const user = await User.findByPk(booking.userId);
     if (!user) {
       throw new PaymeTransactionError(PaymeError.UserNotFound, id);
     }

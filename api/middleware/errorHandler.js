@@ -46,19 +46,6 @@ const errorHandler = (err, req, res, next) => {
     console.error(err.stack);
   }
 
-  // If it's a Payme transaction error, handle it specifically
-  if (err.isTransactionError) {
-    return res.status(200).json({
-      error: {
-        code: err.transactionErrorCode,
-        message: err.transactionErrorMessage,
-        data: err.transactionData
-      },
-      id: err.transactionId,
-      result: null
-    });
-  }
-
   // Handle specific errors
   if (err.name === 'SequelizeValidationError') {
     // Handle database validation errors
