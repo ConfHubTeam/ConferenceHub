@@ -17,6 +17,7 @@ User.hasMany(Transaction, { foreignKey: 'userId', as: 'transactions' });
 Place.hasMany(Booking, { foreignKey: 'placeId', as: 'bookings' });
 Currency.hasMany(Place, { foreignKey: 'currencyId', as: 'places' });
 Booking.hasMany(Transaction, { foreignKey: 'bookingId', as: 'transactions' });
+Transaction.belongsTo(Booking, { foreignKey: 'bookingId', as: 'booking' });
 
 // Review system associations
 User.hasMany(Review, { foreignKey: 'userId', as: 'reviews' });

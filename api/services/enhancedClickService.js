@@ -1,5 +1,6 @@
 const ClickMerchantApiService = require('./clickMerchantApiService');
 const PaymentStatusService = require('./paymentStatusService');
+const TransactionService = require('./transactionService');
 const { Booking } = require('../models');
 
 /**
@@ -47,6 +48,21 @@ class EnhancedClickService {
         };
       }
 
+      // Check if transaction already exists
+      const existingTransaction = await TransactionService.getClickTransactionByBooking(bookingId);
+      if (existingTransaction) {
+        const amount = booking.finalTotal || booking.totalPrice;
+        return {
+          success: true,
+          alreadyExists: true,
+          invoiceId: existingTransaction.providerTransactionId,
+          amount: amount,
+          paymentUrl: this._generatePaymentUrl(amount, booking.uniqueRequestId),
+          merchantTransId: booking.uniqueRequestId,
+          message: 'Transaction already exists for this booking'
+        };
+      }
+
       const amount = booking.finalTotal || booking.totalPrice;
       
       if (!amount || amount <= 0) {
@@ -68,6 +84,22 @@ class EnhancedClickService {
       await booking.update({
         clickInvoiceId: invoiceResult.invoiceId,
         clickInvoiceCreatedAt: new Date()
+      });
+
+      // Create transaction record
+      await TransactionService.createClick({
+        clickInvoiceId: invoiceResult.invoiceId,
+        amount: amount,
+        bookingId: bookingId,
+        userId: booking.userId,
+        merchantTransId: booking.uniqueRequestId,
+        clickPhoneNumber: userPhone || '998000000000',
+        invoiceData: {
+          invoiceId: invoiceResult.invoiceId,
+          merchantTransId: booking.uniqueRequestId,
+          createdAt: new Date(),
+          apiResponse: invoiceResult
+        }
       });
 
       return {
@@ -94,7 +126,33 @@ class EnhancedClickService {
    */
   async processPaymentVerification(bookingId) {
     try {
-      return await this.paymentStatusService.verifyAndUpdatePaymentStatus(bookingId);
+      // Check if transaction exists and is already paid
+      const transaction = await TransactionService.getClickTransactionByBooking(bookingId);
+      if (transaction && transaction.state === 2) { // Already paid
+        return {
+          success: true,
+          isPaid: true,
+          transaction: transaction,
+          message: 'Payment already confirmed'
+        };
+      }
+
+      // Process payment verification
+      const result = await this.paymentStatusService.verifyAndUpdatePaymentStatus(bookingId);
+      
+      // If payment was successful, update transaction
+      if (result.success && result.isPaid && transaction) {
+        await TransactionService.updateTransactionState(
+          transaction.providerTransactionId,
+          2, // Paid state
+          {
+            paymentVerifiedAt: new Date(),
+            paymentStatusData: result.data || {}
+          }
+        );
+      }
+
+      return result;
     } catch (error) {
       console.error(`❌ Error processing payment verification for booking ${bookingId}:`, error);
       return {
@@ -117,6 +175,9 @@ class EnhancedClickService {
         return paymentSummary;
       }
 
+      // Get transaction information
+      const transaction = await TransactionService.getClickTransactionByBooking(bookingId);
+
       // If invoice exists, get its status
       let invoiceStatus = null;
       if (paymentSummary.clickInvoiceId) {
@@ -132,6 +193,15 @@ class EnhancedClickService {
       return {
         success: true,
         paymentSummary,
+        transaction: transaction ? {
+          id: transaction.id,
+          state: transaction.state,
+          amount: transaction.amount,
+          currency: transaction.currency,
+          createDate: transaction.createDate,
+          performDate: transaction.performDate,
+          providerData: transaction.providerData
+        } : null,
         invoiceStatus,
         paymentUrl: paymentSummary.amount ? 
           this._generatePaymentUrl(paymentSummary.amount, paymentSummary.uniqueRequestId) : null
@@ -162,6 +232,19 @@ class EnhancedClickService {
       // Check if payment was already made
       if (booking.status === 'approved' && booking.paidAt) {
         throw new Error('Cannot cancel invoice - payment already completed');
+      }
+
+      // Get transaction and update it to cancelled
+      const transaction = await TransactionService.getClickTransactionByBooking(bookingId);
+      if (transaction && transaction.state === 1) { // Only cancel pending transactions
+        await TransactionService.updateTransactionState(
+          transaction.providerTransactionId,
+          -1, // Cancelled state
+          {
+            cancelledAt: new Date(),
+            cancelReason: 'User cancelled'
+          }
+        );
       }
 
       // Clear invoice information
@@ -217,20 +300,24 @@ class EnhancedClickService {
         };
       }
 
+      // Get transaction information
+      const transaction = await TransactionService.getClickTransactionByBooking(bookingId);
+
       // If already paid, return success immediately
-      if (booking.paidAt) {
+      if (booking.paidAt || (transaction && transaction.state === 2)) {
         return {
           success: true,
           isPaid: true,
           paymentStatus: 2, // Click.uz successful status
           errorCode: 0,
           paymentId: booking.clickPaymentId,
+          transaction: transaction,
           message: "Payment already confirmed"
         };
       }
 
       // If no invoice created, can't check
-      if (!booking.clickInvoiceId) {
+      if (!booking.clickInvoiceId && !transaction) {
         return {
           success: false,
           isPaid: false,
@@ -248,12 +335,26 @@ class EnhancedClickService {
         // Payment found and successful
         const paymentStatusResult = await this.paymentStatusService.verifyAndUpdatePaymentStatus(bookingId, apiResult.data);
         
+        // Update transaction if exists
+        if (transaction && paymentStatusResult.success) {
+          await TransactionService.updateTransactionState(
+            transaction.providerTransactionId,
+            2, // Paid state
+            {
+              paymentId: apiResult.data.payment_id,
+              paymentVerifiedAt: new Date(),
+              apiVerificationData: apiResult.data
+            }
+          );
+        }
+        
         return {
           success: true,
           isPaid: paymentStatusResult.success,
           paymentStatus: 2, // Click.uz successful
           errorCode: 0,
           paymentId: apiResult.data.payment_id,
+          transaction: transaction,
           message: paymentStatusResult.success ? "Payment confirmed" : "Payment verification failed"
         };
       } else {
@@ -267,6 +368,7 @@ class EnhancedClickService {
           paymentStatus: errorCode === -16 ? null : 0, // null = not found, 0 = created but not paid
           errorCode: errorCode,
           errorNote: errorNote,
+          transaction: transaction,
           message: errorNote
         };
       }
@@ -309,6 +411,58 @@ class EnhancedClickService {
         timestamp: new Date()
       };
     }
+  }
+
+  /**
+   * Get transaction history for a booking
+   * @param {string} bookingId - Booking ID
+   * @returns {Promise<Object>} Transaction history
+   */
+  async getTransactionHistory(bookingId) {
+    try {
+      const transactions = await TransactionService.getTransactionsByBooking(bookingId);
+      const clickTransactions = transactions.filter(t => t.provider === 'click');
+
+      return {
+        success: true,
+        transactions: clickTransactions.map(t => ({
+          id: t.id,
+          state: t.state,
+          stateText: this._getStateText(t.state),
+          amount: t.amount,
+          currency: t.currency,
+          providerTransactionId: t.providerTransactionId,
+          createDate: t.createDate,
+          performDate: t.performDate,
+          cancelDate: t.cancelDate,
+          providerData: t.providerData
+        })),
+        count: clickTransactions.length
+      };
+
+    } catch (error) {
+      console.error(`❌ Error getting transaction history for booking ${bookingId}:`, error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Convert transaction state to human-readable text
+   * @param {number} state - Transaction state
+   * @returns {string} State description
+   * @private
+   */
+  _getStateText(state) {
+    const stateMap = {
+      1: 'Pending',
+      2: 'Paid',
+      '-1': 'Cancelled',
+      '-2': 'Failed'
+    };
+    return stateMap[state] || 'Unknown';
   }
 }
 

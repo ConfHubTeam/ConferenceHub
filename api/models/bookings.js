@@ -153,4 +153,67 @@ Booking.belongsTo(User, {
   as: 'user' // Alias to maintain compatibility with existing code
 });
 
+// Transaction relationship for detailed payment tracking
+// Note: Transaction relationship will be defined in models/index.js to avoid circular dependency
+
+// Instance methods for payment management
+Booking.prototype.getClickTransaction = async function() {
+  const Transaction = require('./transaction');
+  return await Transaction.findOne({
+    where: { 
+      bookingId: this.id,
+      provider: 'click'
+    },
+    order: [['createDate', 'DESC']]
+  });
+};
+
+Booking.prototype.isPaymentCompleted = async function() {
+  // Check booking record first (for performance)
+  if (this.paidAt && this.status === 'approved') {
+    return true;
+  }
+  
+  // Check transaction record as backup
+  const transaction = await this.getClickTransaction();
+  return transaction && transaction.state === 2; // Paid state
+};
+
+Booking.prototype.getPaymentInfo = async function() {
+  const transaction = await this.getClickTransaction();
+  
+  return {
+    // Booking payment data (for compatibility)
+    booking: {
+      clickInvoiceId: this.clickInvoiceId,
+      clickPaymentId: this.clickPaymentId,
+      paidAt: this.paidAt,
+      paymentResponse: this.paymentResponse,
+      status: this.status
+    },
+    
+    // Transaction data (for detailed tracking)
+    transaction: transaction ? {
+      id: transaction.id,
+      state: transaction.state,
+      stateText: this._getTransactionStateText(transaction.state),
+      amount: transaction.amount,
+      currency: transaction.currency,
+      createDate: transaction.createDate,
+      performDate: transaction.performDate,
+      providerData: transaction.providerData
+    } : null
+  };
+};
+
+Booking.prototype._getTransactionStateText = function(state) {
+  const stateMap = {
+    1: 'Pending',
+    2: 'Paid',
+    '-1': 'Cancelled',
+    '-2': 'Failed'
+  };
+  return stateMap[state] || 'Unknown';
+};
+
 module.exports = Booking;
