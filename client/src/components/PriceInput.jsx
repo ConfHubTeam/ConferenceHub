@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
-import { getCurrencySymbol } from "../utils/currencyUtils";
+import { useEffect, useState, useRef } from "react";
+import { getCurrencySymbol, formatCurrencyWhileTyping, unformatCurrency } from "../utils/currencyUtils";
 
 export default function PriceInput({ value, onChange, currency, label = null, isRequired = false }) {
   const [inputValue, setInputValue] = useState("");
   const [formattedValue, setFormattedValue] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const inputRef = useRef(null);
   
   // Format value according to currency
   const formatValueForCurrency = (numValue, currencyType) => {
@@ -61,26 +62,67 @@ export default function PriceInput({ value, onChange, currency, label = null, is
 
   const handleInputChange = (e) => {
     const newValue = e.target.value;
+    const cursorPosition = e.target.selectionStart;
     
-    // Remove all non-numeric characters except decimal point
-    const cleanValue = newValue.replace(/[^\d.]/g, "");
+    // Remove all formatting characters to get clean numeric value
+    const cleanValue = unformatCurrency(newValue);
     
     // Only allow numbers (including decimal point)
     if (/^$|^[0-9]*\.?[0-9]*$/.test(cleanValue)) {
+      // Store the clean numeric value for database logic (UNCHANGED)
       setInputValue(cleanValue);
       
-      // Convert to float for the parent component
+      // Convert to float for the parent component (UNCHANGED DATABASE LOGIC)
       const numValue = cleanValue === "" ? 0 : parseFloat(cleanValue);
       
-      // Update parent component
+      // Update parent component with clean numeric value (UNCHANGED)
       onChange(numValue);
+      
+      // Update the display value with live formatting while editing
+      if (isEditing) {
+        const liveFormatted = formatCurrencyWhileTyping(cleanValue, currency);
+        setFormattedValue(liveFormatted);
+        
+        // Calculate proper cursor position
+        setTimeout(() => {
+          if (inputRef.current) {
+            // Count digits before cursor in original string
+            const digitsBeforeCursor = newValue.slice(0, cursorPosition).replace(/[^\d]/g, "").length;
+            
+            // Find position in formatted string where we have the same number of digits
+            let newCursorPos = 0;
+            let digitCount = 0;
+            
+            for (let i = 0; i < liveFormatted.length; i++) {
+              if (/\d/.test(liveFormatted[i])) {
+                digitCount++;
+                if (digitCount >= digitsBeforeCursor) {
+                  newCursorPos = i + 1;
+                  break;
+                }
+              }
+            }
+            
+            // Ensure cursor doesn't go beyond string length
+            newCursorPos = Math.min(newCursorPos, liveFormatted.length);
+            
+            inputRef.current.setSelectionRange(newCursorPos, newCursorPos);
+          }
+        }, 0);
+      }
     }
   };
 
   // Handle focus to show raw value for editing
   const handleFocus = () => {
-    // Show raw value when user focuses on input
+    // Show live formatted value when user focuses on input
     setIsEditing(true);
+    
+    // If we have a clean input value, format it for live editing
+    if (inputValue) {
+      const liveFormatted = formatCurrencyWhileTyping(inputValue, currency);
+      setFormattedValue(liveFormatted);
+    }
   };
 
   // Handle blur to show formatted value
@@ -111,11 +153,12 @@ export default function PriceInput({ value, onChange, currency, label = null, is
           </label>
       )}
         <input
+          ref={inputRef}
           id={inputId}
           type="text"
           inputMode="decimal"
           placeholder="0"
-          value={isEditing ? inputValue : formattedValue}
+          value={isEditing ? formattedValue || inputValue : formattedValue}
           onChange={handleInputChange}
           onFocus={handleFocus}
           onBlur={handleBlur}

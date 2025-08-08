@@ -278,6 +278,80 @@ export async function formatPrice(price, currency, selectedCurrency = null) {
 }
 
 /**
+ * Formats currency while typing to provide visual feedback
+ * @param {string} inputValue - Current input value as string
+ * @param {Object} currency - Currency object with charCode property
+ * @returns {string} - Formatted value for display while typing
+ */
+export function formatCurrencyWhileTyping(inputValue, currency) {
+  if (!inputValue || inputValue === "") return "";
+  
+  // Remove all non-numeric characters except decimal point
+  const cleanValue = inputValue.replace(/[^\d.]/g, "");
+  
+  // Handle empty or just decimal point
+  if (!cleanValue || cleanValue === ".") return cleanValue;
+  
+  // Parse the clean value
+  const num = parseFloat(cleanValue);
+  if (isNaN(num)) return cleanValue;
+  
+  // Get currency code from currency object
+  const currencyCode = currency?.charCode || "UZS";
+  
+  // Get the integer part and decimal part
+  const parts = cleanValue.split(".");
+  const integerPart = parts[0];
+  const decimalPart = parts[1];
+  
+  // Format the integer part with thousands separators
+  let formattedInteger = "";
+  if (integerPart) {
+    const intNum = parseInt(integerPart);
+    if (!isNaN(intNum)) {
+      switch (currencyCode) {
+        case "UZS":
+          formattedInteger = intNum.toLocaleString("en-US", {
+            useGrouping: true
+          });
+          break;
+        case "USD":
+          formattedInteger = intNum.toLocaleString("en-US", {
+            useGrouping: true
+          });
+          break;
+        case "RUB":
+          formattedInteger = intNum.toLocaleString("ru-RU", {
+            useGrouping: true
+          }).replace(/\s/g, " "); // Ensure space as separator
+          break;
+        default:
+          formattedInteger = intNum.toLocaleString("en-US", {
+            useGrouping: true
+          });
+      }
+    }
+  }
+  
+  // Combine integer and decimal parts
+  let result = formattedInteger || "0";
+  
+  // Add decimal part if it exists (for currencies that support decimals)
+  if (parts.length > 1) {
+    if (currencyCode === "UZS") {
+      // UZS doesn't use decimals, so ignore decimal part
+      result = formattedInteger || "0";
+    } else {
+      // For USD and RUB, preserve decimal input
+      const decimalSeparator = currencyCode === "RUB" ? "," : ".";
+      result += decimalSeparator + (decimalPart || "");
+    }
+  }
+  
+  return result;
+}
+
+/**
  * Formats UZS currency in shorter format for map markers
  * @param {number} value - The numeric value to format
  * @returns {string} - Shortened formatted price (e.g., "1.2 mln so'm", "50 mln so'm", "2.5 ming so'm", "1 mlrd so'm")
