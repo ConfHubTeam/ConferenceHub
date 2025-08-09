@@ -129,22 +129,6 @@ nav,
   -webkit-overflow-scrolling: touch;
 }
 
-/* Place card carousel specific styles */
-.place-card-carousel {
-  touch-action: pan-x; /* Allow horizontal swiping */
-  -webkit-overflow-scrolling: touch;
-  overflow: hidden; /* Hide the overflowing peek area */
-}
-
-.place-card-carousel button {
-  touch-action: manipulation; /* Allow button interactions */
-}
-
-/* Ensure the peek effect doesn't cause horizontal scrolling */
-.place-card-carousel .flex {
-  overflow: visible;
-}
-
 /* YouTube video fullscreen handling */
 .youtube-fullscreen {
   touch-action: manipulation; /* Prevent pinch zoom but allow basic touch */
