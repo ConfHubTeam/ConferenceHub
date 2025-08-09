@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useRef } from "react";
 import { format, parseISO } from "date-fns";
 import { enUS, ru, uz } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
@@ -27,6 +27,9 @@ export default function TimeSlotModal({
   timezoneAvailableTimeSlots = [] // New prop for timezone-aware available time slots
 }) {
   const { t, i18n } = useTranslation('booking');
+  
+  // Ref for the time slots scroll container
+  const timeSlotScrollRef = useRef(null);
   
   // Get appropriate locale for date formatting
   const getDateLocale = () => {
@@ -127,6 +130,34 @@ export default function TimeSlotModal({
       };
     });
   }, [timeSlots, currentEditingDate, bookedTimeSlots, placeDetail.minimumHours, placeDetail.cooldown, timezoneAvailableTimeSlots]);
+
+  // Auto-scroll to selected time range when time slots change
+  useEffect(() => {
+    if (!timeSlotScrollRef.current || !selectedStartTime || !selectedEndTime) return;
+    
+    const scrollContainer = timeSlotScrollRef.current;
+    const timeSlotElements = scrollContainer.querySelectorAll('[data-time-value]');
+    
+    // Find the start time element
+    const startTimeElement = Array.from(timeSlotElements).find(
+      el => el.getAttribute('data-time-value') === selectedStartTime
+    );
+    
+    if (startTimeElement) {
+      const containerWidth = scrollContainer.clientWidth;
+      const elementLeft = startTimeElement.offsetLeft;
+      const elementWidth = startTimeElement.offsetWidth;
+      
+      // Calculate scroll position to center the selected range
+      const scrollLeft = Math.max(0, elementLeft - (containerWidth / 2) + (elementWidth / 2));
+      
+      // Smooth scroll to the calculated position
+      scrollContainer.scrollTo({
+        left: scrollLeft,
+        behavior: 'smooth'
+      });
+    }
+  }, [selectedStartTime, selectedEndTime, timeOptions]);
 
   // Generate start time options (limited by cooldown and minimum duration)
   const startTimeOptions = useMemo(() => {
@@ -424,7 +455,7 @@ export default function TimeSlotModal({
           {/* Visual time slot availability indicator */}
           <div className="mt-4">
             <h4 className="text-sm font-medium text-gray-700 mb-2">{t("timeSlotModal.todaysAvailability")}</h4>
-            <div className="flex overflow-x-auto pb-2">
+            <div ref={timeSlotScrollRef} className="flex overflow-x-auto pb-2">
               {timeOptions.map(option => {
                 const hourParts = option.label.split(':');
                 const displayHour = hourParts[0];
@@ -468,7 +499,8 @@ export default function TimeSlotModal({
                 
                 return (
                   <div 
-                    key={option.value} 
+                    key={option.value}
+                    data-time-value={option.value}
                     className={`
                       flex-shrink-0 text-xs text-center p-2 rounded-md mr-1 w-16
                       ${isPastTimeInTimezone
