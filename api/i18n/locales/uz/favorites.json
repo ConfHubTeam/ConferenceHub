@@ -1,0 +1,17 @@
+{
+  "page": {
+    "title": "Mening sevimlilarim",
+    "subtitle": "Sizda {{count}} ta sevimli joylar bor",
+    "subtitle_plural": "Sizda {{count}}ta sevimli joylar bor",
+    "clearAll": "Hammasini tozalash",
+    "empty": {
+      "title": "Hali sevimlilar yo'q",
+      "description": "Kashf qilishni boshlang va yurak belgisini bosish orqali joylarni sevimlilaringizga qo'shing.",
+      "browseButton": "Joylarni ko'rish"
+    }
+  },
+  "button": {
+    "addToFavorites": "Sevimlilarga qo'shish",
+    "removeFromFavorites": "Sevimlilardan olib tashlash"
+  }
+}

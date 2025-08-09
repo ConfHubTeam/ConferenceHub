@@ -28,6 +28,7 @@
   "accountNav": {
     "profile": "Profil",
     "bookings": "Bronlar", 
+    "favorites": "Sevimlilar",
     "notifications": "Bildirishnomalar",
     "spaces": "Joylar",
     "hostDashboard": "Host paneli",

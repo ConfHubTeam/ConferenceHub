@@ -17,6 +17,7 @@ import { AttendeesFilterProvider } from "./contexts/AttendeesFilterContext";
 import { SizeFilterProvider } from "./contexts/SizeFilterContext";
 import { PerksFilterProvider } from "./contexts/PerksFilterContext";
 import { PoliciesFilterProvider } from "./contexts/PoliciesFilterContext";
+import { FavoritesProvider } from "./contexts/FavoritesContext";
 import PlacesPage from "./pages/PlacesPage";
 import ProfilePage from "./pages/ProfilePage";
 import PlacesFormPage from "./pages/PlacesFormPage";
@@ -29,6 +30,7 @@ import HostReviewsPage from "./pages/HostReviewsPage";
 import UsersPage from "./pages/UsersPage";
 import AllPlacesPage from "./pages/AllPlacesPage";
 import AgentReviewsPage from "./pages/AgentReviewsPage";
+import FavoritesPage from "./pages/FavoritesPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import HostBookingManagementPage from "./pages/HostBookingManagementPage";
 import TelegramAuth from "./components/TelegramAuth";
@@ -52,6 +54,7 @@ function App() {
       <CurrencyProvider>
         <NotificationProvider>
           <ReviewNotificationProvider>
+            <FavoritesProvider>
               <DateTimeFilterProvider>
               <PriceFilterProvider>
                 <AttendeesFilterProvider>
@@ -78,6 +81,7 @@ function App() {
             <Route path="/place/:placeId/:bookingId" element={<PlaceDetailPage />}/>
             <Route path="/account/bookings" element={<BookingsPage />}/>
             <Route path="/account/bookings/:bookingId" element={<BookingDetailsPage />}/>
+            <Route path="/account/favorites" element={<FavoritesPage />}/>
             <Route path="/account/notifications" element={<NotificationsPage />}/>
             <Route path="/account/host-management" element={<HostBookingManagementPage />}/>
             
@@ -98,6 +102,7 @@ function App() {
                 </AttendeesFilterProvider>
               </PriceFilterProvider>
             </DateTimeFilterProvider>
+            </FavoritesProvider>
           </ReviewNotificationProvider>
         </NotificationProvider>
       </CurrencyProvider>

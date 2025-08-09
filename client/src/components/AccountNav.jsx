@@ -3,12 +3,14 @@ import { useContext, useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { UserContext } from "./UserContext";
 import { useReviewNotifications } from "../contexts/ReviewNotificationContext";
+import { useFavorites } from "../contexts/FavoritesContext";
 
 export default function AccountNav() {
   const { t } = useTranslation("navigation");
   const { pathname } = useLocation(); // /account/:subpage
   const { user } = useContext(UserContext);
   const { unreadCount } = useReviewNotifications(); // Now handles both review and booking notifications
+  const { favoritesCount } = useFavorites();
   const scrollContainerRef = useRef(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(false);
@@ -74,6 +76,18 @@ export default function AccountNav() {
         </svg>
       ),
       label: t("accountNav.bookings")
+    },
+    { 
+      key: "favorites", 
+      to: "/account/favorites", 
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        </svg>
+      ),
+      label: t("accountNav.favorites"),
+      hasCount: favoritesCount > 0,
+      count: favoritesCount
     },
     { 
       key: "notifications", 
@@ -218,6 +232,11 @@ export default function AccountNav() {
                   {item.hasNotification && (
                     <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
                   )}
+                  {item.hasCount && item.count > 0 && (
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[8px] text-white font-bold">
+                      {item.count > 9 ? '9+' : item.count}
+                    </div>
+                  )}
                 </div>
                 <span className="font-medium text-center leading-tight">{item.label}</span>
               </Link>
@@ -244,6 +263,11 @@ export default function AccountNav() {
                   {item.icon}
                   {item.hasNotification && (
                     <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
+                  )}
+                  {item.hasCount && item.count > 0 && (
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[8px] text-white font-bold">
+                      {item.count > 9 ? '9+' : item.count}
+                    </div>
                   )}
                 </div>
                 <span className="text-sm font-medium">{item.label}</span>

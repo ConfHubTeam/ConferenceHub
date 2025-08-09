@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { Link, useLocation, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import CloudinaryImage from "../components/CloudinaryImage";
+import FavoriteButton from "../components/FavoriteButton";
 import MapView from "../components/MapView";
 import PriceDisplay from "../components/PriceDisplay";
 import Pagination from "../components/Pagination";
@@ -446,6 +447,11 @@ function IndexPageBase() {
                     onMouseEnter={() => setHoveredPlaceId(place.id)}
                     onMouseLeave={() => setHoveredPlaceId(null)}
                   >
+                    {/* Favorite Button */}
+                    <div className="absolute top-3 right-3 z-10">
+                      <FavoriteButton place={place} />
+                    </div>
+
                     <Link to={"/place/" + place.id}>
                       <div className="bg-white overflow-hidden shadow hover:shadow-lg transition-shadow">
                         <div className="aspect-square overflow-hidden">
