@@ -11,10 +11,11 @@ html {
 
 body {
   touch-action: manipulation;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
+  /* Allow text selection by default - users should be able to copy text */
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
   /* Prevent iOS elastic scrolling */
   overscroll-behavior: none;
   -webkit-overflow-scrolling: auto;
@@ -34,6 +35,25 @@ input, textarea, [contenteditable] {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
+}
+
+/* Ensure text content areas are selectable */
+p, 
+h1, h2, h3, h4, h5, h6,
+div.content,
+.description,
+.text-content,
+.article,
+.review,
+.comment,
+span.selectable,
+.place-description,
+.place-title,
+.place-details {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
 }
 
 /* Map container specific rules */
@@ -75,6 +95,26 @@ a,
   -webkit-tap-highlight-color: transparent;
   /* Prevent iOS callout menu */
   -webkit-touch-callout: none;
+  /* Disable text selection on interactive elements */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Disable text selection on navigation and UI elements */
+nav,
+.navbar,
+.menu,
+.header,
+.sidebar,
+.controls,
+.tabs,
+.pagination {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 /* Calendar and date picker touch handling */
@@ -87,6 +127,22 @@ a,
 .carousel {
   touch-action: pan-x; /* Allow only horizontal panning */
   -webkit-overflow-scrolling: touch;
+}
+
+/* Place card carousel specific styles */
+.place-card-carousel {
+  touch-action: pan-x; /* Allow horizontal swiping */
+  -webkit-overflow-scrolling: touch;
+  overflow: hidden; /* Hide the overflowing peek area */
+}
+
+.place-card-carousel button {
+  touch-action: manipulation; /* Allow button interactions */
+}
+
+/* Ensure the peek effect doesn't cause horizontal scrolling */
+.place-card-carousel .flex {
+  overflow: visible;
 }
 
 /* YouTube video fullscreen handling */
@@ -232,6 +288,21 @@ textarea {
 /* Allow all gestures (for maps) */
 .allow-all-gestures {
   touch-action: none;
+}
+
+/* Utility classes for text selection control */
+.text-selectable {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+}
+
+.text-not-selectable {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
 }
 
 /* Mobile map view specific styles */
