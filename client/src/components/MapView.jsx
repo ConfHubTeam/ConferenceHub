@@ -59,7 +59,7 @@ const defaultCenter = {
 const libraries = ['places'];
 
 const MapView = memo(function MapView({ places, disableInfoWindow = false, hoveredPlaceId = null, onBoundsChanged = null }) {
-  const { t } = useTranslation("places");
+  const { t, i18n } = useTranslation(["places", "common"]);
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
@@ -122,7 +122,7 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false, hover
         
         // Use shorter format for UZS currency on map markers
         if (currentCurrency.charCode === 'UZS') {
-          formattedPrice = formatUZSShort(convertedPrice);
+          formattedPrice = formatUZSShort(convertedPrice, t);
         } else {
           formattedPrice = await formatPrice(convertedPrice, currentCurrency, currentCurrency);
         }
@@ -132,7 +132,7 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false, hover
         
         // Use shorter format for UZS currency on map markers
         if (currencyCode === 'UZS') {
-          formattedPrice = formatUZSShort(price);
+          formattedPrice = formatUZSShort(price, t);
         } else {
           formattedPrice = await formatPrice(price, currency, currentCurrency);
         }
@@ -509,7 +509,7 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false, hover
         }
       }
     });
-  }, [map, memoizedPlaces, createMarkersAsync, areMarkersInCurrentView]);
+  }, [map, memoizedPlaces, createMarkersAsync, areMarkersInCurrentView, i18n.language]);
 
   // Handle marker highlighting when hoveredPlaceId changes
   useEffect(() => {

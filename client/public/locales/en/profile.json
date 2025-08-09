@@ -57,6 +57,21 @@
       "noEmail": "No email"
     }
   },
+  "phoneVerification": {
+    "title": "Verify Phone Number",
+    "description": "We've sent a 6-digit verification code to:",
+    "codeLabel": "Verification Code",
+    "verify": "Verify",
+    "verifying": "Verifying...",
+    "resend": "Resend Code",
+    "sending": "Sending...",
+    "expiresIn": "Code expires in",
+    "expired": "Code expired",
+    "note": "The verification code may take a few minutes to arrive.",
+    "invalidCodeLength": "Please enter a 6-digit verification code",
+    "sendError": "Failed to send verification code. Please try again.",
+    "verifyError": "Failed to verify code. Please try again."
+  },
   "actions": {
     "editProfile": "Edit Profile",
     "saveChanges": "Save Changes",

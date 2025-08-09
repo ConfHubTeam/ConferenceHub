@@ -57,6 +57,21 @@
       "noEmail": "Email yo'q"
     }
   },
+  "phoneVerification": {
+    "title": "Telefon raqamini tasdiqlash",
+    "description": "Biz 6 xonali tasdiqlash kodini yuborgan:",
+    "codeLabel": "Tasdiqlash kodi",
+    "verify": "Tasdiqlash",
+    "verifying": "Tasdiqlanmoqda...",
+    "resend": "Qayta yuborish",
+    "sending": "Yuborilmoqda...",
+    "expiresIn": "Kod tugaydi",
+    "expired": "Kod muddati tugadi",
+    "note": "Tasdiqlash kodi bir necha daqiqa ichida kelishi mumkin.",
+    "invalidCodeLength": "Iltimos, 6 xonali tasdiqlash kodini kiriting",
+    "sendError": "Tasdiqlash kodini yuborib bo'lmadi. Qayta urinib ko'ring.",
+    "verifyError": "Kodni tasdiqlab bo'lmadi. Qayta urinib ko'ring."
+  },
   "actions": {
     "editProfile": "Profilni tahrirlash",
     "saveChanges": "O'zgarishlarni saqlash",

@@ -19,6 +19,10 @@ router.put("/profile", userController.updateProfile);
 router.get("/language-preference", userController.getLanguagePreference);
 router.put("/language-preference", userController.updateLanguagePreference);
 
+// Phone verification endpoints
+router.post("/send-phone-verification", userController.sendPhoneVerification);
+router.post("/verify-phone", userController.verifyPhoneAndUpdate);
+
 // Get all users (agent only)
 router.get("/", userController.getAllUsers);
 router.get("/all", userController.getAllUsers); // Alias for /users endpoint

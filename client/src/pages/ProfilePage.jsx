@@ -7,6 +7,7 @@ import api from "../utils/api";
 import AccountNav from "../components/AccountNav";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import CustomPhoneInput from "../components/CustomPhoneInput";
+import PhoneVerificationModal from "../components/PhoneVerificationModal";
 import { isValidPhoneNumber, isPossiblePhoneNumber } from "react-phone-number-input";
 
 export default function ProfilePage({}) {
@@ -27,6 +28,10 @@ export default function ProfilePage({}) {
   const [editName, setEditName] = useState('');
   const [editPhoneNumber, setEditPhoneNumber] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Phone verification state
+  const [showPhoneVerification, setShowPhoneVerification] = useState(false);
+  const [pendingPhoneUpdate, setPendingPhoneUpdate] = useState(null);
 
   useEffect(() => {
     // Only process notifications once to prevent infinite loops
@@ -152,6 +157,20 @@ export default function ProfilePage({}) {
       }
     }
     
+    // Check if phone number has changed and requires verification
+    const phoneChanged = editPhoneNumber.trim() !== (user.phoneNumber || '');
+    
+    if (phoneChanged && editPhoneNumber.trim()) {
+      // Store the pending update and show verification modal
+      setPendingPhoneUpdate({
+        name: editName.trim(),
+        phoneNumber: editPhoneNumber.trim()
+      });
+      setShowPhoneVerification(true);
+      return;
+    }
+    
+    // If no phone change or phone is being removed, proceed with normal update
     setIsSaving(true);
     try {
       const response = await api.put('/users/profile', {
@@ -178,6 +197,24 @@ export default function ProfilePage({}) {
     } finally {
       setIsSaving(false);
     }
+  }
+  
+  // Handle successful phone verification
+  async function handlePhoneVerificationSuccess(updatedUser) {
+    setUser(updatedUser);
+    if (refreshUserProfile) {
+      await refreshUserProfile();
+    }
+    setIsEditing(false);
+    setShowPhoneVerification(false);
+    setPendingPhoneUpdate(null);
+    notify(t("profile:messages.profileUpdated"), "success");
+  }
+  
+  // Handle phone verification cancellation
+  function handlePhoneVerificationCancel() {
+    setShowPhoneVerification(false);
+    setPendingPhoneUpdate(null);
   }
   
   // Function to delete account
@@ -488,6 +525,15 @@ export default function ProfilePage({}) {
           return allConsequences;
         })()}
         deleteInProgress={isDeleting}
+      />
+      
+      {/* Phone verification modal */}
+      <PhoneVerificationModal
+        isOpen={showPhoneVerification}
+        onClose={handlePhoneVerificationCancel}
+        onSuccess={handlePhoneVerificationSuccess}
+        phoneNumber={pendingPhoneUpdate?.phoneNumber}
+        additionalData={pendingPhoneUpdate ? { name: pendingPhoneUpdate.name } : null}
       />
     </div>
   );
