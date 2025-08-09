@@ -1,8 +1,5 @@
 {
   "page": {
-    "title": "My Favorites",
-    "subtitle": "You have {{count}} favorite places",
-    "subtitle_plural": "You have {{count}} favorite places",
     "clearAll": "Clear All",
     "empty": {
       "title": "No favorites yet",

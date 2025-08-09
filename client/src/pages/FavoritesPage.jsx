@@ -27,25 +27,16 @@ export default function FavoritesPage() {
       
       <div className="spacing-container spacing-section max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              {t('favorites:page.title')}
-            </h1>
-            <p className="text-gray-600 mt-2">
-              {t('favorites:page.subtitle', { count: favoritesCount })}
-            </p>
-          </div>
-        
-        {favoritesCount > 0 && (
-          <button
-            onClick={handleClearAll}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-          >
-            {t('favorites:page.clearAll')}
-          </button>
-        )}
-      </div>
+        <div className="flex justify-end items-center mb-8">
+          {favoritesCount > 0 && (
+            <button
+              onClick={handleClearAll}
+              className="px-3 py-1.5 bg-red-600 text-white text-sm rounded-full hover:bg-red-700 transition-colors"
+            >
+              {t('favorites:page.clearAll')}
+            </button>
+          )}
+        </div>
 
       {/* Empty State */}
       {favoritesCount === 0 ? (

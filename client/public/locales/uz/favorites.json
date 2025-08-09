@@ -1,8 +1,5 @@
 {
   "page": {
-    "title": "Mening sevimlilarim",
-    "subtitle": "Sizda {{count}}ta sevimli joy bor",
-    "subtitle_plural": "Sizda {{count}}ta sevimli joylar bor",
     "clearAll": "Hammasini tozalash",
     "empty": {
       "title": "Hali sevimlilar yo'q",

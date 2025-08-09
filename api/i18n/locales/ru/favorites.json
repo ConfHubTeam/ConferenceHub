@@ -1,8 +1,5 @@
 {
   "page": {
-    "title": "Мои избранные",
-    "subtitle": "У вас {{count}} избранных мест",
-    "subtitle_plural": "У вас {{count}} избранных мест",
     "clearAll": "Очистить все",
     "empty": {
       "title": "Пока нет избранных",
