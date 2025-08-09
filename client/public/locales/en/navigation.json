@@ -28,6 +28,7 @@
   "accountNav": {
     "profile": "Profile",
     "bookings": "Bookings", 
+    "favorites": "Favorites",
     "notifications": "Notifications",
     "spaces": "Spaces",
     "hostDashboard": "Host Dashboard",

@@ -1,0 +1,14 @@
+{
+  "page": {
+    "clearAll": "Clear All",
+    "empty": {
+      "title": "No favorites yet",
+      "description": "Start exploring and add places to your favorites by clicking the heart icon.",
+      "browseButton": "Browse Places"
+    }
+  },
+  "button": {
+    "addToFavorites": "Add to favorites",
+    "removeFromFavorites": "Remove from favorites"
+  }
+}

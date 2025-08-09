@@ -191,11 +191,12 @@ export default function PhotoGallery({placeDetail}) {
                 <div 
                   className="flex-shrink-0 w-full h-full flex items-center justify-center snap-center"
                 >
-                  <div className="w-full h-full max-h-[80vh] flex justify-center items-center">
+                  <div className="w-full h-full flex justify-center items-center p-4">
                     <YouTubeEmbed 
                       url={placeDetail.youtubeLink} 
                       title={placeDetail.title}
-                      className="w-full max-w-4xl"
+                      className="w-full h-full"
+                      isFullscreen={true}
                     />
                   </div>
                 </div>
@@ -267,6 +268,7 @@ export default function PhotoGallery({placeDetail}) {
                 url={placeDetail.youtubeLink}
                 title={placeDetail.title}
                 className="w-full h-full"
+                isFullscreen={false}
               />
             ) : null}
           </div>

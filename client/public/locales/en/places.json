@@ -298,6 +298,7 @@
   },
   "placeDetail": {
     "bookingRestored": "Your booking selections have been restored. You can now complete your booking.",
+    "filterDatesPreSelected": "Your filtered dates and times have been pre-selected for booking.",
     "deleteSuccess": "Conference room deleted successfully",
     "ownerNotification": "You are the owner of this conference room",
     "agentNotification": "Agent Management Access",

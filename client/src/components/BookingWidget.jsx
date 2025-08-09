@@ -142,6 +142,7 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
           required: true,
           min: 1, 
           max: placeDetail.maxGuests,
+          errorMessage: t("validation.errors.attendeesRequired"),
           minErrorMessage: t("validation.errors.attendeesRequired"),
           maxErrorMessage: t("validation.errors.attendeesMax", { maxGuests: placeDetail.maxGuests })
         }
