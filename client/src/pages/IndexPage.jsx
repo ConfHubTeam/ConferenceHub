@@ -452,7 +452,7 @@ function IndexPageBase() {
                       <FavoriteButton place={place} />
                     </div>
 
-                    <Link to={"/place/" + place.id}>
+                    <Link to={`/place/${place.id}${location.search}`}>
                       <div className="bg-white overflow-hidden shadow hover:shadow-lg transition-shadow">
                         <div className="aspect-square overflow-hidden">
                           {place.photos?.length > 0 && (

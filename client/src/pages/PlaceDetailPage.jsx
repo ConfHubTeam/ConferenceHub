@@ -1,6 +1,6 @@
 import api from "../utils/api";
 import { useContext, useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import BookingWidget from "../components/BookingWidget";
 import PhotoGallery from "../components/PhotoGallery";
@@ -15,10 +15,12 @@ import PlaceAvailabilityCalendar from "../components/PlaceAvailabilityCalendar";
 import PlacePerks from "../components/PlacePerks";
 import RefundPolicyDisplay from "../components/RefundPolicyDisplay";
 import PlaceReviews from "../components/PlaceReviews";
+import { parseISO, isValid } from "date-fns";
 
 export default function PlaceDetailPage() {
   const { t } = useTranslation('places');
   const { placeId, bookingId } = useParams();
+  const location = useLocation();
   const [placeDetail, setPlaceDetail] = useState();
   const [bookingDetail, setBookingDetail] = useState();
   const [buttonDisabled, setButtonDisabled] = useState(false);
@@ -36,6 +38,48 @@ export default function PlaceDetailPage() {
     setSelectedCalendarDates([]);
   };
 
+  // Helper function to parse date/time from URL parameters and pre-populate booking selection
+  // Follows DRY principle by reusing existing date/time parsing logic
+  const parseUrlFiltersAndPrePopulate = () => {
+    const urlParams = new URLSearchParams(location.search);
+    const dates = urlParams.get('dates');
+    const startTime = urlParams.get('startTime');
+    const endTime = urlParams.get('endTime');
+
+    // If we have filter parameters, pre-populate the calendar selection
+    if (dates || startTime || endTime) {
+      const preSelectedDates = [];
+
+      // Parse dates if available
+      if (dates) {
+        try {
+          const dateStrings = dates.split(',');
+          dateStrings.forEach(dateStr => {
+            const parsedDate = parseISO(dateStr.trim());
+            if (isValid(parsedDate)) {
+              // Create date slot object compatible with PlaceAvailabilityCalendar
+              const dateSlot = {
+                date: dateStr.trim(),
+                startTime: startTime || "09:00", // Default to 9 AM if not specified
+                endTime: endTime || "17:00"     // Default to 5 PM if not specified
+              };
+              preSelectedDates.push(dateSlot);
+            }
+          });
+        } catch (error) {
+          console.warn("Error parsing dates from URL:", error);
+        }
+      }
+
+      // If we successfully parsed dates, set them
+      if (preSelectedDates.length > 0) {
+        setSelectedCalendarDates(preSelectedDates);
+        // Notify user that dates were pre-selected from filter
+        notify(t('placeDetail.filterDatesPreSelected'), "info");
+      }
+    }
+  };
+
   useEffect(() => {
     if (!placeId) {
       return;
@@ -50,7 +94,11 @@ export default function PlaceDetailPage() {
       });
       setButtonDisabled(true);
     }
-  }, [placeId, bookingId]); // refresh the page if the id changes
+
+    // Pre-populate booking selection from URL filter parameters
+    // This enables the feature where filtered date/time is pre-selected in booking modal
+    parseUrlFiltersAndPrePopulate();
+  }, [placeId, bookingId, location.search]); // Add location.search to dependency array to react to URL changes
 
   // Restore booking selections from sessionStorage after login redirect
   useEffect(() => {
