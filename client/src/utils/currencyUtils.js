@@ -354,13 +354,19 @@ export function formatCurrencyWhileTyping(inputValue, currency) {
 /**
  * Formats UZS currency in shorter format for map markers
  * @param {number} value - The numeric value to format
+ * @param {function} t - Translation function (optional, defaults to English)
  * @returns {string} - Shortened formatted price (e.g., "1.2 mln so'm", "50 mln so'm", "2.5 ming so'm", "1 mlrd so'm")
  */
-export function formatUZSShort(value) {
+export function formatUZSShort(value, t = null) {
   if (value === null || value === undefined || value === "") return "";
   
   const num = parseFloat(value);
   if (isNaN(num)) return "";
+  
+  // Get translations or fallback to default values
+  const thousand = t ? t('common:currency.abbreviations.thousand') : 'ming';
+  const million = t ? t('common:currency.abbreviations.million') : 'mln';
+  const billion = t ? t('common:currency.abbreviations.billion') : 'mlrd';
   
   // Handle different ranges for UZS
   if (num >= 1000000000) {
@@ -368,21 +374,21 @@ export function formatUZSShort(value) {
     const formatted = (num / 1000000000).toFixed(1);
     // Remove trailing .0
     const cleanFormatted = formatted.endsWith('.0') ? formatted.slice(0, -2) : formatted;
-    return `${cleanFormatted} mlrd so'm`;
+    return `${cleanFormatted} ${billion}`;
   } else if (num >= 1000000) {
     // Million range - use "mln" 
     const formatted = (num / 1000000).toFixed(1);
     // Remove trailing .0
     const cleanFormatted = formatted.endsWith('.0') ? formatted.slice(0, -2) : formatted;
-    return `${cleanFormatted} mln so'm`;
+    return `${cleanFormatted} ${million}`;
   } else if (num >= 1000) {
     // Thousand range - use "ming"
     const formatted = (num / 1000).toFixed(1);
     // Remove trailing .0
     const cleanFormatted = formatted.endsWith('.0') ? formatted.slice(0, -2) : formatted;
-    return `${cleanFormatted} mng so'm`;
+    return `${cleanFormatted} ${thousand}`;
   } else {
     // Less than 1000 - show as is
-    return `${Math.round(num)} so'm`;
+    return `${Math.round(num)} `;
   }
 }

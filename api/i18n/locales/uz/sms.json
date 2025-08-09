@@ -1,4 +1,7 @@
 {
+  "verification": {
+    "phoneVerification": "Getspace-dan tasdiqlash kodingiz: {{code}}. 5 daqiqa amal qiladi."
+  },
   "booking": {
     "requested": "\"{{placeName}}\" uchun {{dateRange}} sanasiga band qilish so'rovi #{{bookingReference}}",
     "selected": "\"{{placeName}}\" uchun {{dateRange}} sanasiga band qilish #{{bookingReference}} tanlandi. Iltimos, to'lovni amalga oshiring.",

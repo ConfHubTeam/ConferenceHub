@@ -146,7 +146,12 @@
       "eur": "€"
     },
     "format": "{{amount, currency}}",
-    "formatWithCode": "{{amount, currency}} {{code, uppercase}}"
+    "formatWithCode": "{{amount, currency}} {{code, uppercase}}",
+    "abbreviations": {
+      "thousand": "ming",
+      "million": "mln",
+      "billion": "mlrd"
+    }
   },
   "language": {
     "current": "Joriy til",

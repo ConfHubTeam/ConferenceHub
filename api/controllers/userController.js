@@ -4,6 +4,7 @@ const { Op } = require("sequelize");
 const jwt = require("jsonwebtoken");
 const authConfig = require("../config/auth");
 const { getUserDataFromToken } = require("../middleware/auth");
+const phoneVerificationService = require("../services/phoneVerificationService");
 
 /**
  * Get the current user's profile
@@ -1412,7 +1413,165 @@ const updateLanguagePreference = async (req, res) => {
 };
 
 /**
- * Get user's current language preference
+ * Send phone verification code
+ */
+const sendPhoneVerification = async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+    const { phoneNumber } = req.body;
+
+    // Validate input
+    if (!phoneNumber || phoneNumber.trim() === '') {
+      return res.status(400).json({ 
+        error: 'Phone number is required',
+        code: 'PHONE_REQUIRED'
+      });
+    }
+
+    // Enhanced phone validation - should be in E.164 format (starting with +)
+    const phoneRegex = /^\+[1-9]\d{1,14}$/;
+    const cleanPhone = phoneNumber.trim();
+    
+    if (!phoneRegex.test(cleanPhone)) {
+      return res.status(400).json({ 
+        error: 'Please enter a valid phone number in international format (e.g., +998901234567)',
+        code: 'INVALID_PHONE_FORMAT'
+      });
+    }
+
+    // Check if phone number is already taken by another user
+    const existingUser = await User.findOne({
+      where: {
+        phoneNumber: cleanPhone,
+        id: { [Op.ne]: userData.id }
+      }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ 
+        error: 'A user with this phone number already exists',
+        code: 'PHONE_NUMBER_EXISTS'
+      });
+    }
+
+    // Get user's preferred language (default to 'en')
+    const user = await User.findByPk(userData.id, {
+      attributes: ['preferredLanguage']
+    });
+    const language = user?.preferredLanguage || 'en';
+
+    // Send verification code
+    const result = await phoneVerificationService.sendVerificationCode(cleanPhone, language);
+
+    if (result.success) {
+      res.json({
+        success: true,
+        message: 'Verification code sent successfully',
+        sessionId: result.sessionId,
+        expiresIn: result.expiresIn,
+        phoneNumber: cleanPhone
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: result.error,
+        code: 'SMS_SEND_FAILED'
+      });
+    }
+  } catch (error) {
+    console.error("Error sending phone verification:", error);
+    res.status(500).json({ 
+      error: 'Failed to send verification code',
+      code: 'SERVER_ERROR'
+    });
+  }
+};
+
+/**
+ * Verify phone verification code and update user's phone number
+ */
+const verifyPhoneAndUpdate = async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+    const { sessionId, verificationCode, phoneNumber } = req.body;
+
+    // Validate input
+    if (!sessionId || !verificationCode || !phoneNumber) {
+      return res.status(400).json({ 
+        error: 'Session ID, verification code, and phone number are required',
+        code: 'MISSING_PARAMETERS'
+      });
+    }
+
+    // Verify the code
+    const verificationResult = phoneVerificationService.verifyCode(sessionId, verificationCode);
+
+    if (!verificationResult.success) {
+      return res.status(400).json({
+        success: false,
+        error: verificationResult.error,
+        code: verificationResult.code,
+        remainingAttempts: verificationResult.remainingAttempts
+      });
+    }
+
+    // Ensure the phone number matches what was verified
+    if (verificationResult.phoneNumber !== phoneNumber) {
+      return res.status(400).json({
+        success: false,
+        error: 'Phone number mismatch',
+        code: 'PHONE_MISMATCH'
+      });
+    }
+
+    // Double-check that phone number is still not taken by another user
+    const existingUser = await User.findOne({
+      where: {
+        phoneNumber: phoneNumber,
+        id: { [Op.ne]: userData.id }
+      }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ 
+        error: 'A user with this phone number already exists',
+        code: 'PHONE_NUMBER_EXISTS'
+      });
+    }
+
+    // Update user's phone number
+    await User.update(
+      { phoneNumber: phoneNumber },
+      { where: { id: userData.id } }
+    );
+
+    // Fetch updated user data
+    const updatedUser = await User.findByPk(userData.id, {
+      attributes: [
+        'id', 'name', 'email', 'phoneNumber', 'userType', 'preferredLanguage',
+        'telegramId', 'telegramUsername', 'telegramFirstName',
+        'telegramPhotoUrl', 'telegramPhone', 'telegramLinked'
+      ]
+    });
+
+    console.log(`✅ PHONE VERIFICATION COMPLETE - User: ${userData.id}, Phone: ${phoneNumber}`);
+
+    res.json({
+      success: true,
+      message: 'Phone number verified and updated successfully',
+      user: updatedUser
+    });
+  } catch (error) {
+    console.error("Error verifying phone and updating:", error);
+    res.status(500).json({ 
+      error: 'Failed to verify phone number',
+      code: 'SERVER_ERROR'
+    });
+  }
+};
+
+/**
+ * Get language preference
  */
 const getLanguagePreference = async (req, res) => {
   try {
@@ -1447,5 +1606,7 @@ module.exports = {
   getHostStatistics,
   getHostReviews,
   updateLanguagePreference,
-  getLanguagePreference
+  getLanguagePreference,
+  sendPhoneVerification,
+  verifyPhoneAndUpdate
 };
