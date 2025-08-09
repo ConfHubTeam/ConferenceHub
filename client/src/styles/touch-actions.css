@@ -89,6 +89,20 @@ a,
   -webkit-overflow-scrolling: touch;
 }
 
+/* YouTube video fullscreen handling */
+.youtube-fullscreen {
+  touch-action: manipulation; /* Prevent pinch zoom but allow basic touch */
+  overflow: hidden; /* Prevent any overflow/scrolling */
+}
+
+.youtube-fullscreen iframe {
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+}
+
 /* Scrollable content areas */
 .scrollable {
   touch-action: pan-y; /* Allow only vertical scrolling */
