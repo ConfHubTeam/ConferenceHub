@@ -5,6 +5,7 @@ import { useCurrency } from '../contexts/CurrencyContext';
 import CloudinaryImage from '../components/CloudinaryImage';
 import PriceDisplay from '../components/PriceDisplay';
 import FavoriteButton from '../components/FavoriteButton';
+import AccountNav from '../components/AccountNav';
 
 export default function FavoritesPage() {
   const { t, ready } = useTranslation(['favorites', 'places', 'common']);
@@ -20,17 +21,21 @@ export default function FavoritesPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            {t('favorites:page.title')}
-          </h1>
-          <p className="text-gray-600 mt-2">
-            {t('favorites:page.subtitle', { count: favoritesCount })}
-          </p>
-        </div>
+    <div>
+      {/* Account Navigation */}
+      <AccountNav />
+      
+      <div className="spacing-container spacing-section max-w-7xl mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">
+              {t('favorites:page.title')}
+            </h1>
+            <p className="text-gray-600 mt-2">
+              {t('favorites:page.subtitle', { count: favoritesCount })}
+            </p>
+          </div>
         
         {favoritesCount > 0 && (
           <button
@@ -146,6 +151,7 @@ export default function FavoritesPage() {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }

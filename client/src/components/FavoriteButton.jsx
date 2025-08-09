@@ -1,8 +1,16 @@
+import { useContext } from 'react';
 import { useFavorites } from '../contexts/FavoritesContext';
+import { UserContext } from './UserContext';
 
 export default function FavoriteButton({ place, className = "" }) {
   const { toggleFavorite, isFavorite } = useFavorites();
+  const { user } = useContext(UserContext);
   const isPlaceFavorited = isFavorite(place.id);
+
+  // Don't show favorites for hosts or agents
+  if (user?.userType === 'host' || user?.userType === 'agent') {
+    return null;
+  }
 
   const handleClick = (e) => {
     e.preventDefault();

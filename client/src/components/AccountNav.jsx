@@ -12,6 +12,9 @@ export default function AccountNav() {
   const { unreadCount } = useReviewNotifications(); // Now handles both review and booking notifications
   const { favoritesCount } = useFavorites();
   const scrollContainerRef = useRef(null);
+  const desktopScrollContainerRef = useRef(null);
+  const mobileActiveItemRef = useRef(null);
+  const desktopActiveItemRef = useRef(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(false);
   
@@ -29,6 +32,41 @@ export default function AccountNav() {
     }
   };
 
+  // Scroll active item into view
+  const scrollActiveItemIntoView = () => {
+    // Mobile navigation
+    if (mobileActiveItemRef.current && scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const activeItem = mobileActiveItemRef.current;
+      
+      const containerRect = container.getBoundingClientRect();
+      const itemRect = activeItem.getBoundingClientRect();
+      
+      // Check if item is outside the visible area
+      if (itemRect.left < containerRect.left || itemRect.right > containerRect.right) {
+        // Calculate the position to center the active item
+        const scrollLeft = activeItem.offsetLeft - (container.clientWidth / 2) + (activeItem.clientWidth / 2);
+        container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+      }
+    }
+    
+    // Desktop navigation
+    if (desktopActiveItemRef.current && desktopScrollContainerRef.current) {
+      const container = desktopScrollContainerRef.current;
+      const activeItem = desktopActiveItemRef.current;
+      
+      const containerRect = container.getBoundingClientRect();
+      const itemRect = activeItem.getBoundingClientRect();
+      
+      // Check if item is outside the visible area
+      if (itemRect.left < containerRect.left || itemRect.right > containerRect.right) {
+        // Calculate the position to center the active item
+        const scrollLeft = activeItem.offsetLeft - (container.clientWidth / 2) + (activeItem.clientWidth / 2);
+        container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+      }
+    }
+  };
+
   useEffect(() => {
     checkScrollPosition();
     const scrollContainer = scrollContainerRef.current;
@@ -41,6 +79,15 @@ export default function AccountNav() {
       };
     }
   }, []);
+
+  // Scroll to active item when subpage changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      scrollActiveItemIntoView();
+    }, 100); // Small delay to ensure DOM is updated
+    
+    return () => clearTimeout(timer);
+  }, [subpage]);
 
   // Scroll functions
   const scrollLeft = () => {
@@ -77,7 +124,8 @@ export default function AccountNav() {
       ),
       label: t("accountNav.bookings")
     },
-    { 
+    // Only show favorites for regular users (not hosts or agents)
+    ...(user?.userType !== 'host' && user?.userType !== 'agent' ? [{ 
       key: "favorites", 
       to: "/account/favorites", 
       icon: (
@@ -88,7 +136,7 @@ export default function AccountNav() {
       label: t("accountNav.favorites"),
       hasCount: favoritesCount > 0,
       count: favoritesCount
-    },
+    }] : []),
     { 
       key: "notifications", 
       to: unreadCount > 0 ? "/account/notifications?filter=unread" : "/account/notifications", 
@@ -220,6 +268,7 @@ export default function AccountNav() {
             {allNavItems.map((item) => (
               <Link
                 key={item.key}
+                ref={item.key === subpage ? mobileActiveItemRef : null}
                 to={item.to}
                 className={`flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-all text-xs min-w-[70px] flex-shrink-0 ${
                   item.key === subpage
@@ -248,10 +297,14 @@ export default function AccountNav() {
       {/* Desktop Navigation - Horizontal scroll */}
       <div className="hidden sm:block">
         <nav className="w-full mt-4 mb-2 sm:mb-4">
-          <div className="flex gap-2 items-center justify-center px-4 overflow-x-auto scrollbar-hide pb-1">
+          <div 
+            ref={desktopScrollContainerRef}
+            className="flex gap-2 items-center justify-center px-4 overflow-x-auto scrollbar-hide pb-1"
+          >
             {allNavItems.map((item) => (
               <Link
                 key={item.key}
+                ref={item.key === subpage ? desktopActiveItemRef : null}
                 className={`py-2 px-3 sm:px-4 flex items-center gap-2 rounded-full transition-all whitespace-nowrap text-sm ${
                   item.key === subpage
                     ? 'bg-primary text-white'
