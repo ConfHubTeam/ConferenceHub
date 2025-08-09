@@ -5,6 +5,7 @@
 
 import { format, parseISO, isBefore, isAfter, startOfDay, addDays } from 'date-fns';
 import api from './api';
+import { formatHourLocalized } from './TimeUtils';
 
 const UZBEKISTAN_TIMEZONE = 'Asia/Tashkent';
 
@@ -215,7 +216,8 @@ export const generateTimezoneAwareTimeOptions = (
   allWorkingHours = { start: "09:00", end: "17:00" },
   minimumHours = 1,
   cooldownMinutes = 0,
-  dateString = null // Add dateString parameter to check for past times
+  dateString = null, // Add dateString parameter to check for past times
+  currentLanguage = 'en' // Add language parameter for localized formatting
 ) => {
   const options = [];
   
@@ -225,10 +227,9 @@ export const generateTimezoneAwareTimeOptions = (
   
   for (let hour = startHour; hour < endHour; hour++) {
     const timeSlot = `${hour.toString().padStart(2, '0')}:00`;
-    const hourNum = hour;
-    const displayHour = hourNum === 0 ? 12 : hourNum > 12 ? hourNum - 12 : hourNum;
-    const amPm = hourNum < 12 ? 'AM' : 'PM';
-    const label = `${displayHour}:00 ${amPm}`;
+    
+    // Use localized formatting instead of hardcoded AM/PM
+    const label = formatHourLocalized(timeSlot, currentLanguage);
     
     const isAvailable = availableTimeSlots.includes(timeSlot);
     

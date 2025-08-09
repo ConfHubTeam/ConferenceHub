@@ -2,7 +2,7 @@ import { useMemo, useEffect, useRef } from "react";
 import { format, parseISO } from "date-fns";
 import { enUS, ru, uz } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
-import { generateTimeOptions, generateStartTimeOptions, isTimeBlocked, isTimeRangeAvailableEnhanced, isValidStartTimeEnhanced } from "../utils/TimeUtils";
+import { generateTimeOptions, generateStartTimeOptions, isTimeBlocked, isTimeRangeAvailableEnhanced, isValidStartTimeEnhanced, formatHourLocalized } from "../utils/TimeUtils";
 import { generateTimezoneAwareTimeOptions, isTimeInPastUzbekistan, getFirstAvailableHour } from "../utils/uzbekistanTimezoneUtils";
 
 /**
@@ -55,7 +55,8 @@ export default function TimeSlotModal({
         workingHours,
         minimumHours,
         cooldownMinutes,
-        currentEditingDate // Pass the current editing date for timezone checking
+        currentEditingDate, // Pass the current editing date for timezone checking
+        i18n.language // Pass the current language for localized formatting
       );
     } else {
       // Fallback to regular time generation
@@ -172,7 +173,8 @@ export default function TimeSlotModal({
         workingHours,
         minimumHours,
         cooldownMinutes,
-        currentEditingDate // Pass the current editing date for timezone checking
+        currentEditingDate, // Pass the current editing date for timezone checking
+        i18n.language // Pass the current language for localized formatting
       ).map(option => {
         // If disabled due to timezone, mark as blocked
         if (option.isDisabled) {
@@ -457,9 +459,12 @@ export default function TimeSlotModal({
             <h4 className="text-sm font-medium text-gray-700 mb-2">{t("timeSlotModal.todaysAvailability")}</h4>
             <div ref={timeSlotScrollRef} className="flex overflow-x-auto pb-2">
               {timeOptions.map(option => {
-                const hourParts = option.label.split(':');
-                const displayHour = hourParts[0];
-                const amPm = option.label.includes('AM') ? 'AM' : 'PM';
+                // Use localized time formatting (24-hour for ru/uz, 12-hour for en)
+                const localizedTime = formatHourLocalized(option.value, i18n.language);
+                const displayParts = localizedTime.split(' ');
+                const timeDisplay = displayParts[0]; // "09:00" or "9:00"
+                const amPmDisplay = displayParts[1] || ''; // "AM"/"PM" or empty for 24-hour
+                
                 const optionHour = parseInt(option.value.split(':')[0], 10);
                 
                 // Check if this time slot is within the selected range
@@ -521,8 +526,8 @@ export default function TimeSlotModal({
                       }
                     `}
                   >
-                    <div>{displayHour}</div>
-                    <div>{amPm}</div>
+                    <div>{timeDisplay}</div>
+                    {amPmDisplay && <div>{amPmDisplay}</div>}
                     {isPastTimeInTimezone && (
                       <div className="mt-1">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
