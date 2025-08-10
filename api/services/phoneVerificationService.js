@@ -49,7 +49,7 @@ class PhoneVerificationService {
     try {
       // Validate phone number format
       if (!this.isValidPhoneNumber(phoneNumber)) {
-        throw new Error("Invalid phone number format");
+        throw new Error(translate('errors.invalidPhoneFormat', { lng: language, ns: 'auth' }));
       }
 
       // Generate verification code and session ID
@@ -77,14 +77,14 @@ class PhoneVerificationService {
         return {
           success: true,
           sessionId: sessionId,
-          message: "Verification code sent successfully",
+          message: translate('success.verificationCodeSent', { lng: language, ns: 'auth' }),
           expiresIn: this.codeExpirationTime / 1000, // Return in seconds
           smsRequestId: smsResult.requestId
         };
       } else {
         // Clean up session if SMS failed
         this.verificationCodes.delete(sessionId);
-        throw new Error(`Failed to send SMS: ${smsResult.error}`);
+        throw new Error(translate('errors.smsProviderFailed', { lng: language, ns: 'auth' }));
       }
     } catch (error) {
       console.error("Error sending verification code:", error.message);
@@ -100,16 +100,17 @@ class PhoneVerificationService {
    * Verify the provided code against stored verification data
    * @param {string} sessionId - Verification session ID
    * @param {string} providedCode - Code provided by user
+   * @param {string} language - User's preferred language (en, ru, uz)
    * @returns {object} Verification result
    */
-  verifyCode(sessionId, providedCode) {
+  verifyCode(sessionId, providedCode, language = 'en') {
     try {
       const verificationData = this.verificationCodes.get(sessionId);
 
       if (!verificationData) {
         return {
           success: false,
-          error: "Invalid or expired verification session",
+          error: translate('errors.invalidOrExpiredSession', { lng: language, ns: 'auth' }),
           code: "INVALID_SESSION"
         };
       }
@@ -119,7 +120,7 @@ class PhoneVerificationService {
         this.verificationCodes.delete(sessionId);
         return {
           success: false,
-          error: "Verification code has expired",
+          error: translate('errors.verificationCodeExpired', { lng: language, ns: 'auth' }),
           code: "EXPIRED_CODE"
         };
       }
@@ -136,14 +137,14 @@ class PhoneVerificationService {
         return {
           success: true,
           phoneNumber: phoneNumber,
-          message: "Phone number verified successfully"
+          message: translate('success.phoneVerifiedSuccessfully', { lng: language, ns: 'auth' })
         };
       } else {
         console.log(`❌ VERIFICATION FAILED - Session: ${sessionId}, Code mismatch`);
         
         return {
           success: false,
-          error: "Invalid verification code",
+          error: translate('errors.invalidVerificationCode', { lng: language, ns: 'auth' }),
           code: "INVALID_CODE"
         };
       }
@@ -151,7 +152,7 @@ class PhoneVerificationService {
       console.error("Error verifying code:", error.message);
       return {
         success: false,
-        error: "Verification failed due to server error",
+        error: translate('errors.verificationServerError', { lng: language, ns: 'auth' }),
         code: "SERVER_ERROR"
       };
     }
