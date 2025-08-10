@@ -86,6 +86,9 @@ export default function ProfilePage({}) {
       notify(t("profile:messages.logoutSuccess"), "success");
       setRedirect("/");
       setUser(null);
+      
+      // Dispatch custom event to notify other contexts about logout
+      window.dispatchEvent(new CustomEvent("userLoggedOut"));
     } catch (error) {
       notify(t("profile:messages.logoutError"), "error");
       setIsLoggingOut(false);
@@ -113,6 +116,9 @@ export default function ProfilePage({}) {
       notify(t("profile:messages.logoutSuccess"), "success");
       setRedirect("/");
       setUser(null);
+      
+      // Dispatch custom event to notify other contexts about logout
+      window.dispatchEvent(new CustomEvent("userLoggedOut"));
     } catch (error) {
       notify(t("profile:messages.logoutError"), "error");
       setIsLoggingOut(false);

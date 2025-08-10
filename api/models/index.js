@@ -9,6 +9,7 @@ const ReviewReply = require('./reviewReply');
 const ReviewHelpful = require('./reviewHelpful');
 const ReviewReport = require('./reviewReport');
 const Notification = require('./notification');
+const UserFavorite = require('./userFavorite');
 
 // Additional associations for existing models
 User.hasMany(Place, { foreignKey: 'ownerId', as: 'places' });
@@ -44,6 +45,12 @@ ReviewReport.belongsTo(Review, { foreignKey: 'reviewId', as: 'Review' });
 User.hasMany(Notification, { foreignKey: 'userId', as: 'notifications' });
 Notification.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
+// User favorites associations
+User.hasMany(UserFavorite, { foreignKey: 'userId', as: 'favorites' });
+Place.hasMany(UserFavorite, { foreignKey: 'placeId', as: 'favoritedBy' });
+UserFavorite.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+UserFavorite.belongsTo(Place, { foreignKey: 'placeId', as: 'place' });
+
 // Export models and sequelize connection
 module.exports = {
   sequelize,
@@ -56,5 +63,6 @@ module.exports = {
   ReviewReply,
   ReviewHelpful,
   ReviewReport,
-  Notification
+  Notification,
+  UserFavorite
 };
