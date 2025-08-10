@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { sequelize, User, Place, Booking } = require('./models');
+const { sequelize, User, Place, Booking, UserFavorite } = require('./models');
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const path = require('path');
@@ -29,6 +29,7 @@ const clickRoutes = require('./routes/click');
 const paymeRoutes = require('./routes/payme');
 const reviewRoutes = require('./routes/reviews');
 const notificationRoutes = require('./routes/notifications');
+const favoritesRoutes = require('./routes/favorites');
 
 // Import i18n configuration
 const { languageMiddleware } = require('./i18n/config');
@@ -167,6 +168,7 @@ app.use('/api/click', clickRoutes);
 app.use('/api/payme', paymeRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/favorites', favoritesRoutes);
 
 // For production: Serve static files from the client build folder
 if (process.env.NODE_ENV === 'production') {
