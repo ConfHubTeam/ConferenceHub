@@ -30,10 +30,29 @@ const checkUserExists = async (req, res) => {
 };
 
 /**
+ * Check if phone number exists
+ */
+const checkPhoneExists = async (req, res) => {
+  const { phoneNumber } = req.body;
+  
+  if (!phoneNumber) {
+    return res.status(400).json({ error: "Phone number is required" });
+  }
+  
+  try {
+    const user = await User.findOne({ where: { phoneNumber } });
+    res.json({ exists: !!user });
+  } catch (e) {
+    console.error("Error checking phone existence:", e);
+    res.status(500).json({ error: "Failed to check if phone number exists" });
+  }
+};
+
+/**
  * Register a new user
  */
 const register = async (req, res) => {
-  const { name, email, password, userType } = req.body;
+  const { name, email, password, userType, phoneNumber } = req.body;
   
   // Validate email format
   const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -68,24 +87,34 @@ const register = async (req, res) => {
   }
   
   try {
-    // Check if user already exists
+    // Check if user already exists with email
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       return res.status(409).json({ error: req.t("auth:register.emailExists") });
     }
     
+    // Check if phone number already exists (if provided)
+    if (phoneNumber) {
+      const existingPhoneUser = await User.findOne({ where: { phoneNumber } });
+      if (existingPhoneUser) {
+        return res.status(409).json({ error: req.t("auth:register.phoneExists") });
+      }
+    }
+
     const bcryptSalt = authConfig.bcrypt.generateSalt();
     const userData = await User.create({
       name,
       email,
       password: bcrypt.hashSync(password, bcryptSalt),
       userType: userType || 'client', // Default to client if not provided
+      phoneNumber: phoneNumber || null, // Add phone number if provided
     });
     res.json({
       id: userData.id,
       name: userData.name,
       email: userData.email,
-      userType: userData.userType
+      userType: userData.userType,
+      phoneNumber: userData.phoneNumber
     });
   } catch (e) {
     res.status(422).json(e);
@@ -187,6 +216,7 @@ const test = (req, res) => {
 module.exports = {
   getPasswordRequirements,
   checkUserExists,
+  checkPhoneExists,
   register,
   login,
   logout,

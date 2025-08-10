@@ -11,6 +11,9 @@ router.get("/password-requirements", authController.getPasswordRequirements);
 // Check if user exists
 router.post("/check-user", authController.checkUserExists);
 
+// Check if phone number exists
+router.post("/check-phone", authController.checkPhoneExists);
+
 // Register a new user
 router.post("/register", authController.register);
 

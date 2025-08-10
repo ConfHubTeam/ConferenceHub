@@ -6,6 +6,9 @@ import api, { getPasswordRequirements } from "../utils/api";
 import { useNotification } from "../components/NotificationContext";
 import { validateForm, checkPasswordSpecialChars } from "../utils/formUtils";
 import { UserContext } from "../components/UserContext";
+import CustomPhoneInput from "../components/CustomPhoneInput";
+import PhoneVerificationModal from "../components/PhoneVerificationModal";
+import { isValidPhoneNumber, isPossiblePhoneNumber } from "react-phone-number-input";
 
 function RegisterPage() {
   const { t, ready } = useTranslation(["auth", "common"]);
@@ -13,6 +16,7 @@ function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [userType, setUserType] = useState("client");
   const [error, setError] = useState("");
   const [redirect, setRedirect] = useState(false);
@@ -21,6 +25,9 @@ function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordsMatch, setPasswordsMatch] = useState(true);
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [showPhoneVerification, setShowPhoneVerification] = useState(false);
+  const [phoneValid, setPhoneValid] = useState(true);
   const [passwordRequirements, setPasswordRequirements] = useState({
     minLength: 8,
     requiresUppercase: true,
@@ -49,6 +56,16 @@ function RegisterPage() {
   const validateEmail = (email) => {
     const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return emailRegex.test(String(email).toLowerCase());
+  };
+
+  // Phone validation function
+  const validatePhone = (phone) => {
+    if (!phone) return true; // Phone is optional
+    try {
+      return isPossiblePhoneNumber(phone) && isValidPhoneNumber(phone);
+    } catch (error) {
+      return false;
+    }
   };
 
   // Password strength checker
@@ -111,6 +128,15 @@ function RegisterPage() {
       setEmailValid(true); // Don't show error for empty email
     }
   }, [email]);
+
+  // Update phone validity when phone changes
+  useEffect(() => {
+    if (phoneNumber) {
+      setPhoneValid(validatePhone(phoneNumber));
+    } else {
+      setPhoneValid(true); // Don't show error for empty phone
+    }
+  }, [phoneNumber]);
 
   // Custom validation messages for HTML5 validation
   useEffect(() => {
@@ -224,6 +250,69 @@ function RegisterPage() {
     }
   }, [password, confirmPassword]);
 
+  // Validate phone number when it changes
+  useEffect(() => {
+    if (phoneNumber) {
+      setPhoneValid(validatePhone(phoneNumber));
+    } else {
+      setPhoneValid(true); // Don't show error for empty phone
+    }
+  }, [phoneNumber]);
+
+  // Check phone number availability
+  const checkPhoneAvailability = async (phone) => {
+    if (!phone) return true;
+    
+    try {
+      const response = await api.post("/auth/check-phone", { phoneNumber: phone });
+      return !response.data.exists;
+    } catch (error) {
+      console.error("Error checking phone availability:", error);
+      return true; // Don't block registration if check fails
+    }
+  };
+
+  // Handle phone verification
+  const handlePhoneVerification = async () => {
+    if (!phoneNumber || !validatePhone(phoneNumber)) {
+      setError(ready ? t("auth:validation.phoneInvalid") : "Please enter a valid phone number");
+      return;
+    }
+
+    try {
+      // Check if phone number already exists
+      const checkResponse = await api.post("/auth/check-phone", { phoneNumber });
+      
+      if (checkResponse.data.exists) {
+        setError(ready ? t("auth:register.phoneExists") : "An account with this phone number already exists. Please use a different phone number or login instead.");
+        return;
+      }
+
+      // Start phone verification
+      setShowPhoneVerification(true);
+    } catch (error) {
+      console.error("Error checking phone:", error);
+      setError("Error checking phone number. Please try again.");
+    }
+  };
+
+  // Handle successful phone verification
+  const handlePhoneVerificationSuccess = () => {
+    setPhoneVerified(true);
+    setShowPhoneVerification(false);
+  };
+
+  // Handle phone verification error
+  const handlePhoneVerificationError = () => {
+    setPhoneVerified(false);
+    setShowPhoneVerification(false);
+  };
+
+  // Handle phone verification cancel
+  const handlePhoneVerificationCancel = () => {
+    setShowPhoneVerification(false);
+  };
+
   async function registerUser(event) {
     event.preventDefault(); // avoid reloading from form
     setError("");
@@ -237,6 +326,27 @@ function RegisterPage() {
     // Check if passwords match
     if (password !== confirmPassword) {
       setError(ready ? t("auth:register.passwordsDoNotMatch") : "Passwords do not match");
+      return;
+    }
+
+    // Check if phone number is provided and valid
+    if (phoneNumber && !validatePhone(phoneNumber)) {
+      setError(ready ? t("auth:validation.phoneInvalid") : "Please enter a valid phone number");
+      return;
+    }
+
+    // Check if phone number already exists
+    if (phoneNumber) {
+      const phoneAvailable = await checkPhoneAvailability(phoneNumber);
+      if (!phoneAvailable) {
+        setError(ready ? t("auth:register.phoneExists") : "An account with this phone number already exists");
+        return;
+      }
+    }
+
+    // Check if phone number is required to be verified (if provided)
+    if (phoneNumber && !phoneVerified) {
+      setError(ready ? t("auth:register.phoneNotVerified") : "Please verify your phone number first");
       return;
     }
     
@@ -315,6 +425,7 @@ function RegisterPage() {
         email,
         password,
         userType,
+        phoneNumber: phoneNumber || null,
       });
       
       // Auto login after registration
@@ -561,6 +672,54 @@ function RegisterPage() {
             )}
           </div>
           
+          <div className="mb-2">
+            <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-0.5">
+              {ready ? t("auth:register.phoneNumber") : "Phone Number"}
+            </label>
+            <div className="relative">
+              <CustomPhoneInput
+                value={phoneNumber}
+                onChange={setPhoneNumber}
+                placeholder={ready ? t("auth:register.phoneNumberPlaceholder") : "Enter phone number"}
+                className={`${
+                  phoneNumber ? (
+                    phoneValid ? (
+                      phoneVerified ? 'border-success-500' : 'border-warning-400'
+                    ) : 'border-error-500'
+                  ) : 'border-gray-300'
+                }`}
+                error={phoneNumber && !phoneValid ? (ready ? t("auth:validation.phoneInvalid") : "Please enter a valid phone number") : null}
+              />
+              {phoneNumber && phoneValid && (
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  {phoneVerified ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-success-600">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handlePhoneVerification}
+                      className="text-sm text-primary hover:text-primary-dark font-medium"
+                    >
+                      {ready ? t("auth:register.verifyPhone") : "Verify"}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+            {phoneNumber && phoneValid && !phoneVerified && (
+              <p className="text-warning-600 text-xs mt-1">
+                {ready ? t("auth:register.phoneVerificationRequired") : "Phone verification required"}
+              </p>
+            )}
+            {phoneNumber && phoneValid && phoneVerified && (
+              <p className="text-success-600 text-xs mt-1">
+                {ready ? t("auth:register.phoneVerified") : "Phone verified"}
+              </p>
+            )}
+          </div>
+          
           <div className="mb-3">
             <label className="block text-sm font-medium text-gray-700 mb-0.5">
               {ready ? t("auth:register.accountType") : "Account Type"}
@@ -672,6 +831,14 @@ function RegisterPage() {
             </Link>
           </div>
         </form>
+        
+        {/* Phone verification modal */}
+        <PhoneVerificationModal
+          isOpen={showPhoneVerification}
+          onClose={handlePhoneVerificationCancel}
+          phoneNumber={phoneNumber}
+          onVerificationSuccess={handlePhoneVerificationSuccess}
+        />
       </div>
     </div>
   );

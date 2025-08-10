@@ -87,6 +87,19 @@ export const getPasswordRequirements = async () => {
   }
 };
 
+// Utility function to update password
+export const updatePassword = async (newPassword) => {
+  try {
+    const response = await api.put('/users/password', {
+      newPassword
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating password:', error);
+    throw error;
+  }
+};
+
 // Host review reply functions - US-R007 implementation
 export const createReviewReply = async (reviewId, replyText) => {
   try {
