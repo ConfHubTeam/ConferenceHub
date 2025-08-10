@@ -3,26 +3,94 @@ import { useTranslation } from "react-i18next";
 import CustomPhoneInput from "./CustomPhoneInput";
 import { isValidPhoneNumber, isPossiblePhoneNumber } from "react-phone-number-input";
 import { withTranslationLoading } from "../i18n/hoc/withTranslationLoading";
+import { getPasswordRequirements } from "../utils/api";
+import { checkPasswordSpecialChars } from "../utils/formUtils";
+import { RiEyeLine, RiEyeOffLine, RiKey2Line } from "react-icons/ri";
 
 function EditUserModal({ isOpen, onClose, onSave, user, isSaving }) {
   const { t } = useTranslation("profile");
   const [formData, setFormData] = useState({
     name: "",
-    phoneNumber: ""
+    phoneNumber: "",
+    newPassword: "",
+    confirmPassword: ""
   });
   const [errors, setErrors] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordRequirements, setPasswordRequirements] = useState({});
+  const [passwordChecklist, setPasswordChecklist] = useState({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    specialChar: false,
+    validSpecialChars: true
+  });
+  const [passwordsMatch, setPasswordsMatch] = useState(true);
+  const [showPasswordSection, setShowPasswordSection] = useState(false);
 
   // Initialize form data when user prop changes
   useEffect(() => {
     if (user) {
       setFormData({
         name: user.name || "",
-        phoneNumber: user.phoneNumber || ""
+        phoneNumber: user.phoneNumber || "",
+        newPassword: "",
+        confirmPassword: ""
       });
       setErrors({});
+      setShowPasswordSection(false); // Reset password section when user changes
     }
   }, [user]);
+
+  // Fetch password requirements when component mounts
+  useEffect(() => {
+    const fetchPasswordRequirements = async () => {
+      try {
+        const requirements = await getPasswordRequirements();
+        setPasswordRequirements(requirements);
+      } catch (error) {
+        console.error("Error fetching password requirements:", error);
+      }
+    };
+    
+    fetchPasswordRequirements();
+  }, []);
+
+  // Update password checklist when new password changes
+  useEffect(() => {
+    if (formData.newPassword) {
+      const specialCharCheck = checkPasswordSpecialChars(formData.newPassword, passwordRequirements.allowedSpecialChars);
+      setPasswordChecklist({
+        length: formData.newPassword.length >= passwordRequirements.minLength,
+        uppercase: /[A-Z]/.test(formData.newPassword),
+        lowercase: /[a-z]/.test(formData.newPassword),
+        number: /\d/.test(formData.newPassword),
+        specialChar: specialCharCheck.hasRequiredSpecialChar,
+        validSpecialChars: specialCharCheck.isValid
+      });
+    } else {
+      setPasswordChecklist({
+        length: false,
+        uppercase: false,
+        lowercase: false,
+        number: false,
+        specialChar: false,
+        validSpecialChars: true
+      });
+    }
+  }, [formData.newPassword, passwordRequirements]);
+
+  // Check if passwords match
+  useEffect(() => {
+    if (formData.confirmPassword) {
+      setPasswordsMatch(formData.newPassword === formData.confirmPassword);
+    } else {
+      setPasswordsMatch(true); // Don't show error for empty confirm password
+    }
+  }, [formData.newPassword, formData.confirmPassword]);
 
   // Validate form whenever form data changes
   useEffect(() => {
@@ -47,9 +115,28 @@ function EditUserModal({ isOpen, onClose, onSave, user, isSaving }) {
       }
     }
 
+    // Validate password fields if new password is provided OR if password section is shown
+    if (showPasswordSection) {
+      if (formData.newPassword) {
+        // Check password requirements
+        const allRequirementsMet = Object.values(passwordChecklist).every(Boolean);
+        if (!allRequirementsMet) {
+          newErrors.newPassword = t("fields.password.validation.requirementsNotMet");
+        }
+
+        // Check if confirm password is provided
+        if (!formData.confirmPassword) {
+          newErrors.confirmPassword = t("fields.password.validation.confirmRequired");
+        } else if (!passwordsMatch) {
+          newErrors.confirmPassword = t("fields.password.validation.passwordsDoNotMatch");
+        }
+      }
+      // If password section is shown but no password provided, it's optional
+    }
+
     setErrors(newErrors);
     setIsFormValid(Object.keys(newErrors).length === 0 && formData.name.trim());
-  }, [formData]);
+  }, [formData, passwordChecklist, passwordsMatch, showPasswordSection, t]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -170,6 +257,166 @@ function EditUserModal({ isOpen, onClose, onSave, user, isSaving }) {
               <p className="text-xs text-gray-500 mt-1">
                 {t("fields.phoneNumber.help")}
               </p>
+            </div>
+
+            {/* Password Section Toggle */}
+            <div className="pt-4 border-t border-gray-200">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-900">
+                    {t("editModal.passwordSection.title")}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPasswordSection(!showPasswordSection);
+                    if (!showPasswordSection) {
+                      // Reset password fields when hiding section
+                      setFormData(prev => ({
+                        ...prev,
+                        newPassword: "",
+                        confirmPassword: ""
+                      }));
+                    }
+                  }}
+                  disabled={isSaving}
+                  className="flex items-center space-x-2 bg-orange-50 text-orange-600 px-3 py-2 rounded-lg hover:bg-orange-100 transition-colors disabled:opacity-50"
+                >
+                  <RiKey2Line className="w-4 h-4" />
+                  <span className="text-sm">
+                    {showPasswordSection ? t("editModal.passwordSection.hide") : t("editModal.passwordSection.show")}
+                  </span>
+                </button>
+              </div>
+
+              {/* Password Fields - Conditional Rendering */}
+              {showPasswordSection && (
+                <div className="space-y-4">
+                  {/* New Password */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {t("fields.password.new")}
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showNewPassword ? "text" : "password"}
+                        name="newPassword"
+                        value={formData.newPassword}
+                        onChange={handleInputChange}
+                        disabled={isSaving}
+                        className={`w-full p-3 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 ${
+                          errors.newPassword ? "border-red-300 focus:ring-red-500" : "border-gray-300"
+                        }`}
+                        placeholder={t("fields.password.newPlaceholder")}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        disabled={isSaving}
+                      >
+                        {showNewPassword ? (
+                          <RiEyeOffLine className="w-5 h-5" />
+                        ) : (
+                          <RiEyeLine className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
+                    {errors.newPassword && (
+                      <p className="text-sm text-red-600 mt-1">{errors.newPassword}</p>
+                    )}
+                    
+                    {/* Password Requirements */}
+                    {formData.newPassword && (
+                      <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                        <p className="text-sm font-medium text-gray-700 mb-2">{t("fields.password.requirements")}</p>
+                        <div className="space-y-1">
+                          <div className={`flex items-center text-xs ${passwordChecklist.length ? 'text-success-600' : 'text-gray-500'}`}>
+                            <svg className={`w-3 h-3 mr-2 ${passwordChecklist.length ? 'text-success-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                            {t("fields.password.requirement.length", { minLength: passwordRequirements.minLength })}
+                          </div>
+                          <div className={`flex items-center text-xs ${passwordChecklist.lowercase ? 'text-success-600' : 'text-gray-500'}`}>
+                            <svg className={`w-3 h-3 mr-2 ${passwordChecklist.lowercase ? 'text-success-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                            {t("fields.password.requirement.lowercase")}
+                          </div>
+                          <div className={`flex items-center text-xs ${passwordChecklist.uppercase ? 'text-success-600' : 'text-gray-500'}`}>
+                            <svg className={`w-3 h-3 mr-2 ${passwordChecklist.uppercase ? 'text-success-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                            {t("fields.password.requirement.uppercase")}
+                          </div>
+                          <div className={`flex items-center text-xs ${passwordChecklist.number ? 'text-success-600' : 'text-gray-500'}`}>
+                            <svg className={`w-3 h-3 mr-2 ${passwordChecklist.number ? 'text-success-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                            {t("fields.password.requirement.number")}
+                          </div>
+                          <div className={`flex items-center text-xs ${passwordChecklist.specialChar ? 'text-success-600' : 'text-gray-500'}`}>
+                            <svg className={`w-3 h-3 mr-2 ${passwordChecklist.specialChar ? 'text-success-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                            {t("fields.password.requirement.specialChar", { allowedChars: passwordRequirements.allowedSpecialChars })}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Confirm Password */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {t("fields.password.confirm")}
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
+                        name="confirmPassword"
+                        value={formData.confirmPassword}
+                        onChange={handleInputChange}
+                        disabled={isSaving}
+                        className={`w-full p-3 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 ${
+                          errors.confirmPassword ? "border-red-300 focus:ring-red-500" : "border-gray-300"
+                        }`}
+                        placeholder={t("fields.password.confirmPlaceholder")}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        disabled={isSaving}
+                      >
+                        {showConfirmPassword ? (
+                          <RiEyeOffLine className="w-5 h-5" />
+                        ) : (
+                          <RiEyeLine className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
+                    {errors.confirmPassword && (
+                      <p className="text-sm text-red-600 mt-1">{errors.confirmPassword}</p>
+                    )}
+                    
+                    {/* Password Match Indicator */}
+                    {formData.confirmPassword && (
+                      <div className={`flex items-center text-xs mt-2 ${passwordsMatch ? 'text-success-600' : 'text-error-600'}`}>
+                        <svg className={`w-3 h-3 mr-2 ${passwordsMatch ? 'text-success-500' : 'text-error-500'}`} fill="currentColor" viewBox="0 0 20 20">
+                          {passwordsMatch ? (
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          ) : (
+                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          )}
+                        </svg>
+                        {passwordsMatch ? t("fields.password.validation.passwordsMatch") : t("fields.password.validation.passwordsDoNotMatch")}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

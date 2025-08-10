@@ -13,7 +13,7 @@ import { useDateLocalization } from "../hooks/useDateLocalization";
 export default function UsersPage() {
   const { user } = useContext(UserContext);
   const { notify } = useNotification();
-  const { t } = useTranslation('users');
+  const { t } = useTranslation(['users', 'profile']);
   const { formatLocalizedDate } = useDateLocalization();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -156,7 +156,7 @@ export default function UsersPage() {
     try {
       await api.put(`/users/${editUser.id}`, formData);
       
-      notify(t('notifications.userUpdated'), "success");
+      notify(t('profile:messages.userUpdated'), "success");
       setIsEditModalOpen(false);
       setEditUser(null);
       
@@ -170,9 +170,9 @@ export default function UsersPage() {
       // Handle specific error codes
       const errorData = error.response?.data;
       if (errorData?.code === 'PHONE_NUMBER_EXISTS') {
-        notify("messages.phoneNumberExists", "error");
+        notify(t('profile:messages.phoneNumberExists'), "error");
       } else if (errorData?.code === 'INVALID_PHONE_FORMAT') {
-        notify("messages.invalidPhoneFormat", "error");
+        notify(t('profile:messages.invalidPhoneFormat'), "error");
       } else {
         notify(errorData?.error || t('notifications.updateFailed'), "error");
       }

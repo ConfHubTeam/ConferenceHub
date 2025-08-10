@@ -82,7 +82,9 @@
         "passwordsMatch": "Parollar mos keladi",
         "requirementsNotMet": "Parol barcha talablarga javob berishi kerak",
         "currentPasswordIncorrect": "Joriy parol noto'g'ri",
-        "invalidPassword": "Parol xavfsizlik talablariga javob bermaydi"
+        "invalidPassword": "Parol xavfsizlik talablariga javob bermaydi",
+        "confirmRequired": "Iltimos, yangi parolni tasdiqlang",
+        "newPasswordRequired": "Iltimos, yangi parolni kiriting"
       }
     }
   },
@@ -125,7 +127,9 @@
     "deleteSuccess": "Sizning hisobingiz muvaffaqiyatli o'chirildi",
     "deleteError": "Hisobni o'chirishda xatolik. Iltimos, qayta urinib ko'ring.",
     "passwordUpdated": "Parol muvaffaqiyatli yangilandi",
-    "passwordUpdateError": "Parolni yangilashda xatolik. Iltimos, qayta urinib ko'ring."
+    "passwordUpdateError": "Parolni yangilashda xatolik. Iltimos, qayta urinib ko'ring.",
+    "userUpdated": "Foydalanuvchi muvaffaqiyatli yangilandi",
+    "userUpdateError": "Foydalanuvchini yangilashda xatolik. Iltimos, qayta urinib ko'ring."
   },
   "deleteConfirmation": {
     "title": "Hisobni o'chirish",
@@ -151,6 +155,11 @@
       "host": "Mezbor",
       "agent": "Agent", 
       "client": "Mijoz"
+    },
+    "passwordSection": {
+      "title": "Parol boshqaruvi",
+      "show": "O'zgartirish",
+      "hide": "Parol o'zgartirishni bekor qilish"
     }
   }
 }

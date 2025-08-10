@@ -82,7 +82,9 @@
         "passwordsMatch": "Passwords match",
         "requirementsNotMet": "Password must meet all requirements",
         "currentPasswordIncorrect": "Current password is incorrect",
-        "invalidPassword": "Password does not meet security requirements"
+        "invalidPassword": "Password does not meet security requirements",
+        "confirmRequired": "Please confirm your new password",
+        "newPasswordRequired": "Please enter a new password"
       }
     }
   },
@@ -125,7 +127,9 @@
     "deleteSuccess": "Your account has been deleted successfully",
     "deleteError": "Error deleting account. Please try again.",
     "passwordUpdated": "Password updated successfully",
-    "passwordUpdateError": "Error updating password. Please try again."
+    "passwordUpdateError": "Error updating password. Please try again.",
+    "userUpdated": "User updated successfully",
+    "userUpdateError": "Error updating user. Please try again."
   },
   "deleteConfirmation": {
     "title": "Delete Account",
@@ -151,6 +155,11 @@
       "host": "Host",
       "agent": "Agent", 
       "client": "Client"
+    },
+    "passwordSection": {
+      "title": "Password Management",
+      "show": "Change",
+      "hide": "Cancel Password Change"
     }
   }
 }
