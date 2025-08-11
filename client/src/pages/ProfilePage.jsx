@@ -850,7 +850,7 @@ export default function ProfilePage({}) {
       <PhoneVerificationModal
         isOpen={showPhoneVerification}
         onClose={handlePhoneVerificationCancel}
-        onSuccess={handlePhoneVerificationSuccess}
+        onVerificationSuccess={handlePhoneVerificationSuccess}
         phoneNumber={pendingPhoneUpdate?.phoneNumber}
         additionalData={pendingPhoneUpdate ? { name: pendingPhoneUpdate.name } : null}
       />

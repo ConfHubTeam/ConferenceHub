@@ -329,23 +329,26 @@ function RegisterPage() {
       return;
     }
 
-    // Check if phone number is provided and valid
-    if (phoneNumber && !validatePhone(phoneNumber)) {
-      setError(ready ? t("auth:validation.phoneInvalid") : "Please enter a valid phone number");
+    // Check if phone number is provided and valid (required for registration)
+    if (!phoneNumber || !validatePhone(phoneNumber)) {
+      setError(ready ? t("auth:validation.phoneRequired") : "Phone number is required for registration");
       return;
     }
 
     // Check if phone number already exists
-    if (phoneNumber) {
-      const phoneAvailable = await checkPhoneAvailability(phoneNumber);
-      if (!phoneAvailable) {
-        setError(ready ? t("auth:register.phoneExists") : "An account with this phone number already exists");
-        return;
-      }
+    const phoneAvailable = await checkPhoneAvailability(phoneNumber);
+    if (!phoneAvailable) {
+      setError(ready ? t("auth:register.phoneExists") : "An account with this phone number already exists");
+      return;
     }
 
-    // Check if phone number is required to be verified (if provided)
-    if (phoneNumber && !phoneVerified) {
+    // Phone number and verification are mandatory for registration
+    if (!phoneNumber || !validatePhone(phoneNumber)) {
+      setError(ready ? t("auth:validation.phoneRequired") : "Phone number is required for registration");
+      return;
+    }
+
+    if (!phoneVerified) {
       setError(ready ? t("auth:register.phoneNotVerified") : "Please verify your phone number first");
       return;
     }
