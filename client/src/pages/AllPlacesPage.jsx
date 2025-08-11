@@ -345,7 +345,7 @@ export default function AllPlacesPage() {
   return (
     <div>
       <AccountNav />
-      <div className="spacing-container">
+      <div className="spacing-container pb-20 md:pb-8">
         
         {/* Page header with Create Place button for agents */}
         <div className="mb-6">

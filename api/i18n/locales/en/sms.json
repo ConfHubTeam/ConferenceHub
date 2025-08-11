@@ -1,6 +1,6 @@
 {
   "verification": {
-    "phoneVerification": "Your verification code from getspace is {{code}}. Valid for 5 minutes."
+    "phoneVerification": "Verification code for login to GetSpace.uz platform: {{code}}. Valid for 5 minutes."
   },
   "booking": {
     "requested": "Booking #{{bookingReference}} requested for \"{{placeName}}\" on {{dateRange}}",

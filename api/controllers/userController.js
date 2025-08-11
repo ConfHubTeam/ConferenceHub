@@ -1,3 +1,4 @@
+const bcrypt = require("bcryptjs");
 const { User, Place, Booking, Review, ReviewReply } = require("../models");
 const { sequelize } = require("../models");
 const { Op } = require("sequelize");
@@ -56,6 +57,108 @@ const getProfile = async (req, res) => {
   } else {
     console.log('No token found in either cookies or Authorization header');
     res.json(null);
+  }
+};
+
+/**
+ * Update user password
+ */
+const updatePassword = async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+    const { newPassword } = req.body;
+
+    // Validate input
+    if (!newPassword) {
+      return res.status(400).json({ 
+        error: 'New password is required',
+        code: 'MISSING_PASSWORD'
+      });
+    }
+
+    // Get user
+    const user = await User.findByPk(userData.id, {
+      attributes: ['id']
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Validate new password against policy
+    const passwordPolicy = authConfig.passwordPolicy;
+    
+    // Check minimum length
+    if (newPassword.length < passwordPolicy.minLength) {
+      return res.status(400).json({ 
+        error: `Password must be at least ${passwordPolicy.minLength} characters long`,
+        code: 'PASSWORD_TOO_SHORT'
+      });
+    }
+
+    // Check for required character types
+    if (passwordPolicy.requireUppercase && !/[A-Z]/.test(newPassword)) {
+      return res.status(400).json({ 
+        error: 'Password must contain at least one uppercase letter',
+        code: 'PASSWORD_MISSING_UPPERCASE'
+      });
+    }
+
+    if (passwordPolicy.requireLowercase && !/[a-z]/.test(newPassword)) {
+      return res.status(400).json({ 
+        error: 'Password must contain at least one lowercase letter',
+        code: 'PASSWORD_MISSING_LOWERCASE'
+      });
+    }
+
+    if (passwordPolicy.requireNumbers && !/\d/.test(newPassword)) {
+      return res.status(400).json({ 
+        error: 'Password must contain at least one number',
+        code: 'PASSWORD_MISSING_NUMBER'
+      });
+    }
+
+    if (passwordPolicy.requireSpecialChars) {
+      const specialCharRegex = new RegExp(`[${passwordPolicy.allowedSpecialChars.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}]`);
+      if (!specialCharRegex.test(newPassword)) {
+        return res.status(400).json({ 
+          error: `Password must contain at least one special character from: ${passwordPolicy.allowedSpecialChars}`,
+          code: 'PASSWORD_MISSING_SPECIAL_CHAR'
+        });
+      }
+    }
+
+    // Check for disallowed characters
+    if (passwordPolicy.allowedSpecialChars) {
+      const allowedPattern = new RegExp(`^[A-Za-z0-9${passwordPolicy.allowedSpecialChars.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}]*$`);
+      if (!allowedPattern.test(newPassword)) {
+        return res.status(400).json({ 
+          error: `Password contains invalid characters. Only alphanumeric and these special characters are allowed: ${passwordPolicy.allowedSpecialChars}`,
+          code: 'PASSWORD_INVALID_CHARS'
+        });
+      }
+    }
+
+    // Hash new password
+    const saltRounds = 12;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Update password
+    await User.update(
+      { password: hashedPassword },
+      { where: { id: userData.id } }
+    );
+
+    res.json({
+      success: true,
+      message: 'Password updated successfully'
+    });
+  } catch (error) {
+    console.error("Error updating password:", error);
+    res.status(500).json({ 
+      error: 'Failed to update password',
+      code: 'SERVER_ERROR'
+    });
   }
 };
 
@@ -586,7 +689,7 @@ const getStatistics = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, phoneNumber } = req.body;
+    const { name, phoneNumber, newPassword } = req.body;
     const userData = await req.getUserDataFromToken();
     
     // Verify user is an agent
@@ -610,6 +713,62 @@ const updateUser = async (req, res) => {
           error: 'Please enter a valid phone number in international format (e.g., +998901234567)',
           code: 'INVALID_PHONE_FORMAT'
         });
+      }
+    }
+
+    // Validate password if provided
+    if (newPassword) {
+      const passwordPolicy = authConfig.passwordPolicy;
+      
+      // Check minimum length
+      if (newPassword.length < passwordPolicy.minLength) {
+        return res.status(400).json({ 
+          error: `Password must be at least ${passwordPolicy.minLength} characters long`,
+          code: 'PASSWORD_TOO_SHORT'
+        });
+      }
+
+      // Check for required character types
+      if (passwordPolicy.requiresLowercase && !/[a-z]/.test(newPassword)) {
+        return res.status(400).json({ 
+          error: 'Password must contain at least one lowercase letter',
+          code: 'PASSWORD_MISSING_LOWERCASE'
+        });
+      }
+      
+      if (passwordPolicy.requiresUppercase && !/[A-Z]/.test(newPassword)) {
+        return res.status(400).json({ 
+          error: 'Password must contain at least one uppercase letter',
+          code: 'PASSWORD_MISSING_UPPERCASE'
+        });
+      }
+      
+      if (passwordPolicy.requiresNumber && !/\d/.test(newPassword)) {
+        return res.status(400).json({ 
+          error: 'Password must contain at least one number',
+          code: 'PASSWORD_MISSING_NUMBER'
+        });
+      }
+      
+      if (passwordPolicy.requiresSpecialChar) {
+        const specialCharPattern = new RegExp(`[${passwordPolicy.allowedSpecialChars.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}]`);
+        if (!specialCharPattern.test(newPassword)) {
+          return res.status(400).json({ 
+            error: `Password must contain at least one special character from: ${passwordPolicy.allowedSpecialChars}`,
+            code: 'PASSWORD_MISSING_SPECIAL_CHAR'
+          });
+        }
+      }
+
+      // Check for disallowed characters
+      if (passwordPolicy.allowedSpecialChars) {
+        const allowedPattern = new RegExp(`^[A-Za-z0-9${passwordPolicy.allowedSpecialChars.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}]*$`);
+        if (!allowedPattern.test(newPassword)) {
+          return res.status(400).json({ 
+            error: `Password contains invalid characters. Only alphanumeric and these special characters are allowed: ${passwordPolicy.allowedSpecialChars}`,
+            code: 'PASSWORD_INVALID_CHARS'
+          });
+        }
       }
     }
 
@@ -646,6 +805,12 @@ const updateUser = async (req, res) => {
     // Only update phone number if provided
     if (phoneNumber !== undefined) {
       updateData.phoneNumber = phoneNumber.trim() || null;
+    }
+
+    // Update password if provided
+    if (newPassword) {
+      const saltRounds = 12;
+      updateData.password = await bcrypt.hash(newPassword, saltRounds);
     }
 
     await User.update(updateData, {
@@ -1597,6 +1762,7 @@ const getLanguagePreference = async (req, res) => {
 module.exports = {
   getProfile,
   updateProfile,
+  updatePassword,
   getAllUsers,
   deleteUser,
   deleteOwnAccount,

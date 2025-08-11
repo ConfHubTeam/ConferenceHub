@@ -16,6 +16,11 @@
       "title": "Profil ma'lumotlari",
       "subtitle": "Shaxsiy ma'lumotlaringiz va aloqa ma'lumotlarini boshqaring"
     },
+    "password": {
+      "title": "Parol va xavfsizlik",
+      "subtitle": "Parolingizni o'zgartiring va xavfsizlik sozlamalarini boshqaring",
+      "description": "Hisobingizni xavfsiz saqlash uchun parolingizni yangilang."
+    },
     "accountSettings": {
       "title": "Hisob sozlamalari",
       "subtitle": "Hisob sozlamalaringiz va xavfsizligini boshqaring"
@@ -55,6 +60,32 @@
       "cannotChange": "Emailni o'zgartirib bo'lmaydi",
       "notProvided": "Ko'rsatilmagan",
       "noEmail": "Email yo'q"
+    },
+    "password": {
+      "current": "Joriy parol",
+      "new": "Yangi parol",
+      "confirm": "Yangi parolni tasdiqlang",
+      "currentPlaceholder": "Joriy parolingizni kiriting",
+      "newPlaceholder": "Yangi parolni kiriting",
+      "confirmPlaceholder": "Yangi parolni tasdiqlang",
+      "requirements": "Parol talablari:",
+      "requirement": {
+        "length": "Kamida {{minLength}} ta belgi",
+        "lowercase": "Kamida bitta kichik harf",
+        "uppercase": "Kamida bitta katta harf",
+        "number": "Kamida bitta raqam",
+        "specialChar": "Kamida bitta maxsus belgi: {{allowedChars}}"
+      },
+      "validation": {
+        "allFieldsRequired": "Barcha parol maydonlari majburiy",
+        "passwordsDoNotMatch": "Parollar mos kelmaydi",
+        "passwordsMatch": "Parollar mos keladi",
+        "requirementsNotMet": "Parol barcha talablarga javob berishi kerak",
+        "currentPasswordIncorrect": "Joriy parol noto'g'ri",
+        "invalidPassword": "Parol xavfsizlik talablariga javob bermaydi",
+        "confirmRequired": "Iltimos, yangi parolni tasdiqlang",
+        "newPasswordRequired": "Iltimos, yangi parolni kiriting"
+      }
     }
   },
   "phoneVerification": {
@@ -79,7 +110,10 @@
     "saving": "Saqlanyapti...",
     "signOut": "Chiqish",
     "loggingOut": "Chiqishda...",
-    "deleteAccount": "Hisobni o'chirish"
+    "deleteAccount": "Hisobni o'chirish",
+    "changePassword": "Parolni o'zgartirish",
+    "updatePassword": "Parolni yangilash",
+    "updatingPassword": "Parol yangilanmoqda..."
   },
   "messages": {
     "profileUpdated": "Profil muvaffaqiyatli yangilandi",
@@ -91,7 +125,11 @@
     "phoneNumberExists": "Bunday telefon raqamiga ega foydalanuvchi allaqachon mavjud",
     "invalidPhoneFormat": "Iltimos, to'g'ri telefon raqamini xalqaro formatda kiriting",
     "deleteSuccess": "Sizning hisobingiz muvaffaqiyatli o'chirildi",
-    "deleteError": "Hisobni o'chirishda xatolik. Iltimos, qayta urinib ko'ring."
+    "deleteError": "Hisobni o'chirishda xatolik. Iltimos, qayta urinib ko'ring.",
+    "passwordUpdated": "Parol muvaffaqiyatli yangilandi",
+    "passwordUpdateError": "Parolni yangilashda xatolik. Iltimos, qayta urinib ko'ring.",
+    "userUpdated": "Foydalanuvchi muvaffaqiyatli yangilandi",
+    "userUpdateError": "Foydalanuvchini yangilashda xatolik. Iltimos, qayta urinib ko'ring."
   },
   "deleteConfirmation": {
     "title": "Hisobni o'chirish",
@@ -117,6 +155,11 @@
       "host": "Mezbor",
       "agent": "Agent", 
       "client": "Mijoz"
+    },
+    "passwordSection": {
+      "title": "Parol boshqaruvi",
+      "show": "O'zgartirish",
+      "hide": "Parol o'zgartirishni bekor qilish"
     }
   }
 }

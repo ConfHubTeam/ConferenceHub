@@ -133,8 +133,8 @@ const languageMiddleware = (req, res, next) => {
   const bodyLang = req.body?.language;
   const userLang = req.user?.preferredLanguage;
 
-  // Determine language priority: query > body > user preference > header > default
-  const detectedLanguage = queryLang || bodyLang || userLang || headerLang || "en";
+  // Determine language priority: body > query > user preference > header > default
+  const detectedLanguage = bodyLang || queryLang || userLang || headerLang || "en";
 
   // Validate language is supported
   const supportedLanguages = ["en", "uz", "ru"];

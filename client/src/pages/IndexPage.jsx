@@ -419,7 +419,7 @@ function IndexPageBase() {
           }}
           data-listings-section
         >
-          <div className="p-4">
+          <div className="p-4 pb-20 md:pb-4">
             {isLoading ? (
               <div className="flex justify-center my-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>

@@ -3,12 +3,14 @@ import { useTranslation } from "react-i18next";
 import { UserContext } from "../components/UserContext";
 import { useNotification } from "../components/NotificationContext";
 import { Navigate, useParams, useLocation } from "react-router-dom";
-import api from "../utils/api";
+import api, { getPasswordRequirements, updatePassword } from "../utils/api";
 import AccountNav from "../components/AccountNav";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import CustomPhoneInput from "../components/CustomPhoneInput";
 import PhoneVerificationModal from "../components/PhoneVerificationModal";
 import { isValidPhoneNumber, isPossiblePhoneNumber } from "react-phone-number-input";
+import { checkPasswordSpecialChars } from "../utils/formUtils";
+import { RiKey2Line, RiEditLine } from "react-icons/ri";
 
 export default function ProfilePage({}) {
   const [redirect, setRedirect] = useState(); // control the redirect after logout
@@ -32,6 +34,24 @@ export default function ProfilePage({}) {
   // Phone verification state
   const [showPhoneVerification, setShowPhoneVerification] = useState(false);
   const [pendingPhoneUpdate, setPendingPhoneUpdate] = useState(null);
+
+  // Password change state
+  const [showPasswordChange, setShowPasswordChange] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordRequirements, setPasswordRequirements] = useState({});
+  const [passwordChecklist, setPasswordChecklist] = useState({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    specialChar: false,
+    validSpecialChars: true
+  });
+  const [passwordsMatch, setPasswordsMatch] = useState(true);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
   useEffect(() => {
     // Only process notifications once to prevent infinite loops
@@ -57,6 +77,53 @@ export default function ProfilePage({}) {
       window.history.replaceState({}, document.title, cleanUrl);
     }
   }, [location.search]); // Only depend on location.search, not the notify function
+
+  // Fetch password requirements when component mounts
+  useEffect(() => {
+    const fetchPasswordRequirements = async () => {
+      try {
+        const requirements = await getPasswordRequirements();
+        setPasswordRequirements(requirements);
+      } catch (error) {
+        console.error("Error fetching password requirements:", error);
+      }
+    };
+    
+    fetchPasswordRequirements();
+  }, []);
+  
+  // Update password checklist when new password changes
+  useEffect(() => {
+    if (newPassword) {
+      const specialCharCheck = checkPasswordSpecialChars(newPassword, passwordRequirements.allowedSpecialChars);
+      setPasswordChecklist({
+        length: newPassword.length >= passwordRequirements.minLength,
+        uppercase: /[A-Z]/.test(newPassword),
+        lowercase: /[a-z]/.test(newPassword),
+        number: /\d/.test(newPassword),
+        specialChar: specialCharCheck.hasRequiredSpecialChar,
+        validSpecialChars: specialCharCheck.isValid
+      });
+    } else {
+      setPasswordChecklist({
+        length: false,
+        uppercase: false,
+        lowercase: false,
+        number: false,
+        specialChar: false,
+        validSpecialChars: true
+      });
+    }
+  }, [newPassword, passwordRequirements]);
+
+  // Check if passwords match
+  useEffect(() => {
+    if (confirmPassword) {
+      setPasswordsMatch(newPassword === confirmPassword);
+    } else {
+      setPasswordsMatch(true); // Don't show error for empty confirm password
+    }
+  }, [newPassword, confirmPassword]);
 
   if (!isReady) {
     return <div className="spacing-container"><p>Loading...</p></div>;
@@ -223,6 +290,58 @@ export default function ProfilePage({}) {
     setPendingPhoneUpdate(null);
   }
   
+  // Start password change
+  function startPasswordChange() {
+    setShowPasswordChange(true);
+    setNewPassword('');
+    setConfirmPassword('');
+  }
+  
+  // Cancel password change
+  function cancelPasswordChange() {
+    setShowPasswordChange(false);
+    setNewPassword('');
+    setConfirmPassword('');
+  }
+  
+  // Save new password
+  async function savePassword() {
+    if (!newPassword || !confirmPassword) {
+      notify(t("profile:fields.password.validation.allFieldsRequired"), "error");
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      notify(t("profile:fields.password.validation.passwordsDoNotMatch"), "error");
+      return;
+    }
+    
+    // Check password requirements
+    const allRequirementsMet = Object.values(passwordChecklist).every(Boolean);
+    if (!allRequirementsMet) {
+      notify(t("profile:fields.password.validation.requirementsNotMet"), "error");
+      return;
+    }
+    
+    setIsUpdatingPassword(true);
+    try {
+      await updatePassword(newPassword);
+      notify(t("profile:messages.passwordUpdated"), "success");
+      setShowPasswordChange(false);
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error) {
+      const errorData = error.response?.data;
+      if (errorData?.code?.startsWith('PASSWORD_')) {
+        notify(errorData.error || t("profile:fields.password.validation.invalidPassword"), "error");
+      } else {
+        notify(errorData?.error || t("profile:messages.passwordUpdateError"), "error");
+      }
+    } finally {
+      setIsUpdatingPassword(false);
+    }
+  }
+  
   // Function to delete account
   async function deleteAccount() {
     setIsDeleting(true);
@@ -385,9 +504,7 @@ export default function ProfilePage({}) {
                       onClick={startEditing}
                       className="flex items-center space-x-2 bg-info-50 text-info-600 px-4 py-2 rounded-lg hover:bg-info-100 transition-colors"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
+                      <RiEditLine className="h-4 w-4" />
                       <span>{t("profile:actions.editProfile")}</span>
                     </button>
                   )}
@@ -501,6 +618,202 @@ export default function ProfilePage({}) {
                 )}
               </div>
             </div>
+            
+            {/* Password Change Section */}
+            <div className="bg-white rounded-xl shadow-sm border mt-6 h-fit">
+              {/* Header */}
+              <div className="px-6 py-4 border-b border-gray-100">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">{t("profile:sections.password.title")}</h2>
+                    <p className="text-sm text-gray-600 mt-1">{t("profile:sections.password.subtitle")}</p>
+                  </div>
+                  {!showPasswordChange && (
+                    <button
+                      onClick={startPasswordChange}
+                      className="flex items-center space-x-2 bg-orange-50 text-orange-600 px-4 py-2 rounded-lg hover:bg-orange-100 transition-colors"
+                    >
+                      <RiKey2Line className="h-4 w-4" />
+                      <span>{t("profile:actions.changePassword")}</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+              
+              {/* Content */}
+              <div className="p-6">
+                {!showPasswordChange ? (
+                  /* View Mode */
+                  <div className="text-center py-3">
+                    <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                    </div>
+                    <p className="text-gray-600 text-md">{t("profile:sections.password.description")}</p>
+                  </div>
+                ) : (
+                  /* Password Change Form */
+                  <div>
+                    <div className="space-y-6">
+                      {/* New Password */}
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                          {t("profile:fields.password.new")} <span className="text-error-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showNewPassword ? "text" : "password"}
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                            placeholder={t("profile:fields.password.newPlaceholder")}
+                            disabled={isUpdatingPassword}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowNewPassword(!showNewPassword)}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            disabled={isUpdatingPassword}
+                          >
+                            {showNewPassword ? (
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L12 12m2.122 2.122l-2.122-2.122m0 0l-4.242-4.242M21 12c-1.274-4.057-5.065-7-9.543-7-1.058 0-2.07.169-3.006.484l6.364 6.364z" />
+                              </svg>
+                            ) : (
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                              </svg>
+                            )}
+                          </button>
+                        </div>
+                        
+                        {/* Password Requirements */}
+                        {newPassword && (
+                          <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                            <p className="text-sm font-medium text-gray-700 mb-2">{t("profile:fields.password.requirements")}</p>
+                            <div className="space-y-1">
+                              <div className={`flex items-center text-xs ${passwordChecklist.length ? 'text-success-600' : 'text-gray-500'}`}>
+                                <svg className={`w-3 h-3 mr-2 ${passwordChecklist.length ? 'text-success-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                                {t("profile:fields.password.requirement.length", { minLength: passwordRequirements.minLength })}
+                              </div>
+                              <div className={`flex items-center text-xs ${passwordChecklist.lowercase ? 'text-success-600' : 'text-gray-500'}`}>
+                                <svg className={`w-3 h-3 mr-2 ${passwordChecklist.lowercase ? 'text-success-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                                {t("profile:fields.password.requirement.lowercase")}
+                              </div>
+                              <div className={`flex items-center text-xs ${passwordChecklist.uppercase ? 'text-success-600' : 'text-gray-500'}`}>
+                                <svg className={`w-3 h-3 mr-2 ${passwordChecklist.uppercase ? 'text-success-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                                {t("profile:fields.password.requirement.uppercase")}
+                              </div>
+                              <div className={`flex items-center text-xs ${passwordChecklist.number ? 'text-success-600' : 'text-gray-500'}`}>
+                                <svg className={`w-3 h-3 mr-2 ${passwordChecklist.number ? 'text-success-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                                {t("profile:fields.password.requirement.number")}
+                              </div>
+                              <div className={`flex items-center text-xs ${passwordChecklist.specialChar ? 'text-success-600' : 'text-gray-500'}`}>
+                                <svg className={`w-3 h-3 mr-2 ${passwordChecklist.specialChar ? 'text-success-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                                {t("profile:fields.password.requirement.specialChar", { allowedChars: passwordRequirements.allowedSpecialChars })}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Confirm Password */}
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                          {t("profile:fields.password.confirm")} <span className="text-error-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showConfirmPassword ? "text" : "password"}
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                            placeholder={t("profile:fields.password.confirmPlaceholder")}
+                            disabled={isUpdatingPassword}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            disabled={isUpdatingPassword}
+                          >
+                            {showConfirmPassword ? (
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L12 12m2.122 2.122l-2.122-2.122m0 0l-4.242-4.242M21 12c-1.274-4.057-5.065-7-9.543-7-1.058 0-2.07.169-3.006.484l6.364 6.364z" />
+                              </svg>
+                            ) : (
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                              </svg>
+                            )}
+                          </button>
+                        </div>
+                        
+                        {/* Password Match Indicator */}
+                        {confirmPassword && (
+                          <div className={`flex items-center text-xs ${passwordsMatch ? 'text-success-600' : 'text-error-600'}`}>
+                            <svg className={`w-3 h-3 mr-2 ${passwordsMatch ? 'text-success-500' : 'text-error-500'}`} fill="currentColor" viewBox="0 0 20 20">
+                              {passwordsMatch ? (
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              ) : (
+                                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                              )}
+                            </svg>
+                            {passwordsMatch ? t("profile:fields.password.validation.passwordsMatch") : t("profile:fields.password.validation.passwordsDoNotMatch")}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Action buttons for password change */}
+                    <div className="flex items-center justify-end space-x-3 pt-6 mt-6 border-t border-gray-100">
+                      <button
+                        onClick={cancelPasswordChange}
+                        className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                        disabled={isUpdatingPassword}
+                      >
+                        {t("profile:actions.cancel")}
+                      </button>
+                      <button
+                        onClick={savePassword}
+                        className="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors flex items-center space-x-2"
+                        disabled={isUpdatingPassword || !newPassword || !confirmPassword || !passwordsMatch || !Object.values(passwordChecklist).every(Boolean)}
+                      >
+                        {isUpdatingPassword ? (
+                          <>
+                            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>{t("profile:actions.updatingPassword")}</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>{t("profile:actions.updatePassword")}</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -537,7 +850,7 @@ export default function ProfilePage({}) {
       <PhoneVerificationModal
         isOpen={showPhoneVerification}
         onClose={handlePhoneVerificationCancel}
-        onSuccess={handlePhoneVerificationSuccess}
+        onVerificationSuccess={handlePhoneVerificationSuccess}
         phoneNumber={pendingPhoneUpdate?.phoneNumber}
         additionalData={pendingPhoneUpdate ? { name: pendingPhoneUpdate.name } : null}
       />

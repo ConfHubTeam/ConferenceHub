@@ -66,7 +66,7 @@ All booking notification messages are **approved** and sending successfully in *
 
 9. **❌ Phone Verification** (phone_verification) - NEW TEMPLATE NEEDS APPROVAL:
    ```
-   Your verification code from getspace is 123456. Valid for 5 minutes.
+   Verification code for login to GetSpace.uz platform: 123456. Valid for 5 minutes.
    ```
 
 #### 🇷🇺 **RUSSIAN TEMPLATES (РУССКИЕ ШАБЛОНЫ)**
@@ -113,7 +113,7 @@ All booking notification messages are **approved** and sending successfully in *
 
 9. **❌ Подтверждение телефона** (phone_verification) - НОВЫЙ ШАБЛОН ТРЕБУЕТ ОДОБРЕНИЯ:
    ```
-   Ваш код подтверждения от getspace: 123456. Действителен 5 минут.
+   Код верификации для входа в систему GetSpace.uz: 123456. Действителен 5 минут.
    ```
 
 #### 🇺🇿 **UZBEK TEMPLATES (O'ZBEK SHABLONLARI) - ⏳ PENDING APPROVAL**
@@ -162,7 +162,7 @@ All booking notification messages are **approved** and sending successfully in *
 
 9. **⏳ Telefon tasdiqlash** (phone_verification) - YANGI SHABLON TASDIQLASH KUTILMOQDA:
    ```
-   Getspace-dan tasdiqlash kodingiz: 123456. 5 daqiqa amal qiladi.
+   GetSpace.uz platformasiga kirish uchun tasdiqlash kodi: 123456. 5 daqiqa amal qiladi.
    ```
 
 ## 📊 **TEST RESULTS SUMMARY**
@@ -333,6 +333,16 @@ When implementing new features, these message types may need approval:
 
 ## 🚨 **IMMEDIATE SUBMISSION REQUIRED**
 
+### **UPDATED: SMS Provider Compliance Requirements**
+
+**New Regulation:** All SMS messages containing verification codes must include:
+1. **Resource Name** - The name of the project/website (GetSpace.uz)
+2. **Purpose** - The specific use case for the verification code (login, registration, etc.)
+
+**Example Format:**
+- ✅ **Correct:** "Код верификации для входа в систему (purpose) GetSpace.uz (resource): 123456"
+- ❌ **Incorrect:** "Код подтверждения: 123456"
+
 ### **NEW TEMPLATE - Phone Verification (All Languages)**
 
 **Status:** ❌ Not approved - causing 500 errors in production
@@ -340,28 +350,29 @@ When implementing new features, these message types may need approval:
 
 #### English Template:
 ```
-Your verification code from getspace is {{code}}. Valid for 5 minutes.
+Verification code for login to GetSpace.uz platform: {{code}}. Valid for 5 minutes.
 ```
-**Example:** Your verification code from getspace is 123456. Valid for 5 minutes.
+**Example:** Verification code for login to GetSpace.uz platform: 123456. Valid for 5 minutes.
 
 #### Russian Template:
 ```
-Ваш код подтверждения от getspace: {{code}}. Действителен 5 минут.
+Код верификации для входа в систему GetSpace.uz: {{code}}. Действителен 5 минут.
 ```
-**Example:** Ваш код подтверждения от getspace: 123456. Действителен 5 минут.
+**Example:** Код верификации для входа в систему GetSpace.uz: 123456. Действителен 5 минут.
 
 #### Uzbek Template:
 ```
-Getspace-dan tasdiqlash kodingiz: {{code}}. 5 daqiqa amal qiladi.
+GetSpace.uz platformasiga kirish uchun tasdiqlash kodi: {{code}}. 5 daqiqa amal qiladi.
 ```
-**Example:** Getspace-dan tasdiqlash kodingiz: 123456. 5 daqiqa amal qiladi.
+**Example:** GetSpace.uz platformasiga kirish uchun tasdiqlash kodi: 123456. 5 daqiqa amal qiladi.
 
 **Technical Details:**
-- Used for phone number verification during user registration and profile updates
+- Used for phone number verification during user registration, login, and profile updates
 - Code is 6-digit random number (e.g., 123456, 789012)
 - Valid for 5 minutes from generation
 - Template key: `sms:verification.phoneVerification`
 - Implementation: `/api/services/phoneVerificationService.js`
+- **Compliance:** Updated format includes resource name (GetSpace.uz) and purpose (login/verification) as required by SMS provider regulations
 
 **For Eskiz Submission:** Please submit all three language versions above for immediate approval to resolve production issues.
 
@@ -415,9 +426,9 @@ Getspace-dan tasdiqlash kodingiz: {{code}}. 5 daqiqa amal qiladi.
 
 ### Template 8: Phone Verification (NEW - NEEDS APPROVAL)
 ```
-Getspace-dan tasdiqlash kodingiz: {{code}}. 5 daqiqa amal qiladi.
+GetSpace.uz platformasiga kirish uchun tasdiqlash kodi: {{code}}. 5 daqiqa amal qiladi.
 ```
-**Example:** Getspace-dan tasdiqlash kodingiz: 123456. 5 daqiqa amal qiladi.
+**Example:** GetSpace.uz platformasiga kirish uchun tasdiqlash kodi: 123456. 5 daqiqa amal qiladi.
 
 ---
 

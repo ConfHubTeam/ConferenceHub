@@ -15,6 +15,9 @@ router.get("/profile", userController.getProfile);
 // Update user profile
 router.put("/profile", userController.updateProfile);
 
+// Update user password
+router.put("/password", userController.updatePassword);
+
 // Language preference endpoints
 router.get("/language-preference", userController.getLanguagePreference);
 router.put("/language-preference", userController.updateLanguagePreference);

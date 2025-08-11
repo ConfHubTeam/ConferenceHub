@@ -6,9 +6,10 @@ import { useNotification } from "../components/NotificationContext";
 import api, { getPasswordRequirements } from "../utils/api";
 import { validateForm } from "../utils/formUtils";
 import { withTranslationLoading } from "../i18n/hoc/withTranslationLoading";
+import CustomPhoneInput from "../components/CustomPhoneInput";
 
 function LoginPageBase() {
-  const { t, ready } = useTranslation(["auth", "common"]);
+  const { t, ready, i18n } = useTranslation(["auth", "common"]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [redirect, setRedirect] = useState(false);
@@ -16,9 +17,16 @@ function LoginPageBase() {
   const [error, setError] = useState("");
   const [showAdminHint, setShowAdminHint] = useState(false);
   const [emailValid, setEmailValid] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
   const [passwordRequirements, setPasswordRequirements] = useState({
     allowedSpecialChars: "@$!%*?&"
   });
+
+  // Phone login states
+  const [loginMethod, setLoginMethod] = useState('email'); // 'email' or 'phone'
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [showPhoneVerification, setShowPhoneVerification] = useState(false);
+  const [phoneLoginSessionId, setPhoneLoginSessionId] = useState(null);
 
   const {setUser} = useContext(UserContext);
   const { notify } = useNotification();
@@ -153,6 +161,54 @@ function LoginPageBase() {
     }
   }
 
+  // Phone login function
+  async function loginWithPhone(event) {
+    event.preventDefault();
+    setError("");
+    
+    if (!phoneNumber || !phoneNumber.trim()) {
+      setError(t('validation.phoneRequired'));
+      return;
+    }
+    
+    try {
+      const response = await api.post("/auth/phone-login/send-code", {
+        phoneNumber: phoneNumber.trim(),
+        language: i18n.language
+      });
+      
+      setPhoneLoginSessionId(response.data.sessionId);
+      setShowPhoneVerification(true);
+      notify(t('phoneAuth.codeSent'), "success");
+    } catch (e) {
+      setError(e.response?.data?.error || t('errors.serverError'));
+    }
+  }
+
+  // Handle phone verification success
+  async function handlePhoneVerificationSuccess(verificationData) {
+    try {
+      const response = await api.post("/auth/phone-login/verify-code", {
+        sessionId: phoneLoginSessionId,
+        code: verificationData.code || verificationData,
+        language: i18n.language
+      });
+      
+      setUser(response.data);
+      notify("Successfully logged in with phone", "success");
+      setShowPhoneVerification(false);
+      setRedirect(true);
+    } catch (error) {
+      throw new Error(error.response?.data?.error || "Failed to verify code");
+    }
+  }
+
+  // Handle phone verification cancellation
+  function handlePhoneVerificationCancel() {
+    setShowPhoneVerification(false);
+    setPhoneLoginSessionId(null);
+  }
+
   // Toggle admin hint when the title is clicked
   const handleTitleClick = () => {
     setShowAdminHint(prev => !prev);
@@ -180,50 +236,121 @@ function LoginPageBase() {
           )}
         </p>
         
-        <form className="bg-white p-3 sm:p-6 rounded-xl shadow-sm" onSubmit={loginUser}>
+        <form className="bg-white p-3 sm:p-6 rounded-xl shadow-sm" onSubmit={loginMethod === 'email' ? loginUser : loginWithPhone}>
           {error && (
             <div className="bg-error-100 text-error-800 p-3 rounded-lg mb-4 text-sm">
               {error}
             </div>
           )}
           
-          <div className="mb-3">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              {ready ? t("auth:login.email") : "Email"}
-            </label>
-            <input
-              id="email"
-              type="email"
-              placeholder={ready ? t("auth:login.emailPlaceholder") : "your@email.com"}
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              className={`w-full px-3 py-1.5 sm:py-2 border ${emailValid ? 'border-gray-300' : 'border-error-500'} rounded-md focus:outline-none focus:ring-2 ${emailValid ? 'focus:ring-primary' : 'focus:ring-error-500'}`}
-              required
-            />
-            {!emailValid && email && (
-              <p className="text-error-500 text-xs mt-1">
-                {ready ? t("auth:validation.emailInvalid") : "Please enter a valid email address"}
-              </p>
-            )}
-          </div>
-          
+          {/* Login Method Selection */}
           <div className="mb-4">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              {ready ? t("auth:login.password") : "Password"}
-            </label>
-            <input
-              id="password"
-              type="password"
-              placeholder={ready ? t("auth:login.passwordPlaceholder") : "••••••••"}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              className="w-full px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-              required
-            />
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              <button
+                type="button"
+                onClick={() => setLoginMethod('email')}
+                className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                  loginMethod === 'email'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                {t('phoneAuth.emailPassword')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setLoginMethod('phone')}
+                className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                  loginMethod === 'phone'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                {t('phoneAuth.phoneNumber')}
+              </button>
+            </div>
           </div>
+
+          {loginMethod === 'email' ? (
+            /* Email Login Form */
+            <>
+              <div className="mb-3">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  {ready ? t("auth:login.email") : "Email"}
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  placeholder={ready ? t("auth:login.emailPlaceholder") : "your@email.com"}
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  className={`w-full px-3 py-1.5 sm:py-2 border ${emailValid ? 'border-gray-300' : 'border-error-500'} rounded-md focus:outline-none focus:ring-2 ${emailValid ? 'focus:ring-primary' : 'focus:ring-error-500'}`}
+                  required
+                />
+                {!emailValid && email && (
+                  <p className="text-error-500 text-xs mt-1">
+                    {ready ? t("auth:validation.emailInvalid") : "Please enter a valid email address"}
+                  </p>
+                )}
+              </div>
+              
+              <div className="mb-4">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                  {ready ? t("auth:login.password") : "Password"}
+                </label>
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder={ready ? t("auth:login.passwordPlaceholder") : "••••••••"}
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    className="w-full px-3 py-1.5 sm:py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 11-4.243-4.243m4.242 4.242L9.88 9.88" />
+                      </svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            /* Phone Login Form */
+            <div className="mb-4">
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                {t('phoneAuth.phone')}
+              </label>
+              <CustomPhoneInput
+                value={phoneNumber}
+                onChange={setPhoneNumber}
+                placeholder={t('phoneAuth.phonePlaceholder')}
+                className="w-full"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {t('phoneAuth.loginSubtitle')}
+              </p>
+            </div>
+          )}
           
           <button className="w-full bg-primary text-white py-1.5 sm:py-2 px-4 rounded-md hover:bg-primary-dark transition-colors font-medium">
-            {ready ? t("auth:login.loginButton") : "Login"}
+            {loginMethod === 'email' 
+              ? (ready ? t("auth:login.loginButton") : "Login")
+              : t('phoneAuth.sendVerificationCode')
+            }
           </button>
           
           <div className="text-center py-2 text-gray-500 text-xs sm:text-sm">
@@ -250,6 +377,78 @@ function LoginPageBase() {
           </div>
         </form>
       </div>
+      
+      {/* Phone Verification Modal */}
+      {showPhoneVerification && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-100">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">{t('phoneAuth.loginTitle')}</h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  {t('phoneAuth.verificationCodeSubtitle')} <span className="font-medium">{phoneNumber}</span>
+                </p>
+              </div>
+              <button
+                onClick={handlePhoneVerificationCancel}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const code = formData.get('code');
+                
+                try {
+                  await handlePhoneVerificationSuccess(code);
+                } catch (error) {
+                  setError(error.message);
+                }
+              }}>
+                <div className="mb-4">
+                  <label htmlFor="verification-code" className="block text-sm font-medium text-gray-700 mb-2">
+                    {t('phoneAuth.verificationCodeTitle')}
+                  </label>
+                  <input
+                    id="verification-code"
+                    name="code"
+                    type="text"
+                    maxLength="6"
+                    placeholder={t('phoneAuth.verificationCodeSubtitle')}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-center text-lg tracking-wider"
+                    required
+                    autoComplete="one-time-code"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-primary-dark transition-colors font-medium"
+                >
+                  {t('phoneAuth.verifyAndLogin')}
+                </button>
+              </form>
+
+              <div className="mt-4 text-center">
+                <button
+                  onClick={handlePhoneVerificationCancel}
+                  className="text-sm text-gray-600 hover:text-gray-800"
+                >
+                  {t('phoneAuth.cancelAndGoBack')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

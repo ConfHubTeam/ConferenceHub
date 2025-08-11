@@ -1,6 +1,6 @@
 {
   "verification": {
-    "phoneVerification": "Ваш код подтверждения от getspace: {{code}}. Действителен 5 минут."
+    "phoneVerification": "Код верификации для входа в систему GetSpace.uz: {{code}}. Действителен 5 минут."
   },
   "booking": {
     "requested": "Запрос на бронирование #{{bookingReference}} для \"{{placeName}}\" на {{dateRange}}",
