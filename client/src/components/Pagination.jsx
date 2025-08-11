@@ -54,9 +54,9 @@ export default function Pagination({
   };
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 p-4 bg-white border border-gray-200 rounded-lg">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 mb-4 p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
       {/* Results info */}
-      <div className="text-sm text-gray-600">
+      <div className="text-sm text-gray-600 order-2 sm:order-1">
         {t('showing', { 
           from: showingFrom, 
           to: showingTo, 
@@ -66,12 +66,12 @@ export default function Pagination({
       </div>
       
       {/* Pagination controls */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 order-1 sm:order-2">
         {/* Previous button */}
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
         >
           {t('buttons.previous')}
         </button>
@@ -85,7 +85,7 @@ export default function Pagination({
               ) : (
                 <button
                   onClick={() => onPageChange(page)}
-                  className={`px-3 py-2 text-sm font-medium rounded-md ${
+                  className={`px-3 py-2 text-sm font-medium rounded-md touch-manipulation ${
                     currentPage === page
                       ? "bg-primary text-white"
                       : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
@@ -102,7 +102,7 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
         >
           {t('buttons.next')}
         </button>

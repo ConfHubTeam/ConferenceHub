@@ -249,7 +249,7 @@ export default function UsersPage() {
   return (
     <div>
       <AccountNav />
-      <div className="spacing-container">
+      <div className="spacing-container pb-20 md:pb-8">
        
         {/* Search and filter controls */}
         <div className="bg-white spacing-card rounded-lg shadow-md mb-4 sm:mb-6">
