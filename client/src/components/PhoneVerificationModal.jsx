@@ -7,7 +7,8 @@ export default function PhoneVerificationModal({
   onClose, 
   phoneNumber, 
   onVerificationSuccess,
-  onVerificationError 
+  onVerificationError,
+  isRegistration = false // New prop to indicate if this is for registration
 }) {
   const { t } = useTranslation(['profile', 'common']);
   const [verificationCode, setVerificationCode] = useState("");
@@ -53,7 +54,11 @@ export default function PhoneVerificationModal({
     setError("");
 
     try {
-      const response = await api.post("/users/send-phone-verification", {
+      const endpoint = isRegistration 
+        ? "/auth/registration/send-phone-code" 
+        : "/users/send-phone-verification";
+        
+      const response = await api.post(endpoint, {
         phoneNumber: phoneNumber
       });
 
@@ -89,7 +94,11 @@ export default function PhoneVerificationModal({
     setError("");
 
     try {
-      const response = await api.post("/users/verify-phone", {
+      const endpoint = isRegistration 
+        ? "/auth/registration/verify-phone-code" 
+        : "/users/verify-phone";
+        
+      const response = await api.post(endpoint, {
         sessionId: sessionId,
         verificationCode: verificationCode,
         phoneNumber: phoneNumber

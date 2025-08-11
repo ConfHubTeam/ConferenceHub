@@ -259,6 +259,120 @@ const sendPhoneLoginCode = async (req, res) => {
 };
 
 /**
+ * Send phone verification code for registration (no authentication required)
+ */
+const sendRegistrationPhoneCode = async (req, res) => {
+  const { phoneNumber, language } = req.body;
+  
+  if (!phoneNumber) {
+    return res.status(400).json({ 
+      error: req.t("auth:validation.phoneRequired"),
+      code: 'PHONE_REQUIRED'
+    });
+  }
+  
+  try {
+    // Enhanced phone validation - should be in E.164 format (starting with +)
+    const phoneRegex = /^\+[1-9]\d{1,14}$/;
+    const cleanPhone = phoneNumber.trim();
+    
+    if (!phoneRegex.test(cleanPhone)) {
+      return res.status(400).json({ 
+        error: 'Please enter a valid phone number in international format (e.g., +998901234567)',
+        code: 'INVALID_PHONE_FORMAT'
+      });
+    }
+
+    // Check if phone number already exists (for registration, it should not exist)
+    const existingUser = await User.findOne({ where: { phoneNumber: cleanPhone } });
+    if (existingUser) {
+      return res.status(400).json({ 
+        error: req.t("auth:register.phoneExists"),
+        code: 'PHONE_EXISTS'
+      });
+    }
+    
+    // Use language from request or fallback to 'en'
+    const userLanguage = language || 'en';
+    
+    // Use the existing phone verification service
+    const result = await phoneVerificationService.sendVerificationCode(cleanPhone, userLanguage);
+    
+    if (result.success) {
+      res.json({ 
+        success: true, 
+        sessionId: result.sessionId,
+        message: req.t("auth:success.verificationCodeSent"),
+        expiresIn: result.expiresIn
+      });
+    } else {
+      res.status(500).json({ 
+        error: result.error || req.t("auth:errors.failedToSendCode"),
+        code: 'SEND_FAILED'
+      });
+    }
+  } catch (error) {
+    console.error("Error sending registration phone code:", error);
+    res.status(500).json({ 
+      error: req.t("auth:errors.failedToSendCode"),
+      code: 'SEND_FAILED'
+    });
+  }
+};
+
+/**
+ * Verify phone code for registration (no authentication required, no DB update)
+ */
+const verifyRegistrationPhoneCode = async (req, res) => {
+  const { sessionId, verificationCode, phoneNumber } = req.body;
+  
+  if (!sessionId || !verificationCode || !phoneNumber) {
+    return res.status(400).json({ 
+      error: 'Session ID, verification code, and phone number are required',
+      code: 'MISSING_PARAMETERS'
+    });
+  }
+  
+  try {
+    // Verify the code using the phone verification service
+    const verificationResult = phoneVerificationService.verifyCode(sessionId, verificationCode);
+    
+    if (!verificationResult.success) {
+      return res.status(400).json({
+        success: false,
+        error: verificationResult.error,
+        code: verificationResult.code,
+        remainingAttempts: verificationResult.remainingAttempts
+      });
+    }
+    
+    // Ensure the phone number matches what was verified
+    if (verificationResult.phoneNumber !== phoneNumber) {
+      return res.status(400).json({
+        success: false,
+        error: 'Phone number mismatch',
+        code: 'PHONE_MISMATCH'
+      });
+    }
+    
+    // For registration verification, we just confirm the code is valid
+    // We do NOT update any user data or create any database records
+    res.json({
+      success: true,
+      message: req.t("auth:success.phoneVerified"),
+      phoneNumber: phoneNumber
+    });
+    
+  } catch (error) {
+    console.error("Error verifying registration phone code:", error);
+    res.status(500).json({ 
+      error: req.t("auth:errors.failedToVerifyCode"),
+      code: 'VERIFY_FAILED'
+    });
+  }
+};
+
+/**
  * Verify phone login code and login user
  */
 const verifyPhoneLoginCode = async (req, res) => {
@@ -344,5 +458,7 @@ module.exports = {
   logout,
   sendPhoneLoginCode,
   verifyPhoneLoginCode,
+  sendRegistrationPhoneCode,
+  verifyRegistrationPhoneCode,
   test
 };

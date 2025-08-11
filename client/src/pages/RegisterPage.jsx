@@ -60,7 +60,7 @@ function RegisterPage() {
 
   // Phone validation function
   const validatePhone = (phone) => {
-    if (!phone) return true; // Phone is optional
+    if (!phone) return false; // Phone is required for registration
     try {
       return isPossiblePhoneNumber(phone) && isValidPhoneNumber(phone);
     } catch (error) {
@@ -329,19 +329,6 @@ function RegisterPage() {
       return;
     }
 
-    // Check if phone number is provided and valid (required for registration)
-    if (!phoneNumber || !validatePhone(phoneNumber)) {
-      setError(ready ? t("auth:validation.phoneRequired") : "Phone number is required for registration");
-      return;
-    }
-
-    // Check if phone number already exists
-    const phoneAvailable = await checkPhoneAvailability(phoneNumber);
-    if (!phoneAvailable) {
-      setError(ready ? t("auth:register.phoneExists") : "An account with this phone number already exists");
-      return;
-    }
-
     // Phone number and verification are mandatory for registration
     if (!phoneNumber || !validatePhone(phoneNumber)) {
       setError(ready ? t("auth:validation.phoneRequired") : "Phone number is required for registration");
@@ -350,6 +337,13 @@ function RegisterPage() {
 
     if (!phoneVerified) {
       setError(ready ? t("auth:register.phoneNotVerified") : "Please verify your phone number first");
+      return;
+    }
+
+    // Check if phone number already exists
+    const phoneAvailable = await checkPhoneAvailability(phoneNumber);
+    if (!phoneAvailable) {
+      setError(ready ? t("auth:register.phoneExists") : "An account with this phone number already exists");
       return;
     }
     
@@ -841,6 +835,7 @@ function RegisterPage() {
           onClose={handlePhoneVerificationCancel}
           phoneNumber={phoneNumber}
           onVerificationSuccess={handlePhoneVerificationSuccess}
+          isRegistration={true}
         />
       </div>
     </div>

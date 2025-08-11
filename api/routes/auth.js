@@ -14,6 +14,10 @@ router.post("/check-user", authController.checkUserExists);
 // Check if phone number exists
 router.post("/check-phone", authController.checkPhoneExists);
 
+// Registration phone verification endpoints (no authentication required)
+router.post("/registration/send-phone-code", authController.sendRegistrationPhoneCode);
+router.post("/registration/verify-phone-code", authController.verifyRegistrationPhoneCode);
+
 // Register a new user
 router.post("/register", authController.register);
 
