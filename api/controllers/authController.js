@@ -228,8 +228,8 @@ const sendPhoneLoginCode = async (req, res) => {
       return res.status(404).json({ error: req.t("auth:errors.phoneNotFound") });
     }
     
-    // Use language from request, fallback to user's preferred language, then to 'en'
-    const userLanguage = language || user?.preferredLanguage || 'en';
+    // Use language from request, fallback to user's preferred language, then to 'ru'
+    const userLanguage = language || user?.preferredLanguage || 'ru';
     
     // Use the existing phone verification service with the approved message format
     const result = await phoneVerificationService.sendVerificationCode(phoneNumber, userLanguage);
@@ -292,8 +292,8 @@ const sendRegistrationPhoneCode = async (req, res) => {
       });
     }
     
-    // Use language from request or fallback to 'en'
-    const userLanguage = language || 'en';
+    // Use language from request or fallback to 'ru' (Russian is now default)
+    const userLanguage = language || 'ru';
     
     // Use the existing phone verification service
     const result = await phoneVerificationService.sendVerificationCode(cleanPhone, userLanguage);
@@ -384,7 +384,7 @@ const verifyPhoneLoginCode = async (req, res) => {
   
   try {
     // Use language from request body, fallback to middleware detected language
-    const userLanguage = language || req.language || 'en';
+    const userLanguage = language || req.language || 'ru';
     
     // Verify code using phone verification service
     const verificationResult = phoneVerificationService.verifyCode(sessionId, code, userLanguage);

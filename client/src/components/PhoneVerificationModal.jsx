@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useLanguageContext } from "../contexts/LanguageContext";
 import api from "../utils/api";
 
 export default function PhoneVerificationModal({ 
@@ -11,6 +12,7 @@ export default function PhoneVerificationModal({
   isRegistration = false // New prop to indicate if this is for registration
 }) {
   const { t } = useTranslation(['profile', 'common']);
+  const { currentLanguage } = useLanguageContext();
   const [verificationCode, setVerificationCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -59,7 +61,8 @@ export default function PhoneVerificationModal({
         : "/users/send-phone-verification";
         
       const response = await api.post(endpoint, {
-        phoneNumber: phoneNumber
+        phoneNumber: phoneNumber,
+        language: currentLanguage // Include current language for SMS localization
       });
 
       if (response.data.success) {
@@ -101,7 +104,8 @@ export default function PhoneVerificationModal({
       const response = await api.post(endpoint, {
         sessionId: sessionId,
         verificationCode: verificationCode,
-        phoneNumber: phoneNumber
+        phoneNumber: phoneNumber,
+        language: currentLanguage // Include current language for error messages
       });
 
       if (response.data.success) {

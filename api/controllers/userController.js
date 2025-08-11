@@ -1619,11 +1619,11 @@ const sendPhoneVerification = async (req, res) => {
       });
     }
 
-    // Get user's preferred language (default to 'en')
+    // Get user's preferred language (default to 'ru')
     const user = await User.findByPk(userData.id, {
       attributes: ['preferredLanguage']
     });
-    const language = user?.preferredLanguage || 'en';
+    const language = user?.preferredLanguage || 'ru';
 
     // Send verification code
     const result = await phoneVerificationService.sendVerificationCode(cleanPhone, language);
@@ -1751,7 +1751,7 @@ const getLanguagePreference = async (req, res) => {
     }
 
     res.json({
-      preferredLanguage: user.preferredLanguage || 'en'
+      preferredLanguage: user.preferredLanguage || 'ru'
     });
   } catch (error) {
     console.error("Error getting language preference:", error);
