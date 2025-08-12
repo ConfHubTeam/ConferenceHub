@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "../../i18n/hooks/useTranslation";
 import { useLanguageContext } from "../../contexts/LanguageContext";
 import { ChevronDownIcon, CheckIcon, GlobeAltIcon } from "@heroicons/react/24/outline";
+import ReactCountryFlag from "react-country-flag";
 
 /**
  * Language Selector Component with Flags
@@ -28,21 +29,54 @@ const LanguageSelector = ({
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
 
-  // Language configuration with flags and metadata
+  // Language configuration with react-country-flag
+  // Helper to render flag with dynamic size
+  // Map language code to country code for flag
+  const langToCountry = {
+    en: "US",
+    ru: "RU",
+    uz: "UZ"
+  };
+
+  const renderFlag = (langCode, size = "1.25em", responsive = false) => {
+    const countryCode = langToCountry[langCode.toLowerCase()] || "US";
+    let title = "";
+    let aria = "";
+    if (countryCode === "US") { title = "English (US)"; aria = "United States"; }
+    else if (countryCode === "RU") { title = "Русский"; aria = "Russia"; }
+    else if (countryCode === "UZ") { title = "O'zbek"; aria = "Uzbekistan"; }
+    else { title = countryCode; aria = countryCode; }
+    // Responsive: 2em on md+ screens, 1.5em on mobile
+    const style = responsive
+      ? { width: "1.5em", height: "1.5em" }
+      : { width: size, height: size };
+    return (
+      <span className={responsive ? "md:w-[2em] md:h-[2em] w-[1.5em] h-[1.5em] inline-block align-middle" : "inline-block align-middle"}>
+        <ReactCountryFlag
+          countryCode={countryCode}
+          svg
+          style={style}
+          title={title}
+          aria-label={aria}
+        />
+      </span>
+    );
+  };
+
   const languageConfig = {
     en: {
-      flag: "🇺🇸",
+      flag: renderFlag("en"),
       name: t("language.english"),
       nativeName: "English"
     },
     uz: {
-      flag: "🇺🇿", 
+      flag: renderFlag("uz"),
       name: t("language.uzbek"),
       nativeName: "O'zbek"
     },
     ru: {
-      flag: "🇷🇺",
-      name: t("language.russian"), 
+      flag: renderFlag("ru"),
+      name: t("language.russian"),
       nativeName: "Русский"
     }
   };
@@ -137,13 +171,12 @@ const LanguageSelector = ({
         onClick={() => setIsOpen(!isOpen)}
         disabled={isLoading}
         className={`
-          inline-flex items-center justify-center gap-2 
-          ${theme === "dark" 
-            ? 'border border-white/30 bg-black hover:bg-white/10 text-white' 
-            : 'border border-gray-300 bg-white hover:bg-gray-50'
-          } 
-          rounded-lg
-          focus:outline-none focus:ring-2 focus:ring-offset-2 
+          inline-flex items-center justify-center gap-2
+          ${theme === "dark"
+            ? 'bg-black text-white hover:bg-white/10'
+            : 'border border-gray-300 bg-gray-100 hover:bg-gray-200'}
+          rounded-full
+          focus:outline-none focus:ring-2 focus:ring-offset-2
           ${theme === "dark" ? 'focus:ring-white/20' : 'focus:ring-indigo-500'}
           transition-colors duration-200
           disabled:opacity-50 disabled:cursor-not-allowed
@@ -156,8 +189,8 @@ const LanguageSelector = ({
         {/* Current Language Display */}
         <div className="flex items-center gap-2">
           {showFlag && (
-            <span className="text-lg" role="img" aria-hidden="true">
-              {languageConfig[currentLanguageObject.code]?.flag}
+            <span className="text-lg" aria-hidden="true" style={{background: 'none', border: 'none', boxShadow: 'none', padding: 0}}>
+              {renderFlag(currentLanguageObject.code, undefined, true)}
             </span>
           )}
           {showText && (
@@ -175,21 +208,7 @@ const LanguageSelector = ({
         </div>
 
         {/* Loading indicator or chevron */}
-        {isLoading ? (
-          <div className="w-4 h-4">
-            <div className={`animate-spin rounded-full h-4 w-4 border-2 ${
-              theme === "dark" 
-                ? 'border-white/30 border-t-white' 
-                : 'border-gray-300 border-t-indigo-600'
-            }`}></div>
-          </div>
-        ) : (
-          <ChevronDownIcon 
-            className={`w-4 h-4 transition-transform duration-200 ${
-              theme === "dark" ? 'text-white/60' : 'text-gray-400'
-            } ${isOpen ? "transform rotate-180" : ""}`}
-          />
-        )}
+  {/* No chevron arrow in button */}
       </button>
 
       {/* Dropdown Menu */}
@@ -228,8 +247,10 @@ const LanguageSelector = ({
                 tabIndex={0}
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-lg" role="img" aria-hidden="true">
-                    {config?.flag}
+                  <span className="text-lg" aria-hidden="true">
+                    {isSelected
+                      ? renderFlag(language.code, "2em")
+                      : renderFlag(language.code, "1.25em")}
                   </span>
                   <div className="flex flex-col">
                     <span className="font-medium">
