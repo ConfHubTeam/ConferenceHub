@@ -166,15 +166,15 @@ export default function CurrencySelector({
   return (
     <div className="relative w-full" ref={dropdownRef}>
       <div 
-        className={`flex items-center justify-between w-full ${
+        className={`flex items-center w-full ${
           compact 
-            ? 'px-2 py-1 text-sm' 
+            ? 'px-3 py-2 text-sm h-10' 
             : 'px-4 py-3 text-base'
         } ${
           theme === "dark" 
             ? 'bg-black text-white border-white/30 hover:border-white/50' 
-            : 'bg-white border border-gray-200 hover:border-gray-300'
-        } rounded-lg cursor-pointer transition-all duration-200 hover:shadow-sm ${
+            : 'bg-white border border-gray-300 hover:bg-gray-50'
+        } rounded-full cursor-pointer transition-all duration-200 hover:shadow-md ${
           isOpen 
             ? theme === "dark" 
               ? 'border-white/50 ring-2 ring-white/20 shadow-sm' 
@@ -195,8 +195,8 @@ export default function CurrencySelector({
           {selectedCurrency && (
             <>
               {compact ? (
-                // Professional compact mode: clean, inline layout
-                <div className="flex items-center space-x-1">
+                // Professional compact mode: clean, inline layout - similar to LanguageSelector
+                <div className="flex items-center space-x-2">
                   <span className={`font-medium text-sm ${
                     theme === "dark" ? 'text-white/80' : 'text-gray-700'
                   }`}>

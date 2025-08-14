@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { UserContext } from "../components/UserContext";
 import { useCurrency } from "../contexts/CurrencyContext";
 import { Navigate } from "react-router-dom";
-import AccountNav from "../components/AccountNav";
 import { useTranslation } from "react-i18next";
 import api from "../utils/api";
 import { formatPriceWithSymbol, convertCurrency } from "../utils/currencyUtils";
@@ -116,7 +115,7 @@ const HostDashboardPage = () => {
   if (error) {
     return (
       <div className="px-4 md:px-14">
-        <AccountNav />
+        
         <div className="min-h-screen bg-gray-50 p-4">
           <div className="max-w-7xl mx-auto">
             <div className="bg-red-50 border border-red-200 rounded-lg p-6">
@@ -141,7 +140,7 @@ const HostDashboardPage = () => {
 
   return (
     <div className="px-4 md:px-14">
-      <AccountNav />
+      
       <div className="min-h-screen bg-gray-50 p-4">
         <div className="max-w-7xl mx-auto">
           {/* Header */}

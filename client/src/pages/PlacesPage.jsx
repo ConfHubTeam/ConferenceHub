@@ -1,7 +1,6 @@
 import { Link, Navigate, useParams } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import AccountNav from "../components/AccountNav";
 import api from "../utils/api";
 import { UserContext } from "../components/UserContext";
 import PlaceFilters from "../components/PlaceFilters";
@@ -77,7 +76,7 @@ export default function PlacesPage() {
   if (loading) {
     return (
       <div>
-        <AccountNav />
+        
         <div className="spacing-container spacing-section">
           <div className="animate-pulse flex space-x-4">
             <div className="flex-1 space-y-4 py-1">
@@ -95,7 +94,7 @@ export default function PlacesPage() {
 
   return (
     <div>
-      <AccountNav />
+      
       <div className="spacing-container spacing-section max-w-7xl mx-auto">
         {/* Page header */}
         <div className="mb-8">

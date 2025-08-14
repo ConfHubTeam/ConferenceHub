@@ -1,7 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { UserContext } from "../components/UserContext";
 import { Navigate } from "react-router-dom";
-import AccountNav from "../components/AccountNav";
 import api from "../utils/api";
 import { 
   StarIcon, 
@@ -95,7 +94,7 @@ const HostReviewsPage = () => {
   if (loading) {
     return (
       <div className="px-4 md:px-14">
-        <AccountNav />
+        
         <div className="min-h-screen bg-gray-50 p-4">
           <div className="max-w-6xl mx-auto">
             <div className="animate-pulse">
@@ -118,7 +117,7 @@ const HostReviewsPage = () => {
   if (error) {
     return (
       <div className="px-4 md:px-14">
-        <AccountNav />
+        
         <div className="min-h-screen bg-gray-50 p-4">
           <div className="max-w-6xl mx-auto">
             <div className="bg-red-50 border border-red-200 rounded-lg p-6">
@@ -143,7 +142,7 @@ const HostReviewsPage = () => {
 
   return (
     <div className="px-4 md:px-14">
-      <AccountNav />
+      
       <div className="min-h-screen bg-gray-50 p-4">
         <div className="max-w-6xl mx-auto">
           {/* Header */}

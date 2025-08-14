@@ -16,7 +16,6 @@ import { useTranslation } from "react-i18next";
 import { UserContext } from "../components/UserContext";
 import { useReviewNotifications } from "../contexts/ReviewNotificationContext";
 import { useNotification } from "../components/NotificationContext";
-import AccountNav from "../components/AccountNav";
 import Pagination from "../components/Pagination";
 
 export default function NotificationsPage() {
@@ -275,8 +274,6 @@ export default function NotificationsPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <AccountNav />
-      
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">

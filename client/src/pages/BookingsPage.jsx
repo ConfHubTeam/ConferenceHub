@@ -1,5 +1,4 @@
 import { useContext, useEffect, useState } from "react";
-import AccountNav from "../components/AccountNav";
 import { useTranslation } from "react-i18next";
 import api from "../utils/api";
 import { UserContext } from "../components/UserContext";
@@ -333,7 +332,6 @@ export default function BookingsPage() {
   if (loading) {
     return (
       <div>
-        <AccountNav />
         <div className="spacing-container spacing-section">
           <div className="animate-pulse flex space-x-4">
             <div className="flex-1 space-y-4 py-1">
@@ -351,7 +349,6 @@ export default function BookingsPage() {
 
   return (
     <div>
-      <AccountNav />
       <div className="spacing-container spacing-section">
         {/* Agent view - Production-level booking management */}
         {user?.userType === 'agent' && (

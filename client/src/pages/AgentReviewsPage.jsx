@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { UserContext } from "../components/UserContext";
 import { useNotification } from "../components/NotificationContext";
 import { useDateLocalization } from "../hooks/useDateLocalization";
-import AccountNav from "../components/AccountNav";
 import ReviewsFilters from "../components/ReviewsFilters";
 import api from "../utils/api";
 import StarRating from "../components/StarRating";
@@ -275,7 +274,7 @@ export default function AgentReviewsPage() {
   if (loading && reviews.length === 0) {
     return (
       <div>
-        <AccountNav />
+        
         <div className="px-8 py-4">
           <div className="animate-pulse space-y-4">
             <div className="h-10 bg-gray-200 rounded w-full"></div>
@@ -288,7 +287,7 @@ export default function AgentReviewsPage() {
 
   return (
     <div>
-      <AccountNav />
+      
       <div className="spacing-container">
         {/* Error Display */}
         {error && (

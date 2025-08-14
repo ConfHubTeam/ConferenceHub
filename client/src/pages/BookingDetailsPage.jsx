@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { UserContext } from "../components/UserContext";
 import { useNotification } from "../components/NotificationContext";
 import useSmartPaymentPolling from "../hooks/useSmartPaymentPolling";
-import AccountNav from "../components/AccountNav";
 import PriceDisplay from "../components/PriceDisplay";
 import CloudinaryImage from "../components/CloudinaryImage";
 import ConfirmationModal from "../components/ConfirmationModal";
@@ -376,7 +375,7 @@ export default function BookingDetailsPage() {
   if (loading) {
     return (
       <div>
-        <AccountNav />
+        
         <div className="flex items-center justify-center py-20">
           <LoadingSpinner />
         </div>
@@ -387,7 +386,7 @@ export default function BookingDetailsPage() {
   if (!booking) {
     return (
       <div>
-        <AccountNav />
+        
         <div className="text-center py-20">
           <p className="text-gray-600">{t('details.bookingNotFound')}</p>
           <Link to="/account/bookings" className="text-blue-600 hover:underline mt-4 inline-block">
@@ -400,7 +399,7 @@ export default function BookingDetailsPage() {
 
   return (
     <div>
-      <AccountNav />
+      
       <div className="max-w-6xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

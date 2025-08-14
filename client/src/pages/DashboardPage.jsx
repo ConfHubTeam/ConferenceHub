@@ -1,6 +1,5 @@
 import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import AccountNav from "../components/AccountNav";
 import ReviewAnalytics from "../components/ReviewAnalytics";
 import api from "../utils/api";
 import { UserContext } from "../components/UserContext";
@@ -40,7 +39,6 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div>
-        <AccountNav />
         <div className="px-8 py-4">
           <div className="animate-pulse space-y-4">
             <div className="h-48 bg-gray-200 rounded"></div>
@@ -68,7 +66,6 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <AccountNav />
       <div className="px-8">
         <h1 className="text-2xl font-bold mb-6">{t("agent.title")}</h1>
         
