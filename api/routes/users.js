@@ -15,9 +15,16 @@ router.get("/profile", userController.getProfile);
 // Update user profile
 router.put("/profile", userController.updateProfile);
 
+// Update user password
+router.put("/password", userController.updatePassword);
+
 // Language preference endpoints
 router.get("/language-preference", userController.getLanguagePreference);
 router.put("/language-preference", userController.updateLanguagePreference);
+
+// Phone verification endpoints
+router.post("/send-phone-verification", userController.sendPhoneVerification);
+router.post("/verify-phone", userController.verifyPhoneAndUpdate);
 
 // Get all users (agent only)
 router.get("/", userController.getAllUsers);

@@ -1,0 +1,14 @@
+{
+  "page": {
+    "clearAll": "Hammasini tozalash",
+    "empty": {
+      "title": "Hali sevimlilar yo'q",
+      "description": "Kashf qilishni boshlang va yurak belgisini bosish orqali joylarni sevimlilaringizga qo'shing.",
+      "browseButton": "Joylarni ko'rish"
+    }
+  },
+  "button": {
+    "addToFavorites": "Sevimlilarga qo'shish",
+    "removeFromFavorites": "Sevimlilardan olib tashlash"
+  }
+}

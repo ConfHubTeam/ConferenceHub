@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function YouTubeEmbed({ url, title = "YouTube video", className = "" }) {
+export default function YouTubeEmbed({ url, title = "YouTube video", className = "", isFullscreen = false }) {
   // Extract video ID from different YouTube URL formats
   const getYouTubeVideoId = (url) => {
     if (!url) return null;
@@ -29,11 +29,24 @@ export default function YouTubeEmbed({ url, title = "YouTube video", className =
     return <div className={`bg-gray-200 flex items-center justify-center ${className}`}>Invalid YouTube URL</div>;
   }
 
+  // Different container styles for fullscreen vs normal view
+  const containerClass = isFullscreen 
+    ? "w-full h-full flex items-center justify-center"
+    : `relative overflow-hidden ${className}`;
+    
+  const containerStyle = isFullscreen 
+    ? {} 
+    : { paddingBottom: '56.25%' };
+
+  const iframeClass = isFullscreen
+    ? "w-full h-full max-w-none max-h-none"
+    : "absolute top-0 left-0 w-full h-full";
+
   return (
-    <div className={`relative overflow-hidden ${className}`} style={{ paddingBottom: '56.25%' }}>
+    <div className={containerClass} style={containerStyle}>
       <iframe
-        className="absolute top-0 left-0 w-full h-full"
-        src={`https://www.youtube.com/embed/${videoId}`}
+        className={iframeClass}
+        src={`https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0&modestbranding=1`}
         title={title}
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen

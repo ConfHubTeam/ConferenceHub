@@ -88,7 +88,7 @@ i18n
     
     // Performance optimizations
     load: "languageOnly", // Load only language, not region (e.g., 'en' not 'en-US')
-    preload: ["en", "uz", "ru"],
+    preload: ["ru", "en", "uz"],
     
     // Error handling
     saveMissing: process.env.NODE_ENV === "development",
@@ -114,15 +114,15 @@ export const changeLanguage = (lng) => {
 
 // Helper function to get current language
 export const getCurrentLanguage = () => {
-  return i18n.language || "en";
+  return i18n.language || "ru";
 };
 
 // Helper function to get available languages
 export const getAvailableLanguages = () => {
   return [
-    { code: "en", name: "English", flag: "🇺🇸" },
-    { code: "uz", name: "O'zbek", flag: "🇺🇿" },
-    { code: "ru", name: "Русский", flag: "🇷🇺" }
+    { code: "ru", name: "Русский", flag: "��" },
+    { code: "en", name: "English", flag: "🇺�" },
+    { code: "uz", name: "O'zbek", flag: "🇺🇿" }
   ];
 };
 

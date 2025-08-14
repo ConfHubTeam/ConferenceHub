@@ -1,4 +1,7 @@
 {
+  "verification": {
+    "phoneVerification": "Verification code for login to GetSpace.uz platform: {{code}}. Valid for 5 minutes."
+  },
   "booking": {
     "requested": "Booking #{{bookingReference}} requested for \"{{placeName}}\" on {{dateRange}}",
     "selected": "Booking #{{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been selected. Please proceed with payment.",

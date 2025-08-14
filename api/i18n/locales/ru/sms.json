@@ -1,4 +1,7 @@
 {
+  "verification": {
+    "phoneVerification": "Код верификации для входа в систему GetSpace.uz: {{code}}. Действителен 5 минут."
+  },
   "booking": {
     "requested": "Запрос на бронирование #{{bookingReference}} для \"{{placeName}}\" на {{dateRange}}",
     "selected": "Бронирование #{{bookingReference}} для \"{{placeName}}\" на {{dateRange}} выбрано. Пожалуйста, произведите оплату.",

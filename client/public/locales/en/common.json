@@ -147,7 +147,12 @@
       "eur": "€"
     },
     "format": "{{amount, currency}}",
-    "formatWithCode": "{{amount, currency}} {{code, uppercase}}"
+    "formatWithCode": "{{amount, currency}} {{code, uppercase}}",
+    "abbreviations": {
+      "thousand": "K",
+      "million": "M",
+      "billion": "B"
+    }
   },
   "language": {
     "current": "Current Language",

@@ -16,6 +16,11 @@
       "title": "Profile Information",
       "subtitle": "Manage your personal information and contact details"
     },
+    "password": {
+      "title": "Password & Security",
+      "subtitle": "Change your password and manage security settings",
+      "description": "Update your password to keep your account secure."
+    },
     "accountSettings": {
       "title": "Account Settings",
       "subtitle": "Manage your account preferences and security"
@@ -55,7 +60,48 @@
       "cannotChange": "Email cannot be changed",
       "notProvided": "Not provided",
       "noEmail": "No email"
+    },
+    "password": {
+      "current": "Current Password",
+      "new": "New Password",
+      "confirm": "Confirm New Password",
+      "currentPlaceholder": "Enter your current password",
+      "newPlaceholder": "Enter new password",
+      "confirmPlaceholder": "Confirm new password",
+      "requirements": "Password Requirements:",
+      "requirement": {
+        "length": "At least {{minLength}} characters",
+        "lowercase": "At least one lowercase letter",
+        "uppercase": "At least one uppercase letter",
+        "number": "At least one number",
+        "specialChar": "At least one special character from: {{allowedChars}}"
+      },
+      "validation": {
+        "allFieldsRequired": "All password fields are required",
+        "passwordsDoNotMatch": "Passwords do not match",
+        "passwordsMatch": "Passwords match",
+        "requirementsNotMet": "Password must meet all requirements",
+        "currentPasswordIncorrect": "Current password is incorrect",
+        "invalidPassword": "Password does not meet security requirements",
+        "confirmRequired": "Please confirm your new password",
+        "newPasswordRequired": "Please enter a new password"
+      }
     }
+  },
+  "phoneVerification": {
+    "title": "Verify Phone Number",
+    "description": "We've sent a 6-digit verification code to:",
+    "codeLabel": "Verification Code",
+    "verify": "Verify",
+    "verifying": "Verifying...",
+    "resend": "Resend Code",
+    "sending": "Sending...",
+    "expiresIn": "Code expires in",
+    "expired": "Code expired",
+    "note": "The verification code may take a few minutes to arrive.",
+    "invalidCodeLength": "Please enter a 6-digit verification code",
+    "sendError": "Failed to send verification code. Please try again.",
+    "verifyError": "Failed to verify code. Please try again."
   },
   "actions": {
     "editProfile": "Edit Profile",
@@ -64,7 +110,10 @@
     "saving": "Saving...",
     "signOut": "Sign Out",
     "loggingOut": "Logging out...",
-    "deleteAccount": "Delete Account"
+    "deleteAccount": "Delete Account",
+    "changePassword": "Change Password",
+    "updatePassword": "Update Password",
+    "updatingPassword": "Updating Password..."
   },
   "messages": {
     "profileUpdated": "Profile updated successfully",
@@ -76,7 +125,11 @@
     "phoneNumberExists": "A user with this phone number already exists",
     "invalidPhoneFormat": "Please enter a valid phone number in international format",
     "deleteSuccess": "Your account has been deleted successfully",
-    "deleteError": "Error deleting account. Please try again."
+    "deleteError": "Error deleting account. Please try again.",
+    "passwordUpdated": "Password updated successfully",
+    "passwordUpdateError": "Error updating password. Please try again.",
+    "userUpdated": "User updated successfully",
+    "userUpdateError": "Error updating user. Please try again."
   },
   "deleteConfirmation": {
     "title": "Delete Account",
@@ -102,6 +155,11 @@
       "host": "Host",
       "agent": "Agent", 
       "client": "Client"
+    },
+    "passwordSection": {
+      "title": "Password Management",
+      "show": "Change",
+      "hide": "Cancel Password Change"
     }
   }
 }

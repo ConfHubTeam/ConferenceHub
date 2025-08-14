@@ -148,7 +148,12 @@
       "rub": "₽"
     },
     "format": "{{amount, currency}}",
-    "formatWithCode": "{{amount, currency}} {{code, uppercase}}"
+    "formatWithCode": "{{amount, currency}} {{code, uppercase}}",
+    "abbreviations": {
+      "thousand": "тыс",
+      "million": "млн",
+      "billion": "млрд"
+    }
   },
   "language": {
     "current": "Текущий язык",

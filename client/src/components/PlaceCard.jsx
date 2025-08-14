@@ -1,15 +1,23 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import CloudinaryImage from "./CloudinaryImage";
 import PriceDisplay from "./PriceDisplay";
 
-export default function PlaceCard({ place, showActions = true }) {
+export default function PlaceCard({ place, showActions = true, preserveSearchParams = false }) {
   const { t } = useTranslation("places");
+  const location = useLocation();
+  
+  // Create place URL with optional search parameters preservation
+  // This enables filtered date/time to be passed to place detail page
+  const getPlaceUrl = () => {
+    const baseUrl = `/place/${place.id}`;
+    return preserveSearchParams ? `${baseUrl}${location.search}` : baseUrl;
+  };
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
       {/* Image */}
       <div className="h-48 bg-gray-200 relative overflow-hidden">
-        <Link to={`/place/${place.id}`} className="block h-full">
+        <Link to={getPlaceUrl()} className="block h-full">
           {place.photos?.[0] && (
             <CloudinaryImage
               photo={place.photos[0]}
@@ -29,7 +37,7 @@ export default function PlaceCard({ place, showActions = true }) {
 
       {/* Content */}
       <div className="p-4">
-        <Link to={`/place/${place.id}`} className="block">
+        <Link to={getPlaceUrl()} className="block">
           <h3 className="text-lg font-semibold mb-1 truncate hover:text-primary transition-colors">
             {place.title}
           </h3>
@@ -80,7 +88,7 @@ export default function PlaceCard({ place, showActions = true }) {
                   {t("card.actions.edit")}
                 </Link>
                 <Link 
-                  to={`/place/${place.id}`}
+                  to={getPlaceUrl()}
                   className="px-3 py-1 text-xs bg-info-500 text-white rounded-lg hover:bg-info-600 transition-colors"
                 >
                   {t("card.actions.view")}

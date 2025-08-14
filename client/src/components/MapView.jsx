@@ -138,7 +138,7 @@ const MapView = memo(forwardRef(function MapView({
         
         // Use shorter format for UZS currency on map markers
         if (currentCurrency.charCode === 'UZS') {
-          formattedPrice = formatUZSShort(convertedPrice);
+          formattedPrice = formatUZSShort(convertedPrice, t);
         } else {
           formattedPrice = await formatPrice(convertedPrice, currentCurrency, currentCurrency);
         }
@@ -148,7 +148,7 @@ const MapView = memo(forwardRef(function MapView({
         
         // Use shorter format for UZS currency on map markers
         if (currencyCode === 'UZS') {
-          formattedPrice = formatUZSShort(price);
+          formattedPrice = formatUZSShort(price, t);
         } else {
           formattedPrice = await formatPrice(price, currency, currentCurrency);
         }

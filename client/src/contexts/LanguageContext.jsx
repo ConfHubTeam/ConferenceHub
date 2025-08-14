@@ -4,7 +4,7 @@ import { getLanguagePreference, updateLanguagePreference, getUserProfile } from 
 
 // Create Language Context with enhanced functionality
 const LanguageContext = createContext({
-  currentLanguage: "en",
+  currentLanguage: "ru",
   currentLanguageObject: {},
   availableLanguages: [],
   changeLanguage: () => {},
@@ -34,7 +34,7 @@ export const LanguageProvider = ({ children }) => {
       return storedLang;
     }
     
-    return getCurrentLanguage() || "en";
+    return getCurrentLanguage() || "ru";
   });
 
   // Check authentication status and sync language with backend

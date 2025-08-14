@@ -11,9 +11,13 @@ export default function NotificationBell({ isMobile = false, onClick }) {
   if (!user) return null;
 
   if (isMobile) {
-    // For mobile menu, return just a small red dot
+    // For mobile menu, return a badge with count or just a small red dot for large numbers
     return unreadCount > 0 ? (
-      <div className="absolute top-2 right-2 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
+      <div className="absolute top-1 right-1 min-w-[18px] h-[18px] bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
+        <span className="text-white text-xs font-bold leading-none">
+          {unreadCount > 99 ? '99+' : unreadCount}
+        </span>
+      </div>
     ) : null;
   }
 
@@ -27,7 +31,7 @@ export default function NotificationBell({ isMobile = false, onClick }) {
       title="View notifications"
       onClick={onClick}
     >
-      {/* Single Bell SVG with built-in red dot when there are notifications */}
+      {/* Bell SVG */}
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
@@ -36,7 +40,7 @@ export default function NotificationBell({ isMobile = false, onClick }) {
         stroke="currentColor"
         className={`w-6 h-6 transition-colors duration-200 ${
           unreadCount > 0 
-            ? "text-red-500 animate-shake" 
+            ? "text-red-500" 
             : "text-gray-600 hover:text-gray-800"
         }`}
       >
@@ -46,19 +50,16 @@ export default function NotificationBell({ isMobile = false, onClick }) {
           strokeLinejoin="round"
           d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
         />
-        
-        {/* Built-in red dot notification indicator */}
-        {unreadCount > 0 && (
-          <circle
-            cx="18"
-            cy="6"
-            r="3"
-            fill="#ef4444"
-            stroke="white"
-            strokeWidth="1.5"
-          />
-        )}
       </svg>
+      
+      {/* Notification count badge */}
+      {unreadCount > 0 && (
+        <div className="absolute -top-1 -right-1 min-w-[20px] h-5 bg-red-500 rounded-full flex items-center justify-center border-2 border-white">
+          <span className="text-white text-xs font-bold leading-none px-1">
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </span>
+        </div>
+      )}
     </Link>
   );
 }

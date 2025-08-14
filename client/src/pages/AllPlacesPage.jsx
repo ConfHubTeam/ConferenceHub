@@ -345,7 +345,7 @@ export default function AllPlacesPage() {
   return (
     <div>
       <AccountNav />
-      <div className="spacing-container">
+      <div className="spacing-container pb-20 md:pb-8">
         
         {/* Page header with Create Place button for agents */}
         <div className="mb-6">
@@ -442,7 +442,7 @@ export default function AllPlacesPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredPlaces.map(place => (
                 <div key={place.id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
-                  <a href={`/place/${place.id}`} className="block">
+                  <a href={`/place/${place.id}${location.search}`} className="block">
                     <div className="h-48 bg-gray-200 relative overflow-hidden">
                       {place.photos?.[0] && (
                         <CloudinaryImage

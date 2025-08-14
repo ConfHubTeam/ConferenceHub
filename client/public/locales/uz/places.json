@@ -282,6 +282,7 @@
   },
   "placeDetail": {
     "bookingRestored": "Sizning bron tanlovlaringiz tiklandi. Endi bronni yakunlashingiz mumkin.",
+    "filterDatesPreSelected": "Sizning filtrlangan sanalar va vaqtlar bron qilish uchun oldindan tanlangan.",
     "deleteSuccess": "Konferens zal muvaffaqiyatli o'chirildi",
     "ownerNotification": "Siz ushbu konferens zalning egasisiz",
     "agentNotification": "Agent boshqaruvi kirish",

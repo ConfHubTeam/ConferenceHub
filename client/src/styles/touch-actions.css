@@ -11,10 +11,11 @@ html {
 
 body {
   touch-action: manipulation;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
+  /* Allow text selection by default - users should be able to copy text */
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
   /* Prevent iOS elastic scrolling */
   overscroll-behavior: none;
   -webkit-overflow-scrolling: auto;
@@ -34,6 +35,25 @@ input, textarea, [contenteditable] {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
+}
+
+/* Ensure text content areas are selectable */
+p, 
+h1, h2, h3, h4, h5, h6,
+div.content,
+.description,
+.text-content,
+.article,
+.review,
+.comment,
+span.selectable,
+.place-description,
+.place-title,
+.place-details {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
 }
 
 /* Map container specific rules */
@@ -75,6 +95,26 @@ a,
   -webkit-tap-highlight-color: transparent;
   /* Prevent iOS callout menu */
   -webkit-touch-callout: none;
+  /* Disable text selection on interactive elements */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Disable text selection on navigation and UI elements */
+nav,
+.navbar,
+.menu,
+.header,
+.sidebar,
+.controls,
+.tabs,
+.pagination {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 /* Calendar and date picker touch handling */
@@ -89,11 +129,34 @@ a,
   -webkit-overflow-scrolling: touch;
 }
 
+/* YouTube video fullscreen handling */
+.youtube-fullscreen {
+  touch-action: manipulation; /* Prevent pinch zoom but allow basic touch */
+  overflow: hidden; /* Prevent any overflow/scrolling */
+}
+
+.youtube-fullscreen iframe {
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+}
+
 /* Scrollable content areas */
 .scrollable {
   touch-action: pan-y; /* Allow only vertical scrolling */
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+}
+
+/* Main page listings specific scrolling */
+[data-listings-section] {
+  touch-action: pan-y; /* Allow vertical scrolling */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  /* Ensure smooth scrolling on all devices */
+  scroll-behavior: smooth;
 }
 
 /* Prevent zoom on form inputs */
@@ -143,17 +206,16 @@ textarea {
     height: calc(var(--vh, 1vh) * 100);
   }
   
-  /* Prevent iOS Safari elastic bouncing */
+  /* Better iOS Safari scrolling without breaking normal scroll */
   body {
-    position: fixed;
-    overflow: hidden;
-    width: 100%;
-    height: 100%;
+    /* Remove position: fixed and overflow: hidden that breaks scrolling */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
   
   #root {
-    overflow: auto;
-    height: 100%;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
     -webkit-overflow-scrolling: touch;
   }
   
@@ -210,6 +272,21 @@ textarea {
 /* Allow all gestures (for maps) */
 .allow-all-gestures {
   touch-action: none;
+}
+
+/* Utility classes for text selection control */
+.text-selectable {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+}
+
+.text-not-selectable {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
 }
 
 /* Mobile map view specific styles */

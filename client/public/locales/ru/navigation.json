@@ -28,6 +28,7 @@
   "accountNav": {
     "profile": "Профиль",
     "bookings": "Бронирования", 
+    "favorites": "Избранное",
     "notifications": "Уведомления",
     "spaces": "Помещения",
     "hostDashboard": "Панель хоста",

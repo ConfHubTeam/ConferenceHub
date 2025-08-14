@@ -1,9 +1,11 @@
+const bcrypt = require("bcryptjs");
 const { User, Place, Booking, Review, ReviewReply } = require("../models");
 const { sequelize } = require("../models");
 const { Op } = require("sequelize");
 const jwt = require("jsonwebtoken");
 const authConfig = require("../config/auth");
 const { getUserDataFromToken } = require("../middleware/auth");
+const phoneVerificationService = require("../services/phoneVerificationService");
 
 /**
  * Get the current user's profile
@@ -55,6 +57,108 @@ const getProfile = async (req, res) => {
   } else {
     console.log('No token found in either cookies or Authorization header');
     res.json(null);
+  }
+};
+
+/**
+ * Update user password
+ */
+const updatePassword = async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+    const { newPassword } = req.body;
+
+    // Validate input
+    if (!newPassword) {
+      return res.status(400).json({ 
+        error: 'New password is required',
+        code: 'MISSING_PASSWORD'
+      });
+    }
+
+    // Get user
+    const user = await User.findByPk(userData.id, {
+      attributes: ['id']
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Validate new password against policy
+    const passwordPolicy = authConfig.passwordPolicy;
+    
+    // Check minimum length
+    if (newPassword.length < passwordPolicy.minLength) {
+      return res.status(400).json({ 
+        error: `Password must be at least ${passwordPolicy.minLength} characters long`,
+        code: 'PASSWORD_TOO_SHORT'
+      });
+    }
+
+    // Check for required character types
+    if (passwordPolicy.requireUppercase && !/[A-Z]/.test(newPassword)) {
+      return res.status(400).json({ 
+        error: 'Password must contain at least one uppercase letter',
+        code: 'PASSWORD_MISSING_UPPERCASE'
+      });
+    }
+
+    if (passwordPolicy.requireLowercase && !/[a-z]/.test(newPassword)) {
+      return res.status(400).json({ 
+        error: 'Password must contain at least one lowercase letter',
+        code: 'PASSWORD_MISSING_LOWERCASE'
+      });
+    }
+
+    if (passwordPolicy.requireNumbers && !/\d/.test(newPassword)) {
+      return res.status(400).json({ 
+        error: 'Password must contain at least one number',
+        code: 'PASSWORD_MISSING_NUMBER'
+      });
+    }
+
+    if (passwordPolicy.requireSpecialChars) {
+      const specialCharRegex = new RegExp(`[${passwordPolicy.allowedSpecialChars.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}]`);
+      if (!specialCharRegex.test(newPassword)) {
+        return res.status(400).json({ 
+          error: `Password must contain at least one special character from: ${passwordPolicy.allowedSpecialChars}`,
+          code: 'PASSWORD_MISSING_SPECIAL_CHAR'
+        });
+      }
+    }
+
+    // Check for disallowed characters
+    if (passwordPolicy.allowedSpecialChars) {
+      const allowedPattern = new RegExp(`^[A-Za-z0-9${passwordPolicy.allowedSpecialChars.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}]*$`);
+      if (!allowedPattern.test(newPassword)) {
+        return res.status(400).json({ 
+          error: `Password contains invalid characters. Only alphanumeric and these special characters are allowed: ${passwordPolicy.allowedSpecialChars}`,
+          code: 'PASSWORD_INVALID_CHARS'
+        });
+      }
+    }
+
+    // Hash new password
+    const saltRounds = 12;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Update password
+    await User.update(
+      { password: hashedPassword },
+      { where: { id: userData.id } }
+    );
+
+    res.json({
+      success: true,
+      message: 'Password updated successfully'
+    });
+  } catch (error) {
+    console.error("Error updating password:", error);
+    res.status(500).json({ 
+      error: 'Failed to update password',
+      code: 'SERVER_ERROR'
+    });
   }
 };
 
@@ -585,7 +689,7 @@ const getStatistics = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, phoneNumber } = req.body;
+    const { name, phoneNumber, newPassword } = req.body;
     const userData = await req.getUserDataFromToken();
     
     // Verify user is an agent
@@ -609,6 +713,62 @@ const updateUser = async (req, res) => {
           error: 'Please enter a valid phone number in international format (e.g., +998901234567)',
           code: 'INVALID_PHONE_FORMAT'
         });
+      }
+    }
+
+    // Validate password if provided
+    if (newPassword) {
+      const passwordPolicy = authConfig.passwordPolicy;
+      
+      // Check minimum length
+      if (newPassword.length < passwordPolicy.minLength) {
+        return res.status(400).json({ 
+          error: `Password must be at least ${passwordPolicy.minLength} characters long`,
+          code: 'PASSWORD_TOO_SHORT'
+        });
+      }
+
+      // Check for required character types
+      if (passwordPolicy.requiresLowercase && !/[a-z]/.test(newPassword)) {
+        return res.status(400).json({ 
+          error: 'Password must contain at least one lowercase letter',
+          code: 'PASSWORD_MISSING_LOWERCASE'
+        });
+      }
+      
+      if (passwordPolicy.requiresUppercase && !/[A-Z]/.test(newPassword)) {
+        return res.status(400).json({ 
+          error: 'Password must contain at least one uppercase letter',
+          code: 'PASSWORD_MISSING_UPPERCASE'
+        });
+      }
+      
+      if (passwordPolicy.requiresNumber && !/\d/.test(newPassword)) {
+        return res.status(400).json({ 
+          error: 'Password must contain at least one number',
+          code: 'PASSWORD_MISSING_NUMBER'
+        });
+      }
+      
+      if (passwordPolicy.requiresSpecialChar) {
+        const specialCharPattern = new RegExp(`[${passwordPolicy.allowedSpecialChars.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}]`);
+        if (!specialCharPattern.test(newPassword)) {
+          return res.status(400).json({ 
+            error: `Password must contain at least one special character from: ${passwordPolicy.allowedSpecialChars}`,
+            code: 'PASSWORD_MISSING_SPECIAL_CHAR'
+          });
+        }
+      }
+
+      // Check for disallowed characters
+      if (passwordPolicy.allowedSpecialChars) {
+        const allowedPattern = new RegExp(`^[A-Za-z0-9${passwordPolicy.allowedSpecialChars.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}]*$`);
+        if (!allowedPattern.test(newPassword)) {
+          return res.status(400).json({ 
+            error: `Password contains invalid characters. Only alphanumeric and these special characters are allowed: ${passwordPolicy.allowedSpecialChars}`,
+            code: 'PASSWORD_INVALID_CHARS'
+          });
+        }
       }
     }
 
@@ -645,6 +805,12 @@ const updateUser = async (req, res) => {
     // Only update phone number if provided
     if (phoneNumber !== undefined) {
       updateData.phoneNumber = phoneNumber.trim() || null;
+    }
+
+    // Update password if provided
+    if (newPassword) {
+      const saltRounds = 12;
+      updateData.password = await bcrypt.hash(newPassword, saltRounds);
     }
 
     await User.update(updateData, {
@@ -1412,7 +1578,165 @@ const updateLanguagePreference = async (req, res) => {
 };
 
 /**
- * Get user's current language preference
+ * Send phone verification code
+ */
+const sendPhoneVerification = async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+    const { phoneNumber } = req.body;
+
+    // Validate input
+    if (!phoneNumber || phoneNumber.trim() === '') {
+      return res.status(400).json({ 
+        error: 'Phone number is required',
+        code: 'PHONE_REQUIRED'
+      });
+    }
+
+    // Enhanced phone validation - should be in E.164 format (starting with +)
+    const phoneRegex = /^\+[1-9]\d{1,14}$/;
+    const cleanPhone = phoneNumber.trim();
+    
+    if (!phoneRegex.test(cleanPhone)) {
+      return res.status(400).json({ 
+        error: 'Please enter a valid phone number in international format (e.g., +998901234567)',
+        code: 'INVALID_PHONE_FORMAT'
+      });
+    }
+
+    // Check if phone number is already taken by another user
+    const existingUser = await User.findOne({
+      where: {
+        phoneNumber: cleanPhone,
+        id: { [Op.ne]: userData.id }
+      }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ 
+        error: 'A user with this phone number already exists',
+        code: 'PHONE_NUMBER_EXISTS'
+      });
+    }
+
+    // Get user's preferred language (default to 'ru')
+    const user = await User.findByPk(userData.id, {
+      attributes: ['preferredLanguage']
+    });
+    const language = user?.preferredLanguage || 'ru';
+
+    // Send verification code
+    const result = await phoneVerificationService.sendVerificationCode(cleanPhone, language);
+
+    if (result.success) {
+      res.json({
+        success: true,
+        message: 'Verification code sent successfully',
+        sessionId: result.sessionId,
+        expiresIn: result.expiresIn,
+        phoneNumber: cleanPhone
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: result.error,
+        code: 'SMS_SEND_FAILED'
+      });
+    }
+  } catch (error) {
+    console.error("Error sending phone verification:", error);
+    res.status(500).json({ 
+      error: 'Failed to send verification code',
+      code: 'SERVER_ERROR'
+    });
+  }
+};
+
+/**
+ * Verify phone verification code and update user's phone number
+ */
+const verifyPhoneAndUpdate = async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+    const { sessionId, verificationCode, phoneNumber } = req.body;
+
+    // Validate input
+    if (!sessionId || !verificationCode || !phoneNumber) {
+      return res.status(400).json({ 
+        error: 'Session ID, verification code, and phone number are required',
+        code: 'MISSING_PARAMETERS'
+      });
+    }
+
+    // Verify the code
+    const verificationResult = phoneVerificationService.verifyCode(sessionId, verificationCode);
+
+    if (!verificationResult.success) {
+      return res.status(400).json({
+        success: false,
+        error: verificationResult.error,
+        code: verificationResult.code,
+        remainingAttempts: verificationResult.remainingAttempts
+      });
+    }
+
+    // Ensure the phone number matches what was verified
+    if (verificationResult.phoneNumber !== phoneNumber) {
+      return res.status(400).json({
+        success: false,
+        error: 'Phone number mismatch',
+        code: 'PHONE_MISMATCH'
+      });
+    }
+
+    // Double-check that phone number is still not taken by another user
+    const existingUser = await User.findOne({
+      where: {
+        phoneNumber: phoneNumber,
+        id: { [Op.ne]: userData.id }
+      }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ 
+        error: 'A user with this phone number already exists',
+        code: 'PHONE_NUMBER_EXISTS'
+      });
+    }
+
+    // Update user's phone number
+    await User.update(
+      { phoneNumber: phoneNumber },
+      { where: { id: userData.id } }
+    );
+
+    // Fetch updated user data
+    const updatedUser = await User.findByPk(userData.id, {
+      attributes: [
+        'id', 'name', 'email', 'phoneNumber', 'userType', 'preferredLanguage',
+        'telegramId', 'telegramUsername', 'telegramFirstName',
+        'telegramPhotoUrl', 'telegramPhone', 'telegramLinked'
+      ]
+    });
+
+    console.log(`✅ PHONE VERIFICATION COMPLETE - User: ${userData.id}, Phone: ${phoneNumber}`);
+
+    res.json({
+      success: true,
+      message: 'Phone number verified and updated successfully',
+      user: updatedUser
+    });
+  } catch (error) {
+    console.error("Error verifying phone and updating:", error);
+    res.status(500).json({ 
+      error: 'Failed to verify phone number',
+      code: 'SERVER_ERROR'
+    });
+  }
+};
+
+/**
+ * Get language preference
  */
 const getLanguagePreference = async (req, res) => {
   try {
@@ -1427,7 +1751,7 @@ const getLanguagePreference = async (req, res) => {
     }
 
     res.json({
-      preferredLanguage: user.preferredLanguage || 'en'
+      preferredLanguage: user.preferredLanguage || 'ru'
     });
   } catch (error) {
     console.error("Error getting language preference:", error);
@@ -1438,6 +1762,7 @@ const getLanguagePreference = async (req, res) => {
 module.exports = {
   getProfile,
   updateProfile,
+  updatePassword,
   getAllUsers,
   deleteUser,
   deleteOwnAccount,
@@ -1447,5 +1772,7 @@ module.exports = {
   getHostStatistics,
   getHostReviews,
   updateLanguagePreference,
-  getLanguagePreference
+  getLanguagePreference,
+  sendPhoneVerification,
+  verifyPhoneAndUpdate
 };

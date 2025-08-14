@@ -4,10 +4,11 @@
 
 ## � **CURRENT STATUS**
 
-- **✅ English & Russian:** 100% approved and working  
+- **✅ English & Russian:** 100% approved and working for booking notifications
 - **⏳ Uzbek:** 0% approved - all templates need submission
+- **❌ Phone Verification:** NEW TEMPLATE - needs submission for all languages
 
-The system supports SMS notifications in **English** and **Russian** fully, with **Uzbek** templates ready for Eskiz approval.
+The system supports SMS notifications in **English** and **Russian** for booking flows, with **Uzbek** templates and **Phone Verification** templates ready for Eskiz approval.
 
 ## 🌍 **MULTILINGUAL SUPPORT**
 
@@ -63,6 +64,11 @@ All booking notification messages are **approved** and sending successfully in *
    Payout of $250.00 has been made for booking #REQ-67890
    ```
 
+9. **❌ Phone Verification** (phone_verification) - NEW TEMPLATE NEEDS APPROVAL:
+   ```
+   Verification code for login to GetSpace.uz platform: 123456. Valid for 5 minutes.
+   ```
+
 #### 🇷🇺 **RUSSIAN TEMPLATES (РУССКИЕ ШАБЛОНЫ)**
 
 1. **✅ Запрос на бронирование** (booking_requested):
@@ -103,6 +109,11 @@ All booking notification messages are **approved** and sending successfully in *
 8. **✅ Выплата хозяину** (booking_paidToHost):
    ```
    Выплата в размере $250.00 произведена за бронирование #REQ-67890
+   ```
+
+9. **❌ Подтверждение телефона** (phone_verification) - НОВЫЙ ШАБЛОН ТРЕБУЕТ ОДОБРЕНИЯ:
+   ```
+   Код верификации для входа в систему GetSpace.uz: 123456. Действителен 5 минут.
    ```
 
 #### 🇺🇿 **UZBEK TEMPLATES (O'ZBEK SHABLONLARI) - ⏳ PENDING APPROVAL**
@@ -149,20 +160,27 @@ All booking notification messages are **approved** and sending successfully in *
    Band qilish #REQ-67890 uchun $250.00 miqdorda to'lov amalga oshirildi
    ```
 
+9. **⏳ Telefon tasdiqlash** (phone_verification) - YANGI SHABLON TASDIQLASH KUTILMOQDA:
+   ```
+   GetSpace.uz platformasiga kirish uchun tasdiqlash kodi: 123456. 5 daqiqa amal qiladi.
+   ```
+
 ## 📊 **TEST RESULTS SUMMARY**
 
 ### 📈 **CURRENT STATUS:**
-- **✅ 7 message types working in Russian** (100% approval rate for RU)
-- **✅ 7 message types working in English** (100% approval rate for EN)
-- **⏳ 7 message types pending in Uzbek** (0% approval rate for UZ - needs submission)
-- **🌍 2 languages fully supported** (English, Russian)
-- **📱 SMS delivery confirmed** for approved languages
-- **🚀 All booking flows covered** for EN/RU
+- **✅ 8 booking message types working in Russian** (100% approval rate for RU booking messages)
+- **✅ 8 booking message types working in English** (100% approval rate for EN booking messages)
+- **❌ 1 phone verification message FAILING in all languages** (needs immediate approval)
+- **⏳ 8 booking message types pending in Uzbek** (0% approval rate for UZ booking messages)
+- **🌍 2 languages fully supported for bookings** (English, Russian)
+- **📱 SMS delivery confirmed** for approved booking messages
+- **� Phone verification BLOCKED** until Eskiz approval
 
 ### 🎯 **APPROVAL BREAKDOWN:**
-- **English:** ✅ Fully approved and working
-- **Russian:** ✅ Fully approved and working  
-- **Uzbek:** ❌ All templates need Eskiz approval
+- **English Booking Messages:** ✅ Fully approved and working
+- **Russian Booking Messages:** ✅ Fully approved and working  
+- **Uzbek Booking Messages:** ❌ All templates need Eskiz approval
+- **Phone Verification (ALL languages):** ❌ URGENT - needs immediate approval
 
 ## 📝 **APPROVED MESSAGE TEMPLATES WITH VARIATIONS**
 
@@ -311,6 +329,55 @@ When implementing new features, these message types may need approval:
 
 **Test Command:** `node tests/comprehensive-sms-test.js`
 
+---
+
+## 🚨 **IMMEDIATE SUBMISSION REQUIRED**
+
+### **UPDATED: SMS Provider Compliance Requirements**
+
+**New Regulation:** All SMS messages containing verification codes must include:
+1. **Resource Name** - The name of the project/website (GetSpace.uz)
+2. **Purpose** - The specific use case for the verification code (login, registration, etc.)
+
+**Example Format:**
+- ✅ **Correct:** "Код верификации для входа в систему (purpose) GetSpace.uz (resource): 123456"
+- ❌ **Incorrect:** "Код подтверждения: 123456"
+
+### **NEW TEMPLATE - Phone Verification (All Languages)**
+
+**Status:** ❌ Not approved - causing 500 errors in production
+**Priority:** HIGH - blocking user registration/profile updates
+
+#### English Template:
+```
+Verification code for login to GetSpace.uz platform: {{code}}. Valid for 5 minutes.
+```
+**Example:** Verification code for login to GetSpace.uz platform: 123456. Valid for 5 minutes.
+
+#### Russian Template:
+```
+Код верификации для входа в систему GetSpace.uz: {{code}}. Действителен 5 минут.
+```
+**Example:** Код верификации для входа в систему GetSpace.uz: 123456. Действителен 5 минут.
+
+#### Uzbek Template:
+```
+GetSpace.uz platformasiga kirish uchun tasdiqlash kodi: {{code}}. 5 daqiqa amal qiladi.
+```
+**Example:** GetSpace.uz platformasiga kirish uchun tasdiqlash kodi: 123456. 5 daqiqa amal qiladi.
+
+**Technical Details:**
+- Used for phone number verification during user registration, login, and profile updates
+- Code is 6-digit random number (e.g., 123456, 789012)
+- Valid for 5 minutes from generation
+- Template key: `sms:verification.phoneVerification`
+- Implementation: `/api/services/phoneVerificationService.js`
+- **Compliance:** Updated format includes resource name (GetSpace.uz) and purpose (login/verification) as required by SMS provider regulations
+
+**For Eskiz Submission:** Please submit all three language versions above for immediate approval to resolve production issues.
+
+---
+
 ## � **UZBEK TEMPLATES FOR ESKIZ SUBMISSION**
 
 **These templates need to be submitted to Eskiz for approval:**
@@ -356,6 +423,12 @@ When implementing new features, these message types may need approval:
 "{{placeName}}" uchun {{dateRange}} sanasiga band qilish #{{bookingReference}} uchun to'lov qabul qilindi. Egaga to'lov talab qilinadi.
 ```
 **Example:** "Luxury Conference Room" uchun Aug 10, 2025 - Aug 12, 2025 sanasiga band qilish #REQ-67890 uchun to'lov qabul qilindi. Egaga to'lov talab qilinadi.
+
+### Template 8: Phone Verification (NEW - NEEDS APPROVAL)
+```
+GetSpace.uz platformasiga kirish uchun tasdiqlash kodi: {{code}}. 5 daqiqa amal qiladi.
+```
+**Example:** GetSpace.uz platformasiga kirish uchun tasdiqlash kodi: 123456. 5 daqiqa amal qiladi.
 
 ---
 
