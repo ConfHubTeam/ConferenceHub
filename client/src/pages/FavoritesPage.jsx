@@ -7,7 +7,6 @@ import { UserContext } from '../components/UserContext';
 import CloudinaryImage from '../components/CloudinaryImage';
 import PriceDisplay from '../components/PriceDisplay';
 import FavoriteButton from '../components/FavoriteButton';
-import AccountNav from '../components/AccountNav';
 
 export default function FavoritesPage() {
     const { t, ready } = useTranslation(['favorites', 'places', 'common']);
@@ -36,7 +35,7 @@ export default function FavoritesPage() {
     return (
         <div>
             {/* Account Navigation */}
-            <AccountNav />
+            
 
             <div className="spacing-container spacing-section max-w-7xl mx-auto px-4 py-8">
                 {/* Header */}

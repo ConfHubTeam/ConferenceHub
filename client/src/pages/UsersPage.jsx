@@ -1,6 +1,5 @@
 import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import AccountNav from "../components/AccountNav";
 import api from "../utils/api";
 import { UserContext } from "../components/UserContext";
 import { Navigate } from "react-router-dom";
@@ -235,7 +234,6 @@ export default function UsersPage() {
   if (loading) {
     return (
       <div>
-        <AccountNav />
         <div className="spacing-container spacing-section">
           <div className="animate-pulse space-y-4">
             <div className="h-10 bg-gray-200 rounded w-full"></div>
@@ -248,7 +246,6 @@ export default function UsersPage() {
 
   return (
     <div>
-      <AccountNav />
       <div className="spacing-container pb-20 md:pb-8">
        
         {/* Search and filter controls */}

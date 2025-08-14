@@ -1,6 +1,5 @@
 import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import AccountNav from "../components/AccountNav";
 import api from "../utils/api";
 import { UserContext } from "../components/UserContext";
 import { Navigate, useLocation, useNavigate, Link } from "react-router-dom";
@@ -327,7 +326,7 @@ export default function AllPlacesPage() {
   if (loading) {
     return (
       <div>
-        <AccountNav />
+        
         <div className="spacing-container spacing-section">
           <div className="animate-pulse space-y-4">
             <div className="h-16 bg-gray-200 rounded-lg mb-6"></div>
@@ -344,7 +343,7 @@ export default function AllPlacesPage() {
 
   return (
     <div>
-      <AccountNav />
+      
       <div className="spacing-container pb-20 md:pb-8">
         
         {/* Page header with Create Place button for agents */}

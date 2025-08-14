@@ -4,7 +4,6 @@ import { UserContext } from "../components/UserContext";
 import { useNotification } from "../components/NotificationContext";
 import { Navigate, useParams, useLocation } from "react-router-dom";
 import api, { getPasswordRequirements, updatePassword } from "../utils/api";
-import AccountNav from "../components/AccountNav";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import CustomPhoneInput from "../components/CustomPhoneInput";
 import PhoneVerificationModal from "../components/PhoneVerificationModal";
@@ -406,8 +405,6 @@ export default function ProfilePage({}) {
 
   return (
     <div className="min-h-screen bg-white">
-      <AccountNav />
-      
       <div className="max-w-6xl mx-auto spacing-container spacing-section">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Left Sidebar - Account Overview */}

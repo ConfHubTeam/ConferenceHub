@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { UserContext } from "../components/UserContext";
 import { useNotification } from "../components/NotificationContext";
 import api from "../utils/api";
-import AccountNav from "../components/AccountNav";
 import BookingRequestCard from "../components/BookingRequestCard";
 import Pagination from "../components/Pagination";
 
@@ -163,7 +162,7 @@ export default function HostBookingManagementPage() {
   if (user && user.userType !== "host") {
     return (
       <div>
-        <AccountNav />
+        
         <div className="spacing-container spacing-section">
           <div className="bg-red-50 border border-red-200 p-6 rounded-lg">
             <h3 className="text-xl font-semibold text-red-700 mb-2">Access Denied</h3>
@@ -180,7 +179,7 @@ export default function HostBookingManagementPage() {
   if (loading) {
     return (
       <div>
-        <AccountNav />
+        
         <div className="spacing-container spacing-section">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-gray-200 rounded w-1/3"></div>
@@ -202,7 +201,7 @@ export default function HostBookingManagementPage() {
 
   return (
     <div>
-      <AccountNav />
+      
       <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
         
         {/* Summary cards */}
