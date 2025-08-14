@@ -40,25 +40,20 @@ export const LanguageProvider = ({ children }) => {
   // Check authentication status and sync language with backend
   const syncLanguageWithBackend = useCallback(async () => {
     try {
-      console.log("🔄 Syncing language with backend...");
-      
       // Check if user is authenticated by getting their profile
       const userProfile = await getUserProfile();
       
       if (userProfile) {
         setIsAuthenticated(true);
-        console.log(`👤 User authenticated, preferred language: ${userProfile.preferredLanguage}`);
         
         // If user has a preferred language, use it
         if (userProfile.preferredLanguage && 
             availableLanguages.some(lang => lang.code === userProfile.preferredLanguage)) {
           
           const currentI18nLang = getCurrentLanguage();
-          console.log(`🌐 Current i18n language: ${currentI18nLang}, User preference: ${userProfile.preferredLanguage}`);
           
           // Only change if different from current
           if (userProfile.preferredLanguage !== currentI18nLang) {
-            console.log(`🔄 Changing language from ${currentI18nLang} to ${userProfile.preferredLanguage}`);
             await i18nChangeLanguage(userProfile.preferredLanguage);
             setCurrentLanguage(userProfile.preferredLanguage);
             
@@ -69,7 +64,6 @@ export const LanguageProvider = ({ children }) => {
         }
       } else {
         setIsAuthenticated(false);
-        console.log("👤 User not authenticated, using local storage preference");
         
         // For unauthenticated users, use local storage preference
         const storedLang = localStorage.getItem("preferred-language");
@@ -91,21 +85,15 @@ export const LanguageProvider = ({ children }) => {
   useEffect(() => {
     const initializeLanguage = async () => {
       try {
-        console.log("🚀 Initializing language context...");
-        
         // First, check for stored language preference
         const storedLang = localStorage.getItem("preferred-language") || 
                            sessionStorage.getItem("current-language");
         
-        console.log(`📱 Stored language: ${storedLang}`);
-        
         // If we have a stored language, set it immediately
         if (storedLang && availableLanguages.some(lang => lang.code === storedLang)) {
           const currentI18nLang = getCurrentLanguage();
-          console.log(`🌐 Current i18n: ${currentI18nLang}, Stored: ${storedLang}`);
           
           if (storedLang !== currentI18nLang) {
-            console.log(`🔄 Setting language to stored preference: ${storedLang}`);
             await i18nChangeLanguage(storedLang);
             setCurrentLanguage(storedLang);
           }
@@ -117,7 +105,6 @@ export const LanguageProvider = ({ children }) => {
         // Ensure current language state matches i18n
         const finalI18nLang = getCurrentLanguage();
         if (currentLanguage !== finalI18nLang) {
-          console.log(`🔄 Final sync: ${currentLanguage} -> ${finalI18nLang}`);
           setCurrentLanguage(finalI18nLang);
         }
         
@@ -126,7 +113,6 @@ export const LanguageProvider = ({ children }) => {
         document.documentElement.dir = "ltr"; // All supported languages are LTR
         
         setIsInitialized(true);
-        console.log(`✅ Language context initialized with: ${finalI18nLang}`);
       } catch (error) {
         console.error("Error initializing language:", error);
         setIsInitialized(true);
@@ -139,11 +125,9 @@ export const LanguageProvider = ({ children }) => {
   // Handle language change with enhanced persistence and backend sync
   const handleLanguageChange = useCallback(async (newLanguage) => {
     if (newLanguage === currentLanguage || isLoading) {
-      console.log(`⏭️ Skipping language change: ${newLanguage} (current: ${currentLanguage}, loading: ${isLoading})`);
       return;
     }
 
-    console.log(`🌐 Changing language from ${currentLanguage} to ${newLanguage}`);
     setIsLoading(true);
     
     try {
@@ -166,7 +150,6 @@ export const LanguageProvider = ({ children }) => {
       if (isAuthenticated) {
         try {
           await updateLanguagePreference(newLanguage);
-          console.log(`✅ Language preference updated to ${newLanguage} in backend`);
         } catch (error) {
           console.error("Failed to sync language with backend:", error);
           // Continue with local change even if backend sync fails
@@ -183,8 +166,6 @@ export const LanguageProvider = ({ children }) => {
         } 
       }));
       
-      console.log(`✅ Language successfully changed to ${newLanguage}`);
-      
     } catch (error) {
       console.error("Error changing language:", error);
       throw error;
@@ -196,12 +177,10 @@ export const LanguageProvider = ({ children }) => {
   // Listen for authentication changes to sync language
   useEffect(() => {
     const handleAuthChange = () => {
-      console.log("🔐 Authentication changed, syncing language...");
       syncLanguageWithBackend();
     };
 
     const handleLogout = () => {
-      console.log("🚪 User logged out");
       setIsAuthenticated(false);
     };
 
@@ -218,7 +197,6 @@ export const LanguageProvider = ({ children }) => {
   // Listen for i18n language changes to keep state in sync
   useEffect(() => {
     const handleI18nChange = (lng) => {
-      console.log(`🌐 i18n language changed to: ${lng}`);
       if (lng !== currentLanguage) {
         setCurrentLanguage(lng);
       }

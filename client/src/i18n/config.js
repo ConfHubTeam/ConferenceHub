@@ -25,9 +25,9 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    lng: "ru", // Set Russian as default language
-    fallbackLng: "ru",
-    debug: process.env.NODE_ENV === "development",
+    lng: undefined, // Let LanguageDetector determine the language
+    fallbackLng: "en",
+    debug: false, // Disable debug logs to reduce console noise
 
     // Namespace configuration
     ns: NAMESPACES,

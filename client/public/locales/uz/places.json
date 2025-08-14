@@ -365,6 +365,10 @@
     "perHour": " / soat",
     "viewDetails": "Batafsil"
   },
+  "map": {
+    "drag_to_resize": "O'lchamini o'zgartirish uchun torting",
+    "close_map": "Xaritani yopish"
+  },
   "common": {
     "error": "Xato"
   },

@@ -17,12 +17,17 @@ import AttendeesFilterModal from "./AttendeesFilterModal";
 import SizeFilterModal from "./SizeFilterModal";
 import PerksFilterModal from "./PerksFilterModal";
 import PolicyFilterModal from "./PolicyFilterModal";
+import LocationFilter from "./LocationFilter";
 
 export default function FilterRow({ 
   isMapVisible, 
   toggleMap, 
   showMobileMap, 
-  isMobileMapView 
+  isMobileMapView,
+  selectedRegionId = null,
+  onRegionChange,
+  onMapFocus,
+  regionService
 }) {
   const { t, i18n } = useTranslation("search");
   
@@ -206,8 +211,13 @@ export default function FilterRow({
     return "";
   };
   
-  // Check if any filter is active
-  const hasAnyActiveFilter = hasActiveDateTimeFilter || hasActivePriceFilter || hasActiveAttendeesFilter || hasActiveSizeFilter || hasSelectedPerks || hasSelectedPolicies;
+  // Check if any filter is active (including region selection)
+  // Region filter is only active if it's different from the default region
+  const defaultRegionId = regionService?.getDefaultRegion()?.id || 'tashkent-city';
+  const hasActiveRegionFilter = selectedRegionId !== null && 
+                                selectedRegionId !== undefined && 
+                                selectedRegionId !== defaultRegionId;
+  const hasAnyActiveFilter = hasActiveDateTimeFilter || hasActivePriceFilter || hasActiveAttendeesFilter || hasActiveSizeFilter || hasSelectedPerks || hasSelectedPolicies || hasActiveRegionFilter;
   
   // Clear all filters
   const handleResetAllFilters = () => {
@@ -218,6 +228,19 @@ export default function FilterRow({
     clearSizeFilter();
     clearAllPerks();
     clearAllPolicies();
+    
+    // Reset region selection to default (Tashkent)
+    if (onRegionChange && regionService) {
+      const defaultRegion = regionService.getDefaultRegion();
+      onRegionChange(defaultRegion?.id || 'tashkent-city');
+    }
+    
+    // Reset map to default location (Tashkent) - this should happen after region change
+    setTimeout(() => {
+      if (onMapFocus) {
+        onMapFocus(null); // null triggers reset to default
+      }
+    }, 100);
     
     // Clear URL parameters by navigating to the same path without query parameters
     navigate(location.pathname, { replace: true });
@@ -314,6 +337,16 @@ export default function FilterRow({
               className="flex items-center space-x-2 overflow-x-auto scrollbar-hide pb-2 -mb-2 scroll-smooth"
             >
               <div className="flex items-center space-x-2 flex-shrink-0 pl-1">
+                {/* Location Filter */}
+                <LocationFilter
+                  selectedRegionId={selectedRegionId}
+                  onRegionChange={onRegionChange}
+                  onMapFocus={onMapFocus}
+                  regionService={regionService}
+                  size="compact"
+                  showClearButton={true}
+                />
+                
                 <button 
                   onClick={openDateTimeModal}
                   className={`flex px-3 py-2 items-center transition-all duration-200 border rounded-full text-xs flex-shrink-0 whitespace-nowrap ${
@@ -480,6 +513,17 @@ export default function FilterRow({
             <div className="overflow-x-auto scrollbar-hide">
               <div className="flex items-center space-x-2 pb-1">
                 {/* Filter buttons */}
+                
+                {/* Location Filter */}
+                <LocationFilter
+                  selectedRegionId={selectedRegionId}
+                  onRegionChange={onRegionChange}
+                  onMapFocus={onMapFocus}
+                  regionService={regionService}
+                  size="default"
+                  showClearButton={true}
+                />
+                
             <button 
               onClick={openDateTimeModal}
               className={`flex px-4 py-2 items-center transition-all duration-200 border rounded-full flex-shrink-0 whitespace-nowrap ${

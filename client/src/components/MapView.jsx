@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, useMemo, memo } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo, memo, useImperativeHandle, forwardRef } from "react";
 import { GoogleMap, useJsApiLoader, InfoWindow } from "@react-google-maps/api";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -17,6 +17,8 @@ import { MarkerClusterer } from "@googlemaps/markerclusterer";
 import { setMarkerClusterer, clearMarkerClusterer } from "../utils/markerClustererRef";
 import { getClusterOptions } from "../utils/clusterRenderer";
 import { useMapTouchHandler } from "../hooks/useMapTouchHandler";
+import { useMapFocus } from "../hooks/useMapFocus";
+import { DEFAULT_MAP_CONFIG } from "../utils/regionConstants.js";
 
 // Custom styles to hide the InfoWindow close button and arrow
 const infoWindowStyles = `
@@ -49,17 +51,20 @@ const containerStyle = {
   height: '100%'
 };
 
-// Default center position (Tashkent, Uzbekistan)
-const defaultCenter = {
-  lat: 41.2995,
-  lng: 69.2401
-};
+// Default center position (Tashkent, Uzbekistan) - using consistent coordinates
+const defaultCenter = DEFAULT_MAP_CONFIG.center;
 
 // Define libraries as a constant outside the component to prevent recreation on each render
 const libraries = ['places'];
 
-const MapView = memo(function MapView({ places, disableInfoWindow = false, hoveredPlaceId = null, onBoundsChanged = null }) {
-  const { t, i18n } = useTranslation(["places", "common"]);
+const MapView = memo(forwardRef(function MapView({ 
+  places, 
+  disableInfoWindow = false, 
+  hoveredPlaceId = null, 
+  onBoundsChanged = null,
+  onMapReady = null
+}, ref) {
+  const { t } = useTranslation("places");
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
@@ -73,6 +78,17 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false, hover
   const highlightedMarkerRef = useRef(null);
   const { selectedCurrency } = useCurrency();
   
+  // Initialize map focus hook
+  const {
+    focusOnCoordinates,
+    focusOnRegion,
+    resetToDefault,
+    getOptimalZoom,
+    isAnimating,
+    cancelFocus,
+    isReady: isFocusReady
+  } = useMapFocus(map);
+  
   // Use MapContext if available, otherwise use defaults
   let saveMapState, getMapState;
   try {
@@ -82,7 +98,7 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false, hover
   } catch (error) {
     // If MapProvider is not available, use no-op functions
     saveMapState = () => {};
-    getMapState = () => ({ zoom: 12, center: { lat: 41.2995, lng: 69.2401 }, bounds: null });
+    getMapState = () => ({ zoom: DEFAULT_MAP_CONFIG.zoom, center: DEFAULT_MAP_CONFIG.center, bounds: null });
   }
   
   // Store previous zoom level in ref to persist across unmounts
@@ -334,7 +350,7 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false, hover
     previousZoomRef.current = zoomToSet; // Sync ref with set zoom
     
     // If we have a saved center, use it, otherwise use default
-    if (mapState.center && (mapState.center.lat !== 41.2995 || mapState.center.lng !== 69.2401)) {
+    if (mapState.center && (mapState.center.lat !== DEFAULT_MAP_CONFIG.center.lat || mapState.center.lng !== DEFAULT_MAP_CONFIG.center.lng)) {
       map.setCenter(mapState.center);
     } else {
       map.setCenter(defaultCenter);
@@ -414,26 +430,6 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false, hover
     
     setMap(null);
   }, []);
-
-  // Helper function to check if markers are in current view
-  const areMarkersInCurrentView = useCallback((markers, map) => {
-    if (!markers.length || !map) return false;
-    
-    const bounds = map.getBounds();
-    if (!bounds) return false;
-    
-    // Check if at least 80% of markers are within the current view
-    const visibleMarkers = markers.filter(marker => {
-      const position = marker.getPosition();
-      return bounds.contains(position);
-    });
-    
-    const visibilityRatio = visibleMarkers.length / markers.length;
-    return visibilityRatio >= 0.8; // At least 80% of markers should be visible
-  }, []);
-
-  // Track previous places to detect filter changes
-  const previousPlacesRef = useRef([]);
   
   // Update markers when places change (but not currency)
   useEffect(() => {
@@ -453,15 +449,6 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false, hover
     // If no places, just return after clearing markers (this handles empty filtered results)
     if (!memoizedPlaces.length) return;
 
-    // Detect if this is a filter change (different places than before)
-    const isFilterChange = previousPlacesRef.current.length !== memoizedPlaces.length ||
-      !previousPlacesRef.current.every(prevPlace => 
-        memoizedPlaces.some(place => place.id === prevPlace.id)
-      );
-
-    // Update the previous places reference
-    previousPlacesRef.current = [...memoizedPlaces];
-
     // Create new markers
     createMarkersAsync(map).then(({ markers, bounds }) => {
       markersRef.current = markers;
@@ -477,39 +464,10 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false, hover
         setMarkerClusterer(clusterer);
       }
 
-      // Auto-fit bounds for better UX in these scenarios:
-      // 1. Filter change detected (always fit when filters are applied)
-      // 2. Initial load with truly default state (no saved zoom and ref is default)
-      // 3. When markers are outside current view (but only for filter changes)
-      if (markers.length > 0) {
-        const mapState = getMapState();
-        const hasCustomZoom = mapState.zoom !== 12 || previousZoomRef.current !== 12;
-        
-        const shouldFitBounds = isFilterChange || 
-                                (!hasCustomZoom && map.getZoom() === 12) || 
-                                (isFilterChange && !areMarkersInCurrentView(markers, map));
-
-        if (shouldFitBounds) {
-          // Fit bounds to show all filtered markers
-          map.fitBounds(bounds);
-          
-          // Add a one-time listener to adjust zoom after bounds are set
-          const boundsChangedListener = map.addListener('bounds_changed', () => {
-            const zoom = map.getZoom();
-            // If zoom is too close (higher than 15), set it back to reasonable level
-            if (zoom > 15) {
-              map.setZoom(15);
-              previousZoomRef.current = 15; // Update ref
-            } else {
-              previousZoomRef.current = zoom; // Update ref with final zoom
-            }
-            // Remove this listener after first use
-            window.google.maps.event.removeListener(boundsChangedListener);
-          });
-        }
-      }
+      // Note: Automatic bounds fitting removed to maintain user's selected region focus
+      // The map will maintain its current focus and not try to fit all markers automatically
     });
-  }, [map, memoizedPlaces, createMarkersAsync, areMarkersInCurrentView, i18n.language]);
+  }, [map, memoizedPlaces, createMarkersAsync]);
 
   // Handle marker highlighting when hoveredPlaceId changes
   useEffect(() => {
@@ -611,6 +569,25 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false, hover
 
     updateMarkerIcons();
   }, [selectedCurrency, createPriceMarkerIcon, map]);
+
+  // Expose map focus methods through ref
+  useImperativeHandle(ref, () => ({
+    focusOnCoordinates,
+    focusOnRegion,
+    resetToDefault,
+    getOptimalZoom,
+    isAnimating,
+    cancelFocus,
+    isFocusReady,
+    mapInstance: map
+  }), [focusOnCoordinates, focusOnRegion, resetToDefault, getOptimalZoom, isAnimating, cancelFocus, isFocusReady, map]);
+
+  // Notify parent when map is ready
+  useEffect(() => {
+    if (map && onMapReady) {
+      onMapReady(map);
+    }
+  }, [map, onMapReady]);
 
   // Error state handling
   if (loadError) {
@@ -738,12 +715,16 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false, hover
       </GoogleMap>
     </div>
   );
-}, (prevProps, nextProps) => {
+}));
+
+// Add memo with comparison function
+const MemoizedMapView = memo(MapView, (prevProps, nextProps) => {
   // Custom comparison function for memo
   return (
     prevProps.disableInfoWindow === nextProps.disableInfoWindow &&
     prevProps.hoveredPlaceId === nextProps.hoveredPlaceId &&
     prevProps.onBoundsChanged === nextProps.onBoundsChanged &&
+    prevProps.onMapReady === nextProps.onMapReady &&
     prevProps.places.length === nextProps.places.length &&
     prevProps.places.every((place, index) => 
       place.id === nextProps.places[index]?.id &&
@@ -753,4 +734,4 @@ const MapView = memo(function MapView({ places, disableInfoWindow = false, hover
   );
 });
 
-export default MapView;
+export default MemoizedMapView;
