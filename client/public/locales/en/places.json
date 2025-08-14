@@ -380,6 +380,10 @@
     "perHour": " / hour",
     "viewDetails": "View details"
   },
+  "map": {
+    "drag_to_resize": "Drag to resize",
+    "close_map": "Close map"
+  },
   "common": {
     "error": "Error"
   },

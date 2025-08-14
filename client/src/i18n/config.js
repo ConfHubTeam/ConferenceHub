@@ -27,7 +27,7 @@ i18n
   .init({
     lng: undefined, // Let LanguageDetector determine the language
     fallbackLng: "en",
-    debug: process.env.NODE_ENV === "development",
+    debug: false, // Disable debug logs to reduce console noise
 
     // Namespace configuration
     ns: NAMESPACES,

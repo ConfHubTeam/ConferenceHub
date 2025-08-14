@@ -306,6 +306,33 @@
       }
     }
   },
+  "location": {
+    "selectRegion": "Выберите регион",
+    "modal": {
+      "title": "Выберите место",
+      "search": {
+        "placeholder": "Поиск регионов...",
+        "ariaLabel": "Поиск регионов",
+        "clear": "Очистить поиск",
+        "results": "Найден {{count}} регион",
+        "results_plural": "Найдено {{count}} регионов",
+        "noResults": "Регионы не найдены"
+      },
+      "defaultRegion": "По умолчанию",
+      "noRegions": {
+        "title": "Нет доступных регионов",
+        "description": "Попробуйте позже"
+      },
+      "footer": {
+        "count": "Доступен {{count}} регион",
+        "count_plural": "Доступно {{count}} регионов"
+      },
+      "actions": {
+        "close": "Закрыть окно",
+        "cancel": "Отмена"
+      }
+    }
+  },
   "sorting": {
     "title": "Сортировать по",
     "recommended": "Рекомендуемые",

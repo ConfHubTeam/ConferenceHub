@@ -306,6 +306,35 @@
       }
     }
   },
+  "location": {
+    "selectRegion": "Select Region",
+    "modal": {
+      "title": "Select Location",
+      "search": {
+        "placeholder": "Search regions...",
+        "ariaLabel": "Search for regions",
+        "clear": "Clear search",
+        "results": "{{count}} region found",
+        "results_plural": "{{count}} regions found",
+        "noResults": "No regions found"
+      },
+      "defaultRegion": "Default",
+      "noRegions": {
+        "title": "No regions available",
+        "description": "Please try again later"
+      },
+      "footer": {
+        "count": "{{count}} region available",
+        "count_plural": "{{count}} regions available"
+      },
+      "actions": {
+        "close": "Close modal",
+        "cancel": "Cancel",
+        "clearSelection": "Clear Selection",
+        "returnToDefault": "Return to default region"
+      }
+    }
+  },
   "sorting": {
     "title": "Sort by",
     "recommended": "Recommended",

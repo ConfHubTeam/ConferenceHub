@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { Link, useLocation, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import CloudinaryImage from "../components/CloudinaryImage";
@@ -16,6 +16,9 @@ import { useSizeFilter } from "../contexts/SizeFilterContext";
 import { usePerksFilter } from "../contexts/PerksFilterContext";
 import { usePoliciesFilter } from "../contexts/PoliciesFilterContext";
 import { convertCurrency } from "../utils/currencyUtils";
+import { createRegionService } from "../services/RegionService.js";
+import { useTranslation as useI18n } from "react-i18next";
+import { DEFAULT_MAP_CONFIG, REGION_FILTER_CONFIG } from "../utils/regionConstants.js";
 import api from "../utils/api";
 
 function IndexPageBase() {
@@ -28,6 +31,9 @@ function IndexPageBase() {
   
   // Map bounds state for additional filtering
   const [mapBounds, setMapBounds] = useState(null);
+  
+  // Map ref for focus operations
+  const mapRef = useRef(null);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -61,13 +67,21 @@ function IndexPageBase() {
   // Policies filter context
   const { filterPlacesByPolicies, hasSelectedPolicies } = usePoliciesFilter();
   
+  // Region service for filtering
+  const { i18n } = useI18n();
+  const regionService = useMemo(() => createRegionService(i18n), [i18n]);
+  
   // Get map state from outlet context (passed down from Layout)
   const context = useOutletContext();
   const { 
     isMapVisible = false, 
     isMobileMapView = false, 
     hideMap = () => {}, 
-    hideMobileMap = () => {} 
+    hideMobileMap = () => {},
+    selectedRegionId = null,
+    onRegionChange = () => {},
+    onMapFocus = () => {},
+    mapFocusRef
   } = context || {};
   
   // Memoize map visibility to prevent unnecessary renders
@@ -97,6 +111,42 @@ function IndexPageBase() {
   const handleMapBoundsChanged = useCallback((bounds) => {
     setMapBounds(bounds);
   }, []);
+  
+  // Handle when map is ready - connect ref to Layout's mapFocusRef and do initial focus
+  const handleMapReady = useCallback((mapInstance) => {
+    // Map is ready for focus operations
+    if (mapFocusRef && mapRef.current) {
+      mapFocusRef.current = mapRef.current;
+    }
+    
+    // If we have a selected region when map loads, focus on it
+    if (selectedRegionId && regionService && onMapFocus) {
+      if (selectedRegionId === 'tashkent-city') {
+        // For the default region, use the exact DEFAULT_MAP_CONFIG to ensure consistent zoom
+        const defaultRegion = regionService.getDefaultRegion();
+        if (defaultRegion) {
+          onMapFocus({
+            center: defaultRegion.coordinates,
+            zoom: DEFAULT_MAP_CONFIG.zoom, // Use exact default zoom
+            regionId: defaultRegion.id
+          });
+        }
+      } else {
+        // For other regions, use the standard approach
+        const mapConfig = regionService.getMapConfigForRegion(selectedRegionId, 'CITY');
+        if (mapConfig) {
+          onMapFocus(mapConfig);
+        }
+      }
+    }
+  }, [mapFocusRef, selectedRegionId, regionService, onMapFocus]);
+  
+  // Connect mapRef to Layout's mapFocusRef when component mounts
+  useEffect(() => {
+    if (mapFocusRef && mapRef.current) {
+      mapFocusRef.current = mapRef.current;
+    }
+  }, [mapFocusRef]);
   
   // Reset map bounds when map visibility changes
   useEffect(() => {
@@ -148,19 +198,90 @@ function IndexPageBase() {
     });
   }, [location.search, setFromSerializedValues, setAttendeesFromSerializedValues, setSizeFromSerializedValues]);
 
+  // Helper function to check if a place belongs to a region (address match or proximity)
+  const placeMatchesRegion = useCallback((place, regionId) => {
+    if (!place || !regionId || !regionService) return false;
+    
+    const region = regionService.getRegionById(regionId);
+    if (!region) return false;
+    
+    let matchScore = 0;
+    let matchReason = '';
+    
+    // Strategy 1: Check if address contains any of the region names (uz, en, ru)
+    if (place.address) {
+      const addressLower = place.address.toLowerCase();
+      
+      // Check for exact matches first (higher priority)
+      for (const [lang, name] of Object.entries(region.names)) {
+        const nameLower = name.toLowerCase();
+        if (addressLower.includes(nameLower)) {
+          matchScore = REGION_FILTER_CONFIG.STRATEGY_PRIORITIES.ADDRESS_EXACT_MATCH;
+          matchReason = `Address contains region name "${name}" (${lang})`;
+          
+          // Debug log for development
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`✅ Place "${place.title}" matches region "${regionId}": ${matchReason}`);
+          }
+          
+          return true;
+        }
+      }
+    }
+    
+    // Strategy 2: Check geographical proximity if coordinates are available
+    if (place.lat && place.lng && region.coordinates) {
+      const distance = regionService.calculateDistance(
+        parseFloat(place.lat),
+        parseFloat(place.lng),
+        region.coordinates.lat,
+        region.coordinates.lng
+      );
+      
+      // Get proximity threshold from configuration
+      const proximityThreshold = REGION_FILTER_CONFIG.PROXIMITY_THRESHOLDS[regionId] 
+        || REGION_FILTER_CONFIG.PROXIMITY_THRESHOLDS.default;
+      
+      if (distance <= proximityThreshold) {
+        matchScore = distance <= proximityThreshold * 0.5 
+          ? REGION_FILTER_CONFIG.STRATEGY_PRIORITIES.PROXIMITY_CLOSE
+          : REGION_FILTER_CONFIG.STRATEGY_PRIORITIES.PROXIMITY_MEDIUM;
+        matchReason = `Within ${distance.toFixed(1)}km of region center (threshold: ${proximityThreshold}km)`;
+        
+        return true;
+      }
+    }
+    
+    return false;
+  }, [regionService]);
+
   // Apply all filters whenever any filter or places change
   useEffect(() => {
     const applyFilters = async () => {
       let filtered = [...places];
       
-      // If no filters are active, show all places
+      // Apply region filter when map is closed (list view only)
+      if (!mapVisible && selectedRegionId) {
+        const beforeCount = filtered.length;
+        filtered = filtered.filter(place => 
+          placeMatchesRegion(place, selectedRegionId)
+        );
+      }
+      
+      // Check if any filters are active (excluding region filter for listing purposes)
+      const hasRegionFilter = selectedRegionId !== null;
+      
+      // If no other filters are active, show all places (with optional region filtering)
       if (!hasActiveAttendeesFilter && !hasActivePriceFilter && !hasActiveSizeFilter && !hasSelectedPerks && !hasSelectedPolicies) {
         // Set places for map (all places, no bounds filtering)
         setPlacesForMap(places);
         
+        // For list view, use the filtered places (which may include region filtering)
+        let listFiltered = filtered;
+        
         // Apply map bounds filter only for the listing display (only if bounds are available)
         if (mapBounds && mapVisible && window.google && window.google.maps) {
-          filtered = places.filter(place => {
+          listFiltered = places.filter(place => {
             if (!place.lat || !place.lng) return false;
             const position = new window.google.maps.LatLng(
               parseFloat(place.lat), 
@@ -168,12 +289,15 @@ function IndexPageBase() {
             );
             return mapBounds.contains(position);
           });
+        } else if (!mapVisible) {
+          // If map is not visible, use the region-filtered places
+          listFiltered = filtered;
         } else {
-          // If map bounds are not available yet, show all places
-          filtered = places;
+          // If map is visible but bounds are not available yet, show all places
+          listFiltered = places;
         }
-        setFilteredPlaces(filtered);
-        setTotalItems(filtered.length);
+        setFilteredPlaces(listFiltered);
+        setTotalItems(listFiltered.length);
         return;
       }
       
@@ -295,7 +419,46 @@ function IndexPageBase() {
     };
 
     applyFilters();
-  }, [places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency, hasActiveAttendeesFilter, filterPlacesByAttendees, hasActiveSizeFilter, filterPlacesBySize, hasSelectedPerks, filterPlacesByPerks, hasSelectedPolicies, filterPlacesByPolicies, mapBounds, mapVisible]);
+  }, [places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency, hasActiveAttendeesFilter, filterPlacesByAttendees, hasActiveSizeFilter, filterPlacesBySize, hasSelectedPerks, filterPlacesByPerks, hasSelectedPolicies, filterPlacesByPolicies, mapBounds, mapVisible, selectedRegionId, placeMatchesRegion]);
+
+  // Performance optimization: Memoize region change handler to prevent unnecessary map focus calls
+  const lastRegionRef = useRef(null);
+  
+  // Handle region selection separately - only affects map focus, not listing filtering
+  useEffect(() => {
+    // Performance optimization: Skip if same region or missing dependencies
+    if (!selectedRegionId || !regionService || !mapRef.current || !onMapFocus) {
+      return;
+    }
+    
+    // Performance optimization: Skip if same as last region
+    if (lastRegionRef.current === selectedRegionId) {
+      return;
+    }
+    
+    lastRegionRef.current = selectedRegionId;
+    
+    if (selectedRegionId === 'tashkent-city') {
+      // For the default region, use the exact DEFAULT_MAP_CONFIG to ensure consistent zoom
+      const defaultRegion = regionService.getDefaultRegion();
+      if (defaultRegion) {
+        onMapFocus({
+          center: defaultRegion.coordinates,
+          zoom: DEFAULT_MAP_CONFIG.zoom, // Use exact default zoom
+          regionId: defaultRegion.id
+        });
+      }
+    } else {
+      // For other regions, use the standard approach
+      const mapConfig = regionService.getMapConfigForRegion(selectedRegionId, 'CITY');
+      if (mapConfig) {
+        onMapFocus(mapConfig);
+      }
+    }
+    
+    // Reset to first page when region changes
+    setCurrentPage(1);
+  }, [selectedRegionId, regionService, onMapFocus]);
 
   // Resizable functionality
   const handleMouseDown = (e) => {
@@ -380,6 +543,9 @@ function IndexPageBase() {
               toggleMap={() => {}}
               showMobileMap={() => {}}
               isMobileMapView={true}
+              selectedRegionId={selectedRegionId}
+              onRegionChange={onRegionChange}
+              onMapFocus={onMapFocus}
             />
           </div>
           
@@ -397,9 +563,11 @@ function IndexPageBase() {
           {/* Mobile Map container - remaining height with padding for header and filter */}
           <div className="flex-1 w-full pt-[120px] border-0 outline-0">
             <MapView 
+              ref={mapRef}
               places={memoizedPlacesForMap} 
               hoveredPlaceId={hoveredPlaceId}
               onBoundsChanged={handleMapBoundsChanged}
+              onMapReady={handleMapReady}
             />
           </div>
         </div>
@@ -574,9 +742,11 @@ function IndexPageBase() {
             {/* Map container - only render when visible */}
             <div className="w-full h-full overflow-hidden relative border-0 outline-0">
               <MapView 
+                ref={mapRef}
                 places={memoizedPlacesForMap} 
                 hoveredPlaceId={hoveredPlaceId}
                 onBoundsChanged={handleMapBoundsChanged}
+                onMapReady={handleMapReady}
               />
             </div>
           </div>

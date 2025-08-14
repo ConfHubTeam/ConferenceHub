@@ -300,6 +300,33 @@
       }
     }
   },
+  "location": {
+    "selectRegion": "Hududni tanlang",
+    "modal": {
+      "title": "Joyni tanlang",
+      "search": {
+        "placeholder": "Hududlarni qidiring...",
+        "ariaLabel": "Hududlarni qidirish",
+        "clear": "Qidiruvni tozalash",
+        "results": "{{count}} ta hudud topildi",
+        "results_plural": "{{count}} ta hudud topildi",
+        "noResults": "Hech qanday hudud topilmadi"
+      },
+      "defaultRegion": "Standart",
+      "noRegions": {
+        "title": "Mavjud hududlar yo'q",
+        "description": "Keyinroq qaytadan urinib ko'ring"
+      },
+      "footer": {
+        "count": "{{count}} ta hudud mavjud",
+        "count_plural": "{{count}} ta hudud mavjud"
+      },
+      "actions": {
+        "close": "Oynani yopish",
+        "cancel": "Bekor qilish"
+      }
+    }
+  },
   "sorting": {
     "title": "Saralash",
     "recommended": "Tavsiya etilgan",
