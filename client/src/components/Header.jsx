@@ -79,8 +79,8 @@ export default function Header() {
           </Link>
         </div>
         
-        {/* User Navigation - Desktop only, constrained scrollable area between logo and right section */}
-        <div className="hidden md:flex flex-1 min-w-0 mx-4">
+        {/* User Navigation - Desktop only, centered between logo and right section */}
+        <div className="hidden md:flex flex-1 min-w-0 mx-4 justify-center">
           <UserNavigation />
         </div>
         
@@ -235,16 +235,7 @@ export default function Header() {
                       </Link>
                     )}
                     
-                    <Link 
-                      to="/account/notifications" 
-                      className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-gray-50 text-sm"
-                      onClick={handleMenuLinkClick}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
-                      </svg>
-                      {t("accountNav.notifications")}
-                    </Link>
+
                     
                     {/* Host specific links */}
                     {user.userType === 'host' && (
