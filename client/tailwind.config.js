@@ -16,6 +16,21 @@ export default {
         "brand-orange": "#f38129",
         "brand-purple": "#3b2881",
         
+        // Navy color palette
+        navy: {
+          50: "#f8fafc",
+          100: "#f1f5f9",
+          200: "#e2e8f0",
+          300: "#cbd5e1",
+          400: "#94a3b8",
+          500: "#64748b",
+          600: "#475569",
+          700: "#334155",
+          800: "#1e293b",
+          900: "#0f172a",
+          950: "#020617",
+        },
+        
         // Semantic color tokens
         success: {
           50: "#f0fdf4",
@@ -135,6 +150,14 @@ export default {
           '@screen lg': {
             'padding': '2.5rem',
           }
+        },
+        
+        // Logo color utilities
+        '.logo-navy': {
+          'filter': 'brightness(0) saturate(100%) invert(15%) sepia(25%) saturate(1200%) hue-rotate(210deg) brightness(94%) contrast(96%)'
+        },
+        '.logo-white': {
+          'filter': 'brightness(0) invert(1) drop-shadow(0 0 12px rgba(255,255,255,0.8))'
         }
       })
     }

@@ -58,9 +58,8 @@ function LandingHeaderBase({
             <img 
               src={logoSrc}
               alt={logoAlt}
-              className="h-8 sm:h-10 lg:h-12 w-auto transition-transform duration-300 hover:scale-110 drop-shadow-xl"
+              className="h-6 sm:h-7 lg:h-8 w-auto transition-transform duration-300 hover:scale-110 drop-shadow-xl logo-white"
               style={{ 
-                filter: "brightness(0) invert(1) drop-shadow(0 0 12px rgba(255,255,255,0.8))",
                 transform: "translateZ(0)"  /* Force GPU acceleration for smoother animation */
               }}
             />
@@ -173,7 +172,7 @@ export default withTranslationLoading(LandingHeaderBase, {
   loadingComponent: ({ children, ...props }) => (
     <header className={`relative z-50 px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between bg-transparent sm:bg-transparent ${props.className || ""}`}>
       <div className="flex items-center">
-        <div className="h-8 sm:h-10 lg:h-12 w-24 bg-white/20 rounded animate-pulse"></div>
+        <div className="h-6 sm:h-7 lg:h-8 w-24 bg-white/20 rounded animate-pulse"></div>
       </div>
       <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
         <div className="h-8 w-32 bg-white/20 rounded animate-pulse"></div>
@@ -198,9 +197,8 @@ export default withTranslationLoading(LandingHeaderBase, {
           <img 
             src="/getSpace_logo.png"
             alt="GetSpace"
-            className="h-8 sm:h-10 lg:h-12 w-auto transition-transform duration-300 hover:scale-110 drop-shadow-xl"
+            className="h-6 sm:h-7 lg:h-8 w-auto transition-transform duration-300 hover:scale-110 drop-shadow-xl logo-white"
             style={{ 
-              filter: "brightness(0) invert(1) drop-shadow(0 0 12px rgba(255,255,255,0.8))",
               transform: "translateZ(0)"
             }}
           />
