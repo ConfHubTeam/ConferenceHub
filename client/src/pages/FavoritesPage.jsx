@@ -127,9 +127,13 @@ export default function FavoritesPage() {
                                                 <h3 className="font-semibold text-lg truncate mb-1">
                                                     {place.title}
                                                 </h3>
-                                                <p className="text-gray-500 text-sm truncate mb-3">
-                                                    {place.address}
-                                                </p>
+                                                <div className="flex items-center text-gray-500 text-sm mb-3">
+                                                    <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    </svg>
+                                                    <p className="truncate">{place.address}</p>
+                                                </div>
 
                                                 {/* Rating and Guests */}
                                                 <div className="flex items-center justify-between mb-3">

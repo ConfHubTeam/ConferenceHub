@@ -633,7 +633,13 @@ function IndexPageBase() {
                         </div>
                         <div className="p-4">
                           <h2 className="font-semibold text-lg truncate">{place.title}</h2>
-                          <h3 className="text-gray-500 text-base truncate mt-1">{place.address}</h3>
+                          <div className="flex items-center text-gray-500 text-base mt-1">
+                            <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <h3 className="truncate">{place.address}</h3>
+                          </div>
                           
                           {/* Rating and max guests row */}
                           <div className="flex items-center space-x-3 mt-2">

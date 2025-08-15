@@ -26,7 +26,7 @@ i18n
   .use(initReactI18next)
   .init({
     lng: undefined, // Let LanguageDetector determine the language
-    fallbackLng: "en",
+    fallbackLng: "ru", // Default to Russian when no language is detected
     debug: false, // Disable debug logs to reduce console noise
 
     // Namespace configuration
