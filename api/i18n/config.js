@@ -20,8 +20,8 @@ const NAMESPACES = [
 i18next
   .use(Backend)
   .init({
-    lng: "en", // Default language
-    fallbackLng: "en",
+    lng: "ru", // Default language
+    fallbackLng: "ru",
     debug: process.env.NODE_ENV === "development",
 
     // Namespace configuration
@@ -134,11 +134,11 @@ const languageMiddleware = (req, res, next) => {
   const userLang = req.user?.preferredLanguage;
 
   // Determine language priority: body > query > user preference > header > default
-  const detectedLanguage = bodyLang || queryLang || userLang || headerLang || "en";
+  const detectedLanguage = bodyLang || queryLang || userLang || headerLang || "ru";
 
   // Validate language is supported
   const supportedLanguages = ["en", "uz", "ru"];
-  const language = supportedLanguages.includes(detectedLanguage) ? detectedLanguage : "en";
+  const language = supportedLanguages.includes(detectedLanguage) ? detectedLanguage : "ru";
 
   // Attach language to request object
   req.language = language;

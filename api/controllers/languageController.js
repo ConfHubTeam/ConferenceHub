@@ -79,10 +79,10 @@ class LanguageController {
         success: true,
         data: {
           userId: user.id,
-          preferredLanguage: user.preferredLanguage || "en",
+          preferredLanguage: user.preferredLanguage || "ru",
           availableLanguages: [
-            { code: "en", name: "English", nativeName: "English" },
             { code: "ru", name: "Russian", nativeName: "Русский" },
+            { code: "en", name: "English", nativeName: "English" },
             { code: "uz", name: "Uzbek", nativeName: "O'zbek" }
           ]
         }
