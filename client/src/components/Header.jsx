@@ -251,6 +251,16 @@ export default function Header() {
                           {t("header.navigation.myPlaces", "My Places")}
                         </Link>
                         <Link 
+                          to="/account/calendar" 
+                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-gray-50 text-sm"
+                          onClick={handleMenuLinkClick}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                          </svg>
+                          {t("accountNav.calendar", "Calendar")}
+                        </Link>
+                        <Link 
                           to="/account/hostdashboard" 
                           className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-gray-50 text-sm"
                           onClick={handleMenuLinkClick}
@@ -286,6 +296,16 @@ export default function Header() {
                             <path fillRule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clipRule="evenodd" />
                           </svg>
                           {t("accountNav.places")}
+                        </Link>
+                        <Link 
+                          to="/account/calendar" 
+                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-gray-50 text-sm"
+                          onClick={handleMenuLinkClick}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                          </svg>
+                          {t("accountNav.calendar", "Calendar")}
                         </Link>
                         <Link 
                           to="/account/reviews" 
