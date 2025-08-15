@@ -30,6 +30,7 @@
     "bookings": "Bookings", 
     "favorites": "Favorites",
     "notifications": "Notifications",
+    "calendar": "Calendar",
     "spaces": "Spaces",
     "hostDashboard": "Host Dashboard",
     "dashboard": "Dashboard",
@@ -40,6 +41,21 @@
     "browseListings": "Browse Listings",
     "listings": "Listings",
     "more": "More"
+  },
+  "calendar": {
+    "selectPlace": "Select a place...",
+    "hostDescription": "Manage availability for your listings",
+    "agentDescription": "Manage availability for all listings",
+    "noPlaces": "No places found. Create your first listing to get started.",
+    "noPlacesAgent": "No places found in the system.",
+    "ownedBy": "Owner",
+    "selectPlaceToStart": "Select a place to get started",
+    "chooseFromDropdown": "Choose a place from the dropdown above to view its calendar and manage availability.",
+    "readyForCalendar": "Calendar Ready",
+    "calendarWillAppear": "Calendar view and time slot details will appear here in the next implementation phase.",
+    "searchPlaces": "Search places by name, address, or owner...",
+    "noSearchResults": "No places found",
+    "tryDifferentSearch": "Try a different search term"
   },
   "mobileNavigation": {
     "browseSpaces": "Browse Spaces",

@@ -24,6 +24,28 @@
       "saturday": "Sha"
     }
   },
+  "days": {
+    "sun": "Yak",
+    "mon": "Du",
+    "tue": "Se",
+    "wed": "Cho",
+    "thu": "Pa",
+    "fri": "Ju",
+    "sat": "Sha"
+  },
+  "availability": "Mavjudlik",
+  "available": "Mavjud",
+  "fullyAvailable": "To'liq mavjud",
+  "partiallyBooked": "Qisman bronlangan",
+  "fullyBooked": "To'liq bronlangan",
+  "mostlyBooked": "Ko'p bronlangan",
+  "nearlyFull": "Deyarli to'la",
+  "unavailable": "Mavjud emas",
+  "selectDate": "Sanani tanlang",
+  "selectPlace": "Joyni tanlang",
+  "selectPlaceToStart": "Boshlash uchun joyni tanlang",
+  "chooseFromDropdown": "Kalendarini ko'rish va mavjudlikni boshqarish uchun yuqoridagi ro'yxatdan joyni tanlang.",
+  "clickDateToView": "Mavjudlik tafsilotlarini ko'rish uchun kalendarda istalgan sanaga bosing.",
   "guidance": {
     "blockingMode": "✨ Bloklangan/bloklanmagan holatni almashtirish uchun sanalarga bosing",
     "individualMode": "🎯 Bronlash uchun alohida sanalarni tanlang",
@@ -97,5 +119,40 @@
     "dateSelected": "sana bloklandi",
     "datesSelected": "sana bloklandi",
     "clearAll": "Hammasini tozalash"
+  },
+  "detailedView": {
+    "operatingHours": "Ish vaqtlari",
+    "dayComplete": "Bugun ish vaqti tugadi",
+    "noTimeSlots": "Bu sana uchun mavjud vaqt oraliqları yo'q",
+    "partiallyPast": "Qisman o'tgan",
+    "table": {
+      "timeRange": "Vaqt oralig'i",
+      "status": "Holat",
+      "bookingId": "Bronlash ID"
+    },
+    "status": {
+      "booked": "Bronlangan",
+      "available": "Mavjud",
+      "cooldown": "Tanaffus"
+    },
+    "legend": {
+      "title": "Belgilar",
+      "booked": "Bronlangan",
+      "cooldown": "Tanaffus",
+      "notBookable": "Bronlab bo'lmaydi",
+      "dayEnd": "Kun tugashi",
+      "available": "Mavjud"
+    },
+    "cooldown": {
+      "title": "Tanaffus siyosati",
+      "description": "Har bir bronlashdan keyin",
+      "period": "tanaffus davri mavjud bo'lib, bu vaqtda yangi bronlashlar mumkin emas."
+    }
+  },
+  "status": {
+    "available": "Mavjud",
+    "fullyBooked": "To'liq bronlangan",
+    "blockedByHost": "Host tomonidan bloklangan",
+    "percentageBooked": "{{percentage}}% bronlangan"
   }
 }

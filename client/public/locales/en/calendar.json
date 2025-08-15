@@ -24,6 +24,28 @@
       "saturday": "Sa"
     }
   },
+  "days": {
+    "sun": "Sun",
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat"
+  },
+  "availability": "Availability",
+  "available": "Available",
+  "fullyAvailable": "Fully Available",
+  "partiallyBooked": "Partially Booked",
+  "fullyBooked": "Fully Booked",
+  "mostlyBooked": "Mostly Booked",
+  "nearlyFull": "Nearly Full",
+  "unavailable": "Unavailable",
+  "selectDate": "Select a date",
+  "selectPlace": "Select a place",
+  "selectPlaceToStart": "Select a place to get started",
+  "chooseFromDropdown": "Choose a place from the dropdown above to view its calendar and manage availability.",
+  "clickDateToView": "Click on any date in the calendar to view its availability details.",
   "guidance": {
     "blockingMode": "✨ Click dates to toggle blocked/unblocked status",
     "individualMode": "🎯 Select individual dates for booking",
@@ -97,5 +119,40 @@
     "dateSelected": "date blocked",
     "datesSelected": "dates blocked", 
     "clearAll": "Clear all"
+  },
+  "detailedView": {
+    "operatingHours": "Operating Hours",
+    "dayComplete": "Operating hours have ended for today",
+    "noTimeSlots": "No time slots available for this date",
+    "partiallyPast": "Partially past",
+    "table": {
+      "timeRange": "Time Range",
+      "status": "Status",
+      "bookingId": "Booking ID"
+    },
+    "status": {
+      "booked": "Booked",
+      "available": "Available",
+      "cooldown": "Cooldown"
+    },
+    "legend": {
+      "title": "Legend",
+      "booked": "Booked",
+      "cooldown": "Cooldown",
+      "notBookable": "Not Bookable",
+      "dayEnd": "Day End",
+      "available": "Available"
+    },
+    "cooldown": {
+      "title": "Cooldown Policy",
+      "description": "After each booking, there is a",
+      "period": "cooldown period where no new bookings can be made."
+    }
+  },
+  "status": {
+    "available": "Available",
+    "fullyBooked": "Fully booked",
+    "blockedByHost": "Blocked by host",
+    "percentageBooked": "{{percentage}}% booked"
   }
 }

@@ -30,6 +30,7 @@
     "bookings": "Bronlar", 
     "favorites": "Sevimlilar",
     "notifications": "Bildirishnomalar",
+    "calendar": "Kalendar",
     "spaces": "Joylar",
     "hostDashboard": "Host paneli",
     "dashboard": "Boshqaruv paneli",
@@ -39,6 +40,21 @@
     "myListings": "Mening e'lonlarim",
     "browseListings": "E'lonlarni ko'rish",
     "listings": "E'lonlar"
+  },
+  "calendar": {
+    "selectPlace": "Joyni tanlang...",
+    "hostDescription": "E'lonlaringiz uchun mavjudlikni boshqaring",
+    "agentDescription": "Barcha e'lonlar uchun mavjudlikni boshqaring",
+    "noPlaces": "Joylar topilmadi. Boshlash uchun birinchi e'loningizni yarating.",
+    "noPlacesAgent": "Tizimda joylar topilmadi.",
+    "ownedBy": "Egasi",
+    "selectPlaceToStart": "Boshlash uchun joy tanlang",
+    "chooseFromDropdown": "Kalendar ko'rish va mavjudlikni boshqarish uchun yuqoridagi ro'yxatdan joy tanlang.",
+    "readyForCalendar": "Kalendar tayyor",
+    "calendarWillAppear": "Kalendar ko'rinishi va vaqt oralig'i tafsilotlari keyingi bosqichda bu yerda paydo bo'ladi.",
+    "searchPlaces": "Nom, manzil yoki egasi bo'yicha qidirish...",
+    "noSearchResults": "Joylar topilmadi",
+    "tryDifferentSearch": "Boshqa qidiruv so'zini sinab ko'ring"
   },
   "mobileNavigation": {
     "browseSpaces": "Joylarni ko'rish",

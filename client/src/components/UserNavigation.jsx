@@ -12,6 +12,7 @@ import {
   HiOutlineUsers,
   HiOutlineStar
 } from "react-icons/hi";
+import { CalendarIcon } from "@heroicons/react/24/outline";
 import { PiWarehouse } from "react-icons/pi";
 
 
@@ -127,6 +128,12 @@ export default function UserNavigation() {
       label: t("header.navigation.myPlaces", "My Places")
     },
     { 
+      key: "calendar", 
+      to: "/account/calendar", 
+      icon: <CalendarIcon className="w-6 h-6" />,
+      label: t("accountNav.calendar", "Calendar")
+    },
+    { 
       key: "hostdashboard", 
       to: "/account/hostdashboard", 
       icon: <HiOutlineChartBar className="w-6 h-6" />,
@@ -146,6 +153,12 @@ export default function UserNavigation() {
       to: "/account/all-places", 
       icon: <PiWarehouse className="w-6 h-6" />,
       label: t("accountNav.places")
+    },
+    { 
+      key: "calendar", 
+      to: "/account/calendar", 
+      icon: <CalendarIcon className="w-6 h-6" />,
+      label: t("accountNav.calendar", "Calendar")
     },
     { 
       key: "reviews", 
