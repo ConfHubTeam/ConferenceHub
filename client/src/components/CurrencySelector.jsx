@@ -228,11 +228,6 @@ export default function CurrencySelector({
                     }`}>
                       {getCurrencyInfo(selectedCurrency.charCode).displayCode}
                     </span>
-                    <span className={`text-xs truncate ${
-                      theme === "dark" ? 'text-white/60' : 'text-gray-500'
-                    }`}>
-                      {getCurrencyInfo(selectedCurrency.charCode).name}
-                    </span>
                   </div>
                 </>
               )}
@@ -310,11 +305,6 @@ export default function CurrencySelector({
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                             </svg>
                           )}
-                        </div>
-                        <div className={`text-sm ${
-                          isSelected ? 'text-blue-600' : 'text-gray-500'
-                        }`}>
-                          {currencyInfo.name}
                         </div>
                       </div>
                     </div>

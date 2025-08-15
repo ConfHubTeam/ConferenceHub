@@ -91,7 +91,6 @@ const Header = () => {
       <div className="md:hidden bg-gray-50 border-t border-gray-200 px-4 py-3">
         <div className="flex items-center justify-between space-x-4">
           <div className="flex items-center space-x-2 flex-1">
-            <span className="text-xs font-medium text-gray-700">{t("mobileMenu.currency")}</span>
             <div className="w-24">
               <CurrencySelector 
                 selectedCurrency={selectedCurrency}
@@ -102,7 +101,6 @@ const Header = () => {
           </div>
           
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600">{t("mobileMenu.language")}</span>
             <LanguageSelector 
               variant="minimal"
               showFlag={true}
