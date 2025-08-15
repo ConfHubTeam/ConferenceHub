@@ -146,9 +146,13 @@
       "available": "Mavjud"
     },
     "cooldown": {
-      "title": "Tanaffus siyosati",
+      "title": "Tanaffus siyosati", 
       "description": "Har bir bronlashdan keyin",
-      "period": "tanaffus davri mavjud bo'lib, bu vaqtda yangi bronlashlar mumkin emas."
+      "period": "tanaffus davri mavjud, bu vaqtda yangi bronlashlar mumkin emas.",
+      "label": "Tanaffus"
+    },
+    "minimumBooking": {
+      "label": "Minimal bronlash"
     }
   },
   "status": {
@@ -156,5 +160,14 @@
     "fullyBooked": "To'liq bronlangan",
     "blockedByHost": "Host tomonidan bloklangan",
     "percentageBooked": "{{percentage}}% bronlangan"
+  },
+  "common": {
+    "loading": "Yuklanmoqda..."
+  },
+  "cooldownInfo": {
+    "timeUnits": {
+      "hour": "soat",
+      "minute": "daq"
+    }
   }
 }

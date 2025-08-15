@@ -54,6 +54,7 @@
     "offline": "Offline",
     "new": "New"
   },
+  "loading": "Loading...",
   "messages": {
     "noData": "No data available",
     "noResults": "No results found",

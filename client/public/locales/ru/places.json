@@ -415,5 +415,8 @@
   "placeFilters": {
     "searchLabel": "Поиск ваших конференц-залов",
     "searchPlaceholder": "Поиск по названию или адресу..."
+  },
+  "calendar": {
+    "selectPlace": "Выберите место"
   }
 }

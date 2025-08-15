@@ -148,7 +148,11 @@
     "cooldown": {
       "title": "Cooldown Policy",
       "description": "After each booking, there is a",
-      "period": "cooldown period where no new bookings can be made."
+      "period": "cooldown period where no new bookings can be made.",
+      "label": "Cooldown"
+    },
+    "minimumBooking": {
+      "label": "Minimum booking"
     }
   },
   "status": {
@@ -156,5 +160,14 @@
     "fullyBooked": "Fully booked",
     "blockedByHost": "Blocked by host",
     "percentageBooked": "{{percentage}}% booked"
+  },
+  "common": {
+    "loading": "Loading..."
+  },
+  "cooldownInfo": {
+    "timeUnits": {
+      "hour": "h",
+      "minute": "min"
+    }
   }
 }
