@@ -314,15 +314,15 @@ export default function CalendarPageCalendar({
                 onClick={() => isCurrentMonth && !isUnavailable && handleDateClick(day)}
                 disabled={!isCurrentMonth || isUnavailable}
                 className={`
-                  relative h-10 text-sm rounded-lg transition-all duration-200 flex items-center justify-center
+                  relative h-10 text-sm rounded-lg transition-all duration-200 flex items-center justify-center border
                   ${!isCurrentMonth 
-                    ? "text-gray-300 cursor-not-allowed" 
+                    ? "text-gray-300 cursor-not-allowed border-transparent" 
                     : isUnavailable
-                      ? "text-gray-400 cursor-not-allowed"
-                      : "cursor-pointer hover:scale-105"
+                      ? "text-gray-400 cursor-not-allowed border-transparent"
+                      : "cursor-pointer hover:border-gray-400 border-transparent"
                   }
-                  ${isSelected ? "ring-2 ring-blue-500" : ""}
-                  ${isToday ? "ring-1 ring-gray-400" : ""}
+                  ${isSelected ? "ring-2 ring-primary border-primary" : ""}
+                  ${isToday && !isSelected ? "ring-1 ring-gray-400" : ""}
                   ${isCurrentMonth && !isUnavailable ? getDateAvailabilityColor(dateStr) : ""}
                 `}
               >
@@ -425,8 +425,8 @@ export default function CalendarPageCalendar({
         ) : (
           <div className="flex items-center justify-center h-full min-h-[300px]">
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-blue-600">
+              <div className="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-gray-500">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5a2.25 2.25 0 002.25-2.25m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5a2.25 2.25 0 012.25 2.25v7.5" />
                 </svg>
               </div>

@@ -128,12 +128,14 @@
     "table": {
       "timeRange": "Временной диапазон",
       "status": "Статус",
+      "hours": "Часы",
       "bookingId": "ID бронирования"
     },
     "status": {
       "booked": "Забронировано",
       "available": "Доступно",
-      "cooldown": "Пауза"
+      "cooldown": "Пауза",
+      "notBookable": "Недоступно для бронирования"
     },
     "legend": {
       "title": "Легенда",

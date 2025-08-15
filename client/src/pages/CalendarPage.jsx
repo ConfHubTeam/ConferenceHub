@@ -140,8 +140,8 @@ export default function CalendarPage() {
           ) : (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sm:p-8 lg:p-12 h-full flex items-center justify-center min-h-[400px]">
               <div className="text-center max-w-md mx-auto">
-                <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-gray-400">
+                <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-gray-500">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m2.25-18v18m13.5-18v18m2.25-18v18M6.75 21V9.75m0 0V6.75a.75.75 0 01.75-.75h3.75M6.75 9.75V21m-2.25 0h5.25m13.5-18v18m-2.25 0H21m-3.75 0V6.75a.75.75 0 00-.75-.75h-3.75M21 21V9.75m0 0V6.75a.75.75 0 00-.75-.75h-3.75M6.75 6.75V9.75m13.5 0V6.75" />
                   </svg>
                 </div>

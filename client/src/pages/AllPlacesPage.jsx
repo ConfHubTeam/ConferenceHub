@@ -440,7 +440,7 @@ export default function AllPlacesPage() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredPlaces.map(place => (
-                <div key={place.id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
+                <div key={place.id} className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200 hover:border-gray-400 hover:shadow-lg transition-all duration-200">
                   <a href={`/place/${place.id}${location.search}`} className="block">
                     <div className="h-48 bg-gray-200 relative overflow-hidden">
                       {place.photos?.[0] && (

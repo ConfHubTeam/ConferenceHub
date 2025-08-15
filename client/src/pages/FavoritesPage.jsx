@@ -97,7 +97,7 @@ export default function FavoritesPage() {
                                 {favorites.map((place) => (
                                     <div
                                         key={place.id}
-                                        className="relative group bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200"
+                                        className="relative group bg-white rounded-2xl shadow border border-gray-200 hover:border-gray-400 hover:shadow-lg transition-all duration-200"
                                     >
                                         {/* Favorite Button */}
                                         <div className="absolute top-3 right-3 z-10">
@@ -106,7 +106,7 @@ export default function FavoritesPage() {
 
                                         <Link to={`/place/${place.id}`}>
                                             {/* Image */}
-                                            <div className="aspect-[4/3] overflow-hidden rounded-t-lg">
+                                            <div className="aspect-[4/3] overflow-hidden rounded-t-2xl">
                                                 {place.photos?.length > 0 ? (
                                                     <CloudinaryImage
                                                         photo={place.photos[0]}

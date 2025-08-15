@@ -128,12 +128,14 @@
     "table": {
       "timeRange": "Time Range",
       "status": "Status",
+      "hours": "Hours",
       "bookingId": "Booking ID"
     },
     "status": {
       "booked": "Booked",
       "available": "Available",
-      "cooldown": "Cooldown"
+      "cooldown": "Cooldown",
+      "notBookable": "Not Bookable"
     },
     "legend": {
       "title": "Legend",
