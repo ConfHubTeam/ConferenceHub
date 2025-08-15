@@ -320,7 +320,6 @@ export default function Header() {
                   <div className="grid grid-cols-2 gap-4">
                     {/* Currency selector */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">{t("header.mobileMenu.currency")}</label>
                       <div className="w-full">
                         <CurrencySelector
                           selectedCurrency={selectedCurrency}
@@ -332,7 +331,6 @@ export default function Header() {
                     
                     {/* Language selector */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">{t("header.mobileMenu.language")}</label>
                       <div className="w-full">
                         <LanguageSelector 
                           variant="dropdown"

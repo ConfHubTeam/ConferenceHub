@@ -135,9 +135,6 @@ export const MobileNavigation = ({ isOpen, onToggle, onClose, user = null }) => 
               <div className="grid grid-cols-2 gap-4">
                 {/* Currency Selector */}
                 <div>
-                  <label className="block text-sm font-medium text-white/80 mb-2">
-                    {t("header.mobileMenu.currency", "Currency")}
-                  </label>
                   <CurrencySelector 
                     selectedCurrency={selectedCurrency}
                     onChange={changeCurrency}
@@ -149,9 +146,6 @@ export const MobileNavigation = ({ isOpen, onToggle, onClose, user = null }) => 
                 
                 {/* Language Selector */}
                 <div>
-                  <label className="block text-sm font-medium text-white/80 mb-2">
-                    {t("header.mobileMenu.language", "Language")}
-                  </label>
                   <LanguageSelector 
                     variant="dropdown"
                     showFlag={true}

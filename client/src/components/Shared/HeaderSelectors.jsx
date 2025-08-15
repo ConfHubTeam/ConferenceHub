@@ -70,7 +70,6 @@ export const MobileHeaderSelectors = ({
   className = ""
 }) => {
   const { selectedCurrency, changeCurrency, availableCurrencies } = useCurrency();
-  const { t } = useTranslation("common");
 
   const handleCurrencyChange = (currency) => {
     changeCurrency(currency);
@@ -84,9 +83,6 @@ export const MobileHeaderSelectors = ({
       {/* Currency selector */}
       {showCurrency && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            {t("currency", "Currency")}
-          </label>
           <div className="max-w-full">
             <CurrencySelector
               selectedCurrency={selectedCurrency}
@@ -101,14 +97,12 @@ export const MobileHeaderSelectors = ({
       {/* Language selector */}
       {showLanguage && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            {t("language", "Language")}
-          </label>
           <div className="max-w-full">
             <LanguageSelector 
               variant="dropdown"
               showFlag={true}
               showText={true}
+              placement="bottom-center"
             />
           </div>
         </div>
