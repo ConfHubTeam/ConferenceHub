@@ -141,7 +141,7 @@ const checkAvailability = async (req, res) => {
     // Get all approved bookings
     const approvedBookings = await Booking.findAll({ where: query });
     
-    // Extract booked time slots
+    // Extract booked time slots with booking information
     const bookedTimeSlots = [];
     
     approvedBookings.forEach(booking => {
@@ -149,7 +149,14 @@ const checkAvailability = async (req, res) => {
         booking.timeSlots.forEach(slot => {
           // If no date specified or date matches
           if (!date || slot.date === date) {
-            bookedTimeSlots.push(slot);
+            bookedTimeSlots.push({
+              ...slot,
+              bookingId: booking.id,
+              uniqueRequestId: booking.uniqueRequestId,
+              guestName: booking.guestName,
+              status: booking.status,
+              totalPrice: booking.totalPrice
+            });
           }
         });
       }
@@ -205,14 +212,21 @@ const checkTimezoneAwareAvailability = async (req, res) => {
       } 
     });
     
-    // Extract booked time slots
+    // Extract booked time slots with booking information
     const bookedTimeSlots = [];
     approvedBookings.forEach(booking => {
       if (booking.timeSlots && booking.timeSlots.length > 0) {
         booking.timeSlots.forEach(slot => {
           // If no date specified or date matches
           if (!date || slot.date === date) {
-            bookedTimeSlots.push(slot);
+            bookedTimeSlots.push({
+              ...slot,
+              bookingId: booking.id,
+              uniqueRequestId: booking.uniqueRequestId,
+              guestName: booking.guestName,
+              status: booking.status,
+              totalPrice: booking.totalPrice
+            });
           }
         });
       }
