@@ -415,5 +415,8 @@
   "placeFilters": {
     "searchLabel": "Search your conference rooms",
     "searchPlaceholder": "Search by property name or address..."
+  },
+  "calendar": {
+    "selectPlace": "Select a place"
   }
 }

@@ -415,5 +415,8 @@
     "invalidYouTube": "Noto'g'ri YouTube havolasi",
     "invalidCurrency": "Noto'g'ri valyuta tanlandi. Iltimos, valyutani qayta tanlang.",
     "submitFailed": "Jo'natish muvaffaqiyatsiz, iltimos keyinroq urinib ko'ring."
+  },
+  "calendar": {
+    "selectPlace": "Joyni tanlang"
   }
 }
