@@ -51,6 +51,15 @@ export const formatHourLocalized = (hour24, currentLanguage) => {
   return formatHourTo12(hour24);
 };
 
+// Format duration in hours with proper localization (e.g., "1 hour", "2 soat", "3 часа")
+export const formatDurationHours = (hours, t) => {
+  if (!hours || hours === 0) return "";
+  
+  // Use translation function for proper localization
+  const unit = t('booking:widget.pricing.hours', { defaultValue: 'hours' });
+  return `${hours} ${unit}`;
+};
+
 // Generate time options for select dropdowns
 export const generateTimeOptions = (startHour, endHour, minimumHours = 1, cooldownMinutes = 0, currentLanguage = 'en') => {
   const options = [];

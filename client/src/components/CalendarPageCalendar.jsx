@@ -371,18 +371,18 @@ export default function CalendarPageCalendar({
       </div>
 
       {/* Details Section - 70% width on desktop */}
-      <div className="w-full lg:w-[70%] bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="w-full lg:w-[70%] bg-white rounded-xl shadow-sm border border-gray-200 p-2">
         {selectedDate ? (
           <div>
             {/* Selected Date Header */}
-            <div className="mb-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            <div className="mb-3 px-2 pt-2">
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">
                 {format(parseISO(selectedDate), "EEEE, MMMM d, yyyy", { locale: getDateLocale() })}
               </h3>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
-                  <div className={`w-4 h-4 rounded ${getDateAvailabilityColor(selectedDate) || "bg-white border border-gray-300"}`}></div>
-                  <span className="text-sm text-gray-600">
+                  <div className={`w-3 h-3 rounded ${getDateAvailabilityColor(selectedDate) || "bg-white border border-gray-300"}`}></div>
+                  <span className="text-xs text-gray-600">
                     {(() => {
                       const percentage = bookingPercentages[selectedDate] || 0;
                       const isUnbookable = completelyUnbookableDates[selectedDate];
@@ -410,7 +410,7 @@ export default function CalendarPageCalendar({
 
             {/* User Role Notification for non-clients */}
             {user && (user.userType === 'host' || user.userType === 'agent') && (
-              <div className="mb-6">
+              <div className="mb-3 px-2">
                 <UserRoleNotification userType={user.userType} />
               </div>
             )}

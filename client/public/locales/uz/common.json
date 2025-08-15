@@ -53,6 +53,7 @@
     "online": "Onlayn",
     "offline": "Oflayn"
   },
+  "loading": "Yuklanmoqda...",
   "messages": {
     "noData": "Ma'lumot mavjud emas",
     "noResults": "Natija topilmadi",
