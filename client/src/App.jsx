@@ -33,6 +33,7 @@ import AgentReviewsPage from "./pages/AgentReviewsPage";
 import FavoritesPage from "./pages/FavoritesPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import HostBookingManagementPage from "./pages/HostBookingManagementPage";
+import CalendarPage from "./pages/CalendarPage";
 import TelegramAuth from "./components/TelegramAuth";
 import TelegramCallbackHandler from "./components/TelegramCallbackHandler";
 import LoginSuccessPage from "./pages/LoginSuccessPage";
@@ -83,6 +84,7 @@ function App() {
             <Route path="/account/bookings/:bookingId" element={<BookingDetailsPage />}/>
             <Route path="/account/favorites" element={<FavoritesPage />}/>
             <Route path="/account/notifications" element={<NotificationsPage />}/>
+            <Route path="/account/calendar" element={<CalendarPage />}/>
             <Route path="/account/host-management" element={<HostBookingManagementPage />}/>
             
             {/* Agent-specific routes */}
