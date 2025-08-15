@@ -74,7 +74,7 @@
   },
   "dateAvailabilityDetails": {
     "title": "Kunlik jadval",
-    "operatingHours": "Ish vaqtlari",
+    "operatingHours": "Ish vaqti",
     "timeSlotAvailability": "Vaqt oralig'ining mavjudligi",
     "noTimeSlotsAvailable": "Ushbu sana uchun mavjud vaqt oraliqları yo'q.",
     "legend": {
@@ -121,19 +121,21 @@
     "clearAll": "Hammasini tozalash"
   },
   "detailedView": {
-    "operatingHours": "Ish vaqtlari",
+    "operatingHours": "Ish vaqti",
     "dayComplete": "Bugun ish vaqti tugadi",
     "noTimeSlots": "Bu sana uchun mavjud vaqt oraliqları yo'q",
     "partiallyPast": "Qisman o'tgan",
     "table": {
       "timeRange": "Vaqt oralig'i",
       "status": "Holat",
+      "hours": "Soatlar",
       "bookingId": "Bronlash ID"
     },
     "status": {
       "booked": "Bronlangan",
       "available": "Mavjud",
-      "cooldown": "Tanaffus"
+      "cooldown": "Tanaffus",
+      "notBookable": "Bronlab bo'lmaydi"
     },
     "legend": {
       "title": "Belgilar",

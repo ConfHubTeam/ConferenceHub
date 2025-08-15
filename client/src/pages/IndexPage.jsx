@@ -621,7 +621,7 @@ function IndexPageBase() {
                     </div>
 
                     <Link to={`/place/${place.id}${location.search}`}>
-                      <div className="bg-white overflow-hidden shadow hover:shadow-lg transition-shadow">
+                      <div className="bg-white overflow-hidden shadow hover:shadow-lg transition-all duration-200 rounded-2xl border border-gray-200 hover:border-gray-400">
                         <div className="aspect-square overflow-hidden">
                           {place.photos?.length > 0 && (
                             <CloudinaryImage

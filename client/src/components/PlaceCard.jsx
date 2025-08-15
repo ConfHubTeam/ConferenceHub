@@ -14,7 +14,7 @@ export default function PlaceCard({ place, showActions = true, preserveSearchPar
     return preserveSearchParams ? `${baseUrl}${location.search}` : baseUrl;
   };
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
+    <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200 hover:border-gray-400 hover:shadow-lg transition-all duration-200">
       {/* Image */}
       <div className="h-48 bg-gray-200 relative overflow-hidden">
         <Link to={getPlaceUrl()} className="block h-full">

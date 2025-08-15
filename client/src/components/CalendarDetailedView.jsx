@@ -13,6 +13,23 @@ import {
 import { getCurrentDateObjectInUzbekistan } from "../utils/uzbekistanTimezoneUtils";
 
 /**
+ * Calculate duration in hours from start and end hours
+ * @param {number} startHour - Start hour (e.g., 9.5 for 9:30)
+ * @param {number} endHour - End hour (e.g., 11.5 for 11:30)
+ * @returns {string} - Formatted duration (e.g., "2h", "1h 30m", "30m")
+ */
+const calculateDuration = (startHour, endHour) => {
+  const durationHours = endHour - startHour;
+  const hours = Math.floor(durationHours);
+  const minutes = Math.round((durationHours % 1) * 60);
+  
+  if (hours === 0 && minutes === 0) return "0m";
+  if (hours === 0) return `${minutes}m`;
+  if (minutes === 0) return `${hours}h`;
+  return `${hours}h ${minutes}m`;
+};
+
+/**
  * CalendarDetailedView Component
  * 
  * Enhanced inline hourly availability view for the calendar page.
@@ -132,6 +149,21 @@ export default function CalendarDetailedView({
         
         // Only add available time ranges that are not completely in the past
         if (!isCompletelyPast) {
+          // Check if this time slot is actually bookable considering cooldown and minimum hours
+          const timeSlotStartTime = `${currentSlotStart.toString().padStart(2, "0")}:00`;
+          const placeEndTime = `${endHour.toString().padStart(2, "0")}:00`;
+          const minimumHours = placeDetail.minimumHours || 1;
+          
+          // Check if this time slot is actually bookable
+          const isBookable = isValidStartTimeEnhanced(
+            date,
+            timeSlotStartTime,
+            sortedBookings, // Use existing bookings as blocked time slots
+            minimumHours,
+            placeEndTime,
+            cooldownMinutes
+          );
+          
           timeRanges.push({
             startHour: currentSlotStart,
             endHour: bookingStartHour,
@@ -139,7 +171,7 @@ export default function CalendarDetailedView({
             endTime: `${bookingStartHour.toString().padStart(2, "0")}:00`,
             displayStart: formatHourForDisplay(`${currentSlotStart.toString().padStart(2, "0")}:00`),
             displayEnd: formatHourForDisplay(`${bookingStartHour.toString().padStart(2, "0")}:00`),
-            status: 'available',
+            status: isBookable ? 'available' : 'notBookable',
             bookingId: null,
             booking: null,
             isPast: isEndPast,
@@ -203,6 +235,21 @@ export default function CalendarDetailedView({
       
       // Only show the day as available if it's not completely in the past
       if (!isCompletelyPast) {
+        // Even with no bookings, check if the time slots are bookable considering minimum hours and end time
+        const timeSlotStartTime = `${startHour.toString().padStart(2, "0")}:00`;
+        const placeEndTime = `${endHour.toString().padStart(2, "0")}:00`;
+        const minimumHours = placeDetail.minimumHours || 1;
+        
+        // Check if this time slot is actually bookable
+        const isBookable = isValidStartTimeEnhanced(
+          date,
+          timeSlotStartTime,
+          [], // No existing bookings
+          minimumHours,
+          placeEndTime,
+          cooldownMinutes
+        );
+        
         timeRanges.push({
           startHour: startHour,
           endHour: endHour,
@@ -210,7 +257,7 @@ export default function CalendarDetailedView({
           endTime: `${endHour.toString().padStart(2, "0")}:00`,
           displayStart: formatHourForDisplay(`${startHour.toString().padStart(2, "0")}:00`),
           displayEnd: formatHourForDisplay(`${endHour.toString().padStart(2, "0")}:00`),
-          status: 'available',
+          status: isBookable ? 'available' : 'notBookable',
           bookingId: null,
           booking: null,
           isPast: isEndPast,
@@ -226,6 +273,21 @@ export default function CalendarDetailedView({
         
         // Only add available time ranges that are not completely in the past
         if (!isCompletelyPast) {
+          // Check if this time slot is actually bookable considering cooldown and minimum hours
+          const timeSlotStartTime = `${Math.floor(currentSlotStart).toString().padStart(2, "0")}:${((currentSlotStart % 1) * 60).toString().padStart(2, "0")}`;
+          const placeEndTime = `${endHour.toString().padStart(2, "0")}:00`;
+          const minimumHours = placeDetail.minimumHours || 1;
+          
+          // Check if this time slot is actually bookable
+          const isBookable = isValidStartTimeEnhanced(
+            date,
+            timeSlotStartTime,
+            sortedBookings, // Use existing bookings as blocked time slots
+            minimumHours,
+            placeEndTime,
+            cooldownMinutes
+          );
+          
           timeRanges.push({
             startHour: currentSlotStart,
             endHour: endHour,
@@ -233,7 +295,7 @@ export default function CalendarDetailedView({
             endTime: `${endHour.toString().padStart(2, "0")}:00`,
             displayStart: formatHourForDisplay(`${Math.floor(currentSlotStart).toString().padStart(2, "0")}:${((currentSlotStart % 1) * 60).toString().padStart(2, "0")}`),
             displayEnd: formatHourForDisplay(`${endHour.toString().padStart(2, "0")}:00`),
-            status: 'available',
+            status: isBookable ? 'available' : 'notBookable',
             bookingId: null,
             booking: null,
             isPast: isEndPast,
@@ -262,12 +324,12 @@ export default function CalendarDetailedView({
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-full overflow-y-auto">
       {/* Operating Hours Header */}
       <div className="mb-6">
-        <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-          <div className="flex items-center text-sm text-blue-700">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-2">
+                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+          <div className="flex items-center text-gray-700">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2 flex-shrink-0">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span>
+            <span className="text-sm font-medium text-gray-800">
               {t("detailedView.operatingHours", "Operating Hours")}: <strong>{formatHourForDisplay(timeRange.start)} - {formatHourForDisplay(timeRange.end)}</strong>
             </span>
           </div>
@@ -309,6 +371,9 @@ export default function CalendarDetailedView({
                     {t("detailedView.table.status", "Status")}
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {t("detailedView.table.hours", "Hours")}
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     {t("detailedView.table.bookingId", "Booking ID")}
                   </th>
                 </tr>
@@ -343,18 +408,29 @@ export default function CalendarDetailedView({
                             ? 'bg-red-500' 
                             : slot.status === 'cooldown'
                               ? 'bg-orange-500'
-                              : 'bg-green-500'
+                              : slot.status === 'notBookable'
+                                ? 'bg-gray-400'
+                                : 'bg-green-500'
                         }`}></div>
                         <span className={`text-sm font-medium capitalize ${
                           slot.status === 'booked' 
                             ? 'text-red-700' 
                             : slot.status === 'cooldown'
                               ? 'text-orange-700'
-                              : 'text-green-700'
+                              : slot.status === 'notBookable'
+                                ? 'text-gray-600'
+                                : 'text-green-700'
                         }`}>
                           {t(`detailedView.status.${slot.status}`, slot.status)}
                         </span>
                       </div>
+                    </td>
+                    
+                    {/* Hours */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm font-medium text-gray-900">
+                        {calculateDuration(slot.startHour, slot.endHour)}
+                      </span>
                     </td>
                     
                     {/* Booking ID */}
@@ -362,7 +438,7 @@ export default function CalendarDetailedView({
                       {slot.bookingId ? (
                         <Link 
                           to={`/account/bookings/${slot.bookingId}`}
-                          className="font-mono text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors bg-blue-50 px-2 py-1 rounded border border-blue-200"
+                          className="font-mono text-sm font-semibold text-gray-600 hover:text-gray-800 hover:underline transition-colors bg-gray-100 px-2 py-1 rounded border border-gray-200"
                         >
                           {slot.uniqueRequestId || `REQ-${slot.bookingId}`}
                         </Link>
@@ -391,7 +467,7 @@ export default function CalendarDetailedView({
             <span className="text-gray-700">{t("detailedView.legend.cooldown", "Cooldown")}</span>
           </div>
           <div className="flex items-center">
-            <div className="h-3 w-3 bg-purple-500 rounded-full mr-2"></div>
+            <div className="h-3 w-3 bg-gray-400 rounded-full mr-2"></div>
             <span className="text-gray-700">{t("detailedView.legend.notBookable", "Not Bookable")}</span>
           </div>
           <div className="flex items-center">
@@ -407,16 +483,16 @@ export default function CalendarDetailedView({
 
       {/* Cooldown information */}
       {placeDetail.cooldown && placeDetail.cooldown > 0 && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="flex items-start text-blue-800">
+        <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+          <div className="flex items-start text-gray-700">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
             </svg>
             <div>
-              <p className="text-sm font-medium">
+              <p className="text-sm font-medium text-gray-800">
                 {t("detailedView.cooldown.title", "Cooldown Policy")}
               </p>
-              <p className="text-xs mt-1">
+              <p className="text-xs mt-1 text-gray-600">
                 {t("detailedView.cooldown.description", "After each booking, there is a")} {Math.floor(placeDetail.cooldown / 60)}h {placeDetail.cooldown % 60}m {t("detailedView.cooldown.period", "cooldown period where no new bookings can be made.")}
               </p>
             </div>
