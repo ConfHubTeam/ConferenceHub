@@ -62,7 +62,7 @@ export default function BookingRequestCard({ booking, competingBookings = [] }) 
   };
 
   return (
-      <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+      <div className="bg-white border border-gray-200 rounded-2xl p-4 hover:border-gray-400 hover:shadow-md transition-all duration-200">
       {/* Header with Request ID and Status */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">

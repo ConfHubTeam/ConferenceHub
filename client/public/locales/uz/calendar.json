@@ -128,12 +128,14 @@
     "table": {
       "timeRange": "Vaqt oralig'i",
       "status": "Holat",
+      "hours": "Soatlar",
       "bookingId": "Bronlash ID"
     },
     "status": {
       "booked": "Bronlangan",
       "available": "Mavjud",
-      "cooldown": "Tanaffus"
+      "cooldown": "Tanaffus",
+      "notBookable": "Bronlab bo'lmaydi"
     },
     "legend": {
       "title": "Belgilar",

@@ -177,9 +177,10 @@ export default function PlaceSelector({ selectedPlace, onPlaceSelect, compact = 
         {selectedPlace ? (
           <div className="flex items-center justify-between">
             <div className="flex items-center min-w-0 flex-1">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-blue-600">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m2.25-18v18m13.5-18v18m2.25-18v18M6.75 21V9.75m0 0V6.75a.75.75 0 01.75-.75h3.75M6.75 9.75V21m-2.25 0h5.25m13.5-18v18m-2.25 0H21m-3.75 0V6.75a.75.75 0 00-.75-.75h-3.75M21 21V9.75m0 0V6.75a.75.75 0 00-.75-.75h-3.75M6.75 6.75V9.75m13.5 0V6.75" />
+              <div className="w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-gray-500">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1115 0z" />
                 </svg>
               </div>
               <div className="flex-1 min-w-0">
@@ -203,9 +204,10 @@ export default function PlaceSelector({ selectedPlace, onPlaceSelect, compact = 
         ) : (
           <div className="flex items-center justify-between">
             <div className="flex items-center text-gray-500">
-              <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-gray-400">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m2.25-18v18m13.5-18v18m2.25-18v18M6.75 21V9.75m0 0V6.75a.75.75 0 01.75-.75h3.75M6.75 9.75V21m-2.25 0h5.25m13.5-18v18m-2.25 0H21m-3.75 0V6.75a.75.75 0 00-.75-.75h-3.75M21 21V9.75m0 0V6.75a.75.75 0 00-.75-.75h-3.75M6.75 6.75V9.75m13.5 0V6.75" />
+              <div className="w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-gray-500">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1115 0z" />
                 </svg>
               </div>
               <span>{t("calendar.selectPlace", "Select a place...")}</span>
@@ -296,13 +298,14 @@ export default function PlaceSelector({ selectedPlace, onPlaceSelect, compact = 
                     role="option"
                     aria-selected={selectedPlace?.id === place.id}
                     className={`p-3 hover:bg-gray-100 cursor-pointer flex items-center transition-colors ${
-                      selectedPlace && selectedPlace.id === place.id ? 'bg-blue-50 font-medium border-l-2 border-blue-500' : ''
+                      selectedPlace && selectedPlace.id === place.id ? 'bg-primary/10 font-medium border-l-2 border-primary' : ''
                     }`}
                     onClick={() => handleSelect(place)}
                   >
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-blue-600">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m2.25-18v18m13.5-18v18m2.25-18v18M6.75 21V9.75m0 0V6.75a.75.75 0 01.75-.75h3.75M6.75 9.75V21m-2.25 0h5.25m13.5-18v18m-2.25 0H21m-3.75 0V6.75a.75.75 0 00-.75-.75h-3.75M21 21V9.75m0 0V6.75a.75.75 0 00-.75-.75h-3.75M6.75 6.75V9.75m13.5 0V6.75" />
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-gray-500">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1115 0z" />
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
