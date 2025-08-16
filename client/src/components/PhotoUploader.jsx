@@ -204,8 +204,10 @@ export default function PhotoUploader({ addedPhotos, setAddedPhotos }) {
               </svg>
             </div>
             <div>
-              <span className="font-medium text-gray-700">Formats: </span>
-              <span>JPEG, PNG, GIF, BMP, WebP, AVIF, SVG</span>
+              <span className="font-medium text-gray-700">
+                {t('places:placeCreate.photoUpload.cloudinarySection.allowedFormats', 'Supported Formats:')} 
+              </span>
+              <span> JPEG, PNG, GIF, BMP, WebP, AVIF, SVG</span>
             </div>
           </div>
           <div className="flex items-center space-x-3">
@@ -215,8 +217,10 @@ export default function PhotoUploader({ addedPhotos, setAddedPhotos }) {
               </svg>
             </div>
             <div>
-              <span className="font-medium text-gray-700">Max size: </span>
-              <span>10MB per file</span>
+              <span className="font-medium text-gray-700">
+                {t('places:placeCreate.photoUpload.cloudinarySection.fileSize', 'File Size Limit:')} 
+              </span>
+              <span> {t('places:placeCreate.photoUpload.cloudinarySection.fileSizeLimit', 'Maximum 10MB per file. Files over 10MB are not allowed.')}</span>
             </div>
           </div>
         </div>
