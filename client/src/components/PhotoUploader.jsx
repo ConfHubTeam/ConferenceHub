@@ -24,6 +24,19 @@ export default function PhotoUploader({ addedPhotos, setAddedPhotos }) {
       return;
     }
 
+    // Check file sizes - 10MB limit
+    const maxFileSize = 10 * 1024 * 1024; // 10MB in bytes
+    for (let i = 0; i < files.length; i++) {
+      if (files[i].size > maxFileSize) {
+        setUploadError(t('places:placeCreate.photoUpload.fileSizeError', {
+          filename: files[i].name,
+          size: (files[i].size / 1024 / 1024).toFixed(1)
+        }));
+        setIsUploading(false);
+        return;
+      }
+    }
+
     const data = new FormData(); // to store upload files
     for (let i = 0; i < files.length; i++) {
       data.append("photos", files[i]);
@@ -150,7 +163,7 @@ export default function PhotoUploader({ addedPhotos, setAddedPhotos }) {
               multiple
               className="hidden"
               onChange={uploadPhoto}
-              accept="image/*"
+              accept="image/jpeg,image/jpg,image/png,image/gif,image/bmp,image/webp,image/avif,image/svg+xml"
               disabled={isUploading}
             />
             {isUploading ? (
@@ -179,6 +192,34 @@ export default function PhotoUploader({ addedPhotos, setAddedPhotos }) {
             )}
           </label>
         )}
+      </div>
+
+      {/* Upload Instructions - Stacked layout */}
+      <div className="mt-4 p-3 bg-white rounded-lg">
+        <div className="space-y-3 text-sm text-gray-600">
+          <div className="flex items-center space-x-3">
+            <div className="flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-gray-500">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+              </svg>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Formats: </span>
+              <span>JPEG, PNG, GIF, BMP, WebP, AVIF, SVG</span>
+            </div>
+          </div>
+          <div className="flex items-center space-x-3">
+            <div className="flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-gray-500">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Max size: </span>
+              <span>10MB per file</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

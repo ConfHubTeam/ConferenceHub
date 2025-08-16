@@ -50,7 +50,14 @@
       "uploadFailed": "Yuklash muvaffaqiyatsiz tugadi, keyinroq qayta urinib ko'ring.",
       "uploadProgress": "Yuklanmoqda...",
       "uploadButton": "Yuklash",
-      "photosCount": "{{current}}/{{max}} rasm yuklandi. {{remaining}} ta qoldi."
+      "photosCount": "{{current}}/{{max}} rasm yuklandi. {{remaining}} ta qoldi.",
+      "fileSizeError": "'{{filename}}' fayli ({{size}}MB) 10MB chegarasidan oshib ketdi. Iltimos, kichikroq fayl tanlang.",
+      "cloudinarySection": {
+        "title": "Rasm yuklash ko'rsatmalari",
+        "allowedFormats": "Qo'llab-quvvatlanadigan formatlar:",
+        "fileSize": "Fayl hajmi chegarasi:",
+        "fileSizeLimit": "Har bir fayl uchun maksimal 10MB. 10MB dan ortiq fayllar ruxsat etilmagan."
+      }
     },
     "youtubeVideo": "YouTube video",
     "youtubeVideoDescription": "Makoningizni ko'rsatish uchun YouTube video qo'shing",
