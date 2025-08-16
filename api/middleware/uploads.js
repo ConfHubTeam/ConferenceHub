@@ -29,15 +29,28 @@ const uploadToCloudinary = async (req, res, next) => {
     
     const uploadPromises = req.files.map(file => {
       return new Promise((resolve, reject) => {
-        // Create upload stream to Cloudinary
-        const uploadStream = cloudinary.uploader.upload_stream({
+        // Check file size and apply optimization for files over 10MB
+        const isLargeFile = file.size > 10 * 1024 * 1024; // 10MB
+        
+        // Configure upload options based on file size
+        const uploadOptions = {
           folder: 'conferencehub',
-        }, (error, result) => {
+          // Apply automatic format delivery and quality optimization for large files
+          ...(isLargeFile && {
+            format: 'auto', // f_auto - automatic format selection
+            quality: 'auto', // q_auto - automatic quality optimization
+            fetch_format: 'auto' // Additional format optimization
+          })
+        };
+        
+        // Create upload stream to Cloudinary
+        const uploadStream = cloudinary.uploader.upload_stream(uploadOptions, (error, result) => {
           if (error) return reject(error);
           resolve({ 
             url: result.secure_url, 
             publicId: result.public_id,
-            originalname: file.originalname
+            originalname: file.originalname,
+            optimized: isLargeFile // Flag to indicate if file was optimized
           });
         });
         

@@ -50,7 +50,14 @@
       "uploadFailed": "Upload failed, please try again later.",
       "uploadProgress": "Uploading...",
       "uploadButton": "Upload",
-      "photosCount": "{{current}}/{{max}} photos uploaded. {{remaining}} remaining."
+      "photosCount": "{{current}}/{{max}} photos uploaded. {{remaining}} remaining.",
+      "fileSizeError": "File '{{filename}}' ({{size}}MB) exceeds the 10MB limit. Please choose a smaller file.",
+      "cloudinarySection": {
+        "title": "Image Upload Guidelines",
+        "allowedFormats": "Supported Formats:",
+        "fileSize": "File Size Limit:",
+        "fileSizeLimit": "Maximum 10MB per file. Files over 10MB are not allowed."
+      }
     },
     "youtubeVideo": "YouTube Video",
     "youtubeVideoDescription": "Add a YouTube video to showcase your space",

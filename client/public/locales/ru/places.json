@@ -50,7 +50,14 @@
       "uploadFailed": "Загрузка не удалась, попробуйте еще раз позже.",
       "uploadProgress": "Загружается...",
       "uploadButton": "Загрузить",
-      "photosCount": "{{current}}/{{max}} фотографий загружено. Осталось {{remaining}}."
+      "photosCount": "{{current}}/{{max}} фотографий загружено. Осталось {{remaining}}.",
+      "fileSizeError": "Файл '{{filename}}' ({{size}}МБ) превышает лимит 10МБ. Пожалуйста, выберите файл меньшего размера.",
+      "cloudinarySection": {
+        "title": "Рекомендации по загрузке изображений",
+        "allowedFormats": "Поддерживаемые форматы:",
+        "fileSize": "Ограничение размера файла:",
+        "fileSizeLimit": "Максимум 10МБ на файл. Файлы свыше 10МБ не разрешены."
+      }
     },
     "youtubeVideo": "YouTube видео",
     "youtubeVideoDescription": "Добавьте видео с YouTube, чтобы продемонстрировать ваше пространство",
