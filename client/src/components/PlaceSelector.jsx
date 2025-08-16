@@ -145,9 +145,6 @@ export default function PlaceSelector({ selectedPlace, onPlaceSelect, compact = 
 
   // Format place display text
   const formatPlaceDisplay = (place) => {
-    if (user?.userType === 'agent' && place.owner) {
-      return `${place.title} (${place.owner.name})`;
-    }
     return place.title;
   };
 
