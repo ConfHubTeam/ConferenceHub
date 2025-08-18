@@ -1,0 +1,52 @@
+# Getspace UI Palette (Light Theme)
+
+## 🎨 Base Colors
+
+| Purpose             | Color   | HEX     | Note                               |
+|---------------------|---------|---------|------------------------------------|
+| Main background     |         | #F8F9FA | Very light background for UI       |
+| Cards / Blocks      |         | #FFFFFF | Background of cards, panels        |
+| Primary text        |         | #0E1220 | Logo color, main text              |
+| Secondary text      |         | #5F6373 | Secondary-level text               |
+| Lines / Borders     |         | #E2E4E9 | Borders, dividers                  |
+
+---
+
+## 🟦 Accent Colors
+
+| Purpose                 | Color   | HEX     | Note                                 |
+|--------------------------|---------|---------|--------------------------------------|
+| Primary accent           |         | #1D2A50 | Main accent color                     |
+| Hover / Shadow           |         | #2E3D69 | Hover effects, small shadows          |
+| Highlight / Button BG    |         | #4F6EF7 | Buttons, links, active elements       |
+
+---
+
+## ✅ Status Colors
+
+| Purpose          | Color   | HEX     | Note                          |
+|------------------|---------|---------|-------------------------------|
+| Success          |         | #2ECC71 | Confirmation, success messages |
+| Information      |         | #3498DB | Info blocks                   |
+| Warning          |         | #F39C12 | Attention / warning            |
+| Error            |         | #E74C3C | Errors, critical messages      |
+
+---
+
+## 🔘 UI Elements (Buttons, Icons)
+
+| Purpose            | Color   | HEX     | Note                    |
+|--------------------|---------|---------|-------------------------|
+| Primary button     |         | #1D2A50 | Dark blue               |
+| Button hover       |         | #2E3D69 | Slightly lighter        |
+| Button disabled    |         | #D6D8DD | Light gray              |
+| Active icons       |         | #1D2A50 | Same as primary accent  |
+| Inactive icons     |         | #9FA4B1 | Pale gray               |
+
+---
+
+## 🧱 Additional
+
+- **Shadow (UI blocks):** `box-shadow: 0px 4px 12px rgba(14, 18, 32, 0.08);`  
+- **Border Radius (unified):** `8px` — for cards, inputs, buttons  
+- **Font:** Inter / SF Pro / Helvetica Neue — clean, modern typeface  

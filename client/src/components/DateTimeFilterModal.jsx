@@ -230,18 +230,18 @@ export default function DateTimeFilterModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   const modalContent = (
-    <div className="fixed inset-0 z-[99999] bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4" style={{ zIndex: 999999 }}>
+    <div className="modal-overlay" style={{ zIndex: 999999 }}>
       <div 
         ref={modalRef}
-        className="bg-white rounded-xl shadow-2xl w-full max-w-sm sm:max-w-md md:max-w-4xl max-h-[90vh] flex flex-col overflow-hidden relative z-[99999]"
+        className="modal-container max-w-sm sm:max-w-md md:max-w-4xl max-h-[90vh] relative z-[99999]"
         style={{ zIndex: 999999 }}
       >
         {/* Header - Minimal padding */}
-        <div className="flex items-center justify-between px-3 sm:px-4 md:px-6 py-1 sm:py-1.5 md:py-2 border-b flex-shrink-0 bg-gray-50">
-          <h2 className="text-sm sm:text-base md:text-lg font-semibold text-brand-purple">{t("filters.modals.dateTime.title")}</h2>
+        <div className="modal-header py-1 sm:py-1.5 md:py-2">
+          <h2 className="text-lg font-semibold text-gray-900">{t("filters.modals.dateTime.title")}</h2>
           <button 
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-200 transition-colors"
+            className="text-text-muted hover:text-text-primary p-1 rounded-full hover:bg-bg-secondary transition-colors"
             aria-label="Close modal"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -251,9 +251,9 @@ export default function DateTimeFilterModal({ isOpen, onClose }) {
         </div>
         
         {/* Main Content - Scrollable content */}
-        <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="modal-body min-h-0 p-1 sm:p-2 md:p-3">
           {/* Calendar Section */}
-          <div className="p-1 sm:p-2 md:p-3">
+          <div>
             {/* Calendar container */}
             <div className="calendar-container flex items-center justify-center">
               <MultiDateCalendar
@@ -269,12 +269,12 @@ export default function DateTimeFilterModal({ isOpen, onClose }) {
             {/* Time selectors */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="flex flex-col">
-                <label className="text-xs sm:text-sm font-medium text-gray-700 mb-2 flex-shrink-0">{t("filters.modals.dateTime.startTime")}</label>
+                <label className="form-label">{t("filters.modals.dateTime.startTime")}</label>
                 <div className="relative flex-shrink-0">
                   <select
                     value={tempStartTime}
                     onChange={(e) => setTempStartTime(e.target.value)}
-                    className="w-full p-2 sm:p-2.5 text-sm border border-gray-300 rounded-lg appearance-none bg-white pr-8 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
+                    className="form-select"
                   >
                     {timeOptions.map(time => (
                       <option 
@@ -286,7 +286,7 @@ export default function DateTimeFilterModal({ isOpen, onClose }) {
                       </option>
                     ))}
                   </select>
-                  <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-500">
+                  <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-text-muted">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -295,12 +295,12 @@ export default function DateTimeFilterModal({ isOpen, onClose }) {
               </div>
 
               <div className="flex flex-col">
-                <label className="text-xs sm:text-sm font-medium text-gray-700 mb-2 flex-shrink-0">{t("filters.modals.dateTime.endTime")}</label>
+                <label className="form-label">{t("filters.modals.dateTime.endTime")}</label>
                 <div className="relative flex-shrink-0">
                   <select
                     value={tempEndTime}
                     onChange={(e) => setTempEndTime(e.target.value)}
-                    className="w-full p-2 sm:p-2.5 text-sm border border-gray-300 rounded-lg appearance-none bg-white pr-8 focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
+                    className="form-select"
                   >
                     {timeOptions.map(time => (
                       <option 
@@ -324,17 +324,17 @@ export default function DateTimeFilterModal({ isOpen, onClose }) {
         </div>
         
         {/* Footer - Minimal padding */}
-        <div className="flex items-center justify-between px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 md:py-2.5 border-t flex-shrink-0 bg-white">
+        <div className="modal-footer py-1.5 sm:py-2 md:py-2.5">
           <button 
             onClick={handleClear}
-            className="text-brand-purple font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-brand-purple px-1 py-1 rounded-md text-xs sm:text-sm"
+            className="btn-ghost btn-size-md text-accent-primary"
           >
             {t("filters.modals.dateTime.clearAll")}
           </button>
           <div className="flex gap-2">
             <button 
               onClick={handleApply}
-              className="bg-brand-orange text-white rounded-lg px-3 sm:px-4 py-1.5 sm:py-2 font-medium hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-orange transition-colors text-xs sm:text-sm"
+              className="btn-primary btn-size-md"
               disabled={tempSelectedDates.length === 0}
             >
               {t("filters.modals.dateTime.apply")}

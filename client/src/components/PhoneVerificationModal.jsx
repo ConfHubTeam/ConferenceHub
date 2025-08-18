@@ -197,7 +197,7 @@ export default function PhoneVerificationModal({
                   setVerificationCode(value);
                 }
               }}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-center text-lg font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="form-input text-center text-lg font-mono tracking-widest"
               placeholder="000000"
               maxLength={6}
               inputMode="numeric"
@@ -207,11 +207,11 @@ export default function PhoneVerificationModal({
           </div>
 
           <div className="flex justify-between items-center mb-6">
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-text-secondary">
               {timeLeft > 0 ? (
                 <span>{t('profile:phoneVerification.expiresIn')} {formatTime(timeLeft)}</span>
               ) : (
-                <span className="text-red-600">{t('profile:phoneVerification.expired')}</span>
+                <span className="text-status-error">{t('profile:phoneVerification.expired')}</span>
               )}
               {/* Debug info - remove in production */}
               <span className="ml-2 text-xs text-gray-400">({timeLeft}s)</span>

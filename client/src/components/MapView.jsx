@@ -121,7 +121,7 @@ const MapView = memo(forwardRef(function MapView({
   }, [selectedCurrency]);
   
   // Create a custom price marker icon with current currency
-  const createPriceMarkerIcon = useCallback(async (price, currency, size = "medium", isHighlighted = false) => {
+  const createPriceMarkerIcon = useCallback(async (price, currency, size = "medium", isHighlighted = false, isHovered = false) => {
     // Format the price with the current currency from ref to ensure consistency
     let formattedPrice;
     
@@ -210,7 +210,7 @@ const MapView = memo(forwardRef(function MapView({
     context.imageSmoothingQuality = "high";
     
     // Draw the marker shape using extracted utility
-    drawMarkerShape(context, baseWidth, baseHeight, borderRadius, isHighlighted);
+    drawMarkerShape(context, baseWidth, baseHeight, borderRadius, isHighlighted, isHovered);
     
     // Draw the price text using extracted utility
     drawPriceText(context, formattedPrice, baseWidth, baseHeight, fontSize);
@@ -326,6 +326,45 @@ const MapView = memo(forwardRef(function MapView({
               // Removed auto-zoom and auto-center for smooth user experience
               // Users can control the map zoom and position naturally
             }
+          });
+
+          // Add hover events to marker for immediate visual feedback
+          marker.addListener("mouseover", () => {
+            const place = marker.placeData;
+            const currentZoom = map?.getZoom() || 12;
+            const size = getMarkerSizeByZoom(currentZoom);
+            
+            // Create hovered icon with isHovered = true
+            createPriceMarkerIcon(place.price, place.currency, size, false, true)
+              .then(iconUrl => {
+                const markerProps = getMarkerGoogleMapsProperties(size);
+                marker.setIcon({
+                  url: iconUrl,
+                  anchor: markerProps.anchor,
+                  scaledSize: markerProps.scaledSize
+                });
+                marker.setZIndex(999); // Bring to front on hover
+              })
+              .catch(error => console.error("Error setting hover marker icon:", error));
+          });
+
+          marker.addListener("mouseout", () => {
+            const place = marker.placeData;
+            const currentZoom = map?.getZoom() || 12;
+            const size = getMarkerSizeByZoom(currentZoom);
+            
+            // Restore normal icon with isHovered = false
+            createPriceMarkerIcon(place.price, place.currency, size, false, false)
+              .then(iconUrl => {
+                const markerProps = getMarkerGoogleMapsProperties(size);
+                marker.setIcon({
+                  url: iconUrl,
+                  anchor: markerProps.anchor,
+                  scaledSize: markerProps.scaledSize
+                });
+                marker.setZIndex(1); // Reset z-index
+              })
+              .catch(error => console.error("Error resetting marker icon:", error));
           });
           
           markers.push(marker);

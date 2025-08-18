@@ -202,13 +202,6 @@ export default function PlaceDetailPage() {
         </div>
       )}
 
-      {/* Agent notification */}
-      {user && user.userType === 'agent' && !isOwner && (
-        <div className="bg-blue-100 p-4 mb-4 rounded-lg">
-          <p className="text-blue-800 font-semibold text-sm md:text-base">{t('placeDetail.agentNotification')}</p>
-        </div>
-      )}
-
       {/* Error notification */}
       {error && (
         <div className="bg-red-100 text-red-800 p-4 mb-4 rounded-lg">

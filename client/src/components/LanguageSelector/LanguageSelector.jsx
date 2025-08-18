@@ -174,11 +174,11 @@ const LanguageSelector = ({
           inline-flex items-center justify-center gap-2
           ${theme === "dark"
             ? 'bg-black text-white hover:bg-white/10'
-            : 'border border-gray-300 bg-gray-100 hover:bg-gray-200'}
+            : 'border border-border-default bg-bg-secondary hover:bg-border-light'}
           rounded-full
           focus:outline-none focus:ring-2 focus:ring-offset-2
-          ${theme === "dark" ? 'focus:ring-white/20' : 'focus:ring-indigo-500'}
-          transition-colors duration-200
+          ${theme === "dark" ? 'focus:ring-white/20' : 'focus:ring-accent-primary'}
+          transition-all duration-200 hover-pop
           disabled:opacity-50 disabled:cursor-not-allowed
           ${styles.button}
         `}

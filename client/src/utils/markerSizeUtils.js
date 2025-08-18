@@ -16,25 +16,25 @@ export const getMarkerAnchorPoint = (size = 'medium') => {
   };
 };
 
-// Marker size configurations
+// Marker size configurations - smaller and more rounded
 export const MARKER_SIZE_CONFIGS = {
   small: {
-    width: 60,
-    height: 32,
-    fontSize: 11,
-    borderRadius: 5
+    width: 40,
+    height: 22,
+    fontSize: 9,
+    borderRadius: 11
   },
   medium: {
-    width: 75,
-    height: 40,
-    fontSize: 13,
-    borderRadius: 6
+    width: 50,
+    height: 26,
+    fontSize: 10,
+    borderRadius: 13
   },
   large: {
-    width: 90,
-    height: 45,
-    fontSize: 15,
-    borderRadius: 8
+    width: 58,
+    height: 30,
+    fontSize: 11,
+    borderRadius: 15
   }
 };
 

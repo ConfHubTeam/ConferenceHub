@@ -44,21 +44,22 @@ function IndexPageLayout() {
   
   return (
     <div className="flex flex-col h-screen overflow-hidden">
-      <div className={`${isMobileMapView ? 'fixed w-full' : 'sticky'} top-0 z-[60] bg-white flex-shrink-0`}>
-        <div className="py-5 border-b border-gray-200 pb-2">
-          <Header />
-        </div>
-        <FilterRow 
-          isMapVisible={isMapVisible}
-          isMobileMapView={isMobileMapView}
-          toggleMap={toggleMap}
-          showMobileMap={showMobileMap}
-          selectedRegionId={selectedRegionId}
-          onRegionChange={handleRegionChange}
-          onMapFocus={handleMapFocus}
-          regionService={regionService}
-        />
-      </div>
+      {/* Header - manages its own padding and styling */}
+      <Header />
+      
+      {/* Filter Row - manages its own padding and styling */}
+      <FilterRow 
+        isMapVisible={isMapVisible}
+        isMobileMapView={isMobileMapView}
+        toggleMap={toggleMap}
+        showMobileMap={showMobileMap}
+        selectedRegionId={selectedRegionId}
+        onRegionChange={handleRegionChange}
+        onMapFocus={handleMapFocus}
+        regionService={regionService}
+      />
+      
+      {/* Content area - listings take remaining space */}
       <div className={`flex-1 overflow-hidden flex flex-col ${isMobileMapView ? 'pt-[120px]' : ''}`}>
         <Outlet context={{ 
           isMapVisible, 
@@ -101,11 +102,7 @@ export default function Layout() {
   // Default layout for all other pages - scrollable
   return (
     <div className="min-h-screen">
-      <div className="sticky top-0 z-[60] bg-white border-b border-gray-200">
-        <div className="py-5">
-          <Header />
-        </div>
-      </div>
+      <Header />
       <div className="pt-5">
         <Outlet />
       </div>

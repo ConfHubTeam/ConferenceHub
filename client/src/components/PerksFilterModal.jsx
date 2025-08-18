@@ -121,7 +121,7 @@ const PerksFilterModal = ({ isOpen, onClose }) => {
         {/* Modal Header */}
         <div className="flex items-center justify-between p-3 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-semibold text-gray-900">{t("search:filters.modals.perks.title")}</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{t("search:filters.modals.perks.title")}</h2>
             {hasSelectedPerks && (
               <span className="bg-primary text-white text-sm px-2 py-1 rounded-full">
                 {selectedPerksCount}
@@ -284,13 +284,13 @@ const PerksFilterModal = ({ isOpen, onClose }) => {
             <div className="flex gap-3">
               <button
                 onClick={onClose}
-                className="flex-1 sm:flex-none px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                className="btn-outline btn-size-md flex-1 sm:flex-none"
               >
                 {t("search:filters.modals.perks.actions.cancel")}
               </button>
               <button
                 onClick={onClose}
-                className="flex-1 sm:flex-none px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+                className="btn-primary btn-size-md flex-1 sm:flex-none"
               >
                 {t("search:filters.modals.perks.actions.apply")}
               </button>

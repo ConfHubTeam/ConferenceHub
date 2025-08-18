@@ -173,15 +173,15 @@ export default function CurrencySelector({
         } ${
           theme === "dark" 
             ? 'bg-black text-white border-white/30 hover:border-white/50' 
-            : 'bg-white border border-gray-300 hover:bg-gray-50'
-        } rounded-full cursor-pointer transition-all duration-200 hover:shadow-md ${
+            : 'bg-bg-card border border-border-default hover:bg-bg-secondary'
+        } rounded-full cursor-pointer transition-all duration-200 hover:shadow-md hover-pop ${
           isOpen 
             ? theme === "dark" 
               ? 'border-white/50 ring-2 ring-white/20 shadow-sm' 
-              : 'border-blue-500 ring-2 ring-blue-500 ring-opacity-20 shadow-sm'
+              : 'border-accent-primary ring-2 ring-accent-primary ring-opacity-20 shadow-sm'
             : theme === "dark"
               ? 'focus:border-white/50 focus:ring-2 focus:ring-white/20'
-              : 'focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20'
+              : 'focus:border-accent-primary focus:ring-2 focus:ring-accent-primary focus:ring-opacity-20'
         }`}
         onClick={() => setIsOpen(!isOpen)}
         tabIndex={0}

@@ -28,7 +28,7 @@ export default function NotificationBell({ isMobile = false, onClick }) {
   return (
     <Link 
       to={linkTo}
-      className="relative p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+      className="relative p-2 hover:bg-bg-secondary rounded-full transition-all duration-200 hover-pop"
       title="View notifications"
       onClick={onClick}
     >

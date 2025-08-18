@@ -215,18 +215,18 @@ export default function UserNavigation() {
       {/* Navigation container with FilterRow-style scrolling */}
       <div 
         ref={scrollContainerRef}
-        className="flex items-center space-x-1 overflow-x-auto scrollbar-hide pb-1 -mb-1 scroll-smooth"
+        className="flex items-center space-x-1 overflow-x-auto scrollbar-hide pt-2 pb-1 -mb-1 scroll-smooth"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         onScroll={checkScrollPosition}
       >
-        <div className="flex items-center space-x-1 flex-shrink-0 px-6">
+        <div className="flex items-center space-x-3 flex-shrink-0 px-6">
           {allNavItems.map((item) => (
             <Link
               key={item.key}
-              className={`relative inline-flex items-center gap-2 px-3 py-2 rounded-lg text-base font-medium transition-all duration-200 flex-shrink-0 whitespace-nowrap ${
+              className={`relative inline-flex items-center gap-2 px-3 py-2 rounded-lg text-base font-medium transition-all duration-200 flex-shrink-0 whitespace-nowrap hover-pop-sm ${
                 item.key === subpage
-                  ? 'bg-white text-primary border border-primary shadow-sm'
-                  : 'bg-white text-gray-600 border border-transparent hover:text-primary hover:bg-gray-50'
+                  ? 'bg-bg-card text-accent-primary border border-accent-primary shadow-sm'
+                  : 'bg-bg-card text-text-secondary border border-transparent hover:text-accent-primary hover:bg-bg-secondary'
               }`}
               to={item.to}
             >

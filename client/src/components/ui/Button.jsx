@@ -26,7 +26,7 @@ const Button = ({
     lg: 'px-6 py-2.5 text-base sm:px-8 sm:py-3 sm:text-lg'
   };
   
-  // Variant styles with semantic colors
+  // Variant styles with semantic colors and new design system
   const variantStyles = {
     primary: 'bg-primary text-white hover:bg-primary/90 focus:ring-primary shadow-sm hover:shadow-md',
     secondary: 'bg-secondary text-white hover:bg-secondary/90 focus:ring-secondary shadow-sm hover:shadow-md',
@@ -34,9 +34,11 @@ const Button = ({
     warning: 'bg-warning-600 text-white hover:bg-warning-700 focus:ring-warning-500 shadow-sm hover:shadow-md',
     error: 'bg-error-600 text-white hover:bg-error-700 focus:ring-error-500 shadow-sm hover:shadow-md',
     info: 'bg-info-600 text-white hover:bg-info-700 focus:ring-info-500 shadow-sm hover:shadow-md',
-    outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-gray-500',
-    ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-500',
-    neutral: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500 shadow-sm hover:shadow-md'
+    outline: 'border border-border-default bg-bg-card text-text-primary hover:bg-bg-secondary focus:ring-accent-primary',
+    ghost: 'bg-transparent text-text-primary hover:bg-bg-secondary focus:ring-accent-primary',
+    neutral: 'bg-neutral-600 text-white hover:bg-neutral-700 focus:ring-neutral-500 shadow-sm hover:shadow-md',
+    accent: 'bg-accent-primary text-white hover:bg-accent-hover focus:ring-accent-primary shadow-sm hover:shadow-md',
+    highlight: 'bg-accent-highlight text-white hover:bg-blue-600 focus:ring-accent-highlight shadow-sm hover:shadow-md'
   };
   
   // Full width styles

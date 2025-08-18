@@ -581,13 +581,13 @@ function IndexPageBase() {
       >
         {/* Listings section */}
         <div 
-          className={`overflow-y-auto ${isDragging ? '' : 'transition-all duration-75 ease-linear'}`}
+          className={`overflow-y-auto bg-gradient-to-b from-gray-50 to-white ${isDragging ? '' : 'transition-all duration-75 ease-linear'}`}
           style={{ 
             width: mapVisible ? `${listingsWidth}%` : '100%'
           }}
           data-listings-section
         >
-          <div className="p-4 pb-20 md:pb-4">
+          <div className="p-4 pb-20 md:pb-4 bg-white/50 backdrop-blur-sm rounded-t-3xl mx-2 mt-2 shadow-sm">
             {isLoading ? (
               <div className="flex justify-center my-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -621,24 +621,26 @@ function IndexPageBase() {
                     </div>
 
                     <Link to={`/place/${place.id}${location.search}`}>
-                      <div className="bg-white overflow-hidden shadow hover:shadow-lg transition-all duration-200 rounded-2xl border border-gray-200 hover:border-gray-400">
-                        <div className="aspect-square overflow-hidden">
+                      <div className="bg-white overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-gray-100 hover:border-primary group hover:-translate-y-1">
+                        <div className="aspect-square overflow-hidden relative">
                           {place.photos?.length > 0 && (
                             <CloudinaryImage
                               photo={place.photos[0]}
                               alt={place.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                             />
                           )}
+                          {/* Gradient overlay for better text readability */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-primary/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         </div>
-                        <div className="p-4">
-                          <h2 className="font-semibold text-lg truncate">{place.title}</h2>
-                          <div className="flex items-center text-gray-500 text-base mt-1">
-                            <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="p-5 bg-gradient-to-br from-white to-gray-50/50">
+                          <h2 className="font-bold text-lg truncate text-gray-900 group-hover:text-primary transition-colors duration-200">{place.title}</h2>
+                          <div className="flex items-center text-gray-500 text-sm mt-2">
+                            <svg className="w-4 h-4 mr-1 flex-shrink-0 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            <h3 className="truncate">{place.address}</h3>
+                            <h3 className="truncate font-medium">{place.address}</h3>
                           </div>
                           
                           {/* Rating and max guests row */}
