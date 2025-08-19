@@ -370,6 +370,7 @@ class PaymeService {
       await booking.update({
         status: 'approved',
         paidAt: new Date(performTime), // Use the same timestamp
+        approvedAt: new Date(performTime), // Set approved timestamp
         paymentResponse: {
           provider: 'payme',
           transaction_id: String(paymeTransactionId),
