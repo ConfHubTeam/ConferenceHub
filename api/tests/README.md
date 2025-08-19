@@ -1,153 +1,175 @@
-# SMS Testing Guide
+````markdown
+# Testing Guide
 
-This folder contains test scripts for the Eskiz SMS integration.
+This folder contains test scripts for various integrations including SMS (Eskiz) and Payment (Payme) services.
 
-## Test Scripts
+## Payme Integration Testing
 
-### 1. `sms-test.js` - Basic SMS Test
-Tests direct SMS sending using Eskiz API.
+### Overview
+Comprehensive integration tests for the Payme payment gateway that perform real API calls to Payme's sandbox environment.
 
+### Running Payme Tests
+```bash
+# Using npm scripts (Recommended)
+npm run test:payme
+
+# Direct Jest execution
+npm run test:payme-integration
+
+# Manual execution
+cd api
+node tests/run-payme-integration-tests.js
+```
+
+### Prerequisites for Payme Tests
+Set these environment variables in your `.env` file:
+```bash
+PAYME_MERCHANT_ID=your_merchant_id_from_payme_dashboard
+PAYME_TEST_KEY=your_test_key_for_sandbox
+PAYME_TEST_WEBHOOK_URL=https://your-ngrok-domain.ngrok-free.app/api/payme/pay
+```
+
+### What Payme Tests Cover
+- ✅ API Authentication with test_key
+- ✅ Transaction Lifecycle (Create → Check → Cancel)
+- ✅ Enhanced Service Integration
+- ✅ Database Integration
+- ✅ Error Handling
+- ✅ Phone Number Formatting
+- ✅ Checkout URL Generation
+
+### Expected Test Results
+- 🔧 Configuration messages show environment setup
+- ✅ Green checkmarks indicate successful tests
+- ⚠️ Some API errors are expected in test environment (account not found, etc.)
+
+## SMS Testing (Eskiz Integration)
+
+### Test Scripts
+
+#### 1. `sms-test.js` - Basic SMS Test
 ```bash
 cd api/tests
 node sms-test.js
 ```
 
-**What it tests:**
-- Authentication with Eskiz API
-- SMS sending to test phone number
-- Response handling
-
-### 2. `account-check.js` - Account Status Check
-Checks account details, balance, and capabilities.
-
+#### 2. `account-check.js` - Account Status Check
 ```bash
 cd api/tests
 node account-check.js
 ```
 
-**What it checks:**
-- Account type (test/production)
-- Available balance
-- User profile information
-- Available sender IDs
-
-### 3. `sms-service-test.js` - Service Integration Test
-Tests the main SMS service class used by the application.
-
+#### 3. `comprehensive-sms-test.js` - Full Notification Flow
 ```bash
 cd api/tests
-node sms-service-test.js
+node comprehensive-sms-test.js
 ```
 
-### 4. `notification-flow-test.js` - Full Application Flow Test
-Tests the complete booking and review notification flow with SMS.
-
-```bash
-cd api/tests
-node notification-flow-test.js
-```
-
-**What it tests:**
-- Complete notification flow (booking confirmations, review alerts)
-- In-app and SMS notification dispatch
-- Error handling and fallbacks
-
-### 5. `token-refresh-test.js` - Token Management Test
-Tests the enhanced token refresh functionality and error handling.
-
+#### 4. `token-refresh-test.js` - Token Management Test
 ```bash
 cd api/tests
 node token-refresh-test.js
 ```
 
-**What it tests:**
-- Automatic token authentication
-- Token expiry detection
-- Automatic token refresh on API calls
-- Error handling for various authentication scenarios
-- SMS sending with simulated token expiry
-- Connection resilience and retry logic
-- Booking confirmation SMS (to guest and host)
-- Booking status update SMS
-- Review notification SMS
-- Review reply notification SMS
-- Complete end-to-end notification flow
+### SMS Test Account Limitations
+Current account is a **TEST ACCOUNT** with restrictions:
+- Only approved messages work: "This is test from Eskiz", "Bu Eskiz dan test", "Это тест от Eskiz"
+- Only sender ID "4546" works
+- Custom messages require paid account upgrade
 
-This test simulates the actual application flow but uses approved test messages. Once you upgrade to a paid account, the same logic will work with custom messages automatically.
+## All Available Test Scripts
 
-## Test Account Limitations
+### Payment Integration
+- `services/paymeIntegration.test.js` - Payme API integration tests
+- `run-payme-integration-tests.js` - Payme test runner with environment validation
 
-Your current account is a **TEST ACCOUNT** with these restrictions:
+### SMS Integration  
+- `sms-test.js` - Basic SMS functionality
+- `account-check.js` - Account status and balance
+- `comprehensive-sms-test.js` - Complete notification flow
+- `token-refresh-test.js` - Token management and refresh
+- `multilingual-sms-test.js` - Multi-language SMS testing
 
-### Message Content
-Only these approved messages work:
-- "This is test from Eskiz" ✅
-- "Bu Eskiz dan test" ✅
-- "Это тест от Eskiz" ✅
+### Booking Flow Tests
+- `booking-flow-sms-test.js` - End-to-end booking with SMS
+- `test-real-booking-notification.js` - Real booking notification test
+- `test-real-users-flow.js` - Complete user interaction flow
+- `debug-real-booking-sms-flow.js` - Booking SMS flow debugging
 
-### Sender ID
-- Only "4546" works ✅
-- Custom sender IDs require paid account ❌
-
-### Custom Messages
-- Booking notifications with custom content require paid account ❌
-
-## Upgrading for Production
-
-To enable full SMS functionality for your Airbnb Clone:
-
-1. **Upgrade to Paid Account** with Eskiz
-2. **Top up Balance** for SMS sending
-3. **Request Custom Sender ID** (like "AIRBNB")
-4. **Remove test message restrictions** in code (see below)
-
-### Removing Test Restrictions
-
-Once you have a paid account, edit `api/services/eskizSMSService.js`:
-
-```javascript
-// Find the prepareMessage method and modify it:
-prepareMessage(message) {
-  // Comment out or remove the test account check
-  /*
-  if (this.token) {
-    try {
-      const tokenPayload = JSON.parse(Buffer.from(this.token.split('.')[1], 'base64').toString());
-      if (tokenPayload.role === 'test') {
-        console.log('Test account detected - using approved test message');
-        return 'This is test from Eskiz';
-      }
-    } catch (error) {
-      console.warn('Could not decode token to check account type');
-    }
-  }
-  */
-  
-  // Return original message for paid accounts
-  return message;
-}
-```
-
-After this change, all your booking and review notifications will use custom messages!
-
-## Usage in Application
-
-Once you have a paid account, the SMS service will automatically:
-- Send booking confirmation SMS
-- Send booking status updates
-- Send review notifications
-- Use custom messages and sender ID
-
-## Test Phone Number
-
-Current test phone: `+998993730907` (host@gmail.com)
+### Service Tests
+- `services/placeAvailabilityService.test.js` - Place availability logic
 
 ## Environment Variables
 
-Make sure these are set in your `.env`:
+### Required for All Tests
+```bash
+# Database
+POSTGRES_DB=your_database_name
+POSTGRES_USER=your_db_user
+POSTGRES_PASSWORD=your_db_password
+POSTGRES_HOST=localhost
+
+# JWT
+JWT_SECRET=your_jwt_secret
 ```
+
+### For Payme Tests
+```bash
+PAYME_MERCHANT_ID=68944508cab302211ad21b06
+PAYME_TEST_KEY=your_test_key_from_payme
+PAYME_TEST_WEBHOOK_URL=https://your-ngrok-domain.ngrok-free.app/api/payme/pay
+```
+
+### For SMS Tests
+```bash
 ESKIZ_EMAIL=getspace855@gmail.com
 ESKIZ_SECRET_CODE=zMJwxUyWwQISUH208Rptuajujnv86NAHeCnJhnvc
 ESKIZ_BASE_URL=https://notify.eskiz.uz/api
 ESKIZ_FROM=4546
 ```
+
+## Test Data Management
+
+Tests automatically:
+- Create temporary test users and bookings
+- Clean up test data after completion
+- Use isolated test transactions
+
+## Troubleshooting
+
+### Payme Test Issues
+1. **Missing environment variables**: Add PAYME_MERCHANT_ID and PAYME_TEST_KEY to .env
+2. **Database connection**: Ensure PostgreSQL is running
+3. **Network issues**: Check connection to https://test.paycom.uz
+4. **Invalid credentials**: Verify merchant ID and test key from Payme dashboard
+
+### SMS Test Issues  
+1. **Account type restrictions**: Test account only allows approved messages
+2. **Balance issues**: Check account balance in Eskiz dashboard
+3. **Token expiry**: Tests handle automatic token refresh
+
+## CI/CD Integration
+
+Tests can be integrated into CI/CD pipelines:
+```yaml
+- name: Run Integration Tests
+  run: |
+    npm run test:payme-integration
+  env:
+    PAYME_MERCHANT_ID: ${{ secrets.PAYME_MERCHANT_ID }}
+    PAYME_TEST_KEY: ${{ secrets.PAYME_TEST_KEY }}
+```
+
+## Production Readiness
+
+### For Payme
+- Tests validate sandbox integration
+- Switch to production URLs and keys for live environment
+- All test scenarios must pass before production deployment
+
+### For SMS
+- Upgrade to paid Eskiz account for custom messages
+- Remove test message restrictions in SMS service
+- Configure custom sender ID
+
+````

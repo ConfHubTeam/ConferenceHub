@@ -39,10 +39,6 @@ class UnifiedNotificationService {
     smsMessage = null // New: pre-translated SMS message
   }) {
     try {
-      console.log(`🔔 CREATING NOTIFICATION - User: ${userId}, Type: ${type}, SendSMS: ${sendSMS}`);
-      console.log(`📝 In-app message: ${message}`);
-      console.log(`📱 SMS message: ${smsMessage || 'Using in-app message'}`);
-      
       // Create in-app notification first (primary channel)
       const notification = await Notification.create({
         userId,
@@ -55,24 +51,15 @@ class UnifiedNotificationService {
         isSMSSent: false
       });
 
-      console.log(`✅ In-app notification created - ID: ${notification.id}, User: ${userId}, Type: ${type}`);
-
       // Only send SMS for booking-related notifications to reduce costs
       const isBookingNotification = type.startsWith('booking_');
       
-      console.log(`📱 SMS Check - IsBooking: ${isBookingNotification}, SendSMS: ${sendSMS}, Type: ${type}`);
-      
       if (sendSMS && isBookingNotification) {
-        console.log(`🚀 TRIGGERING ASYNC SMS - NotificationID: ${notification.id}, UserID: ${userId}`);
         // Don't await SMS to avoid blocking in-app notification
         this.sendSMSNotification(notification.id, userId, type, metadata, smsMessage)
           .catch(error => {
             console.error(`❌ SMS notification failed for notification ${notification.id}:`, error.message);
           });
-      } else if (sendSMS && !isBookingNotification) {
-        console.log(`⏭️ SKIPPING SMS - Not a booking notification (${type})`);
-      } else {
-        console.log(`⏭️ SKIPPING SMS - SendSMS disabled or not booking type`);
       }
 
       return {
@@ -96,51 +83,38 @@ class UnifiedNotificationService {
    */
   static async sendSMSNotification(notificationId, userId, type, metadata = {}, smsMessage = null) {
     try {
-      console.log(`📱 SMS PROCESSING STARTED - NotificationID: ${notificationId}, UserID: ${userId}, Type: ${type}`);
-      
       // Get user's phone number
       const user = await User.findByPk(userId, {
         attributes: ["id", "phoneNumber", "name"]
       });
 
       if (!user || !user.phoneNumber) {
-        console.log(`❌ SMS SKIPPED - User ${userId} has no phone number`);
         return { success: false, reason: "No phone number" };
       }
-
-      console.log(`👤 User found - ID: ${user.id}, Name: ${user.name}, Phone: ${user.phoneNumber}`);
 
       // Use pre-translated SMS message if provided, otherwise fall back to in-app notification message
       let finalSMSMessage = smsMessage;
       
       if (!finalSMSMessage) {
-        console.log(`📝 No pre-translated SMS message provided, using in-app notification message as fallback`);
         // Get the in-app notification message to use as SMS text (fallback for legacy support)
         const notification = await Notification.findByPk(notificationId, {
           attributes: ["message"]
         });
 
         if (!notification || !notification.message) {
-          console.log(`❌ SMS FAILED - No notification message found for ID: ${notificationId}`);
           return { success: false, reason: "No notification message" };
         }
 
         finalSMSMessage = notification.message;
       }
 
-      console.log(`📞 SENDING SMS - User: ${userId} (${user.phoneNumber}), NotificationID: ${notificationId}`);
-      console.log(`📄 SMS Message: "${finalSMSMessage}"`);
-
       // Send SMS via Eskiz service
       const smsResult = await eskizSMSService.sendSMS(user.phoneNumber, finalSMSMessage);
-
-      console.log(`📱 SMS RESULT - Success: ${smsResult.success}, RequestID: ${smsResult.requestId}, Error: ${smsResult.error || 'None'}`);
 
       // Update notification record with SMS status
       await this.updateNotificationSMSStatus(notificationId, smsResult);
 
       if (smsResult.success) {
-        console.log(`✅ SMS COMPLETED SUCCESSFULLY - User: ${userId} (${user.phoneNumber}), RequestID: ${smsResult.requestId}`);
         return {
           success: true,
           requestId: smsResult.requestId,

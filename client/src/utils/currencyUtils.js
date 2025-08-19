@@ -59,7 +59,6 @@ export async function getExchangeRates(baseCurrency) {
       };
       
       if (fallbackRates[baseCurrency]) {
-        console.log(`Using fallback rates for ${baseCurrency}`);
         exchangeRatesCache[baseCurrency] = fallbackRates[baseCurrency];
         rateLastFetched[baseCurrency] = now;
         return fallbackRates[baseCurrency];

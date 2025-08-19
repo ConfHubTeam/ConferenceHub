@@ -17,12 +17,9 @@ class PaymentStatusPoller {
    */
   async checkPaymentStatus(bookingId) {
     try {
-      console.log(`🔍 Polling payment status for booking ${bookingId}`);
-      
       const result = await this.paymentStatusService.verifyAndUpdatePaymentStatus(bookingId);
 
       if (result.success && result.isPaid) {
-        console.log(`💰 Payment confirmed for booking ${bookingId}`);
         return { 
           success: true, 
           status: result.bookingStatus, 
@@ -33,7 +30,6 @@ class PaymentStatusPoller {
         };
       }
 
-      console.log(`📝 Payment check completed for booking ${bookingId}: ${result.message}`);
       return { 
         success: true, 
         status: result.bookingStatus, 
@@ -53,8 +49,6 @@ class PaymentStatusPoller {
    */
   async checkPendingPayments() {
     try {
-      console.log('🔄 Checking for pending payments...');
-      
       // Find bookings that are still 'selected' but might have been paid
       const pendingBookings = await Booking.findAll({
         where: {
@@ -75,14 +69,12 @@ class PaymentStatusPoller {
         
         if (result.success && result.isPaid) {
           updatedCount++;
-          console.log(`✅ Updated booking ${booking.id} payment status`);
         }
         
         // Add delay to avoid rate limiting
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
-      console.log(`✅ Checked ${checkedCount} pending bookings, updated ${updatedCount} payments`);
       return { checkedCount, updatedCount };
 
     } catch (error) {
