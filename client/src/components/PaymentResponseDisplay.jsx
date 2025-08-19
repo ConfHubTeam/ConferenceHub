@@ -56,7 +56,11 @@ const PaymentResponseDisplay = ({ paymentResponse, bookingId, booking }) => {
   const getStatusText = (status, booking, paymentResponse) => {
     // For Payme payments, determine status based on booking state
     if (paymentResponse?.provider === 'payme') {
-      if (booking?.status === 'approved' && booking?.paid_at) {
+      // Check both snake_case and camelCase field names
+      const isApproved = booking?.status === 'approved';
+      const hasPaidAt = booking?.paid_at || booking?.paidAt;
+      
+      if (isApproved && hasPaidAt) {
         return t('details.paymentResponse.status.success');
       } else if (booking?.status === 'selected') {
         return t('details.paymentResponse.status.processing');

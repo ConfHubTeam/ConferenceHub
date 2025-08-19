@@ -17,7 +17,7 @@ router.get("/payment-status/:bookingId", authenticateToken, paymeController.chec
 router.get("/config", paymeController.getConfig);
 
 // User phone management for Payme
-router.get("/user-phone", paymeController.getUserPhone);
-router.patch("/update-phone", paymeController.updatePaymePhone);
+router.get("/user-phone", authenticateToken, paymeController.getUserPhone);
+router.patch("/update-phone", authenticateToken, paymeController.updatePaymePhone);
 
 module.exports = router;

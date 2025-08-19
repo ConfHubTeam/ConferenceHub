@@ -114,6 +114,16 @@ const PaymePhoneModal = ({
 
   const createPayment = async () => {
     try {
+      // Save phone number to user profile in background (non-blocking)
+      if (phoneNumber !== originalPhone) {
+        api.patch("/payme/update-phone", {
+          phoneNumber: phoneNumber
+        }).catch(error => {
+          console.warn("Failed to save phone number to profile:", error);
+          // Don't block payment flow for this
+        });
+      }
+      
       // Create a form and submit it to Payme using POST method
       // This is the correct way according to Payme documentation
       
@@ -149,6 +159,7 @@ const PaymePhoneModal = ({
         amount: amount,
         'account[order_id]': String(booking.id), // Use booking ID as order_id
         'account[user_id]': String(booking.userId || 'guest'),
+        'account[phone]': phoneNumber, // Include phone number in account object
         lang: 'ru',
         callback: `${window.location.origin}/bookings?transaction=:transaction`,
         callback_timeout: 15000,
@@ -230,6 +241,19 @@ const PaymePhoneModal = ({
     window.open("https://payme.uz/", "_blank", "noopener,noreferrer");
   };
 
+  const handleClose = () => {
+    // Reset all state when closing modal
+    setPhoneNumber("");
+    setOriginalPhone("");
+    setProfilePhone("");
+    setHasPaymePhone(false);
+    setIsEditing(false);
+    setError("");
+    setIsProcessing(false);
+    setIsLoadingUserPhone(false);
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -242,7 +266,7 @@ const PaymePhoneModal = ({
               {t("payment:payme.title", "Payme Payment")}
             </h3>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="text-gray-400 hover:text-gray-600 transition-colors"
               disabled={isProcessing}
             >
@@ -347,7 +371,7 @@ const PaymePhoneModal = ({
           <div className="flex space-x-3">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
               disabled={isProcessing || isLoadingUserPhone}
             >
