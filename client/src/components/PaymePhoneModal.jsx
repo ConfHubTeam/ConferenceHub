@@ -136,9 +136,6 @@ const PaymePhoneModal = ({
       // Calculate amount in tiyin (multiply by 100)
       const amount = Math.round((booking.finalTotal || booking.totalPrice) * 100);
       
-      // Generate a unique order ID for this payment
-      const orderId = `booking_${booking.id}_${Date.now()}`;
-      
       // Create form element
       const form = document.createElement('form');
       form.method = 'POST';
@@ -150,9 +147,8 @@ const PaymePhoneModal = ({
       const fields = {
         merchant: MERCHANT_ID,
         amount: amount,
-        'account[booking_id]': booking.id,
-        'account[order_id]': orderId,
-        'account[user_id]': booking.userId || 'guest',
+        'account[order_id]': String(booking.id), // Use booking ID as order_id
+        'account[user_id]': String(booking.userId || 'guest'),
         lang: 'ru',
         callback: `${window.location.origin}/bookings?transaction=:transaction`,
         callback_timeout: 15000,
@@ -211,7 +207,7 @@ const PaymePhoneModal = ({
         amount: booking.finalTotal || booking.totalPrice,
         phoneNumber: phoneNumber,
         bookingId: booking.id,
-        orderId: orderId
+        orderId: String(booking.id) // Use booking ID as order ID
       });
 
     } catch (error) {
