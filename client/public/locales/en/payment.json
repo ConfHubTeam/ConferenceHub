@@ -19,5 +19,29 @@
       "loadFailed": "Unable to load your phone number. Please enter it manually.",
       "paymentFailed": "Payment creation failed. Please try again."
     }
+  },
+  "payme": {
+    "title": "Payme Payment",
+    "phoneLabel": "Payme Account Phone Number",
+    "paymentAmount": "Payment Amount:",
+    "processing": "Processing...",
+    "payButton": "Pay with Payme",
+    "noAccount": "Don't have a Payme account?",
+    "registerLink": "Register here",
+    "loadingPhone": "Loading your phone number...",
+    "verifyPaymeDescription": "Your Payme phone number will be used for payment verification.",
+    "verifyProfileDescription": "Your profile phone number will be used for Payme payment.",
+    "enterDescription": "Please enter your phone number registered with Payme.",
+    "editButton": "Edit",
+    "cancelEditing": "Cancel editing"
+  },
+  "paymePayment": {
+    "button": "Pay with Payme"
+  },
+  "errors": {
+    "phoneRequired": "Phone number is required",
+    "invalidPhone": "Please enter a valid phone number",
+    "failedToLoadPhone": "Failed to load phone number",
+    "bookingNotSelected": "Payment will be available once the host selects your booking"
   }
 }

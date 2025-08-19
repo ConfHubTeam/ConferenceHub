@@ -169,15 +169,6 @@ const PaymentResponseDisplay = ({ paymentResponse, bookingId, booking }) => {
   };
 
   const getPaymentDate = (booking) => {
-    // Debug: Log the booking object to see what fields are available
-    console.log('Booking object for payment date:', {
-      paid_at: booking?.paid_at,
-      paidAt: booking?.paidAt,
-      click_invoice_created_at: booking?.click_invoice_created_at,
-      createdAt: booking?.createdAt,
-      updatedAt: booking?.updatedAt
-    });
-    
     // Use the paid_at timestamp from the database
     if (booking?.paid_at) {
       return formatPaymentDate(booking.paid_at);

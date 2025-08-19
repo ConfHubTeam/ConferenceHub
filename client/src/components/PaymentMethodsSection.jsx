@@ -27,12 +27,10 @@ const PaymentMethodsSection = ({
   };
 
   const handlePaymePayment = () => {
-    console.log('Payme payment button clicked', { isPaymentAvailable, booking });
     if (!isPaymentAvailable) {
       onPaymentError?.(t("payment:errors.bookingNotSelected", "Payment will be available once the host selects your booking"));
       return;
     }
-    console.log('Opening Payme modal');
     setIsPaymeModalOpen(true);
   };
 
