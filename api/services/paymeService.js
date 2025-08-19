@@ -130,6 +130,46 @@ class PaymeService {
     // Extract booking ID from order format (e.g., "booking_126_1755611258912" -> 126)
     const bookingId = this._extractBookingId(rawBookingId);
 
+    console.log(`🔄 CreateTransaction request for booking ${bookingId}, transaction ID: ${paymeTransactionId}, amount: ${amount} tiyin`);
+
+    // STEP 0.5: Check if booking already has a pending transaction FIRST
+    // This prevents creating multiple transactions for the same booking
+    const existingBookingTrans = await TransactionService.getPaymeTransactionByBooking(bookingId);
+    
+    if (existingBookingTrans && existingBookingTrans.providerTransactionId !== String(paymeTransactionId)) {
+      console.log(`📋 Found existing transaction for booking ${bookingId}:`, {
+        existingTransactionId: existingBookingTrans.providerTransactionId,
+        newTransactionId: paymeTransactionId,
+        state: existingBookingTrans.state
+      });
+
+      if (existingBookingTrans.state === PaymeTransactionState.Paid) {
+        console.log(`❌ Booking ${bookingId} already has a paid transaction`);
+        throw new PaymeTransactionError(PaymeError.CantDoOperation, paymeTransactionId);
+      }
+      
+      if (existingBookingTrans.state === PaymeTransactionState.Pending) {
+        // Check if the existing transaction has expired
+        const booking = await Booking.findByPk(bookingId);
+        const isExpired = this._isPaymentExpired(booking);
+        
+        if (isExpired) {
+          console.log(`⏰ Existing transaction expired, cancelling and allowing new one`);
+          // Cancel the expired transaction and allow creating a new one
+          await TransactionService.updateTransactionState(
+            existingBookingTrans.providerTransactionId,
+            PaymeTransactionState.PendingCanceled,
+            { reason: 4, canceledAt: new Date(), expiredReason: 'Booking check-in date passed' }
+          );
+        } else {
+          console.log(`🚫 Booking ${bookingId} already has a pending transaction, returning error -31050`);
+          // According to Payme spec: return error in range -31099 to -31050 for account issues
+          // Use -31050 for "Payment for the product is pending"
+          throw new PaymeTransactionError(PaymeError.Pending, paymeTransactionId);
+        }
+      }
+    }
+
     // STEP 1: Check if transaction with this exact Payme ID already exists
     // If yes, return the existing transaction (consistent results for repeated calls)
     let existingTransaction = await TransactionService.getByProviderTransactionId(String(paymeTransactionId));
@@ -281,6 +321,7 @@ class PaymeService {
         throw new PaymeTransactionError(PaymeError.CantDoOperation, id);
       }
 
+      console.log(`✅ Transaction ${paymeTransactionId} already performed, returning stored perform_time: ${transaction.performDate.getTime()}`);
       return {
         perform_time: transaction.performDate.getTime(),
         transaction: String(paymeTransactionId),
@@ -301,37 +342,45 @@ class PaymeService {
     }
 
     // Mark transaction as paid using TransactionService
+    const performTime = currentTime; // Store the exact timestamp we'll return
+    console.log(`💰 Performing transaction ${paymeTransactionId} for first time with perform_time: ${performTime}`);
+    
     await TransactionService.updateTransactionState(
       String(paymeTransactionId),
       PaymeTransactionState.Paid,
       {
-        performedAt: new Date(currentTime),
+        performedAt: new Date(performTime), // Store in providerData for reference
         payment_response: {
           provider: 'payme',
           transaction_id: String(paymeTransactionId),
           amount: transaction.amount,
-          perform_time: currentTime
+          perform_time: performTime
         }
       }
     );
+
+    // Update the performDate field directly to our specific timestamp
+    await TransactionService.updateById(transaction.id, {
+      performDate: new Date(performTime)
+    });
 
     // Update booking status to paid
     const booking = await Booking.findByPk(transaction.bookingId);
     if (booking) {
       await booking.update({
         status: 'approved',
-        paid_at: new Date(currentTime),
-        payment_response: {
+        paidAt: new Date(performTime), // Use the same timestamp
+        paymentResponse: {
           provider: 'payme',
           transaction_id: String(paymeTransactionId),
           amount: transaction.amount,
-          perform_time: currentTime
+          perform_time: performTime
         }
       });
     }
 
     return {
-      perform_time: currentTime,
+      perform_time: performTime, // Return the same timestamp we stored
       transaction: String(paymeTransactionId),
       state: PaymeTransactionState.Paid,
     };

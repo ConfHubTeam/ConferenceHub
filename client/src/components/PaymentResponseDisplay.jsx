@@ -41,11 +41,15 @@ const PaymentResponseDisplay = ({ paymentResponse, bookingId, booking }) => {
   }
 
   const getProviderName = (booking, paymentResponse) => {
+    // Check if it's a Payme payment based on payment response or provider field
+    if (paymentResponse?.provider === 'payme' || paymentResponse?.transaction_id) {
+      return 'Payme';
+    }
     // Check if it's a Click payment based on actual database fields
     if (booking?.click_payment_id || booking?.click_invoice_id || paymentResponse?.payment_id) {
       return 'Click';
     }
-    // Future: Add logic for Payme and Octo when they're implemented
+    // Future: Add logic for Octo when implemented
     return 'Payment Provider';
   };
 
@@ -130,7 +134,11 @@ const PaymentResponseDisplay = ({ paymentResponse, bookingId, booking }) => {
   };
 
   const getPaymentId = (booking, paymentResponse) => {
-    // Use actual database fields
+    // For Payme payments, use transaction_id from payment response
+    if (paymentResponse?.provider === 'payme' && paymentResponse?.transaction_id) {
+      return paymentResponse.transaction_id;
+    }
+    // For Click payments, use actual database fields
     return booking?.click_payment_id || paymentResponse?.payment_id || 'N/A';
   };
 
