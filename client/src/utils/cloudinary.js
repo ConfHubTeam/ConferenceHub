@@ -26,7 +26,6 @@ export const getCloudinaryImageUrl = (photo, options = {}) => {
       }
     } catch (e) {
       // If parsing fails, continue with original string
-      console.log('Failed to parse JSON string:', e);
     }
   }
   

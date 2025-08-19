@@ -77,15 +77,9 @@ export const useSmartPaymentPolling = (bookingId, onPaymentSuccess, onPaymentErr
       // Stop polling if payment completed OR booking manually approved
       if ((success && isPaid) || (booking?.status === 'approved' && booking?.paidAt)) {
         setIsPolling(false);
+        setPollingCompleted(true);
         setHasBeenStopped(false); // Reset stopped state on successful completion
         onPaymentSuccess?.(response.data);
-        if (manuallyApproved) {
-          console.log('✅ Polling stopped: Booking manually approved by agent');
-        } else if (provider === 'payme') {
-          console.log('✅ Polling stopped: Payme payment completed successfully');
-        } else {
-          console.log('✅ Polling stopped: Payment completed successfully');
-        }
         return;
       }
 
@@ -215,12 +209,10 @@ export const useSmartPaymentPolling = (bookingId, onPaymentSuccess, onPaymentErr
       const { booking } = response.data;
       
       if (booking && restartStatuses.includes(booking.status)) {
-        console.log(`🔄 Restarting payment polling for booking ${bookingId} (status: ${booking.status})`);
         setHasBeenStopped(false);
         startPolling();
         return true;
       } else {
-        console.log(`ℹ️ Not restarting polling for booking ${bookingId} (status: ${booking?.status})`);
         return false;
       }
     } catch (error) {
@@ -235,7 +227,6 @@ export const useSmartPaymentPolling = (bookingId, onPaymentSuccess, onPaymentErr
 
     const handleVisibilityChange = () => {
       if (!document.hidden && hasBeenStopped && !isPolling) {
-        console.log('📱 Page became visible, checking if polling should restart...');
         restartPolling();
       }
     };
@@ -256,7 +247,6 @@ export const useSmartPaymentPolling = (bookingId, onPaymentSuccess, onPaymentErr
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       if (!isPolling && !hasBeenStopped) {
-        console.log('🔄 Auto-restarting polling on page load/refresh...');
         restartPolling();
       }
     };

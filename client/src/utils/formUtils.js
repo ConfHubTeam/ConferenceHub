@@ -142,11 +142,9 @@ import { geocodeAddressYandex } from "./yandexMapsUtils";
 export async function geocodeAddress(address) {
   try {
     // Use Yandex Maps Geocoding API as the primary geocoding service for better regional coverage
-    console.log("Geocoding address with Yandex:", address);
     const yandexResult = await geocodeAddressYandex(address);
     
     if (yandexResult) {
-      console.log("Yandex geocoding successful:", yandexResult);
       return yandexResult;
     }
     
@@ -169,7 +167,6 @@ export async function geocodeAddress(address) {
     
     if (data.status === 'OK' && data.results.length > 0) {
       const { lat, lng } = data.results[0].geometry.location;
-      console.log("Google Maps fallback geocoding successful:", { lat, lng });
       return { lat, lng };
     } else {
       console.warn('Google Maps geocoding also failed for address:', address, 'Status:', data.status);

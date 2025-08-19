@@ -119,7 +119,6 @@ const PaymePhoneModal = ({
         api.patch("/payme/update-phone", {
           phoneNumber: phoneNumber
         }).catch(error => {
-          console.warn("Failed to save phone number to profile:", error);
           // Don't block payment flow for this
         });
       }
@@ -135,7 +134,7 @@ const PaymePhoneModal = ({
           const configResponse = await api.get("/payme/config");
           MERCHANT_ID = configResponse.data.merchantId;
         } catch (configError) {
-          console.error("Failed to get Payme config:", configError);
+          // Configuration error handled below
         }
       }
 
@@ -187,8 +186,6 @@ const PaymePhoneModal = ({
       const detailBase64 = btoa(unescape(encodeURIComponent(detailJson)));
       fields.detail = detailBase64;
 
-      console.log('Payme form fields:', fields);
-
       // Create hidden input fields
       Object.entries(fields).forEach(([name, value]) => {
         const input = document.createElement('input');
@@ -201,7 +198,6 @@ const PaymePhoneModal = ({
       // Add form to page and submit
       document.body.appendChild(form);
       
-      console.log('Submitting Payme form to:', form.action);
       form.submit();
       
       // Remove form after submission

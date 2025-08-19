@@ -70,11 +70,8 @@ class PaymeService {
     const expectedAmountInTiyin = (booking.finalTotal || booking.totalPrice) * 100;
 
     if (amount !== expectedAmountInTiyin) {
-      console.log(`❌ Amount mismatch: received ${amount} tiyin, expected ${expectedAmountInTiyin} tiyin (${booking.finalTotal || booking.totalPrice} UZS)`);
       throw new PaymeTransactionError(PaymeError.InvalidAmount, id);
     }
-
-    console.log(`✅ Amount validation passed: ${amount} tiyin = ${(booking.finalTotal || booking.totalPrice)} UZS`);
 
     return {
       allow: true
@@ -130,21 +127,12 @@ class PaymeService {
     // Extract booking ID from order format (e.g., "booking_126_1755611258912" -> 126)
     const bookingId = this._extractBookingId(rawBookingId);
 
-    console.log(`🔄 CreateTransaction request for booking ${bookingId}, transaction ID: ${paymeTransactionId}, amount: ${amount} tiyin`);
-
     // STEP 0.5: Check if booking already has a pending transaction FIRST
     // This prevents creating multiple transactions for the same booking
     const existingBookingTrans = await TransactionService.getPaymeTransactionByBooking(bookingId);
     
     if (existingBookingTrans && existingBookingTrans.providerTransactionId !== String(paymeTransactionId)) {
-      console.log(`📋 Found existing transaction for booking ${bookingId}:`, {
-        existingTransactionId: existingBookingTrans.providerTransactionId,
-        newTransactionId: paymeTransactionId,
-        state: existingBookingTrans.state
-      });
-
       if (existingBookingTrans.state === PaymeTransactionState.Paid) {
-        console.log(`❌ Booking ${bookingId} already has a paid transaction`);
         throw new PaymeTransactionError(PaymeError.CantDoOperation, paymeTransactionId);
       }
       
@@ -154,7 +142,6 @@ class PaymeService {
         const isExpired = this._isPaymentExpired(booking);
         
         if (isExpired) {
-          console.log(`⏰ Existing transaction expired, cancelling and allowing new one`);
           // Cancel the expired transaction and allow creating a new one
           await TransactionService.updateTransactionState(
             existingBookingTrans.providerTransactionId,
@@ -162,7 +149,6 @@ class PaymeService {
             { reason: 4, canceledAt: new Date(), expiredReason: 'Booking check-in date passed' }
           );
         } else {
-          console.log(`🚫 Booking ${bookingId} already has a pending transaction, returning error -31050`);
           // According to Payme spec: return error in range -31099 to -31050 for account issues
           // Use -31050 for "Payment for the product is pending"
           throw new PaymeTransactionError(PaymeError.Pending, paymeTransactionId);
@@ -239,7 +225,6 @@ class PaymeService {
     // Validate amount: convert booking amount from UZS to tiyin for comparison
     const expectedAmountInTiyin = (booking.finalTotal || booking.totalPrice) * 100;
     if (amount !== expectedAmountInTiyin) {
-      console.log(`❌ Amount mismatch in createTransaction: received ${amount} tiyin, expected ${expectedAmountInTiyin} tiyin (${booking.finalTotal || booking.totalPrice} UZS)`);
       throw new PaymeTransactionError(PaymeError.InvalidAmount, id);
     }
 
@@ -321,7 +306,6 @@ class PaymeService {
         throw new PaymeTransactionError(PaymeError.CantDoOperation, id);
       }
 
-      console.log(`✅ Transaction ${paymeTransactionId} already performed, returning stored perform_time: ${transaction.performDate.getTime()}`);
       return {
         perform_time: transaction.performDate.getTime(),
         transaction: String(paymeTransactionId),
@@ -343,8 +327,6 @@ class PaymeService {
 
     // Mark transaction as paid using TransactionService
     const performTime = currentTime; // Store the exact timestamp we'll return
-    console.log(`💰 Performing transaction ${paymeTransactionId} for first time with perform_time: ${performTime}`);
-    
     await TransactionService.updateTransactionState(
       String(paymeTransactionId),
       PaymeTransactionState.Paid,
