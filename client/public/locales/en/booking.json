@@ -111,7 +111,8 @@
     "paymentCompleted": "Payment completed successfully",
     "paymentNotCompleted": "Payment was not completed",
     "paymentCancelled": "Payment was cancelled",
-    "statusUpdated": "Booking status has been updated"
+    "statusUpdated": "Booking status has been updated",
+    "paymentWindowOpened": "Payment window opened"
   },
   "common": {
     "unavailable": "Unavailable",
@@ -347,6 +348,7 @@
       "pendingMessage": "Payment options will be available once your booking is selected by the host.",
       "notAvailableTitle": "Payment Not Available",
       "notAvailableMessage": "Payment will be available once the host selects your booking.",
+      "refreshStatus": "Refresh Status",
       "providers": {
         "click": {
           "available": "Pay with Click",

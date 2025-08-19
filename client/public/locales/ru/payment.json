@@ -1,23 +1,47 @@
 {
   "clickPhoneModal": {
-    "title": "Оплата через Click",
+    "title": "Оплата Click",
     "phoneLabel": "Номер телефона аккаунта Click",
     "paymentAmount": "Сумма к оплате:",
     "processing": "Обработка...",
     "payButton": "Оплатить через Click",
     "noAccount": "Нет аккаунта Click?",
-    "registerLink": "Зарегистрироваться здесь",
-    "loadingPhone": "Загрузка номера телефона...",
-    "verifyClickDescription": "Пожалуйста, подтвердите сохраненный номер телефона вашего аккаунта Click для оплаты.",
-    "verifyProfileDescription": "Пожалуйста, подтвердите номер телефона для оплаты Click.",
+    "registerLink": "Зарегистрируйтесь здесь",
+    "loadingPhone": "Загружаем ваш номер телефона...",
+    "verifyClickDescription": "Пожалуйста, подтвердите сохранённый номер телефона аккаунта Click для оплаты.",
+    "verifyProfileDescription": "Пожалуйста, подтвердите ваш номер телефона для оплаты через Click.",
     "enterDescription": "Пожалуйста, введите номер телефона вашего аккаунта Click для продолжения оплаты.",
     "editButton": "Изменить",
-    "cancelEditing": "Отменить изменение",
+    "cancelEditing": "Отменить редактирование",
     "errors": {
       "phoneRequired": "Номер телефона обязателен",
       "phoneInvalid": "Пожалуйста, введите корректный номер телефона",
       "loadFailed": "Не удалось загрузить ваш номер телефона. Пожалуйста, введите его вручную.",
-      "paymentFailed": "Не удалось создать платеж. Пожалуйста, попробуйте еще раз."
+      "paymentFailed": "Не удалось создать платёж. Пожалуйста, попробуйте снова."
     }
+  },
+  "payme": {
+    "title": "Оплата Payme",
+    "phoneLabel": "Номер телефона аккаунта Payme",
+    "paymentAmount": "Сумма к оплате:",
+    "processing": "Обработка...",
+    "payButton": "Оплатить через Payme",
+    "noAccount": "Нет аккаунта Payme?",
+    "registerLink": "Зарегистрируйтесь здесь",
+    "loadingPhone": "Загружаем ваш номер телефона...",
+    "verifyPaymeDescription": "Ваш номер телефона Payme будет использован для подтверждения платежа.",
+    "verifyProfileDescription": "Ваш номер телефона из профиля будет использован для оплаты через Payme.",
+    "enterDescription": "Пожалуйста, введите номер телефона, зарегистрированный в Payme.",
+    "editButton": "Изменить",
+    "cancelEditing": "Отменить редактирование"
+  },
+  "paymePayment": {
+    "button": "Оплатить через Payme"
+  },
+  "errors": {
+    "phoneRequired": "Номер телефона обязателен",
+    "invalidPhone": "Пожалуйста, введите корректный номер телефона",
+    "failedToLoadPhone": "Не удалось загрузить номер телефона",
+    "bookingNotSelected": "Оплата будет доступна после того, как хозяин выберет ваше бронирование"
   }
 }

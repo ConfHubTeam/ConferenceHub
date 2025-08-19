@@ -109,7 +109,8 @@
     "paymentCompleted": "To'lov muvaffaqiyatli yakunlandi",
     "paymentNotCompleted": "To'lov yakunlanmadi",
     "paymentCancelled": "To'lov bekor qilindi",
-    "statusUpdated": "Bron qilish holati yangilandi"
+    "statusUpdated": "Bron qilish holati yangilandi",
+    "paymentWindowOpened": "To'lov oynasi ochildi"
   },
   "common": {
     "unavailable": "Mavjud emas",
@@ -175,6 +176,8 @@
     "filterByStatus": "Holat bo'yicha filtrlash",
     "agentActions": "Agent harakatlari",
     "cleanupExpiredBookings": "Muddati tugagan bronlarni o'chirish",
+    "hideOptions": "Tanlovlarni yashirish",
+    "moreOptions": "Ko'proq tanlovlar",
     "cleanupConfirmation": {
       "title": "Muddati tugagan bronlarni o'chirish",
       "message": "Barcha muddati tugagan \"kutilayotgan\" va \"tanlangan\" bron so'rovlarini o'chirishni xohlaysizmi? Bu amalni bekor qilib bo'lmaydi.",
@@ -343,6 +346,7 @@
       "pendingMessage": "To'lov variantlari broningiz joy egasi tomonidan tanlanganidan keyin mavjud bo'ladi.",
       "notAvailableTitle": "To'lov qilish mavjud emas",
       "notAvailableMessage": "Joy egasi ruhsat berganidan keyin to'lov usullari mavjud bo'ladi.",
+      "refreshStatus": "Holatni yangilash",
       "providers": {
         "click": "Click orqali to'lash",
         "payme": "Payme orqali to'lash", 

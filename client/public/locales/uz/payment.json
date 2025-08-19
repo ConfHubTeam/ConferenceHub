@@ -1,23 +1,47 @@
 {
   "clickPhoneModal": {
-    "title": "Click orqali to'lov",
-    "phoneLabel": "Click hisobingiz telefon raqami",
-    "paymentAmount": "To'lov summasi:",
-    "processing": "Ishlov berilmoqda...",
+    "title": "Click to'lovi",
+    "phoneLabel": "Click akkaunti telefon raqami",
+    "paymentAmount": "To'lov miqdori:",
+    "processing": "Qayta ishlanmoqda...",
     "payButton": "Click orqali to'lash",
-    "noAccount": "Click hisobingiz yo'qmi?",
+    "noAccount": "Click akkaunti yo'qmi?",
     "registerLink": "Bu yerda ro'yxatdan o'ting",
     "loadingPhone": "Telefon raqamingiz yuklanmoqda...",
-    "verifyClickDescription": "To'lov uchun saqlangan Click hisobingiz telefon raqamini tasdiqlang.",
-    "verifyProfileDescription": "Click to'lovi uchun telefon raqamingizni tasdiqlang.",
-    "enterDescription": "To'lovni davom ettirish uchun Click hisobingiz telefon raqamini kiriting.",
+    "verifyClickDescription": "To'lov uchun saqlangan Click akkaunti telefon raqamingizni tasdiqlang.",
+    "verifyProfileDescription": "Click orqali to'lov uchun telefon raqamingizni tasdiqlang.",
+    "enterDescription": "To'lovni davom ettirish uchun Click akkaunti telefon raqamingizni kiriting.",
     "editButton": "Tahrirlash",
-    "cancelEditing": "Tahrirni bekor qilish",
+    "cancelEditing": "Tahrirlashni bekor qilish",
     "errors": {
-      "phoneRequired": "Telefon raqam talab qilinadi",
-      "phoneInvalid": "Iltimos, to'g'ri telefon raqam kiriting",
-      "loadFailed": "Telefon raqamingizni yuklab bo'lmadi. Iltimos, uni qo'lda kiriting.",
-      "paymentFailed": "To'lovni yaratib bo'lmadi. Iltimos, qaytadan urinib ko'ring."
+      "phoneRequired": "Telefon raqami majburiy",
+      "phoneInvalid": "Iltimos, to'g'ri telefon raqamini kiriting",
+      "loadFailed": "Telefon raqamingizni yuklab bo'lmadi. Iltimos, qo'lda kiriting.",
+      "paymentFailed": "To'lov yaratilmadi. Iltimos, qayta urinib ko'ring."
     }
+  },
+  "payme": {
+    "title": "Payme to'lovi",
+    "phoneLabel": "Payme akkaunti telefon raqami",
+    "paymentAmount": "To'lov miqdori:",
+    "processing": "Qayta ishlanmoqda...",
+    "payButton": "Payme orqali to'lash",
+    "noAccount": "Payme akkaunti yo'qmi?",
+    "registerLink": "Bu yerda ro'yxatdan o'ting",
+    "loadingPhone": "Telefon raqamingiz yuklanmoqda...",
+    "verifyPaymeDescription": "Sizning Payme telefon raqamingiz to'lovni tasdiqlash uchun ishlatiladi.",
+    "verifyProfileDescription": "Sizning profil telefon raqamingiz Payme orqali to'lov uchun ishlatiladi.",
+    "enterDescription": "Iltimos, Payme'da ro'yxatdan o'tgan telefon raqamingizni kiriting.",
+    "editButton": "Tahrirlash",
+    "cancelEditing": "Tahrirlashni bekor qilish"
+  },
+  "paymePayment": {
+    "button": "Payme orqali to'lash"
+  },
+  "errors": {
+    "phoneRequired": "Telefon raqami majburiy",
+    "invalidPhone": "Iltimos, to'g'ri telefon raqamini kiriting",
+    "failedToLoadPhone": "Telefon raqamini yuklab bo'lmadi",
+    "bookingNotSelected": "Xost sizning bandlashingizni tanlaganidan keyin to'lov mavjud bo'ladi"
   }
 }
