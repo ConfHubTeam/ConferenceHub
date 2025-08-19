@@ -7,7 +7,7 @@
 
 require('dotenv').config();
 const axios = require('axios');
-const sequelize = require('./config/database');
+const sequelize = require('../config/database');
 
 class PaymeIntegrationTest {
   constructor() {

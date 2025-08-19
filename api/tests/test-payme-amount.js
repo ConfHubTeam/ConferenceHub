@@ -3,7 +3,7 @@
  */
 
 require('dotenv').config();
-const paymeService = require('./services/paymeService');
+const paymeService = require('../services/paymeService');
 
 async function testAmountValidation() {
   console.log('🧪 Testing Payme Amount Validation Fix');

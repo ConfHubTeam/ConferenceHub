@@ -9,9 +9,9 @@ const path = require('path');
 // Add the api directory to the require path
 process.chdir(path.join(__dirname, '..'));
 
-const EnhancedPaymeService = require('./services/enhancedPaymeService');
-const TransactionService = require('./services/transactionService');
-const { Booking, User, Transaction } = require('./models');
+const EnhancedPaymeService = require('../services/enhancedPaymeService');
+const TransactionService = require('../services/transactionService');
+const { Booking, User, Transaction } = require('../models');
 
 class EnhancedPaymeServiceTest {
   constructor() {
