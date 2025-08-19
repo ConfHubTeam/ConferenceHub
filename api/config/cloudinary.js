@@ -7,7 +7,6 @@ try {
   if (process.env.CLOUDINARY_URL) {
     // This will use the CLOUDINARY_URL environment variable automatically
     cloudinary.config();
-    console.log('Cloudinary configured using CLOUDINARY_URL');
   } else {
     // Fall back to individual credentials
     cloudinary.config({
@@ -15,7 +14,6 @@ try {
       api_key: process.env.CLOUDINARY_API_KEY,
       api_secret: process.env.CLOUDINARY_API_SECRET
     });
-    console.log('Cloudinary configured using individual credentials');
   }
 } catch (error) {
   console.error('Error configuring Cloudinary:', error.message);

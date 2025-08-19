@@ -91,8 +91,6 @@ const checkPaymentStatus = async (req, res) => {
     const { bookingId } = req.params;
     const userData = await getUserDataFromToken(req);
 
-    console.log('Payme payment status check:', { bookingId, userId: userData.id });
-
     const user = await User.findByPk(userData.id);
     if (!user) {
       console.error('User not found:', userData.id);
@@ -113,7 +111,6 @@ const checkPaymentStatus = async (req, res) => {
 
     // Check if booking is already approved and paid
     if (booking.status === 'approved' && booking.paidAt) {
-      console.log('✅ Booking already paid via Payme:', { bookingId, paidAt: booking.paidAt });
       return res.json({
         success: true,
         isPaid: true,
@@ -129,7 +126,6 @@ const checkPaymentStatus = async (req, res) => {
     const paymeTransaction = await TransactionService.getPaymeTransactionByBooking(bookingId);
 
     if (!paymeTransaction) {
-      console.log('❌ No Payme transaction found for booking:', bookingId);
       return res.json({
         success: false,
         isPaid: false,
@@ -190,13 +186,6 @@ const checkPaymentStatus = async (req, res) => {
         message = `Unknown payment state: ${paymeTransaction.state}`;
     }
 
-    console.log(`📊 Payme payment status for booking ${bookingId}:`, {
-      transactionState: paymeTransaction.state,
-      paymentStatus,
-      isPaid,
-      message
-    });
-
     return res.json({
       success: true,
       isPaid,
@@ -225,8 +214,6 @@ const checkout = async (req, res) => {
   try {
     const userData = await getUserDataFromToken(req);
     const { bookingId, returnUrl } = req.body;
-
-    console.log('Payme checkout request:', { bookingId, returnUrl, userId: userData.id });
 
     const MERCHANT_ID = process.env.PAYME_MERCHANT_ID;
     if (!MERCHANT_ID) {
@@ -263,14 +250,6 @@ const checkout = async (req, res) => {
     const encodedParams = base64.encode(params);
 
     const paymentUrl = `https://checkout.paycom.uz/${encodedParams}`;
-
-    console.log('Generated Payme payment URL:', {
-      bookingId,
-      amount,
-      params,
-      encodedParams,
-      paymentUrl
-    });
 
     return res.json({ 
       success: true,

@@ -69,8 +69,6 @@ class PaymeApiService {
       
       // Handle HTML responses from sandbox (common in test environment)
       if (contentType && contentType.includes('text/html')) {
-        console.log('⚠️  Received HTML response from sandbox (this is normal in test mode)');
-        console.log('📄 HTML Response Preview:', responseText.substring(0, 200) + '...');
         return {
           error: {
             code: -32700,
@@ -84,8 +82,6 @@ class PaymeApiService {
       try {
         return JSON.parse(responseText);
       } catch (parseError) {
-        console.log('⚠️  Failed to parse response as JSON');
-        console.log('📄 Raw Response:', responseText.substring(0, 200) + '...');
         return {
           error: {
             code: -32700,
