@@ -34,31 +34,34 @@ class TransactionService {
   }
 
   /**
-   * Create a new payme transaction (backward compatibility)
+   * Create a new payme transaction (backward compatibility and unified interface)
    */
   static async createPayme(data) {
     const {
-      state,
-      amount,
-      performDate,
-      cancelDate,
-      createDate,
       paymeTransId,
+      providerTransactionId,
+      amount,
+      currency = 'UZS',
       bookingId,
-      userId
+      userId,
+      state = 1,
+      providerData = {}
     } = data;
 
-    return await Transaction.create({
-      state,
-      amount,
-      performDate,
-      cancelDate,
-      createDate,
+    // Use unified interface but maintain backward compatibility
+    return await this.createTransaction({
       provider: 'payme',
-      paymeTransId: paymeTransId,
-      providerTransactionId: paymeTransId, // Also set the unified field
-      bookingId: bookingId,
-      userId: userId
+      providerTransactionId: providerTransactionId || paymeTransId,
+      amount,
+      currency,
+      bookingId,
+      userId,
+      state,
+      providerData: {
+        ...providerData,
+        // Store both for backward compatibility
+        paymeTransId: paymeTransId || providerTransactionId
+      }
     });
   }
 
@@ -161,6 +164,49 @@ class TransactionService {
       },
       order: [['createDate', 'DESC']]
     });
+  }
+
+  /**
+   * Get Payme transaction by booking ID
+   */
+  static async getPaymeTransactionByBooking(bookingId) {
+    return await Transaction.findOne({
+      where: { 
+        bookingId,
+        provider: 'payme'
+      },
+      order: [['createDate', 'DESC']]
+    });
+  }
+
+  /**
+   * Delete transaction by ID (for testing and cleanup)
+   */
+  static async deleteTransaction(transactionId) {
+    return await Transaction.destroy({
+      where: { id: transactionId }
+    });
+  }
+
+  /**
+   * Delete transactions by provider transaction ID
+   */
+  static async deleteByProviderTransactionId(providerTransactionId) {
+    return await Transaction.destroy({
+      where: { providerTransactionId }
+    });
+  }
+
+  /**
+   * Update transaction state by ID (alternative method)
+   */
+  static async updateById(transactionId, updateData) {
+    const [affectedRows, updatedRows] = await Transaction.update(updateData, {
+      where: { id: transactionId },
+      returning: true
+    });
+
+    return updatedRows[0];
   }
 }
 

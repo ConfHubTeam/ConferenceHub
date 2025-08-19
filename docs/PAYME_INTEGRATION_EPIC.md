@@ -254,6 +254,53 @@ Authorization: Basic <base64_encoded_credentials>
 4. **Fallback**: Provide alternative payment methods if Payme fails
 5. **Testing**: Use Payme sandbox environment for development
 
+### Sandbox Environment Configuration
+
+#### Authentication Differences
+**Important**: The sandbox environment uses `test_key` instead of `key` for request authorization.
+
+- **Production**: `Authorization: Basic base64(merchant_id:key)`
+- **Sandbox**: `Authorization: Basic base64(merchant_id:test_key)`
+
+#### Environment Variables Setup
+```bash
+# Production Environment
+PAYME_MERCHANT_ID=your_merchant_id
+PAYME_SECRET_KEY=your_production_key
+PAYME_WEBHOOK_URL=https://yourdomain.com/api/payme/pay
+
+# Development/Sandbox Environment  
+PAYME_MERCHANT_ID=your_merchant_id
+PAYME_TEST_KEY=your_test_key
+PAYME_TEST_WEBHOOK_URL=https://your-ngrok-domain.ngrok-free.app/api/payme/pay
+```
+
+#### Test Environment Setup
+The Payme sandbox provides comprehensive testing scenarios that must be validated:
+
+1. **Transaction Creation and Cancellation**: CreateTransaction → CancelTransaction
+2. **Transaction Creation and Confirmation**: CreateTransaction → PerformTransaction  
+3. **Full Transaction Lifecycle**: CreateTransaction → PerformTransaction → CancelTransaction
+4. **Authentication Failure Testing**: Invalid credentials handling
+5. **Invalid Account Testing**: Non-existent account scenarios
+
+#### Account Types Configuration
+- **One-time Account**: Can be paid only once (e.g., booking orders)
+- **Accumulative Account**: Can be paid multiple times (e.g., balance top-up)
+
+#### Account Status Options
+- **Awaiting Payment**: Account can be paid
+- **In Process**: Account locked, awaiting payment confirmation
+- **Blocked**: Account already paid, cannot be paid again
+- **Does Not Exist**: Account not found
+
+#### Transaction States in Testing
+- **State 1**: Transaction created, awaiting confirmation
+- **State 2**: Transaction successfully completed
+- **State -1**: Transaction cancelled (from state 1)
+- **State -2**: Transaction cancelled after completion (from state 2)
+- **Does Not Exist**: Transaction never created
+
 ### Account Structure for Booking Platform
 
 Since Payme API primarily uses phone numbers for account identification, booking platforms need to adapt their integration:
@@ -331,10 +378,11 @@ const paymePhone = formatPhoneForPayme('+998 90 123 45 67'); // Returns: 9012345
 ```javascript
 // Example Payme Service Structure
 class EnhancedPaymeService {
-  constructor(merchantId, secretKey, baseUrl) {
+  constructor(merchantId, secretKey, baseUrl, isTestMode = false) {
     this.merchantId = merchantId;
     this.secretKey = secretKey;
     this.baseUrl = baseUrl;
+    this.isTestMode = isTestMode;
     this.authHeader = this.generateAuthHeader();
   }
 
@@ -362,10 +410,44 @@ class EnhancedPaymeService {
   }
 
   generateAuthHeader() {
+    // Important: Use test_key for sandbox, key for production
     const credentials = `${this.merchantId}:${this.secretKey}`;
     return `Basic ${Buffer.from(credentials).toString('base64')}`;
   }
+
+  generateRequestId() {
+    return Date.now() + Math.floor(Math.random() * 1000);
+  }
+
+  async makeRpcRequest(requestData) {
+    const response = await fetch(this.baseUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': this.authHeader
+      },
+      body: JSON.stringify(requestData)
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
 }
+
+// Environment Configuration
+const paymeService = new EnhancedPaymeService(
+  process.env.PAYME_MERCHANT_ID,
+  process.env.NODE_ENV === 'production' 
+    ? process.env.PAYME_SECRET_KEY 
+    : process.env.PAYME_TEST_KEY, // Use test_key for sandbox
+  process.env.NODE_ENV === 'production'
+    ? 'https://merchant.paycom.uz'
+    : 'https://test.paycom.uz',
+  process.env.NODE_ENV !== 'production'
+);
 ```
 
 **Definition of Done:**
