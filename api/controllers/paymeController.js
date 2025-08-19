@@ -83,6 +83,142 @@ const pay = async (req, res) => {
 };
 
 /**
+ * Check Payme payment status for a booking
+ * Similar to Click's checkPaymentStatus but for Payme transactions
+ */
+const checkPaymentStatus = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const userData = await getUserDataFromToken(req);
+
+    console.log('Payme payment status check:', { bookingId, userId: userData.id });
+
+    const user = await User.findByPk(userData.id);
+    if (!user) {
+      console.error('User not found:', userData.id);
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const booking = await Booking.findByPk(bookingId);
+    if (!booking) {
+      console.error('Booking not found:', bookingId);
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    // Verify booking belongs to user
+    if (booking.userId !== userData.id) {
+      console.error('Booking access denied:', { bookingId, userId: userData.id, bookingUserId: booking.userId });
+      return res.status(403).json({ error: "Access denied" });
+    }
+
+    // Check if booking is already approved and paid
+    if (booking.status === 'approved' && booking.paidAt) {
+      console.log('✅ Booking already paid via Payme:', { bookingId, paidAt: booking.paidAt });
+      return res.json({
+        success: true,
+        isPaid: true,
+        paymentStatus: 2, // Success status (following Click pattern)
+        errorCode: 0,
+        booking: booking,
+        message: "Payment already confirmed"
+      });
+    }
+
+    // Get Payme transaction for this booking
+    const TransactionService = require('../services/transactionService');
+    const paymeTransaction = await TransactionService.getPaymeTransactionByBooking(bookingId);
+
+    if (!paymeTransaction) {
+      console.log('❌ No Payme transaction found for booking:', bookingId);
+      return res.json({
+        success: false,
+        isPaid: false,
+        paymentStatus: null,
+        errorCode: -1,
+        errorNote: "No Payme transaction found",
+        booking: booking,
+        message: "No payment transaction found"
+      });
+    }
+
+    // Map Payme transaction states to unified payment status
+    // Payme states: 1 = pending, 2 = paid, -1 = cancelled, -2 = cancelled after payment
+    let paymentStatus, isPaid, errorCode, message;
+    
+    switch (paymeTransaction.state) {
+      case 2: // Paid
+        isPaid = true;
+        paymentStatus = 2;
+        errorCode = 0;
+        message = "Payment completed successfully";
+        
+        // Update booking if not already updated
+        if (booking.status !== 'approved' || !booking.paidAt) {
+          await booking.update({
+            status: 'approved',
+            paidAt: paymeTransaction.performDate || new Date(),
+            approvedAt: paymeTransaction.performDate || new Date()
+          });
+        }
+        break;
+        
+      case 1: // Pending
+        isPaid = false;
+        paymentStatus = 1;
+        errorCode = 0;
+        message = "Payment is pending";
+        break;
+        
+      case -1: // Cancelled from pending
+        isPaid = false;
+        paymentStatus = -1;
+        errorCode = -1;
+        message = "Payment was cancelled";
+        break;
+        
+      case -2: // Cancelled after payment (refunded)
+        isPaid = false;
+        paymentStatus = -2;
+        errorCode = -2;
+        message = "Payment was cancelled after completion";
+        break;
+        
+      default:
+        isPaid = false;
+        paymentStatus = null;
+        errorCode = -1;
+        message = `Unknown payment state: ${paymeTransaction.state}`;
+    }
+
+    console.log(`📊 Payme payment status for booking ${bookingId}:`, {
+      transactionState: paymeTransaction.state,
+      paymentStatus,
+      isPaid,
+      message
+    });
+
+    return res.json({
+      success: true,
+      isPaid,
+      paymentStatus,
+      errorCode,
+      paymentId: paymeTransaction.providerTransactionId,
+      booking: isPaid ? await Booking.findByPk(bookingId) : booking, // Refresh booking if paid
+      message
+    });
+
+  } catch (error) {
+    console.error('Payme payment status check error:', error);
+    return res.status(500).json({ 
+      error: "Failed to check payment status",
+      details: error.message,
+      success: false,
+      isPaid: false
+    });
+  }
+};
+
+/**
  * Generates a Payme payment link for the booking.
  */
 const checkout = async (req, res) => {
@@ -264,6 +400,7 @@ const getConfig = async (req, res) => {
 module.exports = {
   pay,
   checkout,
+  checkPaymentStatus,
   getUserPhone,
   updatePaymePhone,
   getConfig,

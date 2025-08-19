@@ -69,7 +69,7 @@ export const useSmartPaymentPolling = (bookingId, onPaymentSuccess, onPaymentErr
       setLastCheck(new Date());
       
       const response = await api.post(`/bookings/${bookingId}/check-payment-smart`);
-      const { success, isPaid, paymentStatus: status, errorCode, errorNote, booking, manuallyApproved } = response.data;
+      const { success, isPaid, paymentStatus: status, errorCode, errorNote, booking, manuallyApproved, provider } = response.data;
 
       setPaymentStatus(status);
       setErrorCount(0); // Reset error count on successful API call
@@ -81,11 +81,40 @@ export const useSmartPaymentPolling = (bookingId, onPaymentSuccess, onPaymentErr
         onPaymentSuccess?.(response.data);
         if (manuallyApproved) {
           console.log('✅ Polling stopped: Booking manually approved by agent');
+        } else if (provider === 'payme') {
+          console.log('✅ Polling stopped: Payme payment completed successfully');
+        } else {
+          console.log('✅ Polling stopped: Payment completed successfully');
         }
         return;
       }
 
-      // Handle different Click.uz status codes
+      // Handle Payme-specific status codes
+      if (provider === 'payme') {
+        if (status === 2) {
+          // Payme payment successful - should have been caught above, but double-check
+          setIsPolling(false);
+          setHasBeenStopped(false);
+          onPaymentSuccess?.(response.data);
+          return;
+        } else if (status === 1) {
+          // Payme payment pending - check frequently
+          scheduleNextCheck(POLLING_CONFIG.PROCESSING_INTERVAL);
+          return;
+        } else if (status === -1 || status === -2) {
+          // Payme payment cancelled
+          console.warn('⚠️ Payme payment was cancelled');
+          stopPolling('payme_cancelled');
+          onPaymentError?.('Payme payment was cancelled');
+          return;
+        } else {
+          // Unknown Payme status - use normal interval
+          scheduleNextCheck(POLLING_CONFIG.CREATED_INTERVAL);
+          return;
+        }
+      }
+
+      // Handle Click.uz status codes (existing logic)
       if (errorCode < 0) {
         // Click.uz error (invoice not found, expired, etc.)
         console.warn(`❌ Click.uz Error ${errorCode}: ${errorNote}`);

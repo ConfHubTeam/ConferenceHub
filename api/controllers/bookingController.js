@@ -428,8 +428,8 @@ const checkPaymentStatus = async (req, res) => {
 };
 
 /**
- * Smart payment status check with Click.uz status codes
- * Returns actual Click.uz status for optimized frontend polling
+ * Smart payment status check with unified support for Click.uz and Payme
+ * Returns actual payment provider status for optimized frontend polling
  */
 const checkPaymentStatusSmart = async (req, res) => {
   try {
@@ -442,34 +442,85 @@ const checkPaymentStatusSmart = async (req, res) => {
       return res.status(404).json({ error: "Booking not found" });
     }
 
-    // Check for manual approval by agent (booking approved and paid without Click payment)
+    // Check for manual approval by agent (booking approved and paid without payment system)
     if (booking.status === 'approved' && booking.paidAt) {
       return res.json({
         success: true,
         isPaid: true,
-        paymentStatus: 2, // Click.uz successful status
+        paymentStatus: 2, // Successful status
         errorCode: 0,
-        paymentId: booking.clickPaymentId || 'manual-approval',
+        paymentId: booking.clickPaymentId || 'payme-payment',
         booking: booking,
-        manuallyApproved: true,
-        message: "Booking manually approved by agent"
-      });
-    }
-
-    // If already paid via Click.uz, return immediately
-    if (booking.paidAt && booking.clickPaymentId) {
-      return res.json({
-        success: true,
-        isPaid: true,
-        paymentStatus: 2, // Click.uz successful status
-        errorCode: 0,
-        paymentId: booking.clickPaymentId,
-        booking: booking,
+        manuallyApproved: !booking.clickPaymentId && !booking.paymentResponse?.provider,
+        provider: booking.paymentResponse?.provider || 'manual',
         message: "Payment already confirmed"
       });
     }
 
-    // If no invoice created yet, can't check
+    // First check for Payme payment (since it updates via webhook immediately)
+    const TransactionService = require("../services/transactionService");
+    const paymeTransaction = await TransactionService.getPaymeTransactionByBooking(id);
+    
+    if (paymeTransaction) {
+      console.log(`🔍 Found Payme transaction for booking ${id}, state: ${paymeTransaction.state}`);
+      
+      switch (paymeTransaction.state) {
+        case 2: // Paid
+          // Update booking if not already updated
+          if (booking.status !== 'approved' || !booking.paidAt) {
+            await booking.update({
+              status: 'approved',
+              paidAt: paymeTransaction.performDate || new Date(),
+              approvedAt: paymeTransaction.performDate || new Date()
+            });
+          }
+          
+          const updatedBooking = await BookingService.getBookingById(id, userData);
+          return res.json({
+            success: true,
+            isPaid: true,
+            paymentStatus: 2, // Successful status
+            errorCode: 0,
+            paymentId: paymeTransaction.providerTransactionId,
+            booking: updatedBooking,
+            provider: 'payme',
+            message: "Payment confirmed via Payme"
+          });
+          
+        case 1: // Pending
+          return res.json({
+            success: true,
+            isPaid: false,
+            paymentStatus: 1, // Processing status
+            errorCode: 0,
+            paymentId: paymeTransaction.providerTransactionId,
+            booking: booking,
+            provider: 'payme',
+            message: "Payme payment is pending"
+          });
+          
+        case -1: // Cancelled from pending
+        case -2: // Cancelled after payment
+          return res.json({
+            success: true,
+            isPaid: false,
+            paymentStatus: -1, // Cancelled status
+            errorCode: -1,
+            paymentId: paymeTransaction.providerTransactionId,
+            booking: booking,
+            provider: 'payme',
+            message: "Payme payment was cancelled"
+          });
+          
+        default:
+          console.warn(`Unknown Payme transaction state: ${paymeTransaction.state}`);
+          // Continue to check Click.uz payment as fallback
+      }
+    }
+
+    // Fallback to Click.uz payment check if no Payme transaction or unknown state
+    
+    // If no Click invoice created yet, can't check
     if (!booking.clickInvoiceId) {
       return res.json({
         success: false,
@@ -477,7 +528,9 @@ const checkPaymentStatusSmart = async (req, res) => {
         paymentStatus: null,
         errorCode: -1,
         errorNote: "No payment invoice found",
-        booking: booking
+        booking: booking,
+        provider: null,
+        message: "No payment method initiated"
       });
     }
 
@@ -500,7 +553,8 @@ const checkPaymentStatusSmart = async (req, res) => {
           errorCode: 0,
           paymentId: statusResult.paymentId,
           booking: updatedBooking,
-          message: "Payment confirmed"
+          provider: 'click',
+          message: "Payment confirmed via Click.uz"
         });
       } else {
         // Payment not found or not completed
@@ -511,6 +565,7 @@ const checkPaymentStatusSmart = async (req, res) => {
           errorCode: statusResult.errorCode || (statusResult.paymentStatus === null ? -16 : 0),
           errorNote: statusResult.errorNote || "Payment not completed",
           booking: booking,
+          provider: 'click',
           message: statusResult.message || "Payment not found or incomplete"
         });
       }
@@ -524,6 +579,7 @@ const checkPaymentStatusSmart = async (req, res) => {
         errorCode: -1,
         errorNote: clickError.message || "Click.uz API error",
         booking: booking,
+        provider: 'click',
         message: "Unable to check payment status"
       });
     }

@@ -53,7 +53,18 @@ const PaymentResponseDisplay = ({ paymentResponse, bookingId, booking }) => {
     return 'Payment Provider';
   };
 
-  const getStatusText = (status) => {
+  const getStatusText = (status, booking, paymentResponse) => {
+    // For Payme payments, determine status based on booking state
+    if (paymentResponse?.provider === 'payme') {
+      if (booking?.status === 'approved' && booking?.paid_at) {
+        return t('details.paymentResponse.status.success');
+      } else if (booking?.status === 'selected') {
+        return t('details.paymentResponse.status.processing');
+      } else {
+        return t('details.paymentResponse.status.unknown');
+      }
+    }
+    
     // Handle Click.uz numeric status codes from the actual response
     if (typeof status === 'number') {
       switch (status) {
@@ -98,7 +109,18 @@ const PaymentResponseDisplay = ({ paymentResponse, bookingId, booking }) => {
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status, booking, paymentResponse) => {
+    // For Payme payments, determine color based on booking state
+    if (paymentResponse?.provider === 'payme') {
+      if (booking?.status === 'approved' && booking?.paid_at) {
+        return 'bg-green-50 border-green-200 text-green-800'; // Success
+      } else if (booking?.status === 'selected') {
+        return 'bg-yellow-50 border-yellow-200 text-yellow-800'; // Processing
+      } else {
+        return 'bg-gray-50 border-gray-200 text-gray-800'; // Unknown
+      }
+    }
+    
     // Handle Click.uz numeric status codes
     if (typeof status === 'number') {
       switch (status) {
@@ -166,8 +188,8 @@ const PaymentResponseDisplay = ({ paymentResponse, bookingId, booking }) => {
   };
 
   const providerName = getProviderName(booking, paymentResponse);
-  const statusText = getStatusText(paymentResponse?.status);
-  const statusColor = getStatusColor(paymentResponse?.status);
+  const statusText = getStatusText(paymentResponse?.status, booking, paymentResponse);
+  const statusColor = getStatusColor(paymentResponse?.status, booking, paymentResponse);
   const paymentId = getPaymentId(booking, paymentResponse);
   const paymentDate = getPaymentDate(booking);
 
