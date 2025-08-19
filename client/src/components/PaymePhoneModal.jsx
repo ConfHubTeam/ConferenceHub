@@ -145,11 +145,14 @@ const PaymePhoneModal = ({
       // Calculate amount in tiyin (multiply by 100)
       const amount = Math.round((booking.finalTotal || booking.totalPrice) * 100);
       
+      // Get the correct URL from backend configuration
+      const configResponse = await api.get("/payme/config");
+      const checkoutUrl = configResponse.data.checkoutUrl || 'https://checkout.paycom.uz';
+      
       // Create form element
       const form = document.createElement('form');
       form.method = 'POST';
-      form.action = 'https://test.paycom.uz'; // Use test URL for development
-      // form.action = 'https://checkout.paycom.uz'; // Use production URL for real payments
+      form.action = checkoutUrl; // Use environment-aware URL from backend
       form.target = '_blank'; // Open in new tab
 
       // Add form fields according to Payme documentation
