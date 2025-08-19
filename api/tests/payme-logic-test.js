@@ -12,7 +12,7 @@ const path = require('path');
 // Add the api directory to the require path
 process.chdir(path.join(__dirname, '..'));
 
-const PaymeService = require('./services/paymeService');
+const PaymeService = require('../services/paymeService');
 
 class PaymeLogicTest {
   constructor() {
