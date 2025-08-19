@@ -249,13 +249,32 @@ const checkout = async (req, res) => {
     const params = `m=${MERCHANT_ID};ac.${account};a=${amount};c=${returnUrl || 'https://airbnb-clone.uz/bookings'}`;
     const encodedParams = base64.encode(params);
 
-    const paymentUrl = `https://checkout.paycom.uz/${encodedParams}`;
+    // Determine checkout URL based on environment
+    // Production: https://checkout.paycom.uz/
+    // Development/Test: https://checkout.test.paycom.uz/
+    const isProduction = process.env.NODE_ENV === 'production';
+    
+    const checkoutBaseUrl = isProduction 
+      ? 'https://checkout.paycom.uz' 
+      : 'https://checkout.test.paycom.uz';
+
+    const paymentUrl = `${checkoutBaseUrl}/${encodedParams}`;
+
+    console.log('Payme checkout URL generated:', {
+      environment: process.env.NODE_ENV,
+      isProduction,
+      checkoutBaseUrl,
+      merchantId: MERCHANT_ID,
+      bookingId,
+      amount: booking.totalPrice
+    });
 
     return res.json({ 
       success: true,
       url: paymentUrl,
       bookingId,
-      amount: booking.totalPrice
+      amount: booking.totalPrice,
+      isTestMode: !isProduction
     });
 
   } catch (error) {
@@ -362,10 +381,14 @@ const getConfig = async (req, res) => {
       return res.status(500).json({ error: "Payme merchant ID not configured" });
     }
 
+    const isProduction = process.env.NODE_ENV === 'production';
+
     res.json({
       success: true,
       merchantId: MERCHANT_ID,
-      testMode: process.env.NODE_ENV === 'development'
+      testMode: !isProduction,
+      environment: process.env.NODE_ENV,
+      checkoutUrl: isProduction ? 'https://checkout.paycom.uz' : 'https://checkout.test.paycom.uz'
     });
   } catch (error) {
     console.error('Error getting Payme config:', error);
