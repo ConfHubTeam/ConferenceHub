@@ -85,12 +85,12 @@ export default function Header() {
         </div>
         
         {/* Right section - Mobile: notification + hamburger + profile, Desktop: all elements */}
-        <div className="flex items-center gap-2 relative z-30 flex-shrink-0">
+        <div className="flex items-center gap-3 relative z-30 flex-shrink-0">
           {/* Notification Bell - only shown for logged-in users */}
           <NotificationBell />
           
           {/* Currency Selector */}
-          <div className="hidden md:block" style={{ width: '90px' }}>
+          <div className="hidden md:block" style={{ width: '100px' }}>
             <CurrencySelector
               selectedCurrency={selectedCurrency}
               onChange={changeCurrency}
@@ -101,12 +101,11 @@ export default function Header() {
           </div>
           
           {/* Language Selector - clearly separated from currency */}
-          <div className="hidden md:block">
+          <div className="hidden md:block" style={{ width: '80px' }}>
             <LanguageSelector 
-              variant="compact"
-              showFlag={true}
+              variant="default"
+              showFlag={false}
               showText={false}
-              className="border-l border-gray-300 pl-2 ml-2"
               theme="light"
             />
           </div>
@@ -136,7 +135,8 @@ export default function Header() {
           
           <Link
             to={user ? "/account" : "/login"}
-            className="profile items-center flex border border-gray-300 rounded-full py-2 px-4 gap-2 bg-white hover:shadow-md transition-shadow relative"
+            className="profile flex items-center justify-center w-full px-1 py-3 text-base border border-border-default rounded-full bg-bg-card hover:bg-bg-secondary hover:shadow-md transition-all duration-200 hover-pop gap-2 relative"
+            style={{ minWidth: '60px', height: '48px' }}
           >
             {!user ? (
               <div className="user">

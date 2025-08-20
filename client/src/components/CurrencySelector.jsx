@@ -168,7 +168,7 @@ export default function CurrencySelector({
       <div 
         className={`flex items-center w-full ${
           compact 
-            ? 'px-3 py-2 text-sm h-10' 
+            ? 'px-4 py-4 text-sm h-10' 
             : 'px-4 py-3 text-base'
         } ${
           theme === "dark" 
@@ -178,10 +178,10 @@ export default function CurrencySelector({
           isOpen 
             ? theme === "dark" 
               ? 'border-white/50 ring-2 ring-white/20 shadow-sm' 
-              : 'border-accent-primary ring-2 ring-accent-primary ring-opacity-20 shadow-sm'
+              : 'border-navy-400 ring-2 ring-navy-400 ring-opacity-20 shadow-sm'
             : theme === "dark"
               ? 'focus:border-white/50 focus:ring-2 focus:ring-white/20'
-              : 'focus:border-accent-primary focus:ring-2 focus:ring-accent-primary focus:ring-opacity-20'
+              : 'focus:border-navy-400 focus:ring-2 focus:ring-navy-400 focus:ring-opacity-20'
         }`}
         onClick={() => setIsOpen(!isOpen)}
         tabIndex={0}
@@ -258,7 +258,7 @@ export default function CurrencySelector({
           {isLoading ? (
             <div className="p-4 text-center">
               <div className="flex items-center justify-center space-x-2">
-                <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-4 h-4 border-2 border-navy-500 border-t-transparent rounded-full animate-spin"></div>
                 <span className="text-sm text-gray-500">Loading currencies...</span>
               </div>
             </div>
@@ -275,7 +275,7 @@ export default function CurrencySelector({
                     aria-selected={isSelected}
                     className={`px-4 py-3 cursor-pointer transition-colors duration-150 ${
                       isSelected 
-                        ? 'bg-blue-50 border-r-2 border-blue-500' 
+                        ? 'bg-navy-100' 
                         : 'hover:bg-gray-50'
                     } ${index !== currencies.length - 1 ? 'border-b border-gray-100' : ''}`}
                     onClick={() => handleSelect(currency)}
@@ -283,10 +283,10 @@ export default function CurrencySelector({
                     <div className="flex items-center space-x-3">
                       {/* Currency symbol in circle */}
                       <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
-                        isSelected ? 'bg-blue-100 border-2 border-blue-200' : 'bg-gray-50 border border-gray-200'
+                        isSelected ? 'bg-navy-200' : 'bg-gray-50 border border-gray-200'
                       }`}>
                         <span className={`font-bold ${
-                          isSelected ? 'text-blue-700' : 'text-gray-700'
+                          isSelected ? 'text-navy-600' : 'text-gray-700'
                         }`}>
                           {currencyInfo.symbol}
                         </span>
@@ -296,12 +296,12 @@ export default function CurrencySelector({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                           <span className={`font-semibold ${
-                            isSelected ? 'text-blue-900' : 'text-gray-900'
+                            isSelected ? 'text-navy-700' : 'text-gray-900'
                           }`}>
                             {currencyInfo.displayCode}
                           </span>
                           {isSelected && (
-                            <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                            <svg className="w-5 h-5 text-navy-600" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                             </svg>
                           )}
