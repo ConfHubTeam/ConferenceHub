@@ -16,8 +16,7 @@ export default function PlaceCard({ place, showActions = true, preserveSearchPar
   return (
     <div className="card-base group hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer">
       {/* Image */}
-              {/* Image */}
-        <div className="relative aspect-[4/3] overflow-hidden rounded-t-2xl">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-t-lg">
           {place.photos?.length > 0 ? (
             <CloudinaryImage
               photo={place.photos[0]}
@@ -103,26 +102,9 @@ export default function PlaceCard({ place, showActions = true, preserveSearchPar
                 priceClassName="text-lg font-semibold"
               />
             </span>
-            
-            {showActions && (
-              <div className="flex gap-2 flex-shrink-0">
-                <Link 
-                  to={`/account/places/${place.id}`}
-                  className="btn-outline btn-sm"
-                >
-                  {t("card.actions.edit")}
-                </Link>
-                <Link 
-                  to={getPlaceUrl()}
-                  className="btn-primary btn-sm"
-                >
-                  {t("card.actions.view")}
-                </Link>
-              </div>
-            )}
           </div>
           
-          {/* View Details Button - Always visible */}
+          {/* Details Button - Always visible */}
           <Link 
             to={getPlaceUrl()}
             className="btn-primary w-full text-center py-2 rounded-lg font-medium transition-colors"

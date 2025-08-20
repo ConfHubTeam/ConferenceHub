@@ -74,16 +74,16 @@ export default function PlacesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="bg-bg-primary min-h-screen">
         <div className="spacing-container spacing-section">
           <div className="animate-pulse space-y-4">
             <div className="card-base">
-              <div className="h-16 bg-gray-200 rounded-lg"></div>
+              <div className="h-16 bg-bg-secondary rounded-lg"></div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-spacing-md">
-              {[...Array(6)].map((_, i) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, i) => (
                 <div key={i} className="card-base">
-                  <div className="h-80 bg-gray-200 rounded-xl"></div>
+                  <div className="h-80 bg-bg-secondary rounded-xl"></div>
                 </div>
               ))}
             </div>
@@ -94,25 +94,22 @@ export default function PlacesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="spacing-container spacing-section max-w-7xl mx-auto">
+    <div className="bg-bg-primary min-h-screen">
+      <div className="spacing-container w-full">
         
         {/* Page header with search and Add Place button in same row */}
-        <div className="card-base mb-spacing-lg">
-          <div className="card-content">
-            <div className="flex flex-col md:flex-row gap-4 items-start md:items-end">
+        <div className="card-base mb-6">
+          <div className="card-content p-4">
+            <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
               {/* Search input */}
               <div className="flex-1">
-                <label htmlFor="search" className="block text-sm font-medium text-secondary mb-2">
-                  {t('placesPage.searchLabel', 'Search Your Rooms')}
-                </label>
                 <input
                   id="search"
                   type="text"
                   placeholder={t('placesPage.searchPlaceholder', 'Search by property name or address...')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="input-base text-primary"
+                  className="input-base text-primary h-10"
                 />
               </div>
               
@@ -120,7 +117,7 @@ export default function PlacesPage() {
               {user && user.userType === 'host' && (
                 <div className="flex-shrink-0">
                   <Link
-                    className="btn-primary inline-flex items-center gap-2"
+                    className="btn-primary h-10 px-6 rounded-xl inline-flex items-center gap-2"
                     to={"/account/places/new"}
                   >
                     <svg
@@ -149,13 +146,15 @@ export default function PlacesPage() {
         {filteredPlaces.length === 0 ? (
           <div className="card-base text-center">
             <div className="card-content">
-              <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H9m0 0H5m4 0V9a2 2 0 012-2h2a2 2 0 012 2v8" />
-              </svg>
-              <h3 className="text-lg font-semibold text-primary mb-2">
+              <div className="w-16 h-16 mx-auto mb-4 text-text-muted">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H9m0 0H5m4 0V9a2 2 0 012-2h2a2 2 0 012 2v8" />
+                </svg>
+              </div>
+              <h3 className="text-heading-3 mb-2 text-text-primary">
                 {searchTerm ? t('placesPage.noRoomsFound', 'No rooms found') : t('placesPage.noRoomsYet', 'No conference rooms yet')}
               </h3>
-              <p className="text-secondary mb-4">
+              <p className="text-body text-text-secondary mb-4">
                 {searchTerm 
                   ? t('placesPage.tryAdjustingSearch', 'Try adjusting your search criteria.')
                   : t('placesPage.getStartedMessage', 'Get started by adding your first conference room listing.')
@@ -181,21 +180,21 @@ export default function PlacesPage() {
         ) : (
           <>
             {/* Results header */}
-            <div className="flex items-center justify-between mb-spacing-md">
-              <h2 className="text-lg font-semibold text-primary">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-heading-2 text-text-primary">
                 {t('placesPage.yourRooms', 'Your Conference Rooms')}
-                <span className="ml-2 text-sm text-secondary">({filteredPlaces.length})</span>
+                <span className="ml-2 text-body text-text-secondary">({filteredPlaces.length})</span>
               </h2>
               
               {searchTerm && (
-                <div className="text-sm text-secondary">
+                <div className="text-caption text-text-secondary">
                   {t('placesPage.showingResults', 'Showing results for "{{searchTerm}}"', { searchTerm })}
                 </div>
               )}
             </div>
 
-            {/* Places grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-spacing-md mb-8">
+            {/* Places grid using PlaceCard component */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {getCurrentPageItems().map((place) => (
                 <PlaceCard
                   key={place.id}
@@ -207,15 +206,17 @@ export default function PlacesPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-                showingFrom={showingFrom}
-                showingTo={showingTo}
-                totalItems={filteredPlaces.length}
-                itemName="rooms"
-              />
+              <div className="mt-8">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                  showingFrom={showingFrom}
+                  showingTo={showingTo}
+                  totalItems={filteredPlaces.length}
+                  itemName="rooms"
+                />
+              </div>
             )}
           </>
         )}
