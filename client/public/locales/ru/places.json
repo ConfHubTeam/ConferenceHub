@@ -234,6 +234,7 @@
     "price_per_day": "/день",
     "new_rating": "Новый",
     "guests": "чел.",
+    "hosted_by": "Принимает",
     "actions": {
       "edit": "Редактировать",
       "view": "Посмотреть",

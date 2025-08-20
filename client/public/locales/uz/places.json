@@ -218,6 +218,7 @@
     "price_per_day": "/kun",
     "new_rating": "Yangi",
     "guests": "kishi",
+    "hosted_by": "Mezbonlik qiladi",
     "actions": {
       "edit": "Tahrirlash",
       "view": "Ko'rish",

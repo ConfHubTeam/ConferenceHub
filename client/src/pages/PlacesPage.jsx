@@ -3,7 +3,6 @@ import { useContext, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import api from "../utils/api";
 import { UserContext } from "../components/UserContext";
-import PlaceFilters from "../components/PlaceFilters";
 import PlaceCard from "../components/PlaceCard";
 import Pagination from "../components/Pagination";
 
@@ -75,16 +74,18 @@ export default function PlacesPage() {
 
   if (loading) {
     return (
-      <div>
-        
+      <div className="min-h-screen bg-gray-50">
         <div className="spacing-container spacing-section">
-          <div className="animate-pulse flex space-x-4">
-            <div className="flex-1 space-y-4 py-1">
-              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              <div className="space-y-2">
-                <div className="h-4 bg-gray-200 rounded"></div>
-                <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-              </div>
+          <div className="animate-pulse space-y-4">
+            <div className="card-base">
+              <div className="h-16 bg-gray-200 rounded-lg"></div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-spacing-md">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="card-base">
+                  <div className="h-80 bg-gray-200 rounded-xl"></div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -93,96 +94,108 @@ export default function PlacesPage() {
   }
 
   return (
-    <div>
-      
+    <div className="min-h-screen bg-gray-50">
       <div className="spacing-container spacing-section max-w-7xl mx-auto">
-        {/* Page header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-center">
-            
-            {/* Add new room button */}
-            {user && user.userType === 'host' && (
-              <Link
-                className="inline-flex items-center gap-2 bg-primary text-white py-2 px-4 sm:py-3 sm:px-6 rounded-full hover:bg-primary/90 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
-                to={"/account/places/new"}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-5 h-5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 4.5v15m7.5-7.5h-15"
-                  />
-                </svg>
-                {t('placesPage.addNewRoom', 'Add New Room')}
-              </Link>
-            )}
+        
+        {/* Page header with search and Add Place button in same row */}
+        <div className="card-base mb-spacing-lg">
+          <div className="card-content">
+            <div className="flex flex-col md:flex-row gap-4 items-start md:items-end">
+              {/* Search input */}
+              <div className="flex-1">
+                <label htmlFor="search" className="block text-sm font-medium text-secondary mb-2">
+                  {t('placesPage.searchLabel', 'Search Your Rooms')}
+                </label>
+                <input
+                  id="search"
+                  type="text"
+                  placeholder={t('placesPage.searchPlaceholder', 'Search by property name or address...')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="input-base text-primary"
+                />
+              </div>
+              
+              {/* Add new room button */}
+              {user && user.userType === 'host' && (
+                <div className="flex-shrink-0">
+                  <Link
+                    className="btn-primary inline-flex items-center gap-2"
+                    to={"/account/places/new"}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-5 h-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 4.5v15m7.5-7.5h-15"
+                      />
+                    </svg>
+                    {t('placesPage.addNewRoom', 'Add New Room')}
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Filters and controls */}
-        <PlaceFilters
-          user={user}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          onClearAllFilters={clearAllFilters}
-        />
-
         {/* Places listing */}
         {filteredPlaces.length === 0 ? (
-          <div className="bg-white border border-gray-200 rounded-lg spacing-content text-center">
-            <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H9m0 0H5m4 0V9a2 2 0 012-2h2a2 2 0 012 2v8" />
-            </svg>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {searchTerm ? t('placesPage.noRoomsFound', 'No rooms found') : t('placesPage.noRoomsYet', 'No conference rooms yet')}
-            </h3>
-            <p className="text-gray-600 mb-4">
-              {searchTerm 
-                ? t('placesPage.tryAdjustingSearch', 'Try adjusting your search criteria.')
-                : t('placesPage.getStartedMessage', 'Get started by adding your first conference room listing.')
-              }
-            </p>
-            {searchTerm ? (
-              <button
-                onClick={clearAllFilters}
-                className="bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
-              >
-                {t('placesPage.clearSearch', 'Clear Search')}
-              </button>
-            ) : (
-              <Link
-                to="/account/places/new"
-                className="bg-primary text-white py-2 px-4 sm:py-2.5 sm:px-6 rounded-full hover:bg-primary/90 transition-all duration-200 inline-block font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                {t('placesPage.addFirstRoom', 'Add Your First Room')}
-              </Link>
-            )}
+          <div className="card-base text-center">
+            <div className="card-content">
+              <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H9m0 0H5m4 0V9a2 2 0 012-2h2a2 2 0 012 2v8" />
+              </svg>
+              <h3 className="text-lg font-semibold text-primary mb-2">
+                {searchTerm ? t('placesPage.noRoomsFound', 'No rooms found') : t('placesPage.noRoomsYet', 'No conference rooms yet')}
+              </h3>
+              <p className="text-secondary mb-4">
+                {searchTerm 
+                  ? t('placesPage.tryAdjustingSearch', 'Try adjusting your search criteria.')
+                  : t('placesPage.getStartedMessage', 'Get started by adding your first conference room listing.')
+                }
+              </p>
+              {searchTerm ? (
+                <button
+                  onClick={clearAllFilters}
+                  className="btn-outline"
+                >
+                  {t('placesPage.clearSearch', 'Clear Search')}
+                </button>
+              ) : (
+                <Link
+                  to="/account/places/new"
+                  className="btn-primary inline-flex items-center gap-2"
+                >
+                  {t('placesPage.addFirstRoom', 'Add Your First Room')}
+                </Link>
+              )}
+            </div>
           </div>
         ) : (
           <>
             {/* Results header */}
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-medium text-gray-900">
+            <div className="flex items-center justify-between mb-spacing-md">
+              <h2 className="text-lg font-semibold text-primary">
                 {t('placesPage.yourRooms', 'Your Conference Rooms')}
-                <span className="ml-2 text-sm text-gray-500">({filteredPlaces.length})</span>
+                <span className="ml-2 text-sm text-secondary">({filteredPlaces.length})</span>
               </h2>
               
               {searchTerm && (
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-secondary">
                   {t('placesPage.showingResults', 'Showing results for "{{searchTerm}}"', { searchTerm })}
                 </div>
               )}
             </div>
 
             {/* Places grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-spacing-md mb-8">
               {getCurrentPageItems().map((place) => (
                 <PlaceCard
                   key={place.id}

@@ -234,6 +234,7 @@
     "price_per_day": "/day",
     "new_rating": "New",
     "guests": "people",
+    "hosted_by": "Hosted by",
     "actions": {
       "edit": "Edit",
       "view": "View",

@@ -7,7 +7,7 @@ import PhotoGallery from "../components/PhotoGallery";
 import BookingCard from "../components/BookingCard";
 import { UserContext } from "../components/UserContext";
 import { useNotification } from "../components/NotificationContext";
-import MapView from "../components/MapView";
+import PlaceStaticMap from "../components/PlaceStaticMap";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import PlaceDetailsInfo from "../components/PlaceDetailsInfo";
 import WeeklyAvailabilityDisplay from "../components/WeeklyAvailabilityDisplay";
@@ -260,10 +260,10 @@ export default function PlaceDetailPage() {
               blockedWeekdays={placeDetail.blockedWeekdays}
             />
             
-            {/* Location Map - Hidden on mobile */}
+            {/* Location Map */}
             {hasCoordinates && (
-              <div className="hidden md:block h-64 bg-bg-card border border-border-light rounded-lg shadow-ui overflow-hidden">
-                <MapView places={mapPlaces} disableInfoWindow={true} />
+              <div className="h-64 border-4 border-white rounded-lg shadow-ui bg-white">
+                <PlaceStaticMap place={placeDetail} />
               </div>
             )}
             
