@@ -440,32 +440,32 @@ export default function BookingDetailsPage() {
   }
 
   return (
-    <div>
-      
-      <div className="max-w-6xl mx-auto px-4 py-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+    <div className="bg-bg-primary min-h-screen">
+      <div className="spacing-container w-full">
+        {/* Header Section */}
+        <div className="flex items-center justify-between pt-6 pb-6">
           <div className="flex items-center gap-4">
             <Link 
               to="/account/bookings"
-              className="text-gray-600 hover:text-gray-900 transition-colors"
+              className="flex items-center justify-center w-10 h-10 rounded-lg bg-bg-card border border-border-light hover:border-border-hover transition-colors"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-text-secondary">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
               </svg>
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{t('details.title')}</h1>
-              <p className="text-gray-600 font-mono text-sm">
+              <h1 className="text-heading-1 text-text-primary">{t('details.title')}</h1>
+              <p className="text-body text-text-muted font-mono">
                 {booking.uniqueRequestId || t('card.requestId', { id: booking.id })}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        {/* Main Content Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-8">
           {/* Main Content */}
-          <div className="lg:col-span-3 space-y-6">
+          <div className="lg:col-span-2 space-y-6">
             {/* Booking Progress */}
             <BookingProgress booking={booking} userType={user?.userType} />
             
@@ -487,12 +487,12 @@ export default function BookingDetailsPage() {
               </div>
 
               {/* Time Slots Section */}
-              <div className="border-t border-gray-200 pt-6">
+              <div className="border-t border-border-light pt-6">
                 <div className="flex items-center mb-4">
-                  <svg className="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-text-muted mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <h3 className="text-lg font-medium text-gray-900">{t('details.bookingInfo.timeSlots')}</h3>
+                  <h3 className="text-body-lg font-medium text-text-primary">{t('details.bookingInfo.timeSlots')}</h3>
                 </div>
                 {booking.timeSlots && booking.timeSlots.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -518,11 +518,11 @@ export default function BookingDetailsPage() {
                       userType="client"
                       booking={booking}
                       latestContactInfo={latestContactInfo}
-                      bgGradient="from-blue-50 to-cyan-50"
-                      borderColor="border-blue-200"
-                      iconBgColor="bg-blue-100"
-                      iconTextColor="text-blue-600"
-                      titleTextColor="text-blue-800"
+                      bgGradient="from-blue-50 to-blue-50"
+                      borderColor="border-border-light"
+                      iconBgColor="bg-accent-primary/10"
+                      iconTextColor="text-accent-primary"
+                      titleTextColor="text-text-primary"
                     />
                   )}
                   
@@ -533,11 +533,11 @@ export default function BookingDetailsPage() {
                       userType="host"
                       booking={booking}
                       latestContactInfo={latestContactInfo}
-                      bgGradient="from-green-50 to-emerald-50"
-                      borderColor="border-green-200"
-                      iconBgColor="bg-green-100"
-                      iconTextColor="text-green-600"
-                      titleTextColor="text-green-800"
+                      bgGradient="from-green-50 to-green-50"
+                      borderColor="border-border-light"
+                      iconBgColor="bg-success-subtle"
+                      iconTextColor="text-success-primary"
+                      titleTextColor="text-text-primary"
                     />
                   )}
                 </div>
@@ -560,94 +560,94 @@ export default function BookingDetailsPage() {
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-1">
             <div className="sticky top-24 space-y-6">
               {/* Pricing */}
-            <PricingSection booking={booking} user={user}>
-              <PaymentStatusIndicator status={booking.status} userType={user?.userType} booking={booking} />
-            </PricingSection>
+              <PricingSection booking={booking} user={user}>
+                <PaymentStatusIndicator status={booking.status} userType={user?.userType} booking={booking} />
+              </PricingSection>
 
-            {/* Payment Section - Only for clients */}
-            {shouldShowPaymentSection(user, booking) && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">
-                    {t('details.sections.payment', 'Payment')}
-                  </h3>
-                  <button
-                    onClick={refreshBooking}
-                    disabled={isRefreshing}
-                    className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    title={t('details.payment.refreshStatus', 'Refresh Status')}
-                  >
-                    <svg 
-                      className={`w-4 h-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} 
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
+              {/* Payment Section - Only for clients */}
+              {shouldShowPaymentSection(user, booking) && (
+                <div className="card-base card-content">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-body-lg font-medium text-text-primary">
+                      {t('details.sections.payment', 'Payment')}
+                    </h3>
+                    <button
+                      onClick={refreshBooking}
+                      disabled={isRefreshing}
+                      className="btn-outline"
+                      title={t('details.payment.refreshStatus', 'Refresh Status')}
                     >
-                      <path 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        strokeWidth={2} 
-                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+                      <svg 
+                        className={`w-4 h-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          strokeWidth={2} 
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+                        />
+                      </svg>
+                      {isRefreshing ? t('common.status.loading', 'Loading...') : t('details.payment.refreshStatus', 'Refresh Status')}
+                    </button>
+                  </div>
+                  
+                  {isPaymentAvailable() ? (
+                    <div className="space-y-4">
+                      {/* Payment Methods with Click, Payme, and Octo */}
+                      <PaymentMethodsSection
+                        booking={booking}
+                        isPaymentAvailable={isPaymentAvailable()}
+                        onPaymentInitiated={(paymentData) => {
+                          notify(t('notifications.paymentWindowOpened'), "success");
+                          // Start polling for selected bookings only
+                          if (booking.status === 'selected') {
+                            startPolling();
+                          }
+                        }}
+                        onPaymentError={(error) => {
+                          notify(error, "error");
+                        }}
                       />
-                    </svg>
-                    {isRefreshing ? t('common.status.loading', 'Loading...') : t('details.payment.refreshStatus', 'Refresh Status')}
-                  </button>
-                </div>
-                
-                {isPaymentAvailable() ? (
-                  <div className="space-y-4">
-                    {/* Payment Methods with Click, Payme, and Octo */}
-                    <PaymentMethodsSection
-                      booking={booking}
-                      isPaymentAvailable={isPaymentAvailable()}
-                      onPaymentInitiated={(paymentData) => {
-                        notify(t('notifications.paymentWindowOpened'), "success");
-                        // Start polling for selected bookings only
-                        if (booking.status === 'selected') {
-                          startPolling();
-                        }
-                      }}
-                      onPaymentError={(error) => {
-                        notify(error, "error");
-                      }}
-                    />
-                    
-                    {/* Success Message */}
-                    <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <div className="flex items-center">
-                        <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <div className="text-sm">
-                          <div className="font-medium text-green-800 mb-1">
-                            {t('details.payment.selectedMessage', 'Your booking has been selected! Payment is now available.')}
+                      
+                      {/* Success Message */}
+                      <div className="mt-4 p-3 bg-success-subtle border border-success-muted rounded-lg">
+                        <div className="flex items-center">
+                          <svg className="w-5 h-5 text-success-primary mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <div className="text-body-sm">
+                            <div className="font-medium text-success-primary mb-1">
+                              {t('details.payment.selectedMessage', 'Your booking has been selected! Payment is now available.')}
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                    <div className="flex items-center">
-                      <svg className="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <div className="text-sm">
-                        <div className="font-medium text-gray-800 mb-1">
-                          {t('details.payment.notAvailableTitle', 'Payment Not Available')}
-                        </div>
-                        <div className="text-gray-600">
-                          {t('details.payment.notAvailableMessage', 'Payment will be available once the host selects your booking.')}
+                  ) : (
+                    <div className="mt-4 p-3 bg-bg-secondary border border-border-light rounded-lg">
+                      <div className="flex items-center">
+                        <svg className="w-5 h-5 text-text-muted mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div className="text-body-sm">
+                          <div className="font-medium text-text-primary mb-1">
+                            {t('details.payment.notAvailableTitle', 'Payment Not Available')}
+                          </div>
+                          <div className="text-text-muted">
+                            {t('details.payment.notAvailableMessage', 'Payment will be available once the host selects your booking.')}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
+                </div>
+              )}
 
             {/* Actions */}
             {(() => {
@@ -655,12 +655,12 @@ export default function BookingDetailsPage() {
               return (
                 <>
                   {note && (
-                    <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="mb-4 p-3 bg-warning-subtle border border-warning-muted rounded-lg">
                       <div className="flex items-start">
-                        <svg className="w-5 h-5 text-amber-600 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 text-warning-primary mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 18.5c-.77.833.192 2.5 1.732 2.5z" />
                         </svg>
-                        <p className="text-sm text-amber-800">{note}</p>
+                        <p className="text-body-sm text-warning-primary">{note}</p>
                       </div>
                     </div>
                   )}
@@ -718,14 +718,14 @@ export default function BookingDetailsPage() {
                 <button
                   onClick={() => handlePaymentConfirmation(true)}
                   disabled={isUpdating}
-                  className="w-full bg-success-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-success-700 disabled:opacity-50 transition-colors"
+                  className="w-full bg-success-primary text-white py-2 px-4 rounded-lg font-medium hover:bg-success-hover disabled:opacity-50 transition-colors"
                 >
                   {t('details.actions.confirmations.paymentConfirmed')}
                 </button>
                 <button
                   onClick={() => handlePaymentConfirmation(false)}
                   disabled={isUpdating}
-                  className="w-full bg-warning-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-warning-700 disabled:opacity-50 transition-colors"
+                  className="w-full bg-warning-primary text-white py-2 px-4 rounded-lg font-medium hover:bg-warning-hover disabled:opacity-50 transition-colors"
                 >
                   {t('details.actions.confirmations.approveWithoutPayment')}
                 </button>

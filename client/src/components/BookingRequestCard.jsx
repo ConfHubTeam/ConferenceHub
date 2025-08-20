@@ -32,9 +32,9 @@ export default function BookingRequestCard({ booking, competingBookings = [] }) 
   const getStatusBadge = (status) => {
     switch (status) {
       case "pending":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+        return "bg-orange-100 text-orange-700 border-orange-200";
       case "selected":
-        return "bg-blue-100 text-blue-800 border-blue-200";
+        return "bg-orange-100 text-orange-700 border-orange-200";
       case "approved":
         return "bg-green-100 text-green-800 border-green-200";
       case "rejected":
@@ -62,13 +62,13 @@ export default function BookingRequestCard({ booking, competingBookings = [] }) 
   };
 
   return (
-      <div className="bg-white border border-gray-200 rounded-2xl p-4 hover:border-gray-400 hover:shadow-md transition-all duration-200">
+      <div className="w-full bg-bg-card border border-border-light rounded-lg shadow-ui p-6 hover:border-border-hover hover:shadow-ui-hover transition-all duration-200">
       {/* Header with Request ID and Status */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <Link 
             to={`/account/bookings/${booking.id}`}
-            className="font-mono text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+            className="font-mono text-sm font-semibold text-accent-primary hover:text-accent-hover hover:underline transition-colors"
           >
             {booking.uniqueRequestId || `REQ-${booking.id}`}
           </Link>
@@ -77,35 +77,35 @@ export default function BookingRequestCard({ booking, competingBookings = [] }) 
               currentBooking={booking} 
               competingBookings={competingBookings} 
             />
-            <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusBadge(booking.status)}`}>
+            <span className={`px-3 py-1 text-xs font-medium rounded-full border ${getStatusBadge(booking.status)}`}>
               {t(`status.${booking.status}`)}
             </span>
             {/* Paid to Host Indicator - Only visible to agents and hosts */}
             {booking.status === 'approved' && booking.paidToHost && (user?.userType === 'agent' || user?.userType === 'host') && (
-              <span className="px-2 py-1 text-xs font-medium rounded-full border bg-blue-50 text-blue-700 border-blue-200">
+              <span className="px-3 py-1 text-xs font-medium rounded-full border bg-accent-50 text-accent-primary border-accent-200">
                 {t("card.paid")}
               </span>
             )}
           </div>
         </div>
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-text-muted">
           {format(new Date(booking.createdAt), "MMM d, yyyy", { locale: getDateLocale() })}
         </span>
       </div>
 
       {/* Property and booking details */}
-      <div className="space-y-2 mb-4">
+      <div className="space-y-4 mb-6">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
             <Link 
               to={`/place/${booking.place?.id}`}
               className="block group"
             >
-              <h3 className="font-medium text-gray-900 truncate group-hover:text-blue-600 transition-colors cursor-pointer">
+              <h3 className="text-heading-4 text-text-primary truncate group-hover:text-accent-primary transition-colors cursor-pointer">
                 {booking.place?.title}
               </h3>
             </Link>
-            <div className="flex items-center text-sm text-gray-600">
+            <div className="flex items-center text-sm text-text-secondary mt-1">
               <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -114,15 +114,15 @@ export default function BookingRequestCard({ booking, competingBookings = [] }) 
             </div>
           </div>
           <div className="text-right flex-shrink-0 ml-4">
-            <div className="text-lg font-semibold text-gray-900">
+            <div className="text-heading-3 text-text-primary">
               <PriceDisplay 
                 price={booking.totalPrice} 
                 currency={booking.place?.currency}
-                className="text-lg font-semibold text-gray-900"
+                className="text-heading-3 text-text-primary"
                 bold={true}
               />
             </div>
-            <div className="text-xs text-gray-500">
+            <div className="text-caption text-text-muted">
               {t("card.guests", { 
                 count: booking.numOfGuests,
                 plural: booking.numOfGuests > 1 ? "s" : ""
@@ -133,8 +133,8 @@ export default function BookingRequestCard({ booking, competingBookings = [] }) 
 
         {/* Date range from time slots */}
         {booking.timeSlots && booking.timeSlots.length > 0 && (
-          <div className="flex items-center text-sm text-gray-600 mb-2">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1">
+          <div className="flex items-center text-sm text-text-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5a2.25 2.25 0 002.25-2.25m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5a2.25 2.25 0 012.25 2.25v7.5" />
             </svg>
             <span>
@@ -145,15 +145,15 @@ export default function BookingRequestCard({ booking, competingBookings = [] }) 
 
         {/* Time slots - always visible */}
         {booking.timeSlots && booking.timeSlots.length > 0 && (
-          <div className="flex items-start text-sm text-gray-600">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1 mt-0.5 flex-shrink-0">
+          <div className="flex items-start text-sm text-text-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div className="flex-1">
               <span className="font-medium">{t("card.timeSlots")}</span>
-              <div className="mt-1 space-y-1">
+              <div className="mt-2 space-y-1">
                 {booking.timeSlots.map((slot, index) => (
-                  <div key={index} className="text-xs bg-blue-50 border border-blue-200 rounded px-2 py-1 inline-block mr-1 mb-1">
+                  <div key={index} className="text-xs bg-blue-50 border border-blue-200 text-blue-800 rounded-md px-3 py-1.5 inline-block mr-2 mb-1 font-medium">
                     {format(parseDateSafely(slot.date), t("card.timeSlotFormat"), { locale: getDateLocale() })}: {slot.startTime}-{slot.endTime}
                   </div>
                 ))}
@@ -164,12 +164,12 @@ export default function BookingRequestCard({ booking, competingBookings = [] }) 
 
         {/* Agent-specific contact information */}
         {user?.userType === 'agent' && (
-          <div className="mt-3 pt-3 border-t border-gray-200">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+          <div className="mt-4 pt-4 border-t border-border-light">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               {/* Client info */}
-              <div className="bg-blue-50 border border-blue-200 rounded p-2">
-                <div className="font-medium text-blue-700 mb-1">{t("card.agentInfo.client")}</div>
-                <div className="text-blue-600">
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                <div className="font-medium text-slate-700 mb-2">{t("card.agentInfo.client")}</div>
+                <div className="text-text-secondary space-y-1">
                   <div><span className="font-medium">{t("card.agentInfo.name")}</span> {booking.guestName || booking.user?.name || t("card.agentInfo.notAvailable")}</div>
                   <div><span className="font-medium">{t("card.agentInfo.phone")}</span> {booking.guestPhone || booking.user?.phoneNumber || t("card.agentInfo.notAvailable")}</div>
                 </div>
@@ -177,9 +177,9 @@ export default function BookingRequestCard({ booking, competingBookings = [] }) 
               
               {/* Host info */}
               {booking.place?.owner && (
-                <div className="bg-green-50 border border-green-200 rounded p-2">
-                  <div className="font-medium text-green-700 mb-1">{t("card.agentInfo.host")}</div>
-                  <div className="text-green-600">
+                <div className="bg-success-50 border border-success-200 rounded-lg p-3">
+                  <div className="font-medium text-status-success mb-2">{t("card.agentInfo.host")}</div>
+                  <div className="text-text-secondary space-y-1">
                     <div><span className="font-medium">{t("card.agentInfo.name")}</span> {booking.place.owner.name}</div>
                     <div><span className="font-medium">{t("card.agentInfo.phone")}</span> {booking.place.owner.phoneNumber || t("card.agentInfo.notAvailable")}</div>
                   </div>
@@ -194,7 +194,7 @@ export default function BookingRequestCard({ booking, competingBookings = [] }) 
       <div className="flex gap-2">
         <Link
           to={`/account/bookings/${booking.id}`}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors text-center"
+          className="btn-primary btn-size-md w-full text-center"
         >
           {t("card.viewDetails")}
         </Link>

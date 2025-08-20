@@ -29,8 +29,8 @@ const getDateLocale = () => {
  */
 export const SectionCard = ({ title, children, className = "" }) => {
   return (
-    <div className={`bg-white border border-gray-200 rounded-lg p-6 ${className}`}>
-      {title && <h2 className="text-xl font-semibold mb-4">{title}</h2>}
+    <div className={`card-base card-content ${className}`}>
+      {title && <h2 className="text-heading-2 text-text-primary mb-4">{title}</h2>}
       {children}
     </div>
   );
@@ -43,8 +43,8 @@ export const InfoCard = ({
   title, 
   icon, 
   value, 
-  bgColor = "bg-gray-50", 
-  borderColor = "border-gray-200" 
+  bgColor = "bg-bg-secondary", 
+  borderColor = "border-border-light" 
 }) => {
   const iconComponent = typeof icon === 'string' ? getIconComponent(icon) : icon;
   
@@ -52,9 +52,9 @@ export const InfoCard = ({
     <div className={`${bgColor} border ${borderColor} rounded-lg p-4`}>
       <div className="flex items-center mb-2">
         {iconComponent}
-        <label className="text-sm font-medium text-gray-700">{title}</label>
+        <label className="text-body-sm font-medium text-text-secondary">{title}</label>
       </div>
-      <p className="text-lg font-semibold text-gray-900">{value}</p>
+      <p className="text-body-lg font-semibold text-text-primary">{value}</p>
     </div>
   );
 };
@@ -65,14 +65,14 @@ export const InfoCard = ({
 export const ContactInfoCard = ({ 
   title, 
   contactInfo, 
-  bgGradient = "from-blue-50 to-cyan-50", 
-  borderColor = "border-blue-200",
-  iconBgColor = "bg-blue-100",
-  iconTextColor = "text-blue-600",
-  titleTextColor = "text-blue-800"
+  bgGradient = "from-accent-primary/5 to-accent-primary/5", 
+  borderColor = "border-border-light",
+  iconBgColor = "bg-accent-primary/10",
+  iconTextColor = "text-accent-primary",
+  titleTextColor = "text-text-primary"
 }) => {
   return (
-    <div className={`bg-gradient-to-br ${bgGradient} border ${borderColor} rounded-lg p-6 shadow-sm`}>
+    <div className={`bg-gradient-to-br ${bgGradient} border ${borderColor} rounded-lg p-6 shadow-soft`}>
       <div className="flex items-center mb-4">
         <div className={`w-8 h-8 ${iconBgColor} rounded-full flex items-center justify-center mr-3`}>
           <svg className={`w-4 h-4 ${iconTextColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -81,7 +81,7 @@ export const ContactInfoCard = ({
         </div>
         <h3 className={`font-semibold ${titleTextColor}`}>{title}</h3>
       </div>
-      <div className="space-y-3 text-sm">
+      <div className="space-y-3 text-body-sm">
         {contactInfo.name && (
           <ContactInfoRow 
             icon={<UserIcon />}
@@ -389,10 +389,16 @@ export const PaymentSection = ({ isPaymentAvailable, paymentProviders, onPayment
  */
 export const RefundOptionItem = ({ option, formatRefundOption }) => {
   return (
-    <p className="flex items-start bg-white bg-opacity-60 rounded-lg p-3 border border-yellow-100">
-      <span className="inline-block w-2 h-2 bg-yellow-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
-      <span>{formatRefundOption(option)}</span>
-    </p>
+    <div className="flex items-start bg-white rounded-lg p-4 border border-slate-200 shadow-sm">
+      <div className="flex items-center justify-center w-6 h-6 bg-slate-100 rounded-full mr-3 flex-shrink-0 mt-0.5">
+        <svg className="w-3 h-3 text-slate-600" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <div className="flex-1">
+        <span className="text-slate-800 font-medium text-sm">{formatRefundOption(option)}</span>
+      </div>
+    </div>
   );
 };
 
@@ -421,17 +427,22 @@ export const RefundPolicySection = ({ booking, formatRefundOption }) => {
 
   return (
     <SectionCard title={t('details.sections.cancellationRefund')}>
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="font-medium text-yellow-800">{t('details.refundPolicy.policyAtTime')}</h3>
-          <span className="text-xs text-yellow-600 bg-yellow-100 px-2 py-1 rounded-full">
+      <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 className="font-medium text-slate-800">{t('details.refundPolicy.policyAtTime')}</h3>
+          </div>
+          <span className="text-xs text-slate-700 bg-slate-100 px-3 py-1 rounded-full font-medium">
             {format(new Date(booking.createdAt), 'MMM dd, yyyy', { locale: getDateLocale() })}
           </span>
         </div>
         
-        <div className="text-sm text-yellow-700 space-y-2">
+        <div className="space-y-3">
           {hasValidOptions ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3">
               {filteredRefundOptions.map((option, index) => (
                 <RefundOptionItem 
                   key={index}
@@ -441,11 +452,16 @@ export const RefundPolicySection = ({ booking, formatRefundOption }) => {
               ))}
             </div>
           ) : (
-            <div className="text-center py-4">
-              <p className="text-yellow-700 mb-2">
+            <div className="text-center py-6">
+              <div className="mb-3">
+                <svg className="w-8 h-8 text-slate-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <p className="text-slate-700 mb-2">
                 <span className="font-medium">{t('details.refundPolicy.noPolicy')}</span>
               </p>
-              <p className="text-sm text-yellow-600">
+              <p className="text-sm text-slate-600">
                 {t('details.refundPolicy.contactSupport')}
               </p>
             </div>
@@ -453,7 +469,7 @@ export const RefundPolicySection = ({ booking, formatRefundOption }) => {
           
           {/* Show protection plan status */}
           {refundPolicySnapshot && refundPolicySnapshot.includes('client_protection_plan') && (
-            <div className="mt-4 p-3 border border-yellow-300 rounded-lg bg-yellow-25">
+            <div className="mt-4 p-4 border border-green-200 rounded-lg bg-green-50">
               <div className="flex items-center">
                 {protectionPlanSelected ? (
                   <>
@@ -466,10 +482,10 @@ export const RefundPolicySection = ({ booking, formatRefundOption }) => {
                   </>
                 ) : (
                   <>
-                    <svg className="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-text-muted mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-text-muted">
                       {t('details.refundPolicy.protectionPlan.notSelected')}
                     </span>
                   </>
@@ -504,12 +520,12 @@ export const PropertyDetailsSection = ({ place }) => {
         <div className="flex-1">
           <Link 
             to={`/place/${place?.id}`}
-            className="text-lg font-medium text-blue-600 hover:underline"
+            className="text-body-lg font-medium text-accent-primary hover:text-accent-hover hover:underline"
           >
             {place?.title}
           </Link>
-          <p className="text-gray-600 mt-1">{place?.address}</p>
-          <div className="mt-2 text-sm text-gray-500">
+          <p className="text-text-secondary mt-1">{place?.address}</p>
+          <div className="mt-2 text-body-sm text-text-muted">
             {place?.checkIn && (
               <>
                 <span> • {t('details.propertyDetails.checkIn', { time: place.checkIn })}</span>
@@ -518,7 +534,7 @@ export const PropertyDetailsSection = ({ place }) => {
             )}
           </div>
           {place?.description && (
-            <p className="text-gray-600 mt-2 text-sm line-clamp-2">
+            <p className="text-text-secondary mt-2 text-body-sm line-clamp-2">
               {place.description}
             </p>
           )}
@@ -870,11 +886,11 @@ export const BookingTimeline = ({ booking, userType }) => {
 
   const getStepIcon = (iconType, status) => {
     const iconClass = `w-4 h-4 ${
-      status === 'completed' ? 'text-green-600' :
-      status === 'current' ? 'text-blue-600' :
-      status === 'pending' ? 'text-gray-400' :
-      status === 'rejected' ? 'text-red-600' :
-      'text-gray-400'
+      status === 'completed' ? 'text-success-primary' :
+      status === 'current' ? 'text-accent-primary' :
+      status === 'pending' ? 'text-text-muted' :
+      status === 'rejected' ? 'text-danger-primary' :
+      'text-text-muted'
     }`;
 
     switch (iconType) {
@@ -923,11 +939,11 @@ export const BookingTimeline = ({ booking, userType }) => {
       default:
         return (
           <div className={`w-2 h-2 rounded-full ${
-            status === 'completed' ? 'bg-green-500' :
-            status === 'current' ? 'bg-blue-500' :
-            status === 'pending' ? 'bg-gray-300' :
-            status === 'rejected' ? 'bg-red-500' :
-            'bg-gray-300'
+            status === 'completed' ? 'bg-success-primary' :
+            status === 'current' ? 'bg-accent-primary' :
+            status === 'pending' ? 'bg-text-muted' :
+            status === 'rejected' ? 'bg-danger-primary' :
+            'bg-text-muted'
           }`}></div>
         );
     }
@@ -936,10 +952,10 @@ export const BookingTimeline = ({ booking, userType }) => {
   const timelineSteps = getTimelineSteps();
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-      <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-        <h3 className="text-sm font-semibold text-gray-900 flex items-center">
-          <svg className="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="card-base card-content overflow-hidden">
+      <div className="bg-bg-secondary px-4 py-3 border-b border-border-light">
+        <h3 className="text-body-sm font-semibold text-text-primary flex items-center">
+          <svg className="w-4 h-4 mr-2 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
           </svg>
           {t('timeline.title')}
@@ -954,16 +970,16 @@ export const BookingTimeline = ({ booking, userType }) => {
                 {getStepIcon(step.icon, step.status)}
               </div>
               <div className="flex-1 min-w-0">
-                <div className={`text-sm font-medium ${
-                  step.status === 'completed' ? 'text-gray-900' :
-                  step.status === 'current' ? 'text-blue-900' :
-                  step.status === 'pending' ? 'text-gray-500' :
-                  step.status === 'rejected' ? 'text-red-900' :
-                  'text-gray-500'
+                <div className={`text-body-sm font-medium ${
+                  step.status === 'completed' ? 'text-text-primary' :
+                  step.status === 'current' ? 'text-accent-primary' :
+                  step.status === 'pending' ? 'text-text-muted' :
+                  step.status === 'rejected' ? 'text-danger-primary' :
+                  'text-text-muted'
                 }`}>
                   {step.title}
                 </div>
-                <div className="text-xs text-gray-600">
+                <div className="text-body-xs text-text-muted">
                   {step.timestamp || 
                    (step.status === 'pending' ? step.description || t('timeline.statuses.pending') : 
                     step.status === 'unknown' ? t('timeline.statuses.transitionOccurred') : 
@@ -1013,19 +1029,19 @@ const ClockIcon = () => (
 );
 
 const GuestsIcon = () => (
-  <svg className="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="w-5 h-5 text-text-muted mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
   </svg>
 );
 
 const CalendarIcon = () => (
-  <svg className="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="w-5 h-5 text-text-muted mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
   </svg>
 );
 
 const CodeIcon = () => (
-  <svg className="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="w-5 h-5 text-text-muted mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
   </svg>
 );

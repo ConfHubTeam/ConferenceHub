@@ -9,7 +9,7 @@ import { getPerkIcon } from "./perkIcons";
  * with priority amenities shown first and a modal for viewing all amenities.
  */
 function PlacePerks({ perks }) {
-  const { t } = useTranslation(['places', 'search']);
+  const { t } = useTranslation(['places', 'search', 'common']);
   const [showAllAmenities, setShowAllAmenities] = useState(false);
 
   if (!perks || perks.length === 0) {
@@ -260,7 +260,7 @@ function PlacePerks({ perks }) {
                 onClick={() => setShowAllAmenities(false)}
                 className="btn-primary btn-size-md w-full"
               >
-                {t('common:common.close')}
+                {t('common:buttons.close')}
               </button>
             </div>
           </div>

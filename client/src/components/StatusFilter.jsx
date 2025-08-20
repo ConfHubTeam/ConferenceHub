@@ -20,14 +20,14 @@ const STATUS_CONFIG = {
     pending: { key: "pending", color: "yellow" },
     approved: { key: "approved", color: "green" },
     rejected: { key: "rejected", color: "red" },
-    paid_to_host: { key: "paid_to_host", color: "blue" },
+    paid_to_host: { key: "paid_to_host", color: "primary" },
     all: { key: "all", color: "gray" }
   },
   agent: {
     pending: { key: "pending", color: "yellow" },
     approved: { key: "approved", color: "green" },
     rejected: { key: "rejected", color: "red" },
-    paid_to_host: { key: "paid_to_host", color: "blue" },
+    paid_to_host: { key: "paid_to_host", color: "primary" },
     all: { key: "all", color: "gray" }
   }
 };
@@ -35,29 +35,39 @@ const STATUS_CONFIG = {
 // Color theme mapping for consistent styling
 const COLOR_THEMES = {
   yellow: {
-    active: "bg-yellow-500 text-white border-yellow-500",
-    inactive: "bg-white text-yellow-600 border-yellow-300 hover:bg-yellow-50",
-    badge: "bg-yellow-100 text-yellow-800"
+    active: "bg-orange-500 text-white border-orange-500",
+    inactive: "bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100",
+    badge: "bg-orange-100 text-orange-700"
   },
   green: {
-    active: "bg-green-500 text-white border-green-500",
-    inactive: "bg-white text-green-600 border-green-300 hover:bg-green-50",
-    badge: "bg-green-100 text-green-800"
+    active: "bg-status-success text-white border-status-success",
+    inactive: "bg-success-50 text-status-success border-success-200 hover:bg-success-100",
+    badge: "bg-success-100 text-status-success"
   },
   red: {
-    active: "bg-orange-500 text-white border-orange-500",
-    inactive: "bg-white text-orange-600 border-orange-300 hover:bg-orange-50",
-    badge: "bg-orange-100 text-orange-800"
+    active: "bg-status-error text-white border-status-error",
+    inactive: "bg-error-50 text-status-error border-error-200 hover:bg-error-100",
+    badge: "bg-error-100 text-status-error"
   },
   blue: {
-    active: "bg-blue-500 text-white border-blue-500",
-    inactive: "bg-white text-blue-600 border-blue-300 hover:bg-blue-50",
-    badge: "bg-blue-100 text-blue-800"
+    active: "bg-accent-primary text-white border-accent-primary",
+    inactive: "bg-accent-50 text-accent-primary border-accent-200 hover:bg-accent-100",
+    badge: "bg-accent-100 text-accent-primary"
+  },
+  primary: {
+    active: "bg-slate-700 text-white border-slate-700",
+    inactive: "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100",
+    badge: "bg-slate-100 text-slate-800"
+  },
+  lightgray: {
+    active: "bg-slate-400 text-white border-slate-400",
+    inactive: "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100",
+    badge: "bg-slate-100 text-slate-700"
   },
   gray: {
-    active: "bg-gray-500 text-white border-gray-500",
-    inactive: "bg-white text-gray-600 border-gray-300 hover:bg-gray-50",
-    badge: "bg-gray-100 text-gray-800"
+    active: "bg-neutral-600 text-white border-neutral-600",
+    inactive: "bg-bg-secondary text-text-secondary border-border-light hover:bg-neutral-100",
+    badge: "bg-neutral-100 text-text-secondary"
   }
 };
 
@@ -81,27 +91,25 @@ const StatusButton = ({
   // Size variants for different layouts
   const sizeClasses = {
     compact: "px-3 py-2 text-xs",
-    default: "px-3 sm:px-4 py-2 sm:py-2.5 text-sm",
-    large: "px-4 py-3 text-base"
+    default: "px-3 py-2 text-sm sm:px-4 sm:py-2.5",
+    large: "px-6 py-4 text-base"
   };
   
   return (
     <button
       onClick={() => onClick(status)}
       className={`
-        border-2 rounded-lg font-medium whitespace-nowrap
-        transition-all duration-200 ease-in-out transform hover:scale-105
-        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${color}-500
+        border rounded-lg font-medium whitespace-nowrap
+        transition-colors focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-1
         ${buttonClasses} ${sizeClasses[size]} ${className}
       `}
       aria-pressed={isActive}
       role="button"
     >
-      <span className="flex items-center gap-1.5">
+      <span className="flex items-center gap-1.5 sm:gap-2">
         <span className="truncate">{label}</span>
         <span className={`
-          px-1.5 py-0.5 rounded-full font-semibold
-          ${size === 'compact' ? 'text-xs' : 'text-xs'}
+          px-1.5 py-0.5 rounded-full font-semibold text-xs min-w-[1.25rem] text-center
           ${isActive ? 'bg-white/20 text-white' : theme.badge}
         `}>
           {count}
@@ -134,8 +142,8 @@ export default function StatusFilter({
   // Size variants for different use cases
   const sizeClasses = {
     compact: "gap-2",
-    default: "gap-2 sm:gap-3", 
-    large: "gap-3 sm:gap-4"
+    default: "gap-3", 
+    large: "gap-4"
   };
 
   // For compact size, use horizontal scroll to prevent overflow
