@@ -570,31 +570,10 @@ export default function BookingDetailsPage() {
               {/* Payment Section - Only for clients */}
               {shouldShowPaymentSection(user, booking) && (
                 <div className="card-base card-content">
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="mb-4">
                     <h3 className="text-body-lg font-medium text-text-primary">
                       {t('details.sections.payment', 'Payment')}
                     </h3>
-                    <button
-                      onClick={refreshBooking}
-                      disabled={isRefreshing}
-                      className="btn-outline"
-                      title={t('details.payment.refreshStatus', 'Refresh Status')}
-                    >
-                      <svg 
-                        className={`w-4 h-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} 
-                        fill="none" 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
-                      >
-                        <path 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          strokeWidth={2} 
-                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
-                        />
-                      </svg>
-                      {isRefreshing ? t('common.status.loading', 'Loading...') : t('details.payment.refreshStatus', 'Refresh Status')}
-                    </button>
                   </div>
                   
                   {isPaymentAvailable() ? (
