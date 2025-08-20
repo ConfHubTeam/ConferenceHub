@@ -259,47 +259,32 @@ export default function PlaceDetailPage() {
               weekdayTimeSlots={placeDetail.weekdayTimeSlots}
               blockedWeekdays={placeDetail.blockedWeekdays}
             />
-
-            {/* Refund & Cancellation Policy Section */}
-            <RefundPolicyDisplay placeDetail={placeDetail} />
             
             {/* Location Map - Hidden on mobile */}
             {hasCoordinates && (
-              <div className="hidden md:block">
-                <h2 className="text-heading-2 mb-4 text-text-primary flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mr-3 text-accent-primary">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                    </svg>
-                    {t('placeDetail.sections.location')}
-                  </h2>
-                  <div className="h-64 rounded-lg overflow-hidden border border-border-light shadow-ui">
-                    <MapView places={mapPlaces} disableInfoWindow={true} />
-                  </div>
-                </div>
+              <div className="hidden md:block h-64 bg-bg-card border border-border-light rounded-lg shadow-ui overflow-hidden">
+                <MapView places={mapPlaces} disableInfoWindow={true} />
+              </div>
             )}
             
             {/* Extra Information Section */}
             {placeDetail.extraInfo && (
-              <div>
-                <h2 className="text-heading-2 mb-4 text-text-primary flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mr-3 text-accent-primary">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-                  </svg>
-                  {t('placeDetail.sections.additionalInfo')}
-                </h2>
-                <p className="text-body text-text-secondary leading-relaxed">{placeDetail.extraInfo}</p>
+              <div className="card-base">
+                <div className="card-content">
+                  <h2 className="text-heading-2 mb-4 text-text-primary flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mr-3 text-accent-primary">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                    </svg>
+                    {t('placeDetail.sections.additionalInfo')}
+                  </h2>
+                  <p className="text-body text-text-secondary leading-relaxed">{placeDetail.extraInfo}</p>
+                </div>
               </div>
             )}
 
             {/* Refund Policy Section - Only for owners and agents */}
             {canManage && (
-              <RefundPolicyDisplay 
-                refundPolicy={placeDetail.refundPolicy}
-                placeId={placeDetail.id}
-                isOwner={isOwner}
-                canManage={canManage}
-              />
+              <RefundPolicyDisplay placeDetail={placeDetail} />
             )}
 
             {/* Reviews Section - Hidden on mobile, shown on desktop */}
@@ -351,14 +336,10 @@ export default function PlaceDetailPage() {
 
         {/* Reviews Section - Shown on mobile after main content, hidden on desktop */}
         <div className="block lg:hidden mt-8">
-          <div className="card-base">
-            <div className="card-content">
-              <PlaceReviews 
-                placeId={placeDetail.id} 
-                placeOwnerId={placeDetail.ownerId} 
-              />
-            </div>
-          </div>
+          <PlaceReviews 
+            placeId={placeDetail.id} 
+            placeOwnerId={placeDetail.ownerId} 
+          />
         </div>
 
         {/* Delete Confirmation Modal */}

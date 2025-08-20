@@ -45,30 +45,31 @@ export default function WeeklyAvailabilityDisplay({ weekdayTimeSlots, blockedWee
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-      {/* Collapsible Header */}
-      <button 
-        type="button"
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between cursor-pointer hover:bg-gray-50 -m-6 p-6 rounded-xl transition-colors"
-      >
-        <h2 className="text-xl md:text-2xl font-semibold flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mr-2 text-green-600">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-          </svg>
-          {t("places:listing.weeklyAvailability.title")}
-        </h2>
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          fill="none" 
-          viewBox="0 0 24 24" 
-          strokeWidth={1.5} 
-          stroke="currentColor" 
-          className={`w-5 h-5 transition-transform text-gray-600 ${isExpanded ? 'rotate-180' : ''}`}
+    <div className="card-base">
+      <div className="card-content">
+        {/* Collapsible Header */}
+        <button 
+          type="button"
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="w-full flex items-center justify-between cursor-pointer hover:bg-bg-secondary -m-4 sm:-m-6 p-4 sm:p-6 rounded-lg transition-colors"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-        </svg>
-      </button>
+          <h2 className="text-heading-2 text-text-primary flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mr-3 text-accent-primary">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+            </svg>
+            {t("places:listing.weeklyAvailability.title")}
+          </h2>
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            strokeWidth={1.5} 
+            stroke="currentColor" 
+            className={`w-5 h-5 transition-transform text-text-muted ${isExpanded ? 'rotate-180' : ''}`}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+          </svg>
+        </button>
       
       {/* Content - Only visible when expanded */}
       {isExpanded && (
@@ -156,6 +157,7 @@ export default function WeeklyAvailabilityDisplay({ weekdayTimeSlots, blockedWee
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -120,20 +120,22 @@ export default function PlaceReviews({ placeId, placeOwnerId }) {
   // Don't render anything if there are no reviews and no loading state
   if (!loading && reviewStats.totalReviews === 0) {
     return (
-      <div className="mb-8">
-        <h2 className="text-xl md:text-2xl font-semibold mb-6">{t("title")}</h2>
-        
+      <div>
         {/* Review Form for new users */}
-        {!isPlaceOwner && (
-          <ReviewForm 
-            placeId={placeId}
-            onReviewSubmitted={handleReviewSubmitted}
-          />
+        {!isPlaceOwner && user && user.userType !== 'agent' && (
+          <div className="card-base mb-6">
+            <div className="card-content">
+              <ReviewForm 
+                placeId={placeId}
+                onReviewSubmitted={handleReviewSubmitted}
+              />
+            </div>
+          </div>
         )}
         
         {isPlaceOwner && (
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-blue-700 text-sm">
+          <div className="mb-6 p-4 bg-info-50 border border-info-200 rounded-lg">
+            <p className="text-info-700 text-sm">
               <svg className="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
               </svg>
@@ -142,138 +144,147 @@ export default function PlaceReviews({ placeId, placeOwnerId }) {
           </div>
         )}
         
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <div className="text-gray-400 mb-4">
-            <svg
-              className="w-16 h-16 mx-auto"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1}
-                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.959 8.959 0 01-4.906-1.436L3 21l2.436-5.094A8.959 8.959 0 013 12c0-4.418 3.582-8 8-8s8 3.582 8 8z"
-              />
-            </svg>
+        <div className="card-base">
+          <div className="card-content text-center py-12">
+            <div className="text-text-muted mb-4">
+              <svg
+                className="w-16 h-16 mx-auto"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1}
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.959 8.959 0 01-4.906-1.436L3 21l2.436-5.094A8.959 8.959 0 013 12c0-4.418 3.582-8 8-8s8 3.582 8 8z"
+                />
+              </svg>
+            </div>
+            <p className="text-text-primary text-lg font-medium mb-2">{t("noReviews.title")}</p>
+            <p className="text-text-secondary text-sm">{t("noReviews.description")}</p>
           </div>
-          <p className="text-gray-600 text-lg font-medium mb-2">{t("noReviews.title")}</p>
-          <p className="text-gray-500 text-sm">{t("noReviews.description")}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="mb-8">
-      <h2 className="text-xl md:text-2xl font-semibold mb-6">{t("title")}</h2>
-
-      {/* Review Form - show only if user hasn't reviewed yet and is not the place owner */}
-      {!userReview && !isPlaceOwner && (
-        <ReviewForm 
-          placeId={placeId}
-          onReviewSubmitted={handleReviewSubmitted}
-        />
-      )}
-
-      {/* Message for place owner */}
-      {isPlaceOwner && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-blue-700 text-sm">
-            <svg className="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-            {t("hostMessages.cannotReview")}
-          </p>
-        </div>
-      )}
-
-      {/* Reviews Header with Overall Rating */}
-      {reviewStats.totalReviews > 0 && (
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="flex items-center gap-2">
-              <StarRating rating={reviewStats.averageRating} size="lg" />
-              <span className="text-2xl font-bold">{reviewStats.averageRating.toFixed(1)}</span>
-            </div>
-            <div className="text-gray-600">
-              {t("stats.totalReviews", { count: reviewStats.totalReviews })}
-            </div>
+    <div>
+      {/* Review Form - show only if user hasn't reviewed yet and is not the place owner or agent */}
+      {!userReview && !isPlaceOwner && user && user.userType !== 'agent' && (
+        <div className="card-base mb-6">
+          <div className="card-content">
+            <ReviewForm 
+              placeId={placeId}
+              onReviewSubmitted={handleReviewSubmitted}
+            />
           </div>
-
-          {/* Rating Breakdown */}
-          <ReviewRatingBreakdown
-            ratingBreakdown={reviewStats.ratingBreakdown}
-            totalReviews={reviewStats.totalReviews}
-          />
         </div>
       )}
 
-      {/* Sort Filter */}
+      {/* Reviews Content */}
       {reviewStats.totalReviews > 0 && (
-        <div className="mb-6">
-          <ReviewSortFilter sortBy={sortBy} onSortChange={changeSortOrder} />
-        </div>
-      )}
+        <div className="card-base">
+          <div className="card-content space-y-8">
+            {/* Message for place owner - moved inside reviews card */}
+            {isPlaceOwner && (
+              <div className="p-4 bg-info-50 border border-info-200 rounded-lg">
+                <p className="text-info-700 text-sm">
+                  <svg className="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                  {t("hostMessages.cannotReview")}
+                </p>
+              </div>
+            )}
 
-      {/* Error State */}
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-600 text-sm">{error}</p>
-        </div>
-      )}
+            {/* Reviews Header with Overall Rating */}
+            <div>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center gap-2">
+                  <StarRating rating={reviewStats.averageRating} size="lg" />
+                  <span className="text-2xl font-bold text-text-primary">{reviewStats.averageRating.toFixed(1)}</span>
+                </div>
+                <div className="text-text-secondary">
+                  {t("stats.totalReviews", { count: reviewStats.totalReviews })}
+                </div>
+              </div>
 
-      {/* Reviews List */}
-      <div className="space-y-6">
-        {reviews.map((review) => (
-          <ReviewCard
-            key={review.id}
-            review={review}
-            onHelpfulClick={handleHelpfulClick}
-            onReportClick={handleReportClick}
-            onReplyClick={handleReplySubmit}
-            onEditReply={handleEditReply}
-            placeOwnerId={placeOwnerId}
-            isLoading={replyLoading}
-          />
-        ))}
-      </div>
+              {/* Rating Breakdown */}
+              <ReviewRatingBreakdown
+                ratingBreakdown={reviewStats.ratingBreakdown}
+                totalReviews={reviewStats.totalReviews}
+              />
+            </div>
 
-      {/* Load More Button */}
-      {hasMore && (
-        <div className="mt-8 text-center">
-          <button
-            onClick={loadMore}
-            disabled={loading}
-            className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-          >
-            {loading ? t("loading.reviews") : t("loading.loadMore")}
-          </button>
+            {/* Sort Filter */}
+            <div>
+              <ReviewSortFilter sortBy={sortBy} onSortChange={changeSortOrder} />
+            </div>
+
+            {/* Error State */}
+            {error && (
+              <div className="p-4 bg-error-50 border border-error-200 rounded-lg">
+                <p className="text-error-600 text-sm">{error}</p>
+              </div>
+            )}
+
+            {/* Reviews List */}
+            <div className="space-y-6">
+              {reviews.map((review) => (
+                <ReviewCard
+                  key={review.id}
+                  review={review}
+                  onHelpfulClick={handleHelpfulClick}
+                  onReportClick={handleReportClick}
+                  onReplyClick={handleReplySubmit}
+                  onEditReply={handleEditReply}
+                  placeOwnerId={placeOwnerId}
+                  isLoading={replyLoading}
+                />
+              ))}
+            </div>
+
+            {/* Load More Button */}
+            {hasMore && (
+              <div className="text-center pt-4 border-t border-border-light">
+                <button
+                  onClick={loadMore}
+                  disabled={loading}
+                  className="btn-primary btn-size-md disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? t("loading.reviews") : t("loading.loadMore")}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {/* Loading State for Initial Load */}
       {loading && reviews.length === 0 && (
-        <div className="space-y-6">
-          {[...Array(3)].map((_, index) => (
-            <div key={index} className="animate-pulse">
-              <div className="flex items-start gap-4 p-6 border border-gray-200 rounded-lg">
-                <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="h-4 bg-gray-200 rounded w-24"></div>
-                    <div className="h-4 bg-gray-200 rounded w-20"></div>
-                  </div>
-                  <div className="h-4 bg-gray-200 rounded w-16 mb-3"></div>
-                  <div className="space-y-2">
-                    <div className="h-3 bg-gray-200 rounded w-full"></div>
-                    <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+        <div className="card-base">
+          <div className="card-content space-y-6">
+            {[...Array(3)].map((_, index) => (
+              <div key={index} className="animate-pulse">
+                <div className="flex items-start gap-4 p-6 border border-border-light rounded-lg">
+                  <div className="w-10 h-10 bg-border-light rounded-full"></div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="h-4 bg-border-light rounded w-24"></div>
+                      <div className="h-4 bg-border-light rounded w-20"></div>
+                    </div>
+                    <div className="h-4 bg-border-light rounded w-16 mb-3"></div>
+                    <div className="space-y-2">
+                      <div className="h-3 bg-border-light rounded w-full"></div>
+                      <div className="h-3 bg-border-light rounded w-3/4"></div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
 
