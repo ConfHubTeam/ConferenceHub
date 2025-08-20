@@ -171,14 +171,19 @@ function PlacePerks({ perks }) {
   }, {});
 
   return (
-    <div className="mb-8">
-      <h2 className="text-xl md:text-2xl font-semibold mb-6">{t('placePerks.whatThisPlaceOffers')}</h2>
+    <div>
+      <h2 className="text-heading-2 mb-6 text-text-primary flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mr-3 text-accent-primary">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        {t('placePerks.whatThisPlaceOffers')}
+      </h2>
       
       {/* Main Amenities Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         {mainDisplayItems.map((amenity, index) => (
-          <div key={index} className="flex items-center py-4 border-b border-gray-100 last:border-b-0">
-            <div className="mr-4 text-gray-700">
+          <div key={index} className="flex items-center py-4 border-b border-border-light last:border-b-0 hover:bg-bg-secondary/50 transition-colors rounded-md px-2">
+            <div className="mr-4 text-accent-primary">
               {amenity.icon || getPerkIcon(amenity.key) || (
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -186,7 +191,7 @@ function PlacePerks({ perks }) {
               )}
             </div>
             <div className="flex-1">
-              <span className="text-gray-900 font-medium">{amenity.label}</span>
+              <span className="text-text-primary font-medium text-body">{amenity.label}</span>
             </div>
           </div>
         ))}
@@ -196,7 +201,7 @@ function PlacePerks({ perks }) {
       {hasMoreAmenities && (
         <button
           onClick={() => setShowAllAmenities(true)}
-          className="inline-flex items-center px-6 py-3 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 font-medium transition-colors"
+          className="btn-outline btn-size-md"
         >
           <span>{t('places:listing.showAllAmenities', { count: availableAmenities.length })}</span>
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 ml-2">
@@ -207,14 +212,14 @@ function PlacePerks({ perks }) {
 
       {/* Full Amenities Modal */}
       {showAllAmenities && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[70]">
-          <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <div className="modal-overlay">
+          <div className="modal-container max-w-4xl">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-900">{t('placePerks.whatThisPlaceOffers')}</h3>
+            <div className="modal-header">
+              <h3 className="text-heading-3 text-text-primary">{t('placePerks.whatThisPlaceOffers')}</h3>
               <button
                 onClick={() => setShowAllAmenities(false)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-2 hover:bg-bg-secondary rounded-full transition-colors text-text-secondary hover:text-text-primary"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -223,25 +228,25 @@ function PlacePerks({ perks }) {
             </div>
 
             {/* Modal Content */}
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+            <div className="modal-body">
               {Object.entries(categorizedAmenities).map(([category, amenities]) => (
                 <div key={category} className="mb-8 last:mb-0">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                  <h4 className="text-heading-3 text-text-primary mb-4 flex items-center">
+                    <div className="w-2 h-2 bg-accent-primary rounded-full mr-3"></div>
                     {category}
-                    <span className="ml-2 text-sm text-gray-500 font-normal">({amenities.length})</span>
+                    <span className="ml-2 text-caption text-text-muted font-normal">({amenities.length})</span>
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {amenities.map((amenity, index) => (
-                      <div key={index} className="flex items-center py-3 px-4 bg-gray-50 rounded-lg">
-                        <div className="mr-3 text-gray-600">
+                      <div key={index} className="flex items-center py-3 px-4 bg-bg-secondary rounded-lg border border-border-light hover:border-accent-primary/30 transition-colors">
+                        <div className="mr-3 text-accent-primary">
                           {amenity.icon || getPerkIcon(amenity.key) || (
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                           )}
                         </div>
-                        <span className="text-gray-900 font-medium">{amenity.label}</span>
+                        <span className="text-text-primary font-medium text-body">{amenity.label}</span>
                       </div>
                     ))}
                   </div>
@@ -250,10 +255,10 @@ function PlacePerks({ perks }) {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-6 border-t border-gray-200">
+            <div className="modal-footer">
               <button
                 onClick={() => setShowAllAmenities(false)}
-                className="w-full bg-gray-900 text-white py-2 px-4 sm:py-2.5 sm:px-6 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                className="btn-primary btn-size-md w-full"
               >
                 {t('common:common.close')}
               </button>

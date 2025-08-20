@@ -103,7 +103,7 @@ export default function Layout() {
   return (
     <div className="min-h-screen">
       <Header />
-      <div className="pt-5">
+      <div>
         <Outlet />
       </div>
     </div>
