@@ -497,8 +497,6 @@ export default function BookingsPage() {
                           verb: count === 1 ? "needs" : "need"
                         });
                         
-                        console.log("Translation result:", result, "for key:", translationKey);
-                        
                         // If translation failed, return fallback
                         if (result === translationKey || result.includes("{")) {
                           return `${count} request${count > 1 ? "s" : ""} ${count === 1 ? "needs" : "need"} attention`;

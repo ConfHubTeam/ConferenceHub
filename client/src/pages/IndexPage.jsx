@@ -328,8 +328,6 @@ function IndexPageBase() {
           // Get the currency to filter in (from price filter context or current currency context)
           const filterCurrency = priceFilterCurrency || selectedCurrency;
           
-          console.log("Applying price filter:", { minPrice, maxPrice, filterCurrency: filterCurrency?.charCode });
-          
           if (filterCurrency) {
             const priceFiltered = [];
             
@@ -373,11 +371,6 @@ function IndexPageBase() {
                 if (convertedPrice > maxPrice) {
                   passesFilter = false;
                 }
-              }
-              
-              // Debug log for price filtering
-              if (minPrice !== null || maxPrice !== null) {
-                console.log(`Place "${place.title}": ${placePrice} ${placeCurrency.charCode} → ${convertedPrice.toFixed(2)} ${filterCurrency.charCode}, Range: ${minPrice || 'no min'} - ${maxPrice || 'no max'}, Passes: ${passesFilter}`);
               }
               
               if (passesFilter) {

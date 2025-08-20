@@ -116,7 +116,9 @@ const notFound = (req, res, next) => {
  */
 class PaymeTransactionError extends Error {
   constructor(paymeError, id, data) {
-    super(paymeError.message);
+    // Extract the English message from the multilingual message object
+    const message = paymeError.message?.en || paymeError.message || 'Unknown error';
+    super(message);
 
     this.name = paymeError.name;
     this.statusCode = 200;

@@ -74,6 +74,12 @@ services:
         sync: false
       - key: CLICK_SECRET_KEY
         sync: false
+      - key: PAYME_MERCHANT_ID
+        sync: false
+      - key: PAYME_SECRET_KEY
+        sync: false
+      - key: VITE_PAYME_MERCHANT_ID
+        sync: false
 
 databases:
   - name: conferencehub-db

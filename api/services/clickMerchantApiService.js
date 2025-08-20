@@ -40,8 +40,6 @@ class ClickMerchantApiService {
    * @returns {Promise<Object>} Payment status result
    */
   async checkPaymentStatus(booking) {
-    console.log(`🔍 Checking payment status for booking: ${booking.id}`);
-    
     if (!booking.clickInvoiceId) {
       return {
         success: false,
@@ -51,7 +49,6 @@ class ClickMerchantApiService {
     }
 
     // Check invoice status using the invoice ID
-    console.log(`📄 Checking invoice status for ID: ${booking.clickInvoiceId}`);
     const invoiceResult = await this.checkInvoiceStatus(booking.clickInvoiceId);
     
     if (invoiceResult.success && invoiceResult.isPaid) {
@@ -105,19 +102,10 @@ class ClickMerchantApiService {
         merchant_trans_id: merchantTransId
       };
 
-      console.log(`📄 Creating Click.uz invoice:`, {
-        service_id: requestData.service_id,
-        amount: requestData.amount,
-        phone_number: requestData.phone_number,
-        merchant_trans_id: requestData.merchant_trans_id
-      });
-      
       const response = await axios.post(url, requestData, {
         headers: this.generateAuthHeader(),
         timeout: 15000
       });
-
-      console.log('✅ Click.uz invoice creation response:', response.data);
 
       return {
         success: response.data.error_code === 0,
@@ -153,8 +141,6 @@ class ClickMerchantApiService {
         headers: this.generateAuthHeader(),
         timeout: 15000
       });
-
-      console.log('✅ Click.uz invoice status response:', response.data);
 
       // Handle response format based on documentation
       const errorCode = response.data.error_code;
