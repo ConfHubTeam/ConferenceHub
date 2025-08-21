@@ -1,4 +1,21 @@
 require("dotenv").config();
+
+// TEMPORARY: Force development mode for Payme sandbox testing
+// Remove this when switching to production payments
+if (process.env.RENDER) {
+  console.log('🔍 Before override:', process.env.NODE_ENV);
+  process.env.NODE_ENV = 'development';
+  console.log('🚨 FORCED NODE_ENV to development for Payme sandbox testing');
+  console.log('🔍 After override:', process.env.NODE_ENV);
+}
+
+console.log('🌟 Environment Variables Check:', {
+  NODE_ENV: process.env.NODE_ENV,
+  RENDER: process.env.RENDER,
+  PAYME_TEST_KEY: process.env.PAYME_TEST_KEY ? '[PRESENT]' : '[MISSING]',
+  PAYME_SECRET_KEY: process.env.PAYME_SECRET_KEY ? '[PRESENT]' : '[MISSING]'
+});
+
 const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
