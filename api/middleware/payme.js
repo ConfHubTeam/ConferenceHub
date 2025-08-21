@@ -4,7 +4,18 @@ const { PaymeError } = require("../enum/transaction.enum");
 const { PaymeTransactionError } = require("./errorHandler");
 
 // Use the correct environment variable names from .env
-const PAYME_MERCHANT_KEY = process.env.PAYME_SECRET_KEY || process.env.PAYME_TEST_KEY;
+// Choose test key for development/sandbox, production key for production
+const PAYME_MERCHANT_KEY = process.env.NODE_ENV === 'production' 
+  ? process.env.PAYME_SECRET_KEY 
+  : process.env.PAYME_TEST_KEY;
+
+console.log('Payme middleware initialized:', {
+  environment: process.env.NODE_ENV,
+  usingTestKey: process.env.NODE_ENV !== 'production',
+  hasTestKey: !!process.env.PAYME_TEST_KEY,
+  hasProductionKey: !!process.env.PAYME_SECRET_KEY,
+  selectedKey: PAYME_MERCHANT_KEY ? '[PRESENT]' : '[MISSING]'
+});
 
 exports.paymeCheckToken = (req, res, next) => {
   try {
