@@ -36,6 +36,9 @@ router.get("/stats", userController.getStatistics);
 // Get host statistics (host only)
 router.get("/host-stats", userController.getHostStatistics);
 
+// Get agent statistics (agent only)
+router.get("/agent-stats", userController.getAgentStatistics);
+
 // Get host reviews (host only)
 router.get("/host-reviews", userController.getHostReviews);
 

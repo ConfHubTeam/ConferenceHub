@@ -1736,6 +1736,475 @@ const verifyPhoneAndUpdate = async (req, res) => {
 };
 
 /**
+ * Get agent-specific statistics for the platform overview
+ */
+const getAgentStatistics = async (req, res) => {
+  try {
+    const userData = await req.getUserDataFromToken();
+    
+    // Verify user is an agent
+    if (userData.userType !== 'agent') {
+      return res.status(403).json({ error: "Only agents can access agent statistics" });
+    }
+
+    // Get platform-wide statistics
+    
+    // 1. Total number of places
+    const totalPlaces = await Place.count();
+    
+    // Monthly trend for places (this month vs last month)
+    const now = new Date();
+    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+
+    const placesThisMonth = await Place.count({
+      where: {
+        createdAt: {
+          [Op.gte]: thisMonthStart
+        }
+      }
+    });
+
+    const placesLastMonth = await Place.count({
+      where: {
+        createdAt: {
+          [Op.gte]: lastMonthStart,
+          [Op.lte]: lastMonthEnd
+        }
+      }
+    });
+
+    // 2. Total Paid (to agent, not marked as paid to host)
+    const totalPaidToAgent = await Booking.count({
+      where: {
+        paid_to_host: false,
+        paid_at: {
+          [Op.not]: null
+        }
+      }
+    });
+
+    // Monthly trend for agent payments
+    const agentPaymentsThisMonth = await Booking.count({
+      where: {
+        paid_to_host: false,
+        paid_at: {
+          [Op.not]: null,
+          [Op.gte]: thisMonthStart
+        }
+      }
+    });
+
+    const agentPaymentsLastMonth = await Booking.count({
+      where: {
+        paid_to_host: false,
+        paid_at: {
+          [Op.not]: null,
+          [Op.gte]: lastMonthStart,
+          [Op.lte]: lastMonthEnd
+        }
+      }
+    });
+
+    // 2.5. Total Paid to Host (approved bookings marked as paid to host)
+    const totalPaidToHost = await Booking.count({
+      where: {
+        status: 'approved',
+        paid_to_host: true
+      }
+    });
+
+    // Monthly trend for host payments
+    const hostPaymentsThisMonth = await Booking.count({
+      where: {
+        status: 'approved',
+        paid_to_host: true,
+        paid_to_host_at: {
+          [Op.gte]: thisMonthStart
+        }
+      }
+    });
+
+    const hostPaymentsLastMonth = await Booking.count({
+      where: {
+        status: 'approved',
+        paid_to_host: true,
+        paid_to_host_at: {
+          [Op.gte]: lastMonthStart,
+          [Op.lte]: lastMonthEnd
+        }
+      }
+    });
+
+    // 3. Overall booking status for the platform
+    const bookingStats = await Booking.findAll({
+      attributes: [
+        'status',
+        [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+      ],
+      group: ['status']
+    });
+
+    // Convert to object for easier access
+    const bookingStatusCounts = {};
+    bookingStats.forEach(item => {
+      bookingStatusCounts[item.status] = parseInt(item.dataValues.count);
+    });
+
+    // Monthly trend for approved bookings
+    const approvedBookingsThisMonth = await Booking.count({
+      where: {
+        status: 'approved',
+        approved_at: {
+          [Op.gte]: thisMonthStart
+        }
+      }
+    });
+
+    const approvedBookingsLastMonth = await Booking.count({
+      where: {
+        status: 'approved',
+        approved_at: {
+          [Op.gte]: lastMonthStart,
+          [Op.lte]: lastMonthEnd
+        }
+      }
+    });
+
+    // 4. Overall review analytics (no individual reviews)
+    const totalReviews = await Review.count({
+      where: {
+        status: 'approved'
+      }
+    });
+
+    const averagePlatformRating = await Review.findOne({
+      attributes: [
+        [sequelize.fn('AVG', sequelize.col('rating')), 'avgRating']
+      ],
+      where: {
+        status: 'approved'
+      }
+    });
+
+    const reviewsThisMonth = await Review.count({
+      where: {
+        status: 'approved',
+        created_at: {
+          [Op.gte]: thisMonthStart
+        }
+      }
+    });
+
+    const reviewsLastMonth = await Review.count({
+      where: {
+        status: 'approved',
+        created_at: {
+          [Op.gte]: lastMonthStart,
+          [Op.lte]: lastMonthEnd
+        }
+      }
+    });
+
+    // 5. User platform statistics (NET CHANGE - actual user counts)
+    const totalUsers = await User.count();
+    
+    // Get total users that existed at the END of this month (current count)
+    const usersEndOfThisMonth = totalUsers;
+    
+    // Get total users that existed at the END of last month
+    // (users created before this month start)
+    const usersEndOfLastMonth = await User.count({
+      where: {
+        createdAt: {
+          [Op.lt]: thisMonthStart
+        }
+      }
+    });
+
+    // Get total users that existed at the END of two months ago
+    // (users created before last month start)
+    const usersEndOfTwoMonthsAgo = await User.count({
+      where: {
+        createdAt: {
+          [Op.lt]: lastMonthStart
+        }
+      }
+    });
+
+    // Calculate NET change (not just new registrations)
+    const netUserChangeThisMonth = usersEndOfThisMonth - usersEndOfLastMonth;
+    
+    // For comparison, also track new registrations
+    const newUsersThisMonth = await User.count({
+      where: {
+        createdAt: {
+          [Op.gte]: thisMonthStart
+        }
+      }
+    });
+
+    const newUsersLastMonth = await User.count({
+      where: {
+        createdAt: {
+          [Op.gte]: lastMonthStart,
+          [Op.lte]: lastMonthEnd
+        }
+      }
+    });
+
+    // Count users by type
+    const usersByType = await User.findAll({
+      attributes: [
+        'userType',
+        [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+      ],
+      group: ['userType']
+    });
+
+    const userTypeCounts = {};
+    usersByType.forEach(item => {
+      userTypeCounts[item.userType] = parseInt(item.dataValues.count);
+    });
+
+    // 6. Monthly trends for last 6 months
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+    // User registration trends
+    const userRegistrationTrend = await User.findAll({
+      attributes: [
+        [sequelize.fn('DATE_PART', 'month', sequelize.col('createdAt')), 'month'],
+        [sequelize.fn('DATE_PART', 'year', sequelize.col('createdAt')), 'year'],
+        [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+      ],
+      where: {
+        createdAt: {
+          [Op.gte]: sixMonthsAgo
+        }
+      },
+      group: [
+        sequelize.fn('DATE_PART', 'month', sequelize.col('createdAt')),
+        sequelize.fn('DATE_PART', 'year', sequelize.col('createdAt'))
+      ],
+      order: [
+        [sequelize.fn('DATE_PART', 'year', sequelize.col('createdAt')), 'ASC'],
+        [sequelize.fn('DATE_PART', 'month', sequelize.col('createdAt')), 'ASC']
+      ]
+    });
+
+    // Booking approval trends
+    const bookingApprovalTrend = await Booking.findAll({
+      attributes: [
+        [sequelize.fn('DATE_PART', 'month', sequelize.col('approved_at')), 'month'],
+        [sequelize.fn('DATE_PART', 'year', sequelize.col('approved_at')), 'year'],
+        [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+      ],
+      where: {
+        status: 'approved',
+        approved_at: {
+          [Op.gte]: sixMonthsAgo
+        }
+      },
+      group: [
+        sequelize.fn('DATE_PART', 'month', sequelize.col('approved_at')),
+        sequelize.fn('DATE_PART', 'year', sequelize.col('approved_at'))
+      ],
+      order: [
+        [sequelize.fn('DATE_PART', 'year', sequelize.col('approved_at')), 'ASC'],
+        [sequelize.fn('DATE_PART', 'month', sequelize.col('approved_at')), 'ASC']
+      ]
+    });
+
+    // Platform activity statistics
+    const platformActivity = {
+      activeHosts: userTypeCounts.host || 0,
+      activeClients: userTypeCounts.client || 0,
+      totalBookingsToday: await Booking.count({
+        where: {
+          createdAt: {
+            [Op.gte]: new Date(now.getFullYear(), now.getMonth(), now.getDate())
+          }
+        }
+      }),
+      pendingReviews: await Review.count({
+        where: {
+          status: 'pending'
+        }
+      })
+    };
+
+    // Calculate growth rates
+    const calculateGrowthRate = (current, previous) => {
+      if (previous === 0) return current > 0 ? 100 : 0;
+      return Math.round(((current - previous) / previous) * 100);
+    };
+
+    // Calculate NET growth rates for more accurate trend analysis
+    const calculateNetGrowthRate = (currentNet, previousNet) => {
+      if (previousNet === 0) return currentNet > 0 ? 100 : 0;
+      return Math.round(((currentNet - previousNet) / Math.abs(previousNet)) * 100);
+    };
+
+    // NET USER CALCULATION (use existing variables)
+    const netUserChangeLastMonth = usersEndOfLastMonth - usersEndOfTwoMonthsAgo;
+
+    // NET BOOKING APPROVALS CALCULATION (approved - rejected)
+    const rejectedBookingsThisMonth = await Booking.count({
+      where: {
+        status: 'rejected',
+        rejected_at: {
+          [Op.gte]: thisMonthStart
+        }
+      }
+    });
+
+    const rejectedBookingsLastMonth = await Booking.count({
+      where: {
+        status: 'rejected',
+        rejected_at: {
+          [Op.gte]: lastMonthStart,
+          [Op.lte]: lastMonthEnd
+        }
+      }
+    });
+
+    const netApprovedBookingsThisMonth = approvedBookingsThisMonth - rejectedBookingsThisMonth;
+    const netApprovedBookingsLastMonth = approvedBookingsLastMonth - rejectedBookingsLastMonth;
+
+    // NET PLACES CALCULATION (total places at end of each month - accounts for deletions)
+    // Current total places (end of this month)
+    const totalPlacesEndOfThisMonth = totalPlaces;
+    
+    // Total places that existed at the end of last month
+    const totalPlacesEndOfLastMonth = await Place.count({
+      where: {
+        createdAt: {
+          [Op.lt]: thisMonthStart
+        }
+      }
+    });
+    
+    // Total places that existed at the end of two months ago  
+    const totalPlacesEndOfTwoMonthsAgo = await Place.count({
+      where: {
+        createdAt: {
+          [Op.lt]: lastMonthStart
+        }
+      }
+    });
+
+    // NET change = difference in total counts (accounts for additions AND deletions)
+    const netPlacesThisMonth = totalPlacesEndOfThisMonth - totalPlacesEndOfLastMonth;
+    const netPlacesLastMonth = totalPlacesEndOfLastMonth - totalPlacesEndOfTwoMonthsAgo;
+
+    const growthRates = {
+      places: calculateNetGrowthRate(netPlacesThisMonth, netPlacesLastMonth),
+      users: calculateNetGrowthRate(netUserChangeThisMonth, netUserChangeLastMonth),
+      approvedBookings: calculateNetGrowthRate(netApprovedBookingsThisMonth, netApprovedBookingsLastMonth),
+      reviews: calculateGrowthRate(reviewsThisMonth, reviewsLastMonth),
+      agentPayments: calculateGrowthRate(agentPaymentsThisMonth, agentPaymentsLastMonth),
+      hostPayments: calculateGrowthRate(hostPaymentsThisMonth, hostPaymentsLastMonth)
+    };
+
+    res.json({
+      places: {
+        total: totalPlaces,
+        thisMonth: placesThisMonth,
+        lastMonth: placesLastMonth,
+        totalEndOfThisMonth: totalPlacesEndOfThisMonth,
+        totalEndOfLastMonth: totalPlacesEndOfLastMonth,
+        netThisMonth: netPlacesThisMonth,
+        netLastMonth: netPlacesLastMonth,
+        growth: growthRates.places
+      },
+      agentPayments: {
+        total: totalPaidToAgent,
+        thisMonth: agentPaymentsThisMonth,
+        lastMonth: agentPaymentsLastMonth,
+        growth: growthRates.agentPayments
+      },
+      hostPayments: {
+        total: totalPaidToHost,
+        thisMonth: hostPaymentsThisMonth,
+        lastMonth: hostPaymentsLastMonth,
+        growth: growthRates.hostPayments
+      },
+      bookings: {
+        status: bookingStatusCounts,
+        approvedThisMonth: approvedBookingsThisMonth,
+        approvedLastMonth: approvedBookingsLastMonth,
+        rejectedThisMonth: rejectedBookingsThisMonth,
+        rejectedLastMonth: rejectedBookingsLastMonth,
+        netApprovedThisMonth: netApprovedBookingsThisMonth,
+        netApprovedLastMonth: netApprovedBookingsLastMonth,
+        approvalGrowth: growthRates.approvedBookings
+      },
+      reviews: {
+        total: totalReviews,
+        averageRating: averagePlatformRating?.dataValues?.avgRating 
+          ? parseFloat(averagePlatformRating.dataValues.avgRating).toFixed(1) 
+          : "0.0",
+        thisMonth: reviewsThisMonth,
+        lastMonth: reviewsLastMonth,
+        growth: growthRates.reviews
+      },
+      users: {
+        total: totalUsers,
+        byType: userTypeCounts,
+        thisMonth: newUsersThisMonth,
+        lastMonth: newUsersLastMonth,
+        netThisMonth: netUserChangeThisMonth,
+        netLastMonth: netUserChangeLastMonth,
+        growth: growthRates.users
+      },
+      monthlyTrends: {
+        userRegistrations: userRegistrationTrend.map(item => ({
+          month: `${item.dataValues.year}-${String(item.dataValues.month).padStart(2, '0')}`,
+          count: parseInt(item.dataValues.count)
+        })),
+        approvedBookings: bookingApprovalTrend.map(item => ({
+          month: `${item.dataValues.year}-${String(item.dataValues.month).padStart(2, '0')}`,
+          count: parseInt(item.dataValues.count)
+        }))
+      },
+      platformActivity: platformActivity,
+      growthRates: growthRates,
+      netCalculations: {
+        explanation: "Net calculations show true platform growth: gains minus losses",
+        methodology: {
+          users: "Total user count change (accounts added - accounts deleted)",
+          bookings: "Approved bookings minus rejected bookings", 
+          places: "Total places change (new places added minus places deleted)"
+        },
+        summary: {
+          users: {
+            thisMonth: `Net change: ${netUserChangeThisMonth} users`,
+            lastMonth: `Net change: ${netUserChangeLastMonth} users`,
+            growth: `${growthRates.users}%`
+          },
+          bookings: {
+            thisMonth: `Approved: ${approvedBookingsThisMonth}, Rejected: ${rejectedBookingsThisMonth}, Net: ${netApprovedBookingsThisMonth}`,
+            lastMonth: `Approved: ${approvedBookingsLastMonth}, Rejected: ${rejectedBookingsLastMonth}, Net: ${netApprovedBookingsLastMonth}`,
+            growth: `${growthRates.approvedBookings}%`
+          },
+          places: {
+            thisMonth: `Net change: ${netPlacesThisMonth} places (Total: ${totalPlacesEndOfThisMonth} vs Last Month: ${totalPlacesEndOfLastMonth})`,
+            lastMonth: `Net change: ${netPlacesLastMonth} places`,
+            growth: `${growthRates.places}%`
+          }
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error("Error fetching agent statistics:", error);
+    res.status(422).json({ error: error.message });
+  }
+};
+
+/**
  * Get language preference
  */
 const getLanguagePreference = async (req, res) => {
@@ -1770,6 +2239,7 @@ module.exports = {
   updateUser,
   getAdminContact,
   getHostStatistics,
+  getAgentStatistics,
   getHostReviews,
   updateLanguagePreference,
   getLanguagePreference,
