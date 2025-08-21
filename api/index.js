@@ -1,21 +1,4 @@
 require("dotenv").config();
-
-// TEMPORARY: Force development mode for Payme sandbox testing
-// Remove this when switching to production payments
-if (process.env.RENDER) {
-  console.log('🔍 Before override:', process.env.NODE_ENV);
-  process.env.NODE_ENV = 'development';
-  console.log('🚨 FORCED NODE_ENV to development for Payme sandbox testing');
-  console.log('🔍 After override:', process.env.NODE_ENV);
-}
-
-console.log('🌟 Environment Variables Check:', {
-  NODE_ENV: process.env.NODE_ENV,
-  RENDER: process.env.RENDER,
-  PAYME_TEST_KEY: process.env.PAYME_TEST_KEY ? '[PRESENT]' : '[MISSING]',
-  PAYME_SECRET_KEY: process.env.PAYME_SECRET_KEY ? '[PRESENT]' : '[MISSING]'
-});
-
 const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
@@ -209,15 +192,28 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/favorites', favoritesRoutes);
 
-// For production: Serve static files from the client build folder
-if (process.env.NODE_ENV === 'production') {
-  const clientBuildPath = path.join(__dirname, '../client/dist');
-  console.log(`Production mode: serving static files from ${clientBuildPath}`);
+// Serve static files from the client build folder
+// Note: We serve static files even in development mode when deployed to production domain
+const clientBuildPath = path.join(__dirname, '../client/dist');
+const fs = require('fs');
+
+if (fs.existsSync(clientBuildPath)) {
+  console.log(`Serving static files from ${clientBuildPath} (NODE_ENV: ${process.env.NODE_ENV})`);
   
   // Configure static files and routing using the extracted configuration
   configureStaticFiles(app, clientBuildPath);
 } else {
-  console.log('Development mode: not serving static files');
+  console.log(`Client build path does not exist: ${clientBuildPath}`);
+  
+  // Fallback for development - serve a simple message
+  app.get('/', (req, res) => {
+    res.json({ 
+      message: 'API Server Running', 
+      environment: process.env.NODE_ENV,
+      buildPath: clientBuildPath,
+      buildExists: false
+    });
+  });
 }
 
 // Add error handling middleware from middleware/errorHandler.js
