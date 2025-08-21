@@ -35,6 +35,28 @@ const favoritesRoutes = require('./routes/favorites');
 const { languageMiddleware } = require('./i18n/config');
 
 const app = express();
+
+// Add trust proxy setting for proper HTTPS detection behind reverse proxy
+app.set('trust proxy', 1);
+
+// Add middleware to prevent redirects for webhook endpoints
+app.use('/api/payme/pay', (req, res, next) => {
+  // Ensure Payme webhook endpoint never redirects
+  console.log('Payme webhook request received:', {
+    method: req.method,
+    protocol: req.protocol,
+    secure: req.secure,
+    headers: {
+      'x-forwarded-proto': req.headers['x-forwarded-proto'],
+      'x-forwarded-ssl': req.headers['x-forwarded-ssl'],
+      'authorization': req.headers.authorization ? '[PRESENT]' : '[MISSING]',
+      'user-agent': req.headers['user-agent']
+    }
+  });
+  next();
+});
+
+// Body parsing middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser()); // to read cookies
@@ -170,15 +192,28 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/favorites', favoritesRoutes);
 
-// For production: Serve static files from the client build folder
-if (process.env.NODE_ENV === 'production') {
-  const clientBuildPath = path.join(__dirname, '../client/dist');
-  console.log(`Production mode: serving static files from ${clientBuildPath}`);
+// Serve static files from the client build folder
+// Note: We serve static files even in development mode when deployed to production domain
+const clientBuildPath = path.join(__dirname, '../client/dist');
+const fs = require('fs');
+
+if (fs.existsSync(clientBuildPath)) {
+  console.log(`Serving static files from ${clientBuildPath} (NODE_ENV: ${process.env.NODE_ENV})`);
   
   // Configure static files and routing using the extracted configuration
   configureStaticFiles(app, clientBuildPath);
 } else {
-  console.log('Development mode: not serving static files');
+  console.log(`Client build path does not exist: ${clientBuildPath}`);
+  
+  // Fallback for development - serve a simple message
+  app.get('/', (req, res) => {
+    res.json({ 
+      message: 'API Server Running', 
+      environment: process.env.NODE_ENV,
+      buildPath: clientBuildPath,
+      buildExists: false
+    });
+  });
 }
 
 // Add error handling middleware from middleware/errorHandler.js
