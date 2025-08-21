@@ -19,13 +19,13 @@ services:
       ls -la client/dist/assets || echo "Assets directory not found"
       echo "Checking for critical files:"
       find client/dist -name "*.js" -o -name "*.css" | head -10
-    startCommand: NODE_ENV=production node start.js
+    startCommand: node start.js
     plan: free
     region: singapore
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
-        value: production
+        value: development
       - key: PORT
         value: 10000
       - key: JWT_SECRET
@@ -78,8 +78,20 @@ services:
         sync: false
       - key: PAYME_SECRET_KEY
         sync: false
+      - key: PAYME_TEST_KEY
+        sync: false
       - key: VITE_PAYME_MERCHANT_ID
         sync: false
+      - key: PRODUCTION_DOMAIN
+        value: getspace.uz
+      - key: PRODUCTION_URL
+        value: https://getspace.uz
+      - key: FRONTEND_URL
+        value: https://getspace.uz
+      - key: CLIENT_BASE_URL
+        value: https://getspace.uz
+      - key: CORS_ALLOWED_ORIGINS
+        value: '["https://getspace.uz", "https://www.getspace.uz"]'
 
 databases:
   - name: conferencehub-db
