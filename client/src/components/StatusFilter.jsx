@@ -32,42 +32,42 @@ const STATUS_CONFIG = {
   }
 };
 
-// Color theme mapping for consistent styling
+// Color theme mapping for consistent styling - updated to match UsersPage with visible borders
 const COLOR_THEMES = {
   yellow: {
-    active: "bg-orange-500 text-white border-orange-500",
-    inactive: "bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100",
-    badge: "bg-orange-100 text-orange-700"
+    active: "bg-orange-500 text-white border-orange-600 shadow-ui hover:bg-orange-600",
+    inactive: "bg-bg-card text-text-primary border-border-default hover:bg-orange-50 hover:text-orange-600 hover:border-orange-300",
+    badge: "bg-white/20 text-white"
   },
   green: {
-    active: "bg-status-success text-white border-status-success",
-    inactive: "bg-success-50 text-status-success border-success-200 hover:bg-success-100",
-    badge: "bg-success-100 text-status-success"
+    active: "bg-success-500 text-white border-success-600 shadow-ui hover:bg-success-600",
+    inactive: "bg-bg-card text-text-primary border-border-default hover:bg-success-50 hover:text-success-600 hover:border-success-300",
+    badge: "bg-white/20 text-white"
   },
   red: {
-    active: "bg-status-error text-white border-status-error",
-    inactive: "bg-error-50 text-status-error border-error-200 hover:bg-error-100",
-    badge: "bg-error-100 text-status-error"
+    active: "bg-error-500 text-white border-error-600 shadow-ui hover:bg-error-600",
+    inactive: "bg-bg-card text-text-primary border-border-default hover:bg-error-50 hover:text-error-600 hover:border-error-300",
+    badge: "bg-white/20 text-white"
   },
   blue: {
-    active: "bg-accent-primary text-white border-accent-primary",
-    inactive: "bg-accent-50 text-accent-primary border-accent-200 hover:bg-accent-100",
-    badge: "bg-accent-100 text-accent-primary"
+    active: "bg-info-500 text-white border-info-600 shadow-ui hover:bg-info-600",
+    inactive: "bg-bg-card text-text-primary border-border-default hover:bg-info-50 hover:text-info-600 hover:border-info-300",
+    badge: "bg-white/20 text-white"
   },
   primary: {
-    active: "bg-slate-700 text-white border-slate-700",
-    inactive: "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100",
-    badge: "bg-slate-100 text-slate-800"
+    active: "bg-secondary text-white border-accent-primary shadow-ui hover:bg-secondary/90",
+    inactive: "bg-bg-card text-text-primary border-border-default hover:bg-secondary/10 hover:text-secondary hover:border-secondary/30",
+    badge: "bg-white/20 text-white"
   },
   lightgray: {
-    active: "bg-slate-400 text-white border-slate-400",
-    inactive: "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100",
-    badge: "bg-slate-100 text-slate-700"
+    active: "bg-slate-400 text-white border-slate-500 shadow-ui hover:bg-slate-500",
+    inactive: "bg-bg-card text-text-primary border-border-default hover:bg-slate-50 hover:text-slate-600 hover:border-slate-300",
+    badge: "bg-white/20 text-white"
   },
   gray: {
-    active: "bg-neutral-600 text-white border-neutral-600",
-    inactive: "bg-bg-secondary text-text-secondary border-border-light hover:bg-neutral-100",
-    badge: "bg-neutral-100 text-text-secondary"
+    active: "bg-accent-primary text-white border-accent-hover shadow-ui hover:bg-accent-hover",
+    inactive: "bg-bg-card text-text-primary border-border-default hover:bg-accent-primary/10 hover:text-accent-primary hover:border-accent-primary",
+    badge: "bg-white/20 text-white"
   }
 };
 
@@ -88,10 +88,10 @@ const StatusButton = ({
   const theme = COLOR_THEMES[color];
   const buttonClasses = isActive ? theme.active : theme.inactive;
   
-  // Size variants for different layouts
+  // Size variants for different layouts - updated to match UsersPage
   const sizeClasses = {
-    compact: "px-3 py-2 text-xs",
-    default: "px-3 py-2 text-sm sm:px-4 sm:py-2.5",
+    compact: "px-2 py-2 text-xs",
+    default: "px-2 sm:px-4 py-2 text-xs sm:text-sm",
     large: "px-6 py-4 text-base"
   };
   
@@ -99,7 +99,7 @@ const StatusButton = ({
     <button
       onClick={() => onClick(status)}
       className={`
-        border rounded-lg font-medium whitespace-nowrap
+        flex-shrink-0 border rounded-lg font-medium whitespace-nowrap
         transition-colors focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-1
         ${buttonClasses} ${sizeClasses[size]} ${className}
       `}
@@ -110,7 +110,7 @@ const StatusButton = ({
         <span className="truncate">{label}</span>
         <span className={`
           px-1.5 py-0.5 rounded-full font-semibold text-xs min-w-[1.25rem] text-center
-          ${isActive ? 'bg-white/20 text-white' : theme.badge}
+          ${isActive ? theme.badge : 'bg-neutral-100 text-text-secondary'}
         `}>
           {count}
         </span>
@@ -139,17 +139,15 @@ export default function StatusFilter({
     ? ["pending", "approved", "rejected", "all"]
     : ["pending", "approved", "paid_to_host", "rejected", "all"];
   
-  // Size variants for different use cases
+  // Size variants for different use cases - updated to match UsersPage
   const sizeClasses = {
-    compact: "gap-2",
-    default: "gap-3", 
+    compact: "gap-1",
+    default: "gap-1 sm:gap-2", 
     large: "gap-4"
   };
 
-  // For compact size, use horizontal scroll to prevent overflow
-  const containerClasses = size === 'compact' 
-    ? `flex overflow-x-auto scrollbar-hide ${sizeClasses[size]} ${className}`
-    : `flex flex-wrap items-center ${sizeClasses[size]} ${className}`;
+  // Container classes to match UsersPage layout with proper space for all borders
+  const containerClasses = `flex overflow-x-auto scrollbar-hide px-2 py-2 ${sizeClasses[size]} ${className}`;
 
   const handleStatusClick = (status) => {
     if (typeof onStatusChange === "function") {
@@ -185,7 +183,7 @@ export default function StatusFilter({
             isActive={currentStatus === status}
             onClick={handleStatusClick}
             size={size}
-            className={size === 'compact' ? 'flex-shrink-0' : ''}
+            className="flex-shrink-0"
           />
         );
       })}

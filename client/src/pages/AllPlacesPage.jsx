@@ -325,8 +325,8 @@ export default function AllPlacesPage() {
   // Show loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="spacing-container spacing-section">
+      <div className="min-h-screen bg-bg-primary">
+        <div className="w-full px-4 sm:px-6 lg:px-8 pt-6">
           <div className="animate-pulse space-y-4">
             <div className="card-base">
               <div className="h-16 bg-gray-200 rounded-lg"></div>
@@ -345,8 +345,8 @@ export default function AllPlacesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="spacing-container pb-20 md:pb-8">
+    <div className="min-h-screen bg-bg-primary">
+      <div className="w-full px-4 sm:px-6 lg:px-8 pt-6 pb-20 md:pb-8">
         
         {/* Page header with search and Add Place button in same row */}
         <div className="card-base mb-6">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { HiAdjustmentsHorizontal, HiArrowsUpDown } from "react-icons/hi2";
@@ -21,6 +21,35 @@ export default function BookingFilters({
   const location = useLocation();
   const navigate = useNavigate();
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
+  const sortDropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target)) {
+        setIsSortDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Sort options
+  const sortOptions = [
+    { value: "createdAt-desc", label: t("filters.sortOptions.newestFirst") },
+    { value: "createdAt-asc", label: t("filters.sortOptions.oldestFirst") },
+    { value: "checkInDate-asc", label: t("filters.sortOptions.checkInDate") },
+    { value: "totalPrice-desc", label: t("filters.sortOptions.highestPrice") },
+    { value: "totalPrice-asc", label: t("filters.sortOptions.lowestPrice") },
+    { value: "place-asc", label: t("filters.sortOptions.propertyName") },
+  ];
+
+  const currentSortValue = `${sortBy}-${sortOrder}`;
+  const currentSortLabel = sortOptions.find(option => option.value === currentSortValue)?.label || sortOptions[0].label;
 
   return (
     <div className="bg-bg-card border border-border-light rounded-lg shadow-ui p-4 sm:p-6 mb-4 sm:mb-6">
@@ -36,7 +65,7 @@ export default function BookingFilters({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder={t(`filters.searchPlaceholders.${user?.userType || 'client'}`)}
-              className="block w-full px-3 py-2.5 border border-border-light rounded-lg bg-bg-primary text-text-primary placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-accent-primary transition-colors text-sm"
+              className="block w-full px-3 py-2.5 border border-border-default rounded-xl bg-bg-card text-text-primary placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-accent-primary shadow-ui transition-all duration-200 text-sm"
             />
           </div>
 
@@ -44,37 +73,55 @@ export default function BookingFilters({
           <div className="flex flex-col sm:flex-row gap-3">
             {/* Sort dropdown with icon */}
             <div className="sm:w-48">
-              <div className="relative">
+              <div className="relative" ref={sortDropdownRef}>
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <HiArrowsUpDown className="h-4 w-4 text-text-muted" />
                 </div>
-                <select
-                  value={`${sortBy}-${sortOrder}`}
-                  onChange={(e) => {
-                    const [field, order] = e.target.value.split("-");
-                    setSortBy(field);
-                    setSortOrder(order);
-                  }}
-                  className="w-full pl-10 pr-8 py-2.5 border border-border-light rounded-lg bg-bg-primary text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-accent-primary transition-colors text-sm appearance-none"
+                <button
+                  onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                  className={`w-full pl-10 pr-8 py-2.5 text-sm border border-border-default rounded-xl bg-bg-card text-text-primary focus:ring-2 focus:ring-accent-primary focus:border-accent-primary shadow-ui transition-all duration-200 flex items-center justify-between ${
+                    isSortDropdownOpen ? "ring-2 ring-accent-primary border-accent-primary" : ""
+                  }`}
                 >
-                  <option value="createdAt-desc">{t("filters.sortOptions.newestFirst")}</option>
-                  <option value="createdAt-asc">{t("filters.sortOptions.oldestFirst")}</option>
-                  <option value="checkInDate-asc">{t("filters.sortOptions.checkInDate")}</option>
-                  <option value="totalPrice-desc">{t("filters.sortOptions.highestPrice")}</option>
-                  <option value="totalPrice-asc">{t("filters.sortOptions.lowestPrice")}</option>
-                  <option value="place-asc">{t("filters.sortOptions.propertyName")}</option>
-                </select>
+                  <span className="truncate">{currentSortLabel}</span>
+                </button>
                 {/* Custom dropdown arrow */}
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                   <svg className="h-4 w-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
+                
+                {/* Custom dropdown menu */}
+                {isSortDropdownOpen && (
+                  <div className="absolute top-full left-0 mt-1 w-full bg-bg-card border border-border-light rounded-lg shadow-lg z-50">
+                    <div className="py-1">
+                      {sortOptions.map(option => (
+                        <button
+                          key={option.value}
+                          onClick={() => {
+                            const [field, order] = option.value.split("-");
+                            setSortBy(field);
+                            setSortOrder(order);
+                            setIsSortDropdownOpen(false);
+                          }}
+                          className={`w-full px-4 py-2 text-left text-sm transition-colors ${
+                            currentSortValue === option.value 
+                              ? "bg-accent-primary text-white hover:bg-accent-hover" 
+                              : "text-text-primary hover:bg-accent-primary/10 hover:text-accent-primary"
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Agent actions */}
-            {user?.userType === 'agent' && (
+            {/* Agent actions - Show cleanup button only when there are expired bookings in selected/pending status */}
+            {user?.userType === 'agent' && stats?.hasExpiredPendingBookings && (
               <div className="flex-shrink-0">
                 <button
                   onClick={onCleanupExpired}
@@ -94,14 +141,8 @@ export default function BookingFilters({
 
         {/* Bottom section: Status filters only */}
         <div>
-          {/* Filter label with icon */}
-          <div className="flex items-center gap-2 mb-3">
-            <HiAdjustmentsHorizontal className="h-4 w-4 text-text-secondary" />
-            <span className="text-sm font-medium text-text-secondary">{t("filters.filterByStatus")}</span>
-          </div>
-
-          {/* Status filters - with padding to prevent border cutoff */}
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide p-1 -m-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          {/* Status filters - StatusFilter now handles its own spacing */}
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide p-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             <StatusFilter
               userType={user?.userType}
               currentStatus={statusFilter}
