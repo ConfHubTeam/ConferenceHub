@@ -19,13 +19,13 @@ services:
       ls -la client/dist/assets || echo "Assets directory not found"
       echo "Checking for critical files:"
       find client/dist -name "*.js" -o -name "*.css" | head -10
-    startCommand: NODE_ENV=development node start.js
+    startCommand: node start.js
     plan: free
     region: singapore
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
-        value: development
+        value: production
       - key: PORT
         value: 10000
       - key: JWT_SECRET
