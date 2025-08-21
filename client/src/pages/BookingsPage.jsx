@@ -341,7 +341,7 @@ export default function BookingsPage() {
                 <div className="h-4 bg-neutral-200 rounded w-1/2"></div>
               </div>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="bg-bg-card rounded-lg p-6 shadow-ui border border-border-light">
                   <div className="h-4 bg-neutral-200 rounded w-3/4 mb-3"></div>
@@ -414,7 +414,7 @@ export default function BookingsPage() {
                 </div>
 
                 {/* Booking cards grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                   {getCurrentPageItems().map((booking) => (
                     <BookingRequestCard
                       key={booking.id}
@@ -518,7 +518,7 @@ export default function BookingsPage() {
                 </div>
 
                 {/* Booking cards grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                   {getCurrentPageItems().map((booking) => (
                     <BookingRequestCard
                       key={booking.id}
@@ -606,7 +606,7 @@ export default function BookingsPage() {
                 </div>
 
                 {/* Booking cards grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                   {getCurrentPageItems().map((booking) => (
                     <BookingRequestCard
                       key={booking.id}
