@@ -166,10 +166,12 @@ const getReviewsForPlace = async (req, res) => {
       case "oldest":
         orderBy = [["created_at", "ASC"]];
         break;
-      case "highest":
+      case "rating_high":
+      case "highest": // Keep backward compatibility
         orderBy = [["rating", "DESC"], ["created_at", "DESC"]];
         break;
-      case "lowest":
+      case "rating_low":
+      case "lowest": // Keep backward compatibility
         orderBy = [["rating", "ASC"], ["created_at", "DESC"]];
         break;
       case "newest":
@@ -746,13 +748,35 @@ const getAllReviewsForAdmin = async (req, res) => {
       reported,
       startDate,
       endDate,
-      search
+      search,
+      sortBy = "newest"
     } = req.query;
-
     // Validate pagination parameters
     const pageNum = Math.max(1, parseInt(page));
     const limitNum = Math.min(100, Math.max(1, parseInt(limit))); // Max 100 reviews per page
     const offset = (pageNum - 1) * limitNum;
+
+    // Determine sort order based on sortBy parameter
+    let orderBy = [["created_at", "DESC"]]; // Default: newest first
+    switch (sortBy) {
+      case "oldest":
+        orderBy = [["created_at", "ASC"]];
+        break;
+      case "rating_high":
+      case "highest": // Keep backward compatibility
+        orderBy = [["rating", "DESC"], ["created_at", "DESC"]];
+        break;
+      case "rating_low":
+      case "lowest": // Keep backward compatibility
+        orderBy = [["rating", "ASC"], ["created_at", "DESC"]];
+        break;
+      case "newest":
+      default:
+        orderBy = [["created_at", "DESC"]];
+        break;
+    }
+    
+    console.log('orderBy applied:', orderBy); // Debug log
 
     // Build where conditions following DRY principle
     const whereConditions = {};
@@ -844,7 +868,7 @@ const getAllReviewsForAdmin = async (req, res) => {
           },
           reportsInclude
         ],
-        order: [["created_at", "DESC"]],
+        order: orderBy,
         limit: limitNum,
         offset: offset,
         distinct: true,
@@ -867,7 +891,7 @@ const getAllReviewsForAdmin = async (req, res) => {
           },
           reportsInclude
         ],
-        order: [["created_at", "DESC"]],
+        order: orderBy,
         limit: limitNum,
         offset: offset,
         distinct: true

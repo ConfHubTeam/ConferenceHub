@@ -248,5 +248,33 @@
       "offlineMode": "Активен офлайн режим",
       "reconnecting": "Переподключение..."
     }
+  },
+  "datePicker": {
+    "months": {
+      "january": "Январь",
+      "february": "Февраль",
+      "march": "Март",
+      "april": "Апрель",
+      "may": "Май",
+      "june": "Июнь",
+      "july": "Июль",
+      "august": "Август",
+      "september": "Сентябрь",
+      "october": "Октябрь",
+      "november": "Ноябрь",
+      "december": "Декабрь"
+    },
+    "weekdays": {
+      "monday": "Пн",
+      "tuesday": "Вт",
+      "wednesday": "Ср",
+      "thursday": "Чт",
+      "friday": "Пт",
+      "saturday": "Сб",
+      "sunday": "Вс"
+    },
+    "today": "Сегодня",
+    "clear": "Очистить",
+    "apply": "Применить"
   }
 }

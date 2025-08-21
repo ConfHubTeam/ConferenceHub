@@ -36,6 +36,12 @@
     "refresh": "Refresh",
     "retry": "Retry"
   },
+  "datePicker": {
+    "placeholder": "Select date",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "today": "Today"
+  },
   "status": {
     "loading": "Loading...",
     "success": "Success",
