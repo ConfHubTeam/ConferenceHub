@@ -19,11 +19,13 @@ export default function DatePicker({
   disabled = false,
   id = "",
   name = "",
-  "aria-label": ariaLabel = ""
+  "aria-label": ariaLabel = "",
+  alignCalendar = "left" // New prop to control calendar alignment
 }) {
   const { t, i18n } = useTranslation("common");
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [calendarPosition, setCalendarPosition] = useState(alignCalendar);
   const datePickerRef = useRef(null);
 
   // Get appropriate locale for date formatting
@@ -31,6 +33,23 @@ export default function DatePicker({
 
   // Convert value to Date object
   const selectedDate = value ? (typeof value === "string" ? parseISO(value) : value) : null;
+
+  // Calculate optimal calendar position based on viewport
+  useEffect(() => {
+    if (isOpen && datePickerRef.current) {
+      const rect = datePickerRef.current.getBoundingClientRect();
+      const calendarWidth = 320; // w-80 = 320px
+      const viewportWidth = window.innerWidth;
+      const rightEdge = rect.right + calendarWidth;
+      
+      // If calendar would overflow on the right, position it to the right
+      if (rightEdge > viewportWidth && rect.left >= calendarWidth) {
+        setCalendarPosition('right');
+      } else {
+        setCalendarPosition('left');
+      }
+    }
+  }, [isOpen]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -132,7 +151,9 @@ export default function DatePicker({
 
       {/* Calendar Dropdown */}
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 bg-bg-card border border-border-light rounded-lg shadow-lg z-50 w-80">
+        <div className={`absolute top-full mt-1 bg-bg-card border border-border-light rounded-lg shadow-lg z-50 w-80 max-w-[calc(100vw-2rem)] ${
+          calendarPosition === 'right' ? 'right-0' : 'left-0'
+        }`}>
           <div className="p-4">
             {/* Month Navigation */}
             <div className="flex items-center justify-between mb-4">

@@ -143,6 +143,7 @@ export default function ReviewsFilters({
                   className="w-full px-3 py-2.5 text-sm border border-border-default rounded-xl bg-bg-card text-text-primary focus:ring-2 focus:ring-accent-primary focus:border-accent-primary transition-all duration-200"
                   aria-label={t("management.filters.dateRange.endDate")}
                   minDate={startDate} // End date should be after start date
+                  alignCalendar="right"
                 />
               </div>
             </div>
@@ -334,6 +335,7 @@ export default function ReviewsFilters({
                   className="w-full px-4 py-3 text-sm border border-border-default rounded-xl bg-bg-card text-text-primary focus:ring-2 focus:ring-accent-primary focus:border-accent-primary transition-all duration-200 shadow-ui"
                   aria-label={t("management.filters.dateRange.endDate")}
                   minDate={startDate} // End date should be after start date
+                  alignCalendar="right"
                 />
               </div>
             </div>

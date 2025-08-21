@@ -233,8 +233,8 @@ export default function AgentReviewsPage() {
   if (loading && reviews.length === 0) {
     return (
       <div className="min-h-screen bg-bg-primary">
-        <div className="spacing-container">
-          <div className="spacing-section">
+        <div className="w-full px-4 sm:px-6 lg:px-8 pt-6">
+          <div className="space-y-6">
             <div className="animate-pulse space-y-6">
               {/* Header skeleton */}
               <div className="flex items-center justify-between">
@@ -243,7 +243,7 @@ export default function AgentReviewsPage() {
               </div>
               {/* Filter skeleton */}
               <div className="card-base">
-                <div className="spacing-card">
+                <div className="px-6 py-6">
                   <div className="h-12 bg-border-light rounded w-full mb-4"></div>
                   <div className="flex gap-3">
                     <div className="h-10 bg-border-light rounded w-24"></div>
@@ -254,7 +254,7 @@ export default function AgentReviewsPage() {
               </div>
               {/* Table skeleton */}
               <div className="card-base">
-                <div className="spacing-card">
+                <div className="px-6 py-6">
                   <div className="h-96 bg-border-light rounded"></div>
                 </div>
               </div>
@@ -266,31 +266,26 @@ export default function AgentReviewsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-primary">
-      <div className="spacing-container">
-        <div className="spacing-section">
-          {/* Page Header */}
+    <div className="min-h-screen bg-bg-primary overflow-x-hidden">
+      <div className="w-full px-4 sm:px-6 lg:px-8 pt-6 max-w-full">
+        {/* Error Display */}
+        {error && (
           <div className="mb-6">
-          </div>
-
-          {/* Error Display */}
-          {error && (
-            <div className="mb-6">
-              <div className="card-base border-error-500 bg-error-50">
-                <div className="spacing-card">
-                  <div className="flex items-center gap-3">
-                    <svg className="w-5 h-5 text-error-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                    </svg>
-                    <span className="text-error-700 font-medium">{error}</span>
-                  </div>
+            <div className="card-base border-error-500 bg-error-50">
+              <div className="px-6 py-6">
+                <div className="flex items-center gap-3">
+                  <svg className="w-5 h-5 text-error-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                  <span className="text-error-700 font-medium">{error}</span>
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Mobile-Friendly Search and Filter Controls */}
-          <ReviewsFilters
+        {/* Mobile-Friendly Search and Filter Controls */}
+        <ReviewsFilters
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
             debouncedSearchTerm={debouncedSearchTerm}
@@ -310,12 +305,12 @@ export default function AgentReviewsPage() {
           />
 
           {/* Reviews table */}
-          <div className="card-base">
-            <div className="overflow-x-auto">
-              <table className="w-full">
+          <div className="card-base overflow-hidden">
+            <div className="overflow-x-auto max-w-full">
+              <table className="w-full min-w-[800px]">
                 <thead className="bg-bg-secondary border-b border-border-light">
                   <tr>
-                    <th className="py-4 px-4 text-left">
+                    <th className="py-4 px-4 text-left w-12">
                       <input
                         type="checkbox"
                         checked={reviews.length > 0 && selectedReviews.length === reviews.length}
@@ -323,11 +318,11 @@ export default function AgentReviewsPage() {
                         className="w-4 h-4 text-accent-primary border-border-default rounded focus:ring-accent-primary focus:ring-2"
                       />
                     </th>
-                    <th className="py-4 px-4 text-left text-sm font-semibold text-text-primary">{t("management.table.review")}</th>
-                    <th className="py-4 px-4 text-left text-sm font-semibold text-text-primary">{t("management.table.place")} & {t("management.table.reviewer")}</th>
-                    <th className="py-4 px-4 text-left text-sm font-semibold text-text-primary">{t("management.table.reports")}</th>
-                    <th className="py-4 px-4 text-left text-sm font-semibold text-text-primary">{t("management.table.date")}</th>
-                    <th className="py-4 px-4 text-left text-sm font-semibold text-text-primary">{t("management.table.actions")}</th>
+                    <th className="py-4 px-4 text-left text-sm font-semibold text-text-primary min-w-[200px]">{t("management.table.review")}</th>
+                    <th className="py-4 px-4 text-left text-sm font-semibold text-text-primary min-w-[180px]">{t("management.table.place")} & {t("management.table.reviewer")}</th>
+                    <th className="py-4 px-4 text-left text-sm font-semibold text-text-primary w-20">{t("management.table.reports")}</th>
+                    <th className="py-4 px-4 text-left text-sm font-semibold text-text-primary w-32">{t("management.table.date")}</th>
+                    <th className="py-4 px-4 text-left text-sm font-semibold text-text-primary min-w-[120px]">{t("management.table.actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border-light">
@@ -370,7 +365,7 @@ export default function AgentReviewsPage() {
                                 <select
                                   value={editForm.rating}
                                   onChange={(e) => setEditForm(prev => ({ ...prev, rating: parseInt(e.target.value) }))}
-                                  className="form-select text-sm min-w-[120px]"
+                                  className="form-select text-sm w-full max-w-[100px]"
                                 >
                                   <option value={1}>{t("management.filters.rating.option", { rating: 1 })}</option>
                                   <option value={2}>{t("management.filters.rating.option", { rating: 2 })}</option>
@@ -533,7 +528,6 @@ export default function AgentReviewsPage() {
               itemName="reviews"
             />
           </div>
-        </div>
       </div>
     </div>
   );

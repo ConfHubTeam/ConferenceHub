@@ -245,61 +245,68 @@ export default function UsersPage() {
   }
 
   return (
-    <div>
-      <div className="spacing-container pb-20 md:pb-8">
+    <div className="bg-bg-primary min-h-screen">
+      <div className="w-full px-4 sm:px-6 lg:px-8 pt-6">
        
         {/* Search and filter controls */}
-        <div className="bg-white spacing-card rounded-lg shadow-md mb-4 sm:mb-6">
-          <div className="flex flex-col lg:flex-row gap-4 items-center justify-between mb-4">
-            <div className="w-full lg:w-1/2">
-              <input
-                type="text"
-                placeholder={t('search.placeholder')}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              />
+        <div className="card-base mb-4 sm:mb-6 bg-bg-card border-border-light">
+          <div className="px-6 py-6">
+            <div className="flex flex-col gap-4">
+              {/* Search Bar */}
+              <div className="w-full">
+                <input
+                  type="text"
+                  placeholder={t('search.placeholder')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-3 pr-10 py-3 border border-border-default rounded-lg bg-bg-card text-text-primary placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-accent-primary transition-all duration-200 shadow-ui"
+                />
+              </div>
+              
+              {/* Filter Buttons */}
+              <div className="flex gap-1 sm:gap-2 overflow-x-auto scrollbar-hide">
+                <button 
+                  onClick={() => setFilterType('all')}
+                  className={`flex-shrink-0 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors border whitespace-nowrap ${
+                    filterType === 'all' 
+                      ? 'bg-accent-primary text-white border-accent-primary shadow-ui hover:bg-accent-hover' 
+                      : 'bg-bg-card text-text-primary border-border-default hover:bg-accent-primary/10 hover:text-accent-primary hover:border-accent-primary'
+                  }`}
+                >
+                  {t('filters.all')} ({users.length})
+                </button>
+                <button 
+                  onClick={() => setFilterType('client')}
+                  className={`flex-shrink-0 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors border whitespace-nowrap ${
+                    filterType === 'client' 
+                      ? 'bg-info-500 text-white border-info-500 shadow-ui hover:bg-info-600' 
+                      : 'bg-bg-card text-text-primary border-border-default hover:bg-info-50 hover:text-info-600 hover:border-info-300'
+                  }`}
+                >
+                  {t('filters.clients')} ({users.filter(u => u.userType === 'client').length})
+                </button>
+                <button 
+                  onClick={() => setFilterType('host')}
+                  className={`flex-shrink-0 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors border whitespace-nowrap ${
+                    filterType === 'host' 
+                      ? 'bg-success-500 text-white border-success-500 shadow-ui hover:bg-success-600' 
+                      : 'bg-bg-card text-text-primary border-border-default hover:bg-success-50 hover:text-success-600 hover:border-success-300'
+                  }`}
+                >
+                  {t('filters.hosts')} ({users.filter(u => u.userType === 'host').length})
+                </button>
+                <button 
+                  onClick={() => setFilterType('agent')}
+                  className={`flex-shrink-0 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors border whitespace-nowrap ${
+                    filterType === 'agent' 
+                      ? 'bg-secondary text-white border-secondary shadow-ui hover:bg-secondary/90' 
+                      : 'bg-bg-card text-text-primary border-border-default hover:bg-secondary/10 hover:text-secondary hover:border-secondary/30'
+                  }`}
+                >
+                  {t('filters.agents')} ({users.filter(u => u.userType === 'agent').length})
+                </button>
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <button 
-                onClick={() => setFilterType('all')}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  filterType === 'all' ? 'bg-primary text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-                }`}
-              >
-                {t('filters.all')} ({users.length})
-              </button>
-              <button 
-                onClick={() => setFilterType('client')}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  filterType === 'client' ? 'bg-info-500 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-                }`}
-              >
-                {t('filters.clients')} ({users.filter(u => u.userType === 'client').length})
-              </button>
-              <button 
-                onClick={() => setFilterType('host')}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  filterType === 'host' ? 'bg-success-500 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-                }`}
-              >
-                {t('filters.hosts')} ({users.filter(u => u.userType === 'host').length})
-              </button>
-              <button 
-                onClick={() => setFilterType('agent')}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  filterType === 'agent' ? 'bg-secondary text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-                }`}
-              >
-                {t('filters.agents')} ({users.filter(u => u.userType === 'agent').length})
-              </button>
-            </div>
-          </div>
-          
-          {/* Results summary */}
-          <div className="text-sm text-gray-600">
-            {t('search.showing', { count: currentUsers.length, total: totalUsers })}
-            {searchTerm && ` ${t('search.matching', { term: searchTerm })}`}
           </div>
         </div>
         
@@ -344,80 +351,80 @@ export default function UsersPage() {
         )}
         
         {/* Users table */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="card-base bg-bg-card border-border-light overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-100">
+              <thead className="bg-bg-secondary border-b border-border-light">
                 <tr>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">{t('table.headers.id')}</th>
+                  <th className="py-3 px-4 text-left text-sm font-semibold text-text-primary">{t('table.headers.id')}</th>
                   <th 
-                    className="py-3 px-4 text-left text-sm font-semibold text-gray-600 cursor-pointer hover:text-gray-800 select-none"
+                    className="py-3 px-4 text-left text-sm font-semibold text-text-primary cursor-pointer hover:text-accent-primary select-none transition-colors"
                     onClick={() => handleSort('name')}
                   >
                     <div className="flex items-center gap-1">
                       {t('table.headers.name')}
                       {sortBy === 'name' && (
-                        <span className="text-primary">
+                        <span className="text-accent-primary">
                           {sortOrder === 'asc' ? '↑' : '↓'}
                         </span>
                       )}
                     </div>
                   </th>
                   <th 
-                    className="py-3 px-4 text-left text-sm font-semibold text-gray-600 cursor-pointer hover:text-gray-800 select-none"
+                    className="py-3 px-4 text-left text-sm font-semibold text-text-primary cursor-pointer hover:text-accent-primary select-none transition-colors"
                     onClick={() => handleSort('email')}
                   >
                     <div className="flex items-center gap-1">
                       {t('table.headers.email')}
                       {sortBy === 'email' && (
-                        <span className="text-primary">
+                        <span className="text-accent-primary">
                           {sortOrder === 'asc' ? '↑' : '↓'}
                         </span>
                       )}
                     </div>
                   </th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">{t('table.headers.phone')}</th>
+                  <th className="py-3 px-4 text-left text-sm font-semibold text-text-primary">{t('table.headers.phone')}</th>
                   <th 
-                    className="py-3 px-4 text-left text-sm font-semibold text-gray-600 cursor-pointer hover:text-gray-800 select-none"
+                    className="py-3 px-4 text-left text-sm font-semibold text-text-primary cursor-pointer hover:text-accent-primary select-none transition-colors"
                     onClick={() => handleSort('userType')}
                   >
                     <div className="flex items-center gap-1">
                       {t('table.headers.type')}
                       {sortBy === 'userType' && (
-                        <span className="text-primary">
+                        <span className="text-accent-primary">
                           {sortOrder === 'asc' ? '↑' : '↓'}
                         </span>
                       )}
                     </div>
                   </th>
                   <th 
-                    className="py-3 px-4 text-left text-sm font-semibold text-gray-600 cursor-pointer hover:text-gray-800 select-none"
+                    className="py-3 px-4 text-left text-sm font-semibold text-text-primary cursor-pointer hover:text-accent-primary select-none transition-colors"
                     onClick={() => handleSort('createdAt')}
                   >
                     <div className="flex items-center gap-1">
                       {t('table.headers.joined')}
                       {sortBy === 'createdAt' && (
-                        <span className="text-primary">
+                        <span className="text-accent-primary">
                           {sortOrder === 'asc' ? '↑' : '↓'}
                         </span>
                       )}
                     </div>
                   </th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">{t('table.headers.actions')}</th>
+                  <th className="py-3 px-4 text-left text-sm font-semibold text-text-primary">{t('table.headers.actions')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-border-light">
                 {currentUsers.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 px-4 text-center text-gray-500">
+                    <td colSpan={7} className="py-8 px-4 text-center text-text-muted">
                       {filteredUsers.length === 0 ? (
                         <div className="flex flex-col items-center gap-2">
-                          <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-8 h-8 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                           </svg>
                           <span>{t('search.noResults')}</span>
                           {searchTerm && (
-                            <p className="text-sm text-gray-400">{t('search.noResultsHelp')}</p>
+                            <p className="text-sm text-text-muted">{t('search.noResultsHelp')}</p>
                           )}
                         </div>
                       ) : (
@@ -427,18 +434,18 @@ export default function UsersPage() {
                   </tr>
                 ) : (
                   currentUsers.map(userItem => (
-                    <tr key={userItem.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="py-4 px-4 text-sm font-medium text-gray-900">#{userItem.id}</td>
+                    <tr key={userItem.id} className="hover:bg-bg-secondary/30 transition-colors">
+                      <td className="py-4 px-4 text-sm font-medium text-text-primary">#{userItem.id}</td>
                       <td className="py-4 px-4">
-                        <div className="text-sm font-medium text-gray-900">{userItem.name}</div>
+                        <div className="text-sm font-medium text-text-primary">{userItem.name}</div>
                       </td>
                       <td className="py-4 px-4">
-                        <div className="text-sm text-gray-900 whitespace-nowrap">{userItem.email}</div>
+                        <div className="text-sm text-text-primary whitespace-nowrap">{userItem.email}</div>
                       </td>
                       <td className="py-4 px-4">
-                        <div className="text-sm text-gray-900">
+                        <div className="text-sm text-text-primary">
                           {userItem.phoneNumber || (
-                            <span className="text-gray-400 italic">{t('table.noPhone')}</span>
+                            <span className="text-text-muted italic">{t('table.noPhone')}</span>
                           )}
                         </div>
                       </td>
@@ -447,14 +454,14 @@ export default function UsersPage() {
                           {t(`userTypes.${userItem.userType}`)}
                         </span>
                       </td>
-                      <td className="py-4 px-4 text-sm text-gray-900">
+                      <td className="py-4 px-4 text-sm text-text-primary">
                         {formatLocalizedDate(new Date(userItem.createdAt))}
                       </td>
                       <td className="py-4 px-4">
                         <div className="flex flex-wrap gap-2">
                           <a 
                             href={`/account/bookings?userId=${userItem.id}`} 
-                            className="text-primary hover:text-primary-dark text-sm font-medium transition-colors"
+                            className="text-accent-primary hover:text-accent-hover text-sm font-medium transition-colors"
                             title={t('actions.viewBookings')}
                           >
                             {t('actions.bookings')}
@@ -470,7 +477,7 @@ export default function UsersPage() {
                           {userItem.id !== user?.id && (
                             <button 
                               onClick={() => !cooldown && confirmDelete(userItem.id)}
-                              className="text-orange-600 hover:text-orange-800 text-sm font-medium transition-colors"
+                              className="text-error-600 hover:text-error-700 text-sm font-medium transition-colors"
                               title={t('actions.deleteUser')}
                               disabled={cooldown}
                             >
