@@ -35,6 +35,28 @@ const favoritesRoutes = require('./routes/favorites');
 const { languageMiddleware } = require('./i18n/config');
 
 const app = express();
+
+// Add trust proxy setting for proper HTTPS detection behind reverse proxy
+app.set('trust proxy', 1);
+
+// Add middleware to prevent redirects for webhook endpoints
+app.use('/api/payme/pay', (req, res, next) => {
+  // Ensure Payme webhook endpoint never redirects
+  console.log('Payme webhook request received:', {
+    method: req.method,
+    protocol: req.protocol,
+    secure: req.secure,
+    headers: {
+      'x-forwarded-proto': req.headers['x-forwarded-proto'],
+      'x-forwarded-ssl': req.headers['x-forwarded-ssl'],
+      'authorization': req.headers.authorization ? '[PRESENT]' : '[MISSING]',
+      'user-agent': req.headers['user-agent']
+    }
+  });
+  next();
+});
+
+// Body parsing middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser()); // to read cookies
