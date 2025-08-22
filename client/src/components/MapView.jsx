@@ -3,6 +3,7 @@ import { GoogleMap, useJsApiLoader, InfoWindow } from "@react-google-maps/api";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import CloudinaryImage from "./CloudinaryImage";
+import FavoriteButton from "./FavoriteButton";
 import { useCurrency } from "../contexts/CurrencyContext";
 import { useMap } from "../contexts/MapContext";
 import { formatPrice, formatUZSShort, convertCurrency } from "../utils/currencyUtils";
@@ -34,7 +35,56 @@ const infoWindowStyles = `
   .gm-style .gm-style-iw-t::after {
     display: none !important;
   }
+  .gm-style .gm-style-iw-c {
+    padding: 0 !important;
+  }
+  .gm-style .gm-style-iw-d {
+    overflow: hidden !important;
+  }
+  .gm-style .gm-style-iw {
+    padding-top: 0 !important;
+  }
+  .gm-style .gm-style-iw-ch {
+    padding-top: 0 !important;
+  }
 `;
+
+// Simplified Map Image Quad Component (only for 4+ images)
+const MapImageQuad = ({ photos, title }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <div 
+      className="w-full h-full relative"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Single main image */}
+      <div className={`absolute inset-0 transition-opacity duration-500 ease-out ${isHovered ? 'opacity-0' : 'opacity-100'}`}>
+        <CloudinaryImage
+          photo={photos[0]}
+          alt={title}
+          className="w-full h-full object-cover"
+        />
+      </div>
+      
+      {/* Four images in 2x2 grid */}
+      <div className={`absolute inset-0 transition-opacity duration-500 ease-out ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="w-full h-full grid grid-cols-2 grid-rows-2 gap-0.5">
+          {photos.slice(0, 4).map((photo, index) => (
+            <div key={index} className="relative overflow-hidden">
+              <CloudinaryImage
+                photo={photo}
+                alt={`${title} - Image ${index + 1}`}
+                className="w-full h-full object-cover transition-transform duration-700 ease-out hover:scale-105"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Get Google Maps API key from environment variables with fallback
 // This prevents runtime errors if the env variable is missing
@@ -715,46 +765,108 @@ const MapView = memo(forwardRef(function MapView({
             position={{ lat: parseFloat(selectedPlace.lat), lng: parseFloat(selectedPlace.lng) }}
             onCloseClick={() => setSelectedPlace(null)}
             options={{
-              maxWidth: 250,
+              maxWidth: 280,
               pixelOffset: new window.google.maps.Size(0, -15),
               disableAutoPan: false,
               ariaLabel: selectedPlace.title
             }}
           >
-            <div className="w-full" style={{ maxWidth: "230px" }}>
-              <Link to={`/place/${selectedPlace.id}`} className="hover:opacity-90 block">
-                {selectedPlace.photos?.length > 0 && (
-                  <div className="h-24 w-full overflow-hidden rounded-t-lg">
+            <Link to={`/place/${selectedPlace.id}`} className="block group" style={{ maxWidth: "260px" }}>
+              {/* Image Section with Simplified Hover Logic */}
+              {selectedPlace.photos?.length > 0 && (
+                <div className="relative h-32 w-full overflow-hidden rounded-t-lg">
+                  {selectedPlace.photos.length >= 4 ? (
+                    /* Quad Chart for 4+ images */
+                    <MapImageQuad photos={selectedPlace.photos} title={selectedPlace.title} />
+                  ) : (
+                    /* Single image for 1-3 images */
                     <CloudinaryImage 
                       photo={selectedPlace.photos[0]} 
                       alt={selectedPlace.title}
-                      className="w-full h-full object-cover" 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                    />
+                  )}
+                  {/* Favorite Button Overlay - Only for clients */}
+                  <div className="absolute top-2 right-2 z-10">
+                    <FavoriteButton 
+                      place={selectedPlace}
+                      className="w-6 h-6"
                     />
                   </div>
-                )}
-                <div className="p-2">
-                  <h3 className="font-semibold text-xs mb-1 truncate">{selectedPlace.title}</h3>
-                  <div className="flex items-center text-xs text-gray-500 mb-1">
-                    <svg className="w-3 h-3 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                </div>
+              )}
+              
+              {/* Content Section - Minimal styling, no card */}
+              <div className="bg-white rounded-b-lg p-2">
+                  {/* Rating and Guest Count Row */}
+                  <div className="flex items-center justify-between mb-1">
+                    {/* Rating display */}
+                    {(selectedPlace.averageRating || selectedPlace.totalReviews > 0) ? (
+                      <div className="flex items-center space-x-1">
+                        <svg className="w-3 h-3 text-yellow-500 fill-current" viewBox="0 0 24 24">
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        <span className="text-xs font-medium text-gray-800">
+                          {selectedPlace.averageRating ? 
+                            `${selectedPlace.averageRating}${selectedPlace.totalReviews > 0 ? ` (${selectedPlace.totalReviews})` : ''}` :
+                            t("places:card.new_rating")
+                          }
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center space-x-1">
+                        <svg className="w-3 h-3 text-yellow-500 fill-current" viewBox="0 0 24 24">
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        <span className="text-xs font-medium text-gray-500">
+                          {t("places:card.new_rating")}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {selectedPlace.maxGuests && (
+                      <div className="flex items-center space-x-1">
+                        <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <span className="text-xs text-gray-500">
+                          {selectedPlace.maxGuests === 1 
+                            ? t("places:card.up_to_guests_single", { count: selectedPlace.maxGuests })
+                            : t("places:card.up_to_guests", { count: selectedPlace.maxGuests })
+                          }
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="font-medium text-sm mb-1 truncate text-gray-800 line-clamp-1">
+                    {selectedPlace.title}
+                  </h3>
+                  
+                  {/* Location */}
+                  <div className="flex items-start text-xs text-gray-500 mb-1">
+                    <svg className="w-3 h-3 mr-1 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    <p className="break-words line-clamp-2">{selectedPlace.address}</p>
+                    <p className="line-clamp-1 leading-tight">{selectedPlace.address}</p>
                   </div>
-                  <div className="text-xs font-bold mt-1">
+                  
+                  {/* Price */}
+                  <div className="text-sm font-bold text-gray-900">
                     <PriceDisplay 
                       price={selectedPlace.price} 
                       currency={selectedPlace.currency} 
                       suffix={t("mapInfoWindow.perHour")}
-                      priceClassName="text-xs font-bold" 
-                      suffixClassName="text-gray-500 font-normal"
+                      priceClassName="text-sm font-bold text-gray-900" 
+                      suffixClassName="text-gray-500 font-normal text-xs"
                       showOriginalPrice={true}
                       showConvertedPrice={true}
                     />
                   </div>
                 </div>
-              </Link>
-            </div>
+            </Link>
           </InfoWindow>
         )}
       </GoogleMap>
