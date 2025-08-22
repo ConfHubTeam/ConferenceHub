@@ -240,7 +240,7 @@ export default {
           '@apply btn-base bg-accent-highlight text-white hover:bg-blue-600 focus:ring-accent-highlight shadow-sm hover:shadow-md': {}
         },
         '.btn-outline': {
-          '@apply btn-base bg-transparent border border-border-default text-text-primary hover:bg-bg-secondary focus:ring-accent-primary': {}
+          '@apply btn-base bg-transparent border border-accent-primary text-accent-primary hover:bg-accent-primary hover:text-white hover:shadow-md focus:ring-accent-primary': {}
         },
         '.btn-ghost': {
           '@apply btn-base bg-transparent text-text-primary hover:bg-bg-secondary focus:ring-accent-primary': {}

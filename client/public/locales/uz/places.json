@@ -57,7 +57,11 @@
         "allowedFormats": "Qo'llab-quvvatlanadigan formatlar:",
         "fileSize": "Fayl hajmi chegarasi:",
         "fileSizeLimit": "Har bir fayl uchun maksimal 10MB. 10MB dan ortiq fayllar ruxsat etilmagan."
-      }
+      },
+      "formats": "Formatlar: ",
+      "supportedFormats": "JPEG, PNG, GIF, BMP, WebP, AVIF, SVG",
+      "maxSize": "Maksimal hajmi: ",
+      "maxSizeValue": "Har bir fayl uchun 10MB"
     },
     "youtubeVideo": "YouTube video",
     "youtubeVideoDescription": "Makoningizni ko'rsatish uchun YouTube video qo'shing",
@@ -381,7 +385,7 @@
     "error": "Xato"
   },
   "placesPage": {
-    "addNewRoom": "Yangi xona qo'shish",
+    "addNewRoom": "Joy Yaratish",
     "noRoomsFound": "Xonalar topilmadi",
     "noRoomsYet": "Hali konferens xonalari yo'q",
     "tryAdjustingSearch": "Qidiruv mezonlarini o'zgartirib ko'ring.",

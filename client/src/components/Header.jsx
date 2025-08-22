@@ -135,7 +135,7 @@ export default function Header() {
           
           <Link
             to={user ? "/account" : "/login"}
-            className="profile flex items-center justify-center w-full px-1 py-3 text-base border border-border-default rounded-full bg-bg-card hover:bg-bg-secondary hover:shadow-md transition-all duration-200 hover-pop gap-2 relative"
+            className="profile flex items-center justify-center w-full px-1 py-3 text-base border border-border-default rounded-full bg-bg-card hover:bg-bg-secondary transition-all duration-200 hover:scale-[1.02] hover:shadow-md hover:border-accent-primary gap-2 relative"
             style={{ minWidth: '60px', height: '48px' }}
           >
             {!user ? (

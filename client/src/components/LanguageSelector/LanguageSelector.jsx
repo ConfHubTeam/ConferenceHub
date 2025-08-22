@@ -178,7 +178,7 @@ const LanguageSelector = ({
           rounded-full cursor-pointer
           focus:outline-none focus:ring-2 focus:ring-offset-2
           ${theme === "dark" ? 'focus:ring-white/20' : 'focus:ring-accent-primary'}
-          transition-all duration-200 hover:shadow-md hover-pop
+          transition-all duration-200 hover:scale-[1.02] hover:shadow-md hover:border-accent-primary
           disabled:opacity-50 disabled:cursor-not-allowed
           ${styles.button}
         `}
@@ -240,7 +240,7 @@ const LanguageSelector = ({
                 disabled={isSelected || isLoading}
                 className={`
                   w-full text-left flex items-center justify-between gap-3
-                  hover:bg-gray-50 focus:bg-gray-50 focus:outline-none
+                  hover:bg-blue-50 hover:text-blue-700 focus:bg-blue-50 focus:text-blue-700 focus:outline-none
                   transition-colors duration-150
                   disabled:opacity-50 disabled:cursor-default
                   ${styles.item}

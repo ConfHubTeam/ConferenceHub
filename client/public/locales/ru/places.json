@@ -57,7 +57,11 @@
         "allowedFormats": "Поддерживаемые форматы:",
         "fileSize": "Ограничение размера файла:",
         "fileSizeLimit": "Максимум 10МБ на файл. Файлы свыше 10МБ не разрешены."
-      }
+      },
+      "formats": "Форматы: ",
+      "supportedFormats": "JPEG, PNG, GIF, BMP, WebP, AVIF, SVG",
+      "maxSize": "Максимальный размер: ",
+      "maxSizeValue": "10МБ на файл"
     },
     "youtubeVideo": "YouTube видео",
     "youtubeVideoDescription": "Добавьте видео с YouTube, чтобы продемонстрировать ваше пространство",
@@ -397,7 +401,7 @@
     "error": "Ошибка"
   },
   "placesPage": {
-    "addNewRoom": "Добавить новую комнату",
+    "addNewRoom": "Создать Место",
     "noRoomsFound": "Комнаты не найдены",
     "noRoomsYet": "Пока нет конференц-залов",
     "tryAdjustingSearch": "Попробуйте изменить критерии поиска.",

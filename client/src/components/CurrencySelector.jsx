@@ -172,7 +172,7 @@ export default function CurrencySelector({
             : 'px-4 py-3 text-base'
         } ${
           theme === "dark" 
-            ? 'bg-black text-white border-white/30 hover:border-white/50' 
+            ? 'bg-black text-white border-white/30 hover:bg-white/15 hover:border-white/50' 
             : 'bg-bg-card border border-border-default hover:bg-bg-secondary hover:border-accent-primary'
         } rounded-full cursor-pointer transition-all duration-200 hover:shadow-md transform hover:scale-[1.02] ${
           isOpen 
@@ -276,7 +276,7 @@ export default function CurrencySelector({
                     className={`px-4 py-3 cursor-pointer transition-colors duration-150 ${
                       isSelected 
                         ? 'bg-navy-100' 
-                        : 'hover:bg-gray-50'
+                        : 'hover:bg-blue-50 hover:text-blue-700'
                     } ${index !== currencies.length - 1 ? 'border-b border-gray-100' : ''}`}
                     onClick={() => handleSelect(currency)}
                   >
