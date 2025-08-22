@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { Link, useLocation, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import CloudinaryImage from "../components/CloudinaryImage";
+import ImageHoverQuadSquare from "../components/ImageHoverQuadSquare";
 import FavoriteButton from "../components/FavoriteButton";
 import MapView from "../components/MapView";
 import PriceDisplay from "../components/PriceDisplay";
@@ -615,17 +615,10 @@ function IndexPageBase() {
 
                     <Link to={`/place/${place.id}${location.search}`}>
                       <div className="bg-white overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-gray-100 hover:border-primary group hover:-translate-y-1">
-                        <div className="aspect-square overflow-hidden relative">
-                          {place.photos?.length > 0 && (
-                            <CloudinaryImage
-                              photo={place.photos[0]}
-                              alt={place.title}
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                            />
-                          )}
-                          {/* Gradient overlay for better text readability */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-primary/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        </div>
+                        <ImageHoverQuadSquare 
+                          photos={place.photos}
+                          title={place.title}
+                        />
                         <div className="p-5 bg-gradient-to-br from-white to-gray-50/50">
                           <h2 className="font-bold text-lg truncate text-gray-900 group-hover:text-primary transition-colors duration-200">{place.title}</h2>
                           <div className="flex items-center text-gray-500 text-sm mt-2">

@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import CloudinaryImage from "./CloudinaryImage";
 import PriceDisplay from "./PriceDisplay";
+import ImageHoverQuad from "./ImageHoverQuad";
 
 export default function PlaceCard({ place, showActions = true, preserveSearchParams = false }) {
   const { t } = useTranslation("places");
@@ -15,22 +15,12 @@ export default function PlaceCard({ place, showActions = true, preserveSearchPar
   };
   return (
     <div className="card-base group hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer">
-      {/* Image */}
-        <div className="relative aspect-[4/3] overflow-hidden rounded-t-lg">
-          {place.photos?.length > 0 ? (
-            <CloudinaryImage
-              photo={place.photos[0]}
-              alt={place.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          ) : (
-            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-              <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </div>
-          )}
-        </div>
+      {/* Image with Hover Quad Effect */}
+      <ImageHoverQuad 
+        photos={place.photos}
+        title={place.title}
+        className="rounded-t-lg"
+      />
 
       {/* Content */}
       <div className="card-content">
