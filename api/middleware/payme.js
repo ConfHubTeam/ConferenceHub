@@ -48,6 +48,21 @@ exports.paymeCheckToken = (req, res, next) => {
     next();
   } catch (err) {
     console.error('Payme auth error:', err);
+    
+    // Handle PaymeTransactionError with proper JSON-RPC format
+    if (err.isTransactionError) {
+      const response = {
+        error: {
+          code: err.transactionErrorCode,
+          message: err.transactionErrorMessage,
+          data: err.transactionData || null
+        },
+        id: err.transactionId || null
+      };
+      return res.status(200).json(response); // Payme always expects 200 status
+    }
+    
+    // Fallback for other errors (shouldn't happen in auth middleware)
     res.status(err.statusCode || 422).json(err.message);
   }
 };
