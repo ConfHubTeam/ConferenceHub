@@ -47,7 +47,7 @@ exports.PaymeError = {
 	},
 	UserNotFound: {
 		name: 'UserNotFound',
-		code: -31050,
+		code: -31051,
 		message: {
 			uz: 'Biz sizning hisobingizni topolmadik.',
 			ru: 'Мы не нашли вашу учетную запись',
@@ -56,7 +56,7 @@ exports.PaymeError = {
 	},
 	BookingNotFound: {
 		name: 'BookingNotFound',
-		code: -31050,
+		code: -31052,
 		message: {
 			uz: 'Biz zakasni topolmadik.',
 			ru: 'Закаса мы не нашли.',
@@ -92,7 +92,7 @@ exports.PaymeError = {
 	},
 	Pending: {
 		name: 'Pending',
-		code: -31050,
+		code: -31099,
 		message: {
 			uz: "Mahsulot uchun to'lov kutilayapti",
 			ru: 'Ожидается оплата товар',
