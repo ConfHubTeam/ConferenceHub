@@ -173,8 +173,8 @@ export default function CurrencySelector({
         } ${
           theme === "dark" 
             ? 'bg-black text-white border-white/30 hover:border-white/50' 
-            : 'bg-bg-card border border-border-default hover:bg-bg-secondary'
-        } rounded-full cursor-pointer transition-all duration-200 hover:shadow-md hover-pop ${
+            : 'bg-bg-card border border-border-default hover:bg-bg-secondary hover:border-accent-primary'
+        } rounded-full cursor-pointer transition-all duration-200 hover:shadow-md transform hover:scale-[1.02] ${
           isOpen 
             ? theme === "dark" 
               ? 'border-white/50 ring-2 ring-white/20 shadow-sm' 
