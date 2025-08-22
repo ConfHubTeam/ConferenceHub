@@ -202,6 +202,12 @@ class PaymeService {
       );
     }
 
+    // Validate amount FIRST: convert booking amount from UZS to tiyin for comparison
+    const expectedAmountInTiyin = (booking.finalTotal || booking.totalPrice) * 100;
+    if (amount !== expectedAmountInTiyin) {
+      throw new PaymeTransactionError(PaymeError.InvalidAmount, id);
+    }
+
     // Validate booking status - must be 'selected' to allow payment
     if (booking.status !== 'selected') {
       throw new PaymeTransactionError(
@@ -220,12 +226,6 @@ class PaymeService {
         id,
         PaymeData.BookingId
       );
-    }
-
-    // Validate amount: convert booking amount from UZS to tiyin for comparison
-    const expectedAmountInTiyin = (booking.finalTotal || booking.totalPrice) * 100;
-    if (amount !== expectedAmountInTiyin) {
-      throw new PaymeTransactionError(PaymeError.InvalidAmount, id);
     }
 
     // STEP 3: Check if booking already has a pending payment (different transaction ID)
