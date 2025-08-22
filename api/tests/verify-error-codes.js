@@ -2,7 +2,7 @@
  * Simple verification of error codes for debugging
  */
 
-const { PaymeError } = require('./api/enum/transaction.enum');
+const { PaymeError } = require('../enum/transaction.enum');
 
 console.log('=== Payme Error Codes Verification ===\n');
 

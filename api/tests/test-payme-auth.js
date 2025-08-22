@@ -3,7 +3,7 @@
  */
 
 const express = require('express');
-const { paymeCheckToken } = require('./api/middleware/payme');
+const { paymeCheckToken } = require('../middleware/payme');
 
 // Create a minimal Express app for testing
 const app = express();
