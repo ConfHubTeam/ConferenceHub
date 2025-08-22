@@ -117,7 +117,19 @@ function PlacePerks({ perks }) {
 
   // Get amenities that exist in the perks array
   const availableAmenities = perks.map(perk => {
-    const perkKey = typeof perk === 'string' ? perk.toLowerCase() : String(perk).toLowerCase();
+    // Handle both legacy string format and new object format
+    let perkKey, isPaid = false;
+    
+    if (typeof perk === 'string') {
+      // Legacy format: string
+      perkKey = perk.toLowerCase();
+    } else if (typeof perk === 'object' && perk !== null) {
+      // New format: object with name and isPaid
+      perkKey = perk.name ? perk.name.toLowerCase() : '';
+      isPaid = Boolean(perk.isPaid);
+    } else {
+      return null;
+    }
     
     // Check in priority amenities first
     const priorityMatch = Object.keys(priorityAmenities).find(key => 
@@ -127,7 +139,8 @@ function PlacePerks({ perks }) {
       return {
         key: priorityMatch,
         ...priorityAmenities[priorityMatch],
-        isPriority: true
+        isPriority: true,
+        isPaid: isPaid
       };
     }
     
@@ -139,16 +152,18 @@ function PlacePerks({ perks }) {
       return {
         key: allMatch,
         ...allAmenitiesMapping[allMatch],
-        isPriority: false
+        isPriority: false,
+        isPaid: isPaid
       };
     }
     
     // Fallback for unmapped amenities
     return {
       key: perkKey,
-      label: typeof perk === 'string' ? perk.charAt(0).toUpperCase() + perk.slice(1) : String(perk),
+      label: typeof perk === 'string' ? perk.charAt(0).toUpperCase() + perk.slice(1) : String(perk.name || perk),
       category: t('search:filters.modals.perks.categories.Miscellaneous'),
-      isPriority: false
+      isPriority: false,
+      isPaid: isPaid
     };
   }).filter(Boolean);
 
@@ -190,8 +205,13 @@ function PlacePerks({ perks }) {
                 </svg>
               )}
             </div>
-            <div className="flex-1">
+            <div className="flex-1 flex items-center justify-between">
               <span className="text-text-primary font-medium text-body">{amenity.label}</span>
+              {amenity.isPaid && (
+                <span className="text-xs font-medium text-amber-700">
+                  {t('placeCreate.perks.paid')}
+                </span>
+              )}
             </div>
           </div>
         ))}
@@ -246,7 +266,14 @@ function PlacePerks({ perks }) {
                             </svg>
                           )}
                         </div>
-                        <span className="text-text-primary font-medium text-body">{amenity.label}</span>
+                        <div className="flex-1 flex items-center justify-between">
+                          <span className="text-text-primary font-medium text-body">{amenity.label}</span>
+                          {amenity.isPaid && (
+                            <span className="text-xs font-medium text-amber-700">
+                              {t('placeCreate.perks.paid')}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

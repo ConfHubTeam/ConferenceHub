@@ -69,7 +69,11 @@
     "matterportTour": "3D Virtual Tour (Matterport)",
     "matterportTourDescription": "Add a Matterport 3D virtual tour link to provide an immersive 360° view of your space",
     "matterportTourPlaceholder": "https://my.matterport.com/show/?m=example",
-    "perks": "Perks",
+    "perks": {
+      "title": "Perks",
+      "free": "Free",
+      "paid": "Paid Service"
+    },
     "extraInfo": "Extra info",
     "extraInfoPlaceholder": "Any additional information such as booking rules, cancellation policy, or special instructions.",
     "rules": "House Rules",

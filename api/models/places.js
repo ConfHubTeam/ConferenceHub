@@ -27,8 +27,9 @@ const Place = sequelize.define('Place', {
     allowNull: true
   },
   perks: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
-    defaultValue: []
+    type: DataTypes.JSON,
+    defaultValue: [],
+    allowNull: false
   },
   extraInfo: {
     type: DataTypes.TEXT,

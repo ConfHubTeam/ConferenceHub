@@ -108,7 +108,6 @@ export default function PlacesFormPage() {
           }
         } else {
           // If no currencies exist, create them
-          console.log("No currencies found, creating them...");
           try {
             await api.post("/currency", { name: "Uzbekistan Som", code: "860", charCode: "UZS" });
             await api.post("/currency", { name: "United States Dollar", code: "840", charCode: "USD" });
@@ -143,8 +142,6 @@ export default function PlacesFormPage() {
     } else {
       api.get("/places/" + id).then(async (response) => {
         const { data } = response;
-        console.log("Full place data loaded from database:", data);
-        console.log("Loaded photos from database:", data.photos);
         setTitle(data.title);
         setAddress(data.address);
         setDescription(data.description);
@@ -157,7 +154,6 @@ export default function PlacesFormPage() {
         setFullDayDiscountPrice(data.fullDayDiscountPrice || 0);
         setCooldownMinutes(data.cooldown || 60);
         setMinimumHours(data.minimumHours || 1);
-        console.log("Loaded minimumHours from database:", data.minimumHours, "Setting to:", data.minimumHours || 1);
         setYoutubeLink(data.youtubeLink || "");
         setMatterportLink(data.matterportLink || "");
         
@@ -168,7 +164,6 @@ export default function PlacesFormPage() {
             const selectedCurrency = availableCurrencies.find(c => c.id === data.currencyId);
             if (selectedCurrency) {
               setCurrency(selectedCurrency);
-              console.log("Found currency in available currencies:", selectedCurrency);
             } else {
               // If not found, fetch again to be safe
               try {
@@ -177,14 +172,12 @@ export default function PlacesFormPage() {
                 const selectedCurrency = currencyData.find(c => c.id === data.currencyId);
                 if (selectedCurrency) {
                   setCurrency(selectedCurrency);
-                  console.log("Set currency from fresh fetch:", selectedCurrency);
                 } else {
                   console.warn("Currency with ID", data.currencyId, "not found in database");
                   // Default to UZS if we have it
                   const uzsDefault = currencyData.find(c => c.charCode === "UZS");
                   if (uzsDefault) {
                     setCurrency(uzsDefault);
-                    console.log("Defaulted to UZS currency:", uzsDefault);
                   }
                 }
               } catch (err) {
@@ -200,7 +193,6 @@ export default function PlacesFormPage() {
               const selectedCurrency = currencyData.find(c => c.id === data.currencyId);
               if (selectedCurrency) {
                 setCurrency(selectedCurrency);
-                console.log("Set currency after fetching:", selectedCurrency);
               }
             } catch (err) {
               console.error("Error loading currency data:", err);
@@ -525,7 +517,6 @@ export default function PlacesFormPage() {
     const numGuests = parseInt(maxGuests) || 1;
     const numPrice = parseFloat(price) || 0;
     
-    console.log("Photos before saving:", addedPhotos);
     
     // Try geocoding the address one last time if we don't have coordinates
     let coordinates = { lat: parseFloat(lat), lng: parseFloat(lng) };
@@ -590,7 +581,6 @@ export default function PlacesFormPage() {
           ...placeData,
         });
         // Redirect to the place detail page after successful update
-        console.log("Place updated successfully, redirecting to place detail page");
         navigate(`/place/${id}`);
         return;
       } else {
@@ -600,7 +590,6 @@ export default function PlacesFormPage() {
         setRedirect(true);
       }
       
-      console.log("Response after saving:", response.data);
     } catch (error) {
       console.error("Submission error:", error.response?.data || error);
       setError(error.response?.data?.error || t('places:placeCreate.validation.submitFailed'));
@@ -613,19 +602,15 @@ export default function PlacesFormPage() {
 
   // Handler for toggling a specific date's blocked status
   function toggleBlockedDate(date) {
-    console.log("Toggling date:", date, "Current blocked dates:", blockedDates);
-    
     // Check if date is already in the blockedDates array
     // Using exact string comparison for reliability
     const isBlocked = blockedDates.includes(date);
     
     if (isBlocked) {
       // Date is already blocked, so unblock it
-      console.log("Unblocking date:", date);
       setBlockedDates(prev => prev.filter(d => d !== date));
     } else {
       // Date is not blocked, block it
-      console.log("Blocking date:", date);
       setBlockedDates(prev => [...prev, date]);
     }
   }
@@ -789,7 +774,7 @@ export default function PlacesFormPage() {
           {/* Perks Section */}
           <div className="card-base mb-6">
             <div className="card-content">
-              {preInput("places:placeCreate.perks", null, true)}
+              {preInput("places:placeCreate.perks.title", null, true)}
               <PerkSelections selectedPerks={perks} setPerks={setPerks} />
             </div>
           </div>

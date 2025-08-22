@@ -69,7 +69,11 @@
     "matterportTour": "3D virtual tur (Matterport)",
     "matterportTourDescription": "Makoningizni 360° ko'rish uchun Matterport 3D virtual tur havolasini qo'shing",
     "matterportTourPlaceholder": "https://my.matterport.com/show/?m=example",
-    "perks": "Imtiyozlar",
+    "perks": {
+      "title": "Imtiyozlar",
+      "free": "Bepul",
+      "paid": "Pullik xizmat"
+    },
     "extraInfo": "Qo'shimcha ma'lumot",
     "extraInfoPlaceholder": "Bron qilish qoidalari, bekor qilish siyosati yoki maxsus ko'rsatmalar kabi har qanday qo'shimcha ma'lumot.",
     "rules": "Uy qoidalari",

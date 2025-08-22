@@ -69,7 +69,11 @@
     "matterportTour": "3D виртуальный тур (Matterport)",
     "matterportTourDescription": "Добавьте ссылку на 3D виртуальный тур Matterport для погружения в пространство на 360°",
     "matterportTourPlaceholder": "https://my.matterport.com/show/?m=example",
-    "perks": "Преимущества",
+    "perks": {
+      "title": "Преимущества",
+      "free": "Бесплатно",
+      "paid": "Платная услуга"
+    },
     "extraInfo": "Дополнительная информация",
     "extraInfoPlaceholder": "Любая дополнительная информация, такая как правила бронирования, политика отмены или специальные инструкции.",
     "rules": "Правила дома",
