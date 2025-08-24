@@ -57,7 +57,11 @@
         "allowedFormats": "Qo'llab-quvvatlanadigan formatlar:",
         "fileSize": "Fayl hajmi chegarasi:",
         "fileSizeLimit": "Har bir fayl uchun maksimal 10MB. 10MB dan ortiq fayllar ruxsat etilmagan."
-      }
+      },
+      "formats": "Formatlar: ",
+      "supportedFormats": "JPEG, PNG, GIF, BMP, WebP, AVIF, SVG",
+      "maxSize": "Maksimal hajmi: ",
+      "maxSizeValue": "Har bir fayl uchun 10MB"
     },
     "youtubeVideo": "YouTube video",
     "youtubeVideoDescription": "Makoningizni ko'rsatish uchun YouTube video qo'shing",
@@ -65,7 +69,11 @@
     "matterportTour": "3D virtual tur (Matterport)",
     "matterportTourDescription": "Makoningizni 360° ko'rish uchun Matterport 3D virtual tur havolasini qo'shing",
     "matterportTourPlaceholder": "https://my.matterport.com/show/?m=example",
-    "perks": "Imtiyozlar",
+    "perks": {
+      "title": "Imtiyozlar",
+      "free": "Bepul",
+      "paid": "Pullik xizmat"
+    },
     "extraInfo": "Qo'shimcha ma'lumot",
     "extraInfoPlaceholder": "Bron qilish qoidalari, bekor qilish siyosati yoki maxsus ko'rsatmalar kabi har qanday qo'shimcha ma'lumot.",
     "rules": "Uy qoidalari",
@@ -218,6 +226,7 @@
     "price_per_day": "/kun",
     "new_rating": "Yangi",
     "guests": "kishi",
+    "hosted_by": "Mezbonlik qiladi",
     "actions": {
       "edit": "Tahrirlash",
       "view": "Ko'rish",
@@ -380,7 +389,7 @@
     "error": "Xato"
   },
   "placesPage": {
-    "addNewRoom": "Yangi xona qo'shish",
+    "addNewRoom": "Joy Yaratish",
     "noRoomsFound": "Xonalar topilmadi",
     "noRoomsYet": "Hali konferens xonalari yo'q",
     "tryAdjustingSearch": "Qidiruv mezonlarini o'zgartirib ko'ring.",

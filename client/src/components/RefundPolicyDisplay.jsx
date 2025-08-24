@@ -29,13 +29,14 @@ export default function RefundPolicyDisplay({ placeDetail, className = "" }) {
   }
 
   return (
-    <div className={`bg-white rounded-lg border p-6 ${className}`}>
-      <h2 className="text-xl md:text-2xl font-semibold mb-4 flex items-center">
-        <svg className="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        {t('title')}
-      </h2>
+    <div className={`card-base ${className}`}>
+      <div className="card-content">
+        <h2 className="text-heading-2 mb-4 text-text-primary flex items-center">
+          <svg className="w-6 h-6 mr-3 text-accent-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {t('title')}
+        </h2>
       
       <div className="space-y-4">
         {/* Primary Refund Policies */}
@@ -106,6 +107,7 @@ export default function RefundPolicyDisplay({ placeDetail, className = "" }) {
             )}
           </ul>
         </div>
+      </div>
       </div>
     </div>
   );

@@ -36,6 +36,9 @@ router.post("/:id/check-payment", authenticateToken, bookingController.checkPaym
 // Smart payment status check with Click.uz status codes (optimized polling)
 router.post("/:id/check-payment-smart", authenticateToken, bookingController.checkPaymentStatusSmart);
 
+// Select cash payment method (client-only) - notifies agents
+router.post("/:id/select-cash", authenticateToken, bookingController.selectCashPayment);
+
 // Manual cleanup of expired bookings (agent only)
 router.post("/cleanup-expired", authenticateToken, bookingController.manualCleanupExpiredBookings);
 

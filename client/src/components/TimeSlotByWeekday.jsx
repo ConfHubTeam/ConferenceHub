@@ -51,7 +51,6 @@ const TimeSlotByWeekday = ({
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         {t("places:placeCreate.scheduleAvailability.timeSlotsTitle")}
-        <span className="text-red-500 ml-1">*</span>
       </h4>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3">
         {weekdays.map((day, index) => (

@@ -9,42 +9,66 @@
  * @param {number} baseHeight - Height of the marker
  * @param {number} borderRadius - Border radius for rounded corners
  * @param {boolean} isHighlighted - Whether the marker is highlighted
+ * @param {boolean} isHovered - Whether the marker is being hovered
  */
-export const drawMarkerShape = (context, baseWidth, baseHeight, borderRadius, isHighlighted = false) => {
+export const drawMarkerShape = (context, baseWidth, baseHeight, borderRadius, isHighlighted = false, isHovered = false) => {
   // Calculate marker dimensions (full height without pointer)
   const markerWidth = baseWidth * 0.95;
   const markerHeight = baseHeight * 0.9; // Use more of the available height
   const startX = (baseWidth - markerWidth) / 2;
   const startY = (baseHeight - markerHeight) / 2;
   
-  // Enhanced shadow for highlighted markers - more subtle
-  context.shadowColor = isHighlighted ? "rgba(0, 0, 0, 0.35)" : "rgba(0, 0, 0, 0.25)";
-  context.shadowBlur = isHighlighted ? 10 : 6;
-  context.shadowOffsetX = 0;
-  context.shadowOffsetY = isHighlighted ? 3 : 3;
+  // Enhanced shadow based on state - using Tailwind shadow approach
+  if (isHovered || isHighlighted) {
+    context.shadowColor = "rgba(0, 0, 0, 0.15)"; // Tailwind shadow-lg equivalent
+    context.shadowBlur = isHighlighted ? 12 : 8;
+    context.shadowOffsetX = 0;
+    context.shadowOffsetY = isHighlighted ? 4 : 2;
+  } else {
+    context.shadowColor = "rgba(0, 0, 0, 0.1)"; // Tailwind shadow-md equivalent
+    context.shadowBlur = 4;
+    context.shadowOffsetX = 0;
+    context.shadowOffsetY = 2;
+  }
   
   // Create rounded rectangle path
   context.beginPath();
   context.roundRect(startX, startY, markerWidth, markerHeight, borderRadius);
   
-  // Create gradient using theme colors - more elegant highlighting
+  // Create gradient using Tailwind color palette - navy blue family
   const gradient = context.createLinearGradient(0, startY, 0, startY + markerHeight);
+  
   if (isHighlighted) {
-    gradient.addColorStop(0, "#ff6b35"); // Slightly brighter but elegant orange
-    gradient.addColorStop(0.5, "#ff5722"); // Primary color
-    gradient.addColorStop(1, "#e64100"); // Deeper orange for sophistication
+    // Selected state - Tailwind blue-600 to blue-800 gradient
+    gradient.addColorStop(0, "#2563eb"); // blue-600
+    gradient.addColorStop(0.5, "#1d4ed8"); // blue-700
+    gradient.addColorStop(1, "#1e40af"); // blue-800
+  } else if (isHovered) {
+    // Hover state - Tailwind blue-500 to blue-700 gradient (lighter)
+    gradient.addColorStop(0, "#3b82f6"); // blue-500
+    gradient.addColorStop(0.5, "#2563eb"); // blue-600
+    gradient.addColorStop(1, "#1d4ed8"); // blue-700
   } else {
-    gradient.addColorStop(0, "#f59e5e"); // Lighter orange
-    gradient.addColorStop(0.5, "#f38129"); // Primary theme color
-    gradient.addColorStop(1, "#d66d1c"); // Darker orange for depth
+    // Default state - Tailwind blue-700 to blue-900 gradient
+    gradient.addColorStop(0, "#1d4ed8"); // blue-700
+    gradient.addColorStop(0.5, "#1e40af"); // blue-800
+    gradient.addColorStop(1, "#1e3a8a"); // blue-900
   }
   
   context.fillStyle = gradient;
   context.fill();
   
-  // More subtle border enhancement for highlighted markers
-  context.strokeStyle = isHighlighted ? "rgba(255, 255, 255, 0.6)" : "rgba(255, 255, 255, 0.4)";
-  context.lineWidth = isHighlighted ? 1.5 : 1;
+  // Border enhancement using Tailwind colors
+  if (isHighlighted) {
+    context.strokeStyle = "#1e40af"; // blue-800
+    context.lineWidth = 2;
+  } else if (isHovered) {
+    context.strokeStyle = "#2563eb"; // blue-600
+    context.lineWidth = 1.5;
+  } else {
+    context.strokeStyle = "#1e3a8a"; // blue-900
+    context.lineWidth = 1;
+  }
   context.stroke();
   
   // Reset shadow for text
@@ -86,9 +110,9 @@ export const drawPriceText = (context, formattedPrice, baseWidth, baseHeight, fo
     }
   }
   
-  // Add text shadow for better legibility
-  context.shadowColor = "rgba(0, 0, 0, 0.3)";
-  context.shadowBlur = 1;
+  // Add text shadow for better legibility on white background
+  context.shadowColor = "rgba(0, 0, 0, 0.1)";
+  context.shadowBlur = 2;
   context.shadowOffsetX = 0;
   context.shadowOffsetY = 1;
   

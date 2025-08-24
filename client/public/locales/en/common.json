@@ -36,6 +36,12 @@
     "refresh": "Refresh",
     "retry": "Retry"
   },
+  "datePicker": {
+    "placeholder": "Select date",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "today": "Today"
+  },
   "status": {
     "loading": "Loading...",
     "success": "Success",
@@ -56,6 +62,10 @@
     "new": "New"
   },
   "loading": "Loading...",
+  "name": "Name",
+  "phone": "Phone",
+  "email": "Email", 
+  "hours": "Working Hours",
   "messages": {
     "noData": "No data available",
     "noResults": "No results found",

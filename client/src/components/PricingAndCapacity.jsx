@@ -47,6 +47,7 @@ const PricingAndCapacity = ({
       {/* Section Title */}
       <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
         {t("places:placeCreate.pricingAndCapacity.title")}
+        <span className="text-red-500 ml-1">*</span>
       </h3>
       
       <div className="w-full mb-3">
@@ -63,7 +64,7 @@ const PricingAndCapacity = ({
             onChange={setPrice} 
             currency={currency}
             label={t("places:placeCreate.pricingAndCapacity.pricePerHour")}
-            isRequired={true}
+            isRequired={false}
           />
         </div>
         <div className="w-full">
@@ -72,7 +73,7 @@ const PricingAndCapacity = ({
             onChange={setFullDayDiscountPrice} 
             currency={currency}
             label={t("places:placeCreate.pricingAndCapacity.fullDayDiscountPrice")}
-            isRequired={true}
+            isRequired={false}
           />
         </div>
       </div>

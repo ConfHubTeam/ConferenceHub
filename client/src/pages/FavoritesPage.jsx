@@ -33,7 +33,7 @@ export default function FavoritesPage() {
     }
 
     return (
-        <div>
+        <div className="min-h-screen bg-bg-primary">
             {/* Account Navigation */}
             
 
@@ -86,7 +86,7 @@ export default function FavoritesPage() {
                                 </p>
                                 <Link
                                     to="/places"
-                                    className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                    className="btn-primary btn-xl px-8 py-4 text-lg font-semibold"
                                 >
                                     {t('favorites:page.empty.browseButton')}
                                 </Link>
@@ -97,7 +97,7 @@ export default function FavoritesPage() {
                                 {favorites.map((place) => (
                                     <div
                                         key={place.id}
-                                        className="relative group bg-white rounded-2xl shadow border border-gray-200 hover:border-gray-400 hover:shadow-lg transition-all duration-200"
+                                        className="relative group bg-white rounded-2xl shadow border border-gray-200 hover:border-gray-400 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer"
                                     >
                                         {/* Favorite Button */}
                                         <div className="absolute top-3 right-3 z-10">

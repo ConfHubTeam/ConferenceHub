@@ -63,10 +63,10 @@ export default function Header() {
 
   return (
     <>
-      <header className="flex items-center justify-between pl-2 pr-4 md:pl-6 md:pr-14 relative z-50 bg-white sticky top-0">
+      <header className="flex items-center justify-between pl-2 pr-4 md:pl-6 md:pr-14 py-5 relative z-[70] bg-white sticky top-0 border-b border-gray-200 flex-shrink-0">
         {/* Logo - Fixed width */}
         <div className="flex-shrink-0">
-          <Link to={user ? "/places" : "/"} className="logo flex items-center gap-1">
+          <Link to={user ? "/places" : "/"} className="logo flex items-center gap-1 mt-1">
             <img 
               src="/getSpace_logo.png" 
               alt={t("header.logo.alt")}
@@ -85,12 +85,12 @@ export default function Header() {
         </div>
         
         {/* Right section - Mobile: notification + hamburger + profile, Desktop: all elements */}
-        <div className="flex items-center gap-2 relative z-30 flex-shrink-0">
+        <div className="flex items-center gap-3 relative z-30 flex-shrink-0">
           {/* Notification Bell - only shown for logged-in users */}
           <NotificationBell />
           
           {/* Currency Selector */}
-          <div className="hidden md:block" style={{ width: '90px' }}>
+          <div className="hidden md:block" style={{ width: '100px' }}>
             <CurrencySelector
               selectedCurrency={selectedCurrency}
               onChange={changeCurrency}
@@ -101,12 +101,11 @@ export default function Header() {
           </div>
           
           {/* Language Selector - clearly separated from currency */}
-          <div className="hidden md:block">
+          <div className="hidden md:block" style={{ width: '80px' }}>
             <LanguageSelector 
-              variant="compact"
-              showFlag={true}
+              variant="default"
+              showFlag={false}
               showText={false}
-              className="border-l border-gray-300 pl-2 ml-2"
               theme="light"
             />
           </div>
@@ -136,7 +135,8 @@ export default function Header() {
           
           <Link
             to={user ? "/account" : "/login"}
-            className="profile items-center flex border border-gray-300 rounded-full py-2 px-4 gap-2 bg-white hover:shadow-md transition-shadow relative"
+            className="profile flex items-center justify-center w-full px-1 py-3 text-base border border-border-default rounded-full bg-bg-card hover:bg-bg-secondary transition-all duration-200 hover:scale-[1.02] hover:shadow-md hover:border-accent-primary gap-2 relative"
+            style={{ minWidth: '60px', height: '48px' }}
           >
             {!user ? (
               <div className="user">
@@ -155,7 +155,7 @@ export default function Header() {
               </div>
             ) : (
               <>
-                <div className="bg-rose-400 text-white rounded-full w-8 h-8 flex items-center justify-center font-semibold">
+                <div className="bg-accent-primary text-white rounded-full w-8 h-8 flex items-center justify-center font-semibold">
                   {getFirstLetter()}
                 </div>
               </>
@@ -179,7 +179,7 @@ export default function Header() {
               {user && (
                 <div className="border-b border-gray-200 p-4">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="bg-rose-400 text-white rounded-full w-10 h-10 flex items-center justify-center font-semibold">
+                    <div className="bg-accent-primary text-white rounded-full w-10 h-10 flex items-center justify-center font-semibold">
                       {getFirstLetter()}
                     </div>
                     <div>
@@ -192,7 +192,7 @@ export default function Header() {
                   <div className="grid grid-cols-2 gap-2">
                     <Link 
                       to="/places" 
-                      className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-gray-50 text-sm"
+                      className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
                       onClick={handleMenuLinkClick}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -202,7 +202,7 @@ export default function Header() {
                     </Link>
                     <Link 
                       to="/account" 
-                      className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-gray-50 text-sm"
+                      className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
                       onClick={handleMenuLinkClick}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -212,7 +212,7 @@ export default function Header() {
                     </Link>
                     <Link 
                       to="/account/bookings" 
-                      className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-gray-50 text-sm"
+                      className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
                       onClick={handleMenuLinkClick}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -225,7 +225,7 @@ export default function Header() {
                     {user.userType !== 'host' && user.userType !== 'agent' && (
                       <Link 
                         to="/account/favorites" 
-                        className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-gray-50 text-sm"
+                        className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
                         onClick={handleMenuLinkClick}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -242,7 +242,7 @@ export default function Header() {
                       <>
                         <Link 
                           to="/account/user-places" 
-                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-gray-50 text-sm"
+                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
                           onClick={handleMenuLinkClick}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -252,7 +252,7 @@ export default function Header() {
                         </Link>
                         <Link 
                           to="/account/calendar" 
-                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-gray-50 text-sm"
+                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
                           onClick={handleMenuLinkClick}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -262,7 +262,7 @@ export default function Header() {
                         </Link>
                         <Link 
                           to="/account/hostdashboard" 
-                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-gray-50 text-sm"
+                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
                           onClick={handleMenuLinkClick}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -278,7 +278,7 @@ export default function Header() {
                       <>
                         <Link 
                           to="/account/users" 
-                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-gray-50 text-sm"
+                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
                           onClick={handleMenuLinkClick}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -288,7 +288,7 @@ export default function Header() {
                         </Link>
                         <Link 
                           to="/account/all-places" 
-                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-gray-50 text-sm"
+                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
                           onClick={handleMenuLinkClick}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -299,7 +299,7 @@ export default function Header() {
                         </Link>
                         <Link 
                           to="/account/calendar" 
-                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-gray-50 text-sm"
+                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
                           onClick={handleMenuLinkClick}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -309,7 +309,7 @@ export default function Header() {
                         </Link>
                         <Link 
                           to="/account/reviews" 
-                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-gray-50 text-sm"
+                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
                           onClick={handleMenuLinkClick}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -319,7 +319,7 @@ export default function Header() {
                         </Link>
                         <Link 
                           to="/account/dashboard" 
-                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-gray-50 text-sm"
+                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
                           onClick={handleMenuLinkClick}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">

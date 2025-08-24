@@ -57,7 +57,11 @@
         "allowedFormats": "Supported Formats:",
         "fileSize": "File Size Limit:",
         "fileSizeLimit": "Maximum 10MB per file. Files over 10MB are not allowed."
-      }
+      },
+      "formats": "Formats: ",
+      "supportedFormats": "JPEG, PNG, GIF, BMP, WebP, AVIF, SVG",
+      "maxSize": "Max size: ",
+      "maxSizeValue": "10MB per file"
     },
     "youtubeVideo": "YouTube Video",
     "youtubeVideoDescription": "Add a YouTube video to showcase your space",
@@ -65,7 +69,11 @@
     "matterportTour": "3D Virtual Tour (Matterport)",
     "matterportTourDescription": "Add a Matterport 3D virtual tour link to provide an immersive 360° view of your space",
     "matterportTourPlaceholder": "https://my.matterport.com/show/?m=example",
-    "perks": "Perks",
+    "perks": {
+      "title": "Perks",
+      "free": "Free",
+      "paid": "Paid Service"
+    },
     "extraInfo": "Extra info",
     "extraInfoPlaceholder": "Any additional information such as booking rules, cancellation policy, or special instructions.",
     "rules": "House Rules",
@@ -234,6 +242,7 @@
     "price_per_day": "/day",
     "new_rating": "New",
     "guests": "people",
+    "hosted_by": "Hosted by",
     "actions": {
       "edit": "Edit",
       "view": "View",
@@ -396,7 +405,7 @@
     "error": "Error"
   },
   "placesPage": {
-    "addNewRoom": "Add New Room",
+    "addNewRoom": "Create Place",
     "noRoomsFound": "No rooms found",
     "noRoomsYet": "No conference rooms yet",
     "tryAdjustingSearch": "Try adjusting your search criteria.",

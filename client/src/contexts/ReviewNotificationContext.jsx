@@ -256,7 +256,7 @@ export function ReviewNotificationProvider({ children }) {
 
     // Get translated title and message
     const getTranslatedContent = () => {
-      // Only process notifications with new format (translationKey + translationVariables)
+      // Check if we have new format with metadata.translationKey
       if (metadata?.translationKey && metadata?.translationVariables) {
         const titleKey = `${metadata.translationKey}.title`;
         const messageKey = `${metadata.translationKey}.message`;
@@ -285,11 +285,41 @@ export function ReviewNotificationProvider({ children }) {
         }
       }
       
-      // This should not happen since we filter out legacy notifications now
-      console.error("Legacy notification passed through filter:", { id: notification.id, title });
+      // Handle backend format where title is already in the form "booking_payment_pending.title"
+      if (title && title.includes('.title') && metadata?.translationVariables) {
+        // Extract the base key (remove .title suffix)
+        const baseKey = title.replace('.title', '');
+        const titleKey = `${baseKey}.title`;
+        const messageKey = `${baseKey}.message`;
+        
+        try {
+          // Process translation variables to format dates/times
+          const processedVariables = processNotificationVariables(
+            metadata.translationVariables,
+            t,
+            i18n.language
+          );
+          
+          const translatedTitle = t(titleKey, processedVariables);
+          const translatedMessage = t(messageKey, processedVariables);
+          
+          return {
+            title: translatedTitle,
+            message: translatedMessage
+          };
+        } catch (error) {
+          console.error("Error translating backend format notification:", error);
+          return {
+            title: title.replace('.title', '').replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            message: message || "Notification content unavailable"
+          };
+        }
+      }
+      
+      // Fallback for legacy notifications or notifications without proper format
       return {
-        title: "Error",
-        message: "Invalid notification format"
+        title: title || "Notification",
+        message: message || "Notification content unavailable"
       };
     };
 

@@ -6,12 +6,68 @@
   "agent": {
     "title": "Agent paneli",
     "loading": "Panel yuklanmoqda...",
+    "dashboard": {
+      "title": "Agent paneli",
+      "subtitle": "Platforma ko'rinishi va boshqaruv vositalari"
+    },
+    "error": {
+      "loadingDashboard": "Panelni yuklashda xatolik",
+      "tryAgain": "Qayta urinish"
+    },
+    "metrics": {
+      "totalPlaces": "Jami joylar",
+      "totalPaidToAgent": "Agentga to'langan bronlar",
+      "totalPaidToHost": "Mezbonga to'langan bronlar",
+      "platformRating": "Platforma reytingi"
+    },
+    "bookingStatus": {
+      "title": "Umumiy bron holati",
+      "subtitle": "Platforma bo'ylab bron statistikasi",
+      "pending": "Kutilmoqda",
+      "approved": "Tasdiqlangan",
+      "selected": "Tanlangan",
+      "paidToHost": "Mezbonga to'langan",
+      "cancelled": "Bekor qilingan"
+    },
     "users": {
-      "title": "Foydalanuvchilar",
-      "clients": "Mijozlar",
-      "hosts": "Mezbon", 
+      "title": "Platforma foydalanuvchilari",
+      "subtitle": "Foydalanuvchilar taqsimoti va o'sish",
+      "hosts": "Mezbon",
+      "clients": "Mijozlar", 
       "agents": "Agentlar",
-      "total": "Jami"
+      "total": "Jami",
+      "monthlyGrowth": "Oylik o'sish",
+      "thisMonth": "shu oyda"
+    },
+    "reviews": {
+      "title": "Sharhlar analitikasi",
+      "subtitle": "Umumiy platforma sharhlari statistikasi",
+      "totalReviews": "Jami sharhlar",
+      "averageRating": "Platforma reytingi",
+      "thisMonth": "Ushbu oy",
+      "pendingReviews": "Kutilayotgan sharhlar"
+    },
+    "trends": {
+      "title": "Oylik tendensiyalar", 
+      "subtitle": "Platforma o'sishi va faollik statistikasi",
+      "userGrowth": "Foydalanuvchilar o'sishi",
+      "bookingApprovals": "Bron tasdiqlash",
+      "placesGrowth": "Joylar o'sishi",
+      "reviewActivity": "Sharh faolligi"
+    },
+    "activity": {
+      "title": "Platforma faolligi",
+      "subtitle": "Real vaqtda platforma statistikasi",
+      "bookingsToday": "Bugungi bronlar",
+      "activeHosts": "Faol mezbon",
+      "activeClients": "Faol mijozlar",
+      "totalUsers": "Jami foydalanuvchilar"
+    },
+    "quickActions": {
+      "title": "Tezkor amallar",
+      "manageBookings": "Bronlarni boshqarish",
+      "viewUsers": "Foydalanuvchilarni ko'rish",
+      "viewPlaces": "Joylarni ko'rish"
     },
     "places": {
       "title": "Konferens zallari",
@@ -30,6 +86,11 @@
       "manageBookings": "Bronlarni boshqarish",
       "viewUsers": "Foydalanuvchilarni ko'rish",
       "viewRooms": "Konferens zallarini ko'rish"
+    },
+    "placeholder": {
+      "title": "Agent paneli",
+      "description": "Platformani boshqarish va monitoring",
+      "availableActions": "Mavjud amallar:"
     }
   },
   "host": {

@@ -16,12 +16,33 @@ export default function PerkSelections({selectedPerks, setPerks}) {
 
   function handleCheckClick(event) {
     const {checked, name} = event.target;
+    const isPaid = event.target.dataset.isPaid === 'true';
+    
     if (checked) {
-      setPerks([...selectedPerks, name]); 
+      // Add perk with pricing info
+      const newPerk = { name, isPaid };
+      setPerks([...selectedPerks.filter(p => (typeof p === 'string' ? p : p.name) !== name), newPerk]); 
     } else {
-      setPerks([...selectedPerks.filter(selectedName => selectedName !== name)]);
+      // Remove perk
+      setPerks([...selectedPerks.filter(p => (typeof p === 'string' ? p : p.name) !== name)]);
     }
   }
+
+  // Helper function to check if a perk is selected
+  const isPerkSelected = (perkName) => {
+    return selectedPerks.some(p => (typeof p === 'string' ? p : p.name) === perkName);
+  };
+
+  // Helper function to check if a perk is marked as paid
+  const isPerkPaid = (perkName) => {
+    const perk = selectedPerks.find(p => (typeof p === 'string' ? p : p.name) === perkName);
+    return perk && typeof perk === 'object' ? perk.isPaid : false;
+  };
+
+  // Helper function to count selected perks in a group
+  const getSelectedPerksCountInGroup = (groupOptions) => {
+    return groupOptions.filter(option => isPerkSelected(option.name)).length;
+  };
 
     // Perk groups with their icons and options
   const perkGroups = [
@@ -165,6 +186,12 @@ export default function PerkSelections({selectedPerks, setPerks}) {
                 {group.icon}
               </div>
               <span className="font-medium">{group.name}</span>
+              {/* Selection count badge */}
+              {getSelectedPerksCountInGroup(group.options) > 0 && (
+                <div className="bg-accent-primary text-white text-xs font-medium rounded-full w-6 h-6 flex items-center justify-center ml-2">
+                  {getSelectedPerksCountInGroup(group.options)}
+                </div>
+              )}
             </div>
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
@@ -182,19 +209,83 @@ export default function PerkSelections({selectedPerks, setPerks}) {
           {expandedGroups[group.name] && (
             <div className="bg-gray-50 divide-y divide-gray-100">
               {group.options.map((option) => (
-                <label 
-                  key={option.name} 
-                  className="flex items-center p-3 pl-14 hover:bg-gray-100 cursor-pointer"
-                >
-                  <input 
-                    type="checkbox"
-                    name={option.name}
-                    checked={selectedPerks.includes(option.name)}
-                    onChange={handleCheckClick}
-                    className="mr-3 h-4 w-4 accent-primary"
-                  />
-                  <span className="text-sm">{option.label}</span>
-                </label>
+                <div key={option.name} className="p-3 pl-14">
+                  {/* Perk selection checkbox */}
+                  <label className="flex items-center hover:bg-gray-100 cursor-pointer p-2 rounded">
+                    <input 
+                      type="checkbox"
+                      name={option.name}
+                      checked={isPerkSelected(option.name)}
+                      onChange={handleCheckClick}
+                      data-is-paid="false"
+                      className="mr-3 h-4 w-4 accent-primary"
+                    />
+                    <span className="text-sm font-medium">{option.label}</span>
+                  </label>
+                  
+                  {/* Paid/Free selection - only show if perk is selected */}
+                  {isPerkSelected(option.name) && (
+                    <div className="mt-2 ml-7 flex items-center gap-3">
+                      <label className="flex items-center cursor-pointer">
+                        <div className="relative">
+                          <input 
+                            type="radio"
+                            name={`${option.name}_pricing`}
+                            checked={!isPerkPaid(option.name)}
+                            onChange={() => {
+                              const newPerk = { name: option.name, isPaid: false };
+                              setPerks([...selectedPerks.filter(p => (typeof p === 'string' ? p : p.name) !== option.name), newPerk]);
+                            }}
+                            className="sr-only"
+                          />
+                          <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                            !isPerkPaid(option.name) 
+                              ? 'border-green-600 bg-green-600' 
+                              : 'border-gray-300 bg-white'
+                          }`}>
+                            {!isPerkPaid(option.name) && (
+                              <div className="w-2 h-2 rounded-full bg-white"></div>
+                            )}
+                          </div>
+                        </div>
+                        <span className={`ml-2 text-sm ${
+                          !isPerkPaid(option.name) ? 'text-green-700 font-medium' : 'text-gray-600'
+                        }`}>
+                          {t('places:placeCreate.perks.free', 'Free')}
+                        </span>
+                      </label>
+                      
+                      <label className="flex items-center cursor-pointer">
+                        <div className="relative">
+                          <input 
+                            type="radio"
+                            name={`${option.name}_pricing`}
+                            checked={isPerkPaid(option.name)}
+                            onChange={() => {
+                              const newPerk = { name: option.name, isPaid: true };
+                              setPerks([...selectedPerks.filter(p => (typeof p === 'string' ? p : p.name) !== option.name), newPerk]);
+                            }}
+                            className="sr-only"
+                          />
+                          <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                            isPerkPaid(option.name) 
+                              ? 'border-amber-600 bg-amber-600' 
+                              : 'border-gray-300 bg-white'
+                          }`}>
+                            {isPerkPaid(option.name) && (
+                              <div className="w-2 h-2 rounded-full bg-white"></div>
+                            )}
+                          </div>
+                        </div>
+                        <span className={`ml-2 text-sm ${
+                          isPerkPaid(option.name) ? 'text-amber-700 font-medium' : 'text-gray-600'
+                        }`}>
+                          {t('places:placeCreate.perks.paid', 'Paid Service')}
+                        </span>
+                      </label>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           )}

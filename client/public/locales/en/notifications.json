@@ -27,6 +27,14 @@
     "title": "💸 Payment to Host",
     "message": "Payout of {{amount}} has been made for booking {{bookingReference}}"
   },
+  "booking_cash_selected": {
+    "title": "💰 Cash Payment Selected",
+    "message": "Client selected cash payment for booking {{bookingReference}} of \"{{placeName}}\" on {{dateRange}}{{timeRange}}. Please collect payment offline."
+  },
+  "booking_payment_pending": {
+    "title": "Cash Payment Request",
+    "message": "Client with booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}}{{timeRange}} selected cash payment. Please collect payment offline."
+  },
   "actions": {
     "view": "View",
     "dismiss": "Dismiss", 

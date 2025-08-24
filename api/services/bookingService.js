@@ -183,6 +183,14 @@ class BookingService {
     
     // Handle client cancellation (delete booking)
     if (this._isClientCancellation(userData, booking, status)) {
+      try {
+        // First, send rejection notification to the host using the same method
+        await this._createRejectionNotificationForHost(booking);
+      } catch (error) {
+        console.error("Error creating cancellation notification for host:", error);
+        // Don't fail the cancellation if notification fails
+      }
+      
       // Set cancelled timestamp before deletion for record keeping
       booking.cancelledAt = new Date();
       booking.status = 'cancelled';
@@ -532,6 +540,120 @@ class BookingService {
     return userData.userType === 'client' && 
            booking.userId === userData.id && 
            status === 'rejected';
+  }
+
+  /**
+   * Create rejection notification for host when client cancels
+   * Uses the same message format as regular rejection but sends to host
+   */
+  static async _createRejectionNotificationForHost(booking) {
+    // Get place and host information
+    const place = await Place.findByPk(booking.placeId, {
+      include: [{
+        model: User,
+        as: "owner",
+        attributes: ["id", "name", "email", "preferredLanguage"]
+      }]
+    });
+
+    if (!place || !place.owner) {
+      throw new Error("Place or owner not found");
+    }
+
+    // Don't create notification if client is cancelling their own place
+    if (place.owner.id === booking.userId) {
+      return null;
+    }
+
+    // Get host's preferred language
+    const userLanguage = await User.findByPk(place.owner.id, {
+      attributes: ["preferredLanguage"]
+    }).then(user => {
+      const supportedLanguages = ["en", "ru", "uz"];
+      const userLang = user?.preferredLanguage || "ru";
+      return supportedLanguages.includes(userLang) ? userLang : "ru";
+    }).catch(() => "ru");
+
+    // Include unique booking ID and date/time window in message
+    const bookingReference = booking.uniqueRequestId || booking.id;
+    const timeSlotInfo = booking.timeSlots && booking.timeSlots.length > 0 
+      ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
+      : '';
+    
+    // Format dates
+    const isSameDay = (date1, date2) => {
+      if (!date1 || !date2) return false;
+      try {
+        const d1 = new Date(date1);
+        const d2 = new Date(date2);
+        return d1.getTime() === d2.getTime();
+      } catch (error) {
+        return false;
+      }
+    };
+
+    const formatDate = (date, language = "en") => {
+      if (!date) return "Unknown";
+      try {
+        const dateObj = new Date(date);
+        const localeMap = {
+          "en": "en-US",
+          "ru": "ru-RU", 
+          "uz": "uz-UZ"
+        };
+        const locale = localeMap[language] || "en-US";
+        return dateObj.toLocaleDateString(locale, {
+          year: "numeric",
+          month: "short",
+          day: "numeric"
+        });
+      } catch (error) {
+        return "Unknown";
+      }
+    };
+
+    const dateRange = isSameDay(booking.checkInDate, booking.checkOutDate) 
+      ? formatDate(booking.checkInDate, userLanguage)
+      : `${formatDate(booking.checkInDate, userLanguage)} - ${formatDate(booking.checkOutDate, userLanguage)}`;
+
+    // Create localized SMS message using the same rejected template
+    const { translate } = require("../i18n/config");
+    const smsMessage = translate("booking.rejected", {
+      lng: userLanguage,
+      ns: "sms",
+      bookingReference,
+      placeName: place.title,
+      dateRange: dateRange + timeSlotInfo
+    });
+
+    // Create notification for host using the same rejection notification format
+    const UnifiedNotificationService = require("./unifiedNotificationService");
+    const result = await UnifiedNotificationService.createBookingNotification({
+      userId: place.owner.id,  // Send to host instead of client
+      type: "booking_rejected",
+      translationKey: "booking_rejected",
+      translationVariables: {
+        bookingReference,
+        placeName: place.title,
+        dateRange: dateRange + timeSlotInfo
+      },
+      smsMessage: smsMessage,
+      bookingId: booking.id,
+      placeId: booking.placeId,
+      additionalMetadata: {
+        uniqueRequestId: booking.uniqueRequestId,
+        bookingReference,
+        placeName: place.title,
+        checkInDate: booking.checkInDate,
+        checkOutDate: booking.checkOutDate,
+        timeSlots: booking.timeSlots,
+        dateTimeWindow: `${dateRange}${timeSlotInfo}`,
+        cancelledByClient: true,  // Flag to indicate this was a client cancellation
+        clientId: booking.userId
+      }
+    });
+
+    return result.notification;
   }
 
   static async _handleBookingConflicts(booking) {

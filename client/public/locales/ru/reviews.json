@@ -147,14 +147,29 @@
         "notReported": "Без жалоб"
       },
       "dateRange": {
+        "title": "Выберите диапазон дат",
         "startDate": "Дата начала",
         "endDate": "Дата окончания",
         "fromDate": "С: {{date}}",
-        "toDate": "До: {{date}}"
+        "toDate": "До: {{date}}",
+        "selectDates": "Выберите даты",
+        "from": "С",
+        "to": "До",
+        "select": "Выберите диапазон дат"
       },
+      "apply": "Применить",
+      "clear": "Очистить",
       "hideOptions": "Скрыть опции",
       "moreOptions": "Больше опций",
-      "clearAllFilters": "Очистить все фильтры"
+      "noAdditionalOptions": "Нет дополнительных опций",
+      "clearAllFilters": "Очистить"
+    },
+    "sorting": {
+      "label": "Сортировать по",
+      "newest": "Сначала новые",
+      "oldest": "Сначала старые",
+      "rating_high": "Высокий рейтинг",
+      "rating_low": "Низкий рейтинг"
     },
     "table": {
       "selectAll": "Выбрать все",
@@ -187,6 +202,7 @@
       "save": "Сохранить",
       "cancel": "Отмена",
       "delete": "Удалить",
+      "deleteAll": "Удалить все",
       "bulkDelete": "Удалить выбранные",
       "confirmDelete": "Вы уверены, что хотите удалить этот отзыв?",
       "confirmBulkDelete": "Вы уверены, что хотите удалить {{count}} выбранных отзыва(ов)?",

@@ -55,6 +55,10 @@
     "offline": "Oflayn"
   },
   "loading": "Yuklanmoqda...",
+  "name": "Ism",
+  "phone": "Telefon",
+  "email": "Email", 
+  "hours": "Ish soatlari",
   "messages": {
     "noData": "Ma'lumot mavjud emas",
     "noResults": "Natija topilmadi",
@@ -246,5 +250,33 @@
       "offlineMode": "Oflayn rejim faol",
       "reconnecting": "Qayta ulanmoqda..."
     }
+  },
+  "datePicker": {
+    "months": {
+      "january": "Yanvar",
+      "february": "Fevral",
+      "march": "Mart",
+      "april": "Aprel",
+      "may": "May",
+      "june": "Iyun",
+      "july": "Iyul",
+      "august": "Avgust",
+      "september": "Sentyabr",
+      "october": "Oktyabr",
+      "november": "Noyabr",
+      "december": "Dekabr"
+    },
+    "weekdays": {
+      "monday": "Du",
+      "tuesday": "Se",
+      "wednesday": "Ch",
+      "thursday": "Pa",
+      "friday": "Ju",
+      "saturday": "Sh",
+      "sunday": "Ya"
+    },
+    "today": "Bugun",
+    "clear": "Tozalash",
+    "apply": "Qo'llash"
   }
 }

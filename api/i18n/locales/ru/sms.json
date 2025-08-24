@@ -15,6 +15,7 @@
     },
     "paid": "Платеж получен за бронирование #{{bookingReference}} для \"{{placeName}}\" на {{dateRange}}. Требуется выплата хозяину.",
     "rejected": "Бронирование #{{bookingReference}} для \"{{placeName}}\" на {{dateRange}} отклонено.",
-    "paidToHost": "Выплата в размере {{amount}} произведена за бронирование #{{bookingReference}}"
+    "paidToHost": "Выплата в размере {{amount}} произведена за бронирование #{{bookingReference}}",
+    "cashSelected": "Клиент с бронированием #{{bookingReference}} для \"{{placeName}}\" на {{dateRange}} выбрал наличную оплату. Пожалуйста, получите оплату офлайн."
   }
 }

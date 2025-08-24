@@ -93,7 +93,7 @@ export const getActionButtonClasses = (variant) => {
   
   switch (variant) {
     case "primary":
-      return `${baseClasses} bg-info-600 text-white hover:bg-info-700`;
+      return `${baseClasses} bg-primary text-white hover:bg-secondary`;
     case "success":
       return `${baseClasses} bg-success-600 text-white hover:bg-success-700`;
     case "danger":

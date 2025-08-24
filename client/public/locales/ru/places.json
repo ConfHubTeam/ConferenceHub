@@ -57,7 +57,11 @@
         "allowedFormats": "Поддерживаемые форматы:",
         "fileSize": "Ограничение размера файла:",
         "fileSizeLimit": "Максимум 10МБ на файл. Файлы свыше 10МБ не разрешены."
-      }
+      },
+      "formats": "Форматы: ",
+      "supportedFormats": "JPEG, PNG, GIF, BMP, WebP, AVIF, SVG",
+      "maxSize": "Максимальный размер: ",
+      "maxSizeValue": "10МБ на файл"
     },
     "youtubeVideo": "YouTube видео",
     "youtubeVideoDescription": "Добавьте видео с YouTube, чтобы продемонстрировать ваше пространство",
@@ -65,7 +69,11 @@
     "matterportTour": "3D виртуальный тур (Matterport)",
     "matterportTourDescription": "Добавьте ссылку на 3D виртуальный тур Matterport для погружения в пространство на 360°",
     "matterportTourPlaceholder": "https://my.matterport.com/show/?m=example",
-    "perks": "Преимущества",
+    "perks": {
+      "title": "Преимущества",
+      "free": "Бесплатно",
+      "paid": "Платная услуга"
+    },
     "extraInfo": "Дополнительная информация",
     "extraInfoPlaceholder": "Любая дополнительная информация, такая как правила бронирования, политика отмены или специальные инструкции.",
     "rules": "Правила дома",
@@ -234,6 +242,7 @@
     "price_per_day": "/день",
     "new_rating": "Новый",
     "guests": "чел.",
+    "hosted_by": "Принимает",
     "actions": {
       "edit": "Редактировать",
       "view": "Посмотреть",
@@ -396,7 +405,7 @@
     "error": "Ошибка"
   },
   "placesPage": {
-    "addNewRoom": "Добавить новую комнату",
+    "addNewRoom": "Создать Место",
     "noRoomsFound": "Комнаты не найдены",
     "noRoomsYet": "Пока нет конференц-залов",
     "tryAdjustingSearch": "Попробуйте изменить критерии поиска.",

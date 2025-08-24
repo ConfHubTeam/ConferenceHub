@@ -147,14 +147,29 @@
         "notReported": "Shikoyatsiz"
       },
       "dateRange": {
+        "title": "Sana oralig'ini tanlang",
         "startDate": "Boshlanish sanasi",
         "endDate": "Tugash sanasi",
         "fromDate": "Dan: {{date}}",
-        "toDate": "Gacha: {{date}}"
+        "toDate": "Gacha: {{date}}",
+        "selectDates": "Sanalarni tanlang",
+        "from": "Dan",
+        "to": "Gacha",
+        "select": "Sana oralig'ini tanlang"
       },
+      "apply": "Qo'llash",
+      "clear": "Tozalash",
       "hideOptions": "Variantlarni yashirish",
       "moreOptions": "Ko'proq variantlar",
-      "clearAllFilters": "Barcha filtrlarni tozalash"
+      "noAdditionalOptions": "Qo'shimcha variantlar yo'q",
+      "clearAllFilters": "Filtrni tozalash"
+    },
+    "sorting": {
+      "label": "Saralash",
+      "newest": "Avval yangilar",
+      "oldest": "Avval eskiler",
+      "rating_high": "Yuqori reyting",
+      "rating_low": "Past reyting"
     },
     "table": {
       "selectAll": "Barchasini tanlash",
@@ -187,8 +202,9 @@
       "save": "Saqlash",
       "cancel": "Bekor qilish",
       "delete": "O'chirish",
+      "deleteAll": "Hammasini o'chirish",
       "bulkDelete": "Tanlanganlarni o'chirish",
-      "confirmDelete": "Bu sharhni o'chirishni xohlaysizmi?",
+      "confirmDelete": "Haqiqatan ham bu sharhni o'chirmoqchimisiz?",
       "confirmBulkDelete": "{{count}} ta tanlangan sharhni o'chirishni xohlaysizmi?",
       "editReview": "Sharhni tahrirlash",
       "adminNotes": "Administrator eslatmalari"

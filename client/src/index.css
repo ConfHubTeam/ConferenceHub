@@ -104,8 +104,8 @@ input[type="checkbox"] {
 }
 
 input[type="checkbox"]:checked {
-  background-color: #ff385cff;
-  border-color: #ff385cff;
+  background-color: #1e3a8a;
+  border-color: #1e3a8a;
 }
 
 input[type="checkbox"]:checked::before {
@@ -123,12 +123,12 @@ input[type="checkbox"]:checked::before {
 }
 
 input[type="checkbox"]:hover {
-  border-color: #ff385cff;
+  border-color: #1e3a8a;
 }
 
 input[type="checkbox"]:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.1);
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
 }
 
 /* Calendar container optimization for fixed height modal */

@@ -6,7 +6,8 @@
     "booking_confirmed": "Бронирование подтверждено",
     "booking_selected": "Бронирование выбрано",
     "booking_rejected": "Бронирование отклонено",
-    "booking_paid_to_host": "Платеж хосту"
+    "booking_paid_to_host": "Платеж хосту",
+    "booking_payment_pending": "Запрос наличной оплаты"
   },
   "messages": {
     "booking_requested": "Новый запрос на бронирование {{bookingReference}} для \"{{placeName}}\" на {{dateRange}}",
@@ -17,7 +18,8 @@
     "booking_confirmed_client": "Ваше бронирование {{bookingReference}} для \"{{placeName}}\" на {{dateRange}} подтверждено!",
     "booking_selected": "Бронирование {{bookingReference}} для \"{{placeName}}\" на {{dateRange}} выбрано. Пожалуйста, произведите оплату.",
     "booking_rejected": "Бронирование {{bookingReference}} для \"{{placeName}}\" на {{dateRange}} отклонено. Приносим извинения за неудобства.",
-    "booking_paid_to_host": "Выплата {{amount}} произведена за бронирование {{bookingReference}}"
+    "booking_paid_to_host": "Выплата {{amount}} произведена за бронирование {{bookingReference}}",
+    "booking_payment_pending": "Клиент с бронированием {{bookingReference}} для \"{{placeName}}\" на {{dateRange}} выбрал наличную оплату. Пожалуйста, получите оплату офлайн."
   },
   "booking": {
     "requested": "Новый запрос на бронирование {{bookingReference}} для \"{{placeName}}\" на {{dateRange}}",
@@ -32,7 +34,8 @@
     },
     "selected": "Бронирование {{bookingReference}} для \"{{placeName}}\" на {{dateRange}} выбрано. Пожалуйста, произведите оплату.",
     "rejected": "Бронирование {{bookingReference}} для \"{{placeName}}\" на {{dateRange}} отклонено. Приносим извинения за неудобства.",
-    "paidToHost": "Выплата {{amount}} произведена за бронирование {{bookingReference}}"
+    "paidToHost": "Выплата {{amount}} произведена за бронирование {{bookingReference}}",
+    "paymentPending": "Клиент с бронированием {{bookingReference}} для \"{{placeName}}\" на {{dateRange}} выбрал наличную оплату. Пожалуйста, получите оплату офлайн."
   },
   "payment": {
     "success": "Платеж успешен",

@@ -242,7 +242,7 @@ export default function MultiDateCalendar({
                 <div 
                   className={`
                     absolute inset-0 m-0.5 rounded-full flex items-center justify-center
-                    ${daySelected ? 'bg-brand-orange' : isCurrentDay ? 'border border-brand-purple' : 'hover:bg-gray-100'}
+                    ${daySelected ? 'bg-primary' : isCurrentDay ? 'border border-primary' : 'hover:bg-gray-100'}
                   `}
                 >
                   {isPastDay && inCurrentMonth ? (
@@ -255,7 +255,7 @@ export default function MultiDateCalendar({
                       </div>
                     </div>
                   ) : (
-                    <span className={`text-sm md:text-base font-medium ${daySelected ? 'text-white' : isCurrentDay ? 'text-brand-purple' : 'text-gray-800'}`}>
+                    <span className={`text-sm md:text-base font-medium ${daySelected ? 'text-white' : isCurrentDay ? 'text-primary' : 'text-gray-800'}`}>
                       {format(day, "d")}
                     </span>
                   )}
@@ -318,7 +318,7 @@ export default function MultiDateCalendar({
       
       {/* Selected dates counter */}
       {selectedDates.length > 0 && (
-        <div className="mt-4 text-center text-sm md:text-base font-medium text-brand-purple">
+        <div className="mt-4 text-center text-sm md:text-base font-medium text-primary">
           {selectedDates.length} {selectedDates.length === 1 ? t("dateSelection.dateSelected") : t("dateSelection.datesSelected")}
         </div>
       )}

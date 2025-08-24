@@ -27,6 +27,14 @@
     "title": "Joy egasiga to'lov",
     "message": "{{amount}} miqdorida to'lov {{bookingReference}} band qilish uchun amalga oshirildi"
   },
+  "booking_cash_selected": {
+    "title": "💰 Naqd to'lov tanlandi",
+    "message": "Mijoz {{bookingReference}} band qilish uchun \"{{placeName}}\" obyekti {{dateRange}}{{timeRange}} kunlariga naqd to'lovni tanladi. Iltimos, to'lovni oflayn oling."
+  },
+  "booking_payment_pending": {
+    "title": "Naqd to'lov so'rovi",
+    "message": "{{bookingReference}} band qilish bilan mijoz \"{{placeName}}\" obyekti {{dateRange}}{{timeRange}} kunlariga naqd to'lovni tanladi. Iltimos, to'lovni oflayn oling."
+  },
   "actions": {
     "view": "Ko'rish",
     "dismiss": "Yopish",

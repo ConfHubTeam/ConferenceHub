@@ -70,7 +70,7 @@ function LandingHeaderBase({
       {showNavigation && (
         <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8" role="navigation">
           <Link 
-            className="text-white hover:text-brand-orange transition-colors duration-200 flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg px-3 py-2 text-sm lg:text-base"
+            className="text-white hover:text-brand-orange hover:bg-white/10 hover:scale-[1.02] transition-all duration-200 flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg px-3 py-2 text-sm lg:text-base"
             aria-label={navigationItems.browseSpaces}
             to="/places"
           >
@@ -81,14 +81,14 @@ function LandingHeaderBase({
           {user && (user.userType === 'host' || user.userType === 'agent') ? (
             <Link 
               to="/account/user-places"
-              className="text-white hover:text-brand-orange transition-colors duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg px-3 py-2 text-sm lg:text-base"
+              className="text-white hover:text-brand-orange hover:bg-white/10 hover:scale-[1.02] transition-all duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg px-3 py-2 text-sm lg:text-base"
             >
               {navigationItems.myPlaces}
             </Link>
           ) : !user ? (
             <Link 
               to="/register"
-              className="text-white hover:text-brand-orange transition-colors duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg px-3 py-2 text-sm lg:text-base"
+              className="text-white hover:text-brand-orange hover:bg-white/10 hover:scale-[1.02] transition-all duration-200 font-medium focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg px-3 py-2 text-sm lg:text-base"
             >
               {navigationItems.listYourSpace}
             </Link>
@@ -128,7 +128,7 @@ function LandingHeaderBase({
               <div className="hidden sm:flex items-center space-x-2 lg:space-x-4">
                 <Link 
                   to="/account"
-                  className="bg-white text-gray-900 hover:bg-gray-100 transition-colors duration-200 px-4 lg:px-6 py-2 rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 text-sm lg:text-base"
+                  className="bg-white text-gray-900 hover:bg-gray-100 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 px-4 lg:px-6 py-2 rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 text-sm lg:text-base"
                 >
                   {navigationItems.myAccount}
                 </Link>
@@ -138,13 +138,13 @@ function LandingHeaderBase({
               <div className="hidden sm:flex items-center space-x-2 lg:space-x-4">
                 <Link 
                   to="/login"
-                  className="text-white hover:text-brand-orange transition-colors duration-200 px-3 lg:px-4 py-2 rounded-lg hover:bg-white/10 font-medium focus:outline-none focus:ring-2 focus:ring-white/50 text-sm lg:text-base"
+                  className="text-white hover:text-brand-orange hover:bg-white/15 hover:scale-[1.02] border border-transparent hover:border-white/30 transition-all duration-200 px-3 lg:px-4 py-2 rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-white/50 text-sm lg:text-base"
                 >
                   {navigationItems.login}
                 </Link>
                 <Link 
                   to="/register"
-                  className="bg-white text-gray-900 hover:bg-gray-100 transition-colors duration-200 px-4 lg:px-6 py-2 rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 text-sm lg:text-base"
+                  className="bg-white text-gray-900 hover:bg-gray-100 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 px-4 lg:px-6 py-2 rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 text-sm lg:text-base"
                 >
                   {navigationItems.signup}
                 </Link>

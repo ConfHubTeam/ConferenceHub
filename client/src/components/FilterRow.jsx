@@ -290,7 +290,7 @@ export default function FilterRow({
   }, []);
   
   return (
-    <div className="w-full px-4 py-3 bg-white border-b border-gray-200 shadow-sm">
+    <div className="w-full px-4 py-3 bg-gradient-to-r from-slate-50 to-slate-100/80 shadow-sm">
       {/* Date/Time Filter Modal */}
       <DateTimeFilterModal 
         isOpen={isDateTimeModalOpen}
@@ -334,9 +334,9 @@ export default function FilterRow({
           <div className="flex-1 min-w-0 mr-4 relative">
             <div 
               ref={scrollContainerRef}
-              className="flex items-center space-x-2 overflow-x-auto scrollbar-hide pb-2 -mb-2 scroll-smooth"
+              className="flex items-center space-x-3 overflow-x-auto scrollbar-hide pb-2 -mb-2 scroll-smooth"
             >
-              <div className="flex items-center space-x-2 flex-shrink-0 pl-1">
+              <div className="flex items-center space-x-3 flex-shrink-0 pl-1">
                 {/* Location Filter */}
                 <LocationFilter
                   selectedRegionId={selectedRegionId}
@@ -349,11 +349,7 @@ export default function FilterRow({
                 
                 <button 
                   onClick={openDateTimeModal}
-                  className={`flex px-3 py-2 items-center transition-all duration-200 border rounded-full text-xs flex-shrink-0 whitespace-nowrap ${
-                    hasActiveDateTimeFilter 
-                      ? "bg-brand-orange text-white border-brand-orange" 
-                      : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
-                  }`}
+                  className={hasActiveDateTimeFilter ? "filter-pill-active" : "filter-pill-inactive"}
                 >
                   <div className="truncate max-w-[100px]">
                     {hasActiveDateTimeFilter ? getFormattedDateTime() : t("filters.buttons.when")}
@@ -365,11 +361,7 @@ export default function FilterRow({
                 
                 <button 
                   onClick={openPriceModal}
-                  className={`flex px-3 py-2 items-center transition-all duration-200 border rounded-full text-xs flex-shrink-0 whitespace-nowrap ${
-                    hasActivePriceFilter 
-                      ? "bg-brand-orange text-white border-brand-orange" 
-                      : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
-                  }`}
+                  className={hasActivePriceFilter ? "filter-pill-active" : "filter-pill-inactive"}
                 >
                   <div className="truncate max-w-[100px]">
                     {hasActivePriceFilter ? getFormattedPriceRange() : t("filters.buttons.price")}
@@ -381,11 +373,7 @@ export default function FilterRow({
                 
                 <button 
                   onClick={openAttendeesModal}
-                  className={`flex px-3 py-2 items-center transition-all duration-200 border rounded-full text-xs flex-shrink-0 whitespace-nowrap ${
-                    hasActiveAttendeesFilter 
-                      ? "bg-brand-orange text-white border-brand-orange" 
-                      : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
-                  }`}
+                  className={hasActiveAttendeesFilter ? "filter-pill-active" : "filter-pill-inactive"}
                 >
                   <div className="truncate max-w-[100px]">
                     {hasActiveAttendeesFilter ? getFormattedAttendeesRange() : t("filters.buttons.attendees")}
@@ -397,11 +385,7 @@ export default function FilterRow({
                 
                 <button 
                   onClick={openSizeModal}
-                  className={`flex px-3 py-2 items-center transition-all duration-200 border rounded-full text-xs flex-shrink-0 whitespace-nowrap ${
-                    hasActiveSizeFilter 
-                      ? "bg-brand-orange text-white border-brand-orange" 
-                      : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
-                  }`}
+                  className={hasActiveSizeFilter ? "filter-pill-active" : "filter-pill-inactive"}
                 >
                   <div className="truncate max-w-[100px]">
                     {hasActiveSizeFilter ? getFormattedSizeRange() : t("filters.buttons.size")}
@@ -413,11 +397,7 @@ export default function FilterRow({
                 
                 <button 
                   onClick={openPerksModal}
-                  className={`flex px-3 py-2 items-center transition-all duration-200 border rounded-full text-xs flex-shrink-0 whitespace-nowrap ${
-                    hasSelectedPerks 
-                      ? "bg-brand-orange text-white border-brand-orange" 
-                      : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
-                  }`}
+                  className={hasSelectedPerks ? "filter-pill-active" : "filter-pill-inactive"}
                 >
                   <div className="truncate max-w-[100px]">
                     {hasSelectedPerks ? t("filters.buttons.perks_with_count", { count: selectedPerksCount }) : t("filters.buttons.perks")}
@@ -429,11 +409,7 @@ export default function FilterRow({
                 
                 <button 
                   onClick={openPolicyModal}
-                  className={`flex px-3 py-2 items-center transition-all duration-200 border rounded-full text-xs flex-shrink-0 whitespace-nowrap ${
-                    hasSelectedPolicies 
-                      ? "bg-brand-orange text-white border-brand-orange" 
-                      : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
-                  }`}
+                  className={hasSelectedPolicies ? "filter-pill-active" : "filter-pill-inactive"}
                 >
                   <div className="truncate max-w-[100px]">
                     {hasSelectedPolicies ? t("filters.buttons.policies_with_count", { count: selectedPoliciesCount }) : t("filters.buttons.policies")}
@@ -447,7 +423,7 @@ export default function FilterRow({
                 {hasAnyActiveFilter && (
                   <button 
                     onClick={handleResetAllFilters}
-                    className="flex px-3 py-2 bg-orange-50 hover:bg-orange-100 text-orange-600 hover:text-orange-700 items-center transition-all duration-200 border border-orange-200 hover:border-orange-300 rounded-full text-xs flex-shrink-0 whitespace-nowrap"
+                    className="filter-pill bg-bg-secondary hover:bg-border-light text-text-secondary hover:text-text-primary border-border-light hover:border-border-default"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -482,7 +458,7 @@ export default function FilterRow({
           </div>
           
           {/* Visual separator */}
-          <div className="w-px h-8 bg-gray-200 mx-2 flex-shrink-0"></div>
+          <div className="w-px h-8 bg-border-light mx-2 flex-shrink-0"></div>
           
           {/* Right side - Fixed map toggle */}
           {!isMobileMapView && (
@@ -492,7 +468,7 @@ export default function FilterRow({
                   e.preventDefault();
                   showMobileMap();
                 }}
-                className="flex px-3 py-2 bg-white hover:bg-purple-50 text-brand-purple hover:text-purple-700 items-center transition-all duration-200 border border-brand-purple hover:border-purple-600 rounded-full text-xs shadow-sm ring-1 ring-purple-100"
+                className="filter-pill bg-bg-card hover:bg-accent-primary/5 text-accent-primary hover:text-accent-primary/80 border-accent-primary hover:border-accent-primary/80 shadow-sm ring-1 ring-accent-primary/10"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
@@ -511,7 +487,7 @@ export default function FilterRow({
           {/* Scrollable filter container */}
           <div className="relative flex-1 min-w-0">
             <div className="overflow-x-auto scrollbar-hide">
-              <div className="flex items-center space-x-2 pb-1">
+              <div className="flex items-center space-x-3 pb-1">
                 {/* Filter buttons */}
                 
                 {/* Location Filter */}
@@ -528,7 +504,7 @@ export default function FilterRow({
               onClick={openDateTimeModal}
               className={`flex px-4 py-2 items-center transition-all duration-200 border rounded-full flex-shrink-0 whitespace-nowrap ${
                 hasActiveDateTimeFilter 
-                  ? "bg-brand-orange text-white border-brand-orange" 
+                  ? "bg-primary text-white border-primary" 
                   : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
               }`}
             >
@@ -543,7 +519,7 @@ export default function FilterRow({
               onClick={openPriceModal}
               className={`flex px-4 py-2 items-center transition-all duration-200 border rounded-full flex-shrink-0 whitespace-nowrap ${
                 hasActivePriceFilter 
-                  ? "bg-brand-orange text-white border-brand-orange" 
+                  ? "bg-primary text-white border-primary" 
                   : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
               }`}
             >
@@ -558,7 +534,7 @@ export default function FilterRow({
               onClick={openAttendeesModal}
               className={`flex px-4 py-2 items-center transition-all duration-200 border rounded-full flex-shrink-0 whitespace-nowrap ${
                 hasActiveAttendeesFilter 
-                  ? "bg-brand-orange text-white border-brand-orange" 
+                  ? "bg-primary text-white border-primary" 
                   : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
               }`}
             >
@@ -573,7 +549,7 @@ export default function FilterRow({
               onClick={openSizeModal}
               className={`flex px-4 py-2 items-center transition-all duration-200 border rounded-full flex-shrink-0 whitespace-nowrap ${
                 hasActiveSizeFilter 
-                  ? "bg-brand-orange text-white border-brand-orange" 
+                  ? "bg-primary text-white border-primary" 
                   : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
               }`}
             >
@@ -588,7 +564,7 @@ export default function FilterRow({
               onClick={openPerksModal}
               className={`flex px-4 py-2 items-center transition-all duration-200 border rounded-full flex-shrink-0 whitespace-nowrap ${
                 hasSelectedPerks 
-                  ? "bg-brand-orange text-white border-brand-orange" 
+                  ? "bg-primary text-white border-primary" 
                   : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
               }`}
             >
@@ -603,7 +579,7 @@ export default function FilterRow({
               onClick={openPolicyModal}
               className={`flex px-4 py-2 items-center transition-all duration-200 border rounded-full flex-shrink-0 whitespace-nowrap ${
                 hasSelectedPolicies 
-                  ? "bg-brand-orange text-white border-brand-orange" 
+                  ? "bg-primary text-white border-primary" 
                   : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300 hover:border-gray-400"
               }`}
             >
@@ -619,7 +595,7 @@ export default function FilterRow({
             {hasAnyActiveFilter && (
               <button 
                 onClick={handleResetAllFilters}
-                className="flex px-4 py-2 bg-orange-50 hover:bg-orange-100 text-orange-600 hover:text-orange-700 items-center transition-all duration-200 border border-orange-200 hover:border-orange-300 rounded-full whitespace-nowrap"
+                className="flex px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 hover:text-gray-700 items-center transition-all duration-200 border border-gray-200 hover:border-gray-300 rounded-full whitespace-nowrap"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -643,7 +619,7 @@ export default function FilterRow({
                 e.preventDefault();
                 toggleMap();
               }}
-              className="flex px-4 py-2 bg-white hover:bg-purple-50 text-brand-purple hover:text-purple-700 items-center transition-all duration-200 border border-brand-purple hover:border-purple-600 rounded-full"
+              className="flex px-4 py-2 bg-white hover:bg-primary/5 text-primary hover:text-primary/80 items-center transition-all duration-200 border border-primary hover:border-primary/80 rounded-full"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />

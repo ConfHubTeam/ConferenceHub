@@ -638,6 +638,144 @@ const manualCleanupExpiredBookings = async (req, res) => {
   }
 };
 
+/**
+ * Select cash payment for a booking (Client only)
+ * Notifies agents that client wants to pay with cash
+ */
+const selectCashPayment = async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+    const bookingId = req.params.id;
+
+    // Only clients can select cash payment
+    if (userData.userType !== 'client') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only clients can select cash payment.'
+      });
+    }
+
+    // Get the booking with place information
+    const booking = await Booking.findByPk(bookingId, {
+      include: [
+        {
+          model: Place,
+          as: "place",
+          attributes: ["id", "title", "ownerId"]
+        },
+        {
+          model: User,
+          as: "user",
+          attributes: ["id", "name", "email"]
+        }
+      ]
+    });
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: 'Booking not found'
+      });
+    }
+
+    // Verify that this booking belongs to the current user
+    if (booking.userId !== userData.id) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. You can only select payment for your own bookings.'
+      });
+    }
+
+    // Check if booking is in the correct status (should be "selected" or "approved")
+    if (!['selected', 'approved'].includes(booking.status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cash payment can only be selected for approved or selected bookings.'
+      });
+    }
+
+    // Check if cash payment notification has already been sent
+    if (booking.cashNotificationSent) {
+      // Get agent information for response
+      const AgentService = require('../services/agentService');
+      const agents = await AgentService.getAllAgents();
+      const primaryAgent = agents && agents.length > 0 ? agents[0] : null;
+      
+      return res.json({
+        success: true,
+        message: 'Cash payment was already selected. Agents were previously notified.',
+        booking: {
+          id: booking.id,
+          uniqueRequestId: booking.uniqueRequestId,
+          status: booking.status,
+          paymentMethod: 'cash',
+          cashPaymentSelected: true,
+          cashPaymentSelectedAt: booking.cashPaymentSelectedAt,
+          cashNotificationSent: booking.cashNotificationSent,
+          cashNotificationSentAt: booking.cashNotificationSentAt
+        },
+        agentContact: primaryAgent ? {
+          name: primaryAgent.name,
+          phone: primaryAgent.phone
+        } : null,
+        alreadyNotified: true
+      });
+    }
+
+    // Import the notification service
+    const BookingNotificationService = require('../services/bookingNotificationService');
+
+    // Get agent information for response
+    const AgentService = require('../services/agentService');
+    const agents = await AgentService.getAllAgents();
+    
+    // For simplicity, use the first available agent's contact info
+    const primaryAgent = agents && agents.length > 0 ? agents[0] : null;
+    
+    // Send notification to agents
+    const notifications = await BookingNotificationService.createCashPaymentSelectedNotification(booking);
+
+    // Update booking to mark cash payment selected and notification sent
+    const now = new Date();
+    await booking.update({
+      cashPaymentSelected: true,
+      cashPaymentSelectedAt: now,
+      cashNotificationSent: true,
+      cashNotificationSentAt: now
+    });
+
+    res.json({
+      success: true,
+      message: 'Cash payment selected successfully. Agents have been notified.',
+      booking: {
+        id: booking.id,
+        uniqueRequestId: booking.uniqueRequestId,
+        status: booking.status,
+        paymentMethod: 'cash',
+        cashPaymentSelected: true,
+        cashPaymentSelectedAt: now,
+        cashNotificationSent: true,
+        cashNotificationSentAt: now
+      },
+      agentContact: primaryAgent ? {
+        name: primaryAgent.name,
+        phone: primaryAgent.phoneNumber,
+        email: primaryAgent.email
+      } : null,
+      agentsNotified: notifications.length,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('❌ Error selecting cash payment:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to select cash payment',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   createBooking,
   getBookings,
@@ -650,5 +788,6 @@ module.exports = {
   markPaidToHost,
   checkPaymentStatus,
   checkPaymentStatusSmart,
+  selectCashPayment,
   manualCleanupExpiredBookings
 };

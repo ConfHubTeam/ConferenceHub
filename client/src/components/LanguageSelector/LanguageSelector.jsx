@@ -127,19 +127,19 @@ const LanguageSelector = ({
     switch (variant) {
       case "compact":
         return {
-          button: "px-2 py-1 text-sm",
+          button: "px-3 py-2 text-sm",
           dropdown: "min-w-[120px]",
           item: "px-3 py-2 text-sm"
         };
       case "minimal":
         return {
-          button: "px-1 py-1 text-sm border-none bg-transparent hover:bg-gray-100",
+          button: "px-3 py-2 text-sm border-none bg-transparent hover:bg-gray-100",
           dropdown: "min-w-[140px]",
           item: "px-3 py-2 text-sm"
         };
       default:
         return {
-          button: "px-3 py-2",
+          button: "px-3 py-2 text-base",
           dropdown: "min-w-[160px]",
           item: "px-4 py-3"
         };
@@ -163,7 +163,7 @@ const LanguageSelector = ({
   };
 
   return (
-    <div className={`relative inline-block text-left ${className}`}>
+    <div className={`relative w-full ${className}`}>
       {/* Language Selector Button */}
       <button
         ref={buttonRef}
@@ -171,14 +171,14 @@ const LanguageSelector = ({
         onClick={() => setIsOpen(!isOpen)}
         disabled={isLoading}
         className={`
-          inline-flex items-center justify-center gap-2
+          flex items-center w-full
           ${theme === "dark"
             ? 'bg-black text-white hover:bg-white/10'
-            : 'border border-gray-300 bg-gray-100 hover:bg-gray-200'}
-          rounded-full
+            : 'bg-bg-card border border-border-default hover:bg-bg-secondary'}
+          rounded-full cursor-pointer
           focus:outline-none focus:ring-2 focus:ring-offset-2
-          ${theme === "dark" ? 'focus:ring-white/20' : 'focus:ring-indigo-500'}
-          transition-colors duration-200
+          ${theme === "dark" ? 'focus:ring-white/20' : 'focus:ring-accent-primary'}
+          transition-all duration-200 hover:scale-[1.02] hover:shadow-md hover:border-accent-primary
           disabled:opacity-50 disabled:cursor-not-allowed
           ${styles.button}
         `}
@@ -187,14 +187,15 @@ const LanguageSelector = ({
         aria-haspopup="listbox"
       >
         {/* Current Language Display */}
-        <div className="flex items-center gap-2">
-          {showFlag && (
-            <span className="text-lg" aria-hidden="true" style={{background: 'none', border: 'none', boxShadow: 'none', padding: 0}}>
-              {renderFlag(currentLanguageObject.code, undefined, true)}
-            </span>
-          )}
+        <div className="flex items-center flex-1 min-w-0">
+          {/* Show language code instead of flag when selected */}
+          <span className={`font-medium text-base ${
+            theme === "dark" ? 'text-white' : 'text-gray-700'
+          }`}>
+            {currentLanguageObject.code.toUpperCase()}
+          </span>
           {showText && (
-            <span className={`font-medium ${
+            <span className={`font-medium text-base ml-3 ${
               theme === "dark" ? 'text-white' : 'text-gray-700'
             }`}>
               {languageConfig[currentLanguageObject.code]?.nativeName || currentLanguageObject.name}
@@ -221,6 +222,9 @@ const LanguageSelector = ({
             py-1 focus:outline-none
             ${styles.dropdown}
           `}
+          style={{ 
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+          }}
           role="listbox"
           aria-label={t("language.select")}
         >
@@ -236,24 +240,23 @@ const LanguageSelector = ({
                 disabled={isSelected || isLoading}
                 className={`
                   w-full text-left flex items-center justify-between gap-3
-                  hover:bg-gray-50 focus:bg-gray-50 focus:outline-none
+                  hover:bg-blue-50 hover:text-blue-700 focus:bg-blue-50 focus:text-blue-700 focus:outline-none
                   transition-colors duration-150
                   disabled:opacity-50 disabled:cursor-default
                   ${styles.item}
-                  ${isSelected ? "bg-indigo-50 text-indigo-700" : "text-gray-700"}
+                  ${isSelected ? "bg-navy-100" : "text-gray-700"}
                 `}
                 role="option"
                 aria-selected={isSelected}
                 tabIndex={0}
               >
                 <div className="flex items-center gap-3">
+                  {/* Keep flags in dropdown */}
                   <span className="text-lg" aria-hidden="true">
-                    {isSelected
-                      ? renderFlag(language.code, "2em")
-                      : renderFlag(language.code, "1.25em")}
+                    {renderFlag(language.code, "1.25em")}
                   </span>
                   <div className="flex flex-col">
-                    <span className="font-medium">
+                    <span className={`font-medium ${isSelected ? 'text-navy-700' : ''}`}>
                       {config?.nativeName}
                     </span>
                     {config?.nativeName !== config?.name && (
@@ -265,7 +268,7 @@ const LanguageSelector = ({
                 </div>
                 
                 {isSelected && (
-                  <CheckIcon className="w-4 h-4 text-indigo-600" />
+                  <CheckIcon className="w-4 h-4 text-navy-600" />
                 )}
               </button>
             );

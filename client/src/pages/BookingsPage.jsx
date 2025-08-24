@@ -331,15 +331,24 @@ export default function BookingsPage() {
 
   if (loading) {
     return (
-      <div>
-        <div className="spacing-container spacing-section">
-          <div className="animate-pulse flex space-x-4">
-            <div className="flex-1 space-y-4 py-1">
-              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              <div className="space-y-2">
-                <div className="h-4 bg-gray-200 rounded"></div>
-                <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+      <div className="bg-bg-primary min-h-screen">
+        <div className="w-full px-4 sm:px-6 lg:px-8 pt-6">
+          <div className="animate-pulse space-y-6">
+            <div className="bg-bg-card rounded-lg p-6 shadow-ui border border-border-light">
+              <div className="h-6 bg-neutral-200 rounded w-1/4 mb-4"></div>
+              <div className="space-y-3">
+                <div className="h-4 bg-neutral-200 rounded w-3/4"></div>
+                <div className="h-4 bg-neutral-200 rounded w-1/2"></div>
               </div>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-bg-card rounded-lg p-6 shadow-ui border border-border-light">
+                  <div className="h-4 bg-neutral-200 rounded w-3/4 mb-3"></div>
+                  <div className="h-4 bg-neutral-200 rounded w-1/2 mb-4"></div>
+                  <div className="h-10 bg-neutral-200 rounded"></div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -348,11 +357,11 @@ export default function BookingsPage() {
   }
 
   return (
-    <div>
-      <div className="spacing-container spacing-section">
+    <div className="bg-bg-primary min-h-screen">
+      <div className="w-full px-4 sm:px-6 lg:px-8 pt-6">
         {/* Agent view - Production-level booking management */}
         {user?.userType === 'agent' && (
-          <div className="spacing-container spacing-section max-w-7xl mx-auto">
+          <div className="w-full space-y-6">
             {/* Filters and controls */}
             <BookingFilters
               user={user}
@@ -370,12 +379,12 @@ export default function BookingsPage() {
 
             {/* Bookings list */}
             {filteredBookings.length === 0 ? (
-              <div className="bg-white border border-gray-200 rounded-lg spacing-content text-center">
-                <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-bg-card border border-border-light rounded-lg shadow-ui text-center py-12 px-6">
+                <svg className="mx-auto h-16 w-16 text-neutral-400 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">{t("pages.emptyStates.noBookingsFound")}</h3>
-                <p className="text-gray-600 mb-4">
+                <h3 className="text-heading-3 text-text-primary mb-3">{t("pages.emptyStates.noBookingsFound")}</h3>
+                <p className="text-body text-text-secondary max-w-md mx-auto">
                   {searchTerm || statusFilter !== "all" ? (
                     t("pages.emptyStates.adjustFilters")
                   ) : (
@@ -386,35 +395,35 @@ export default function BookingsPage() {
             ) : (
               <>
                 {/* Results header */}
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-medium text-gray-900">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-heading-2 text-text-primary">
                     {t(`pages.titles.agent.${statusFilter === "all" ? "allBookings" : 
                       statusFilter === "paid_to_host" ? "paidBookings" : 
                       `${statusFilter}Bookings`}`)}
-                    <span className="ml-2 text-sm text-gray-500">({filteredBookings.length})</span>
+                    <span className="ml-3 text-caption text-text-muted">({filteredBookings.length})</span>
                   </h2>
                 
-                {statusFilter === "pending" && stats.pending > 0 && (
-                  <div className="text-sm text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full">
-                    {t("pages.statusIndicators.pendingBookings", { 
-                      count: stats.pending,
-                      plural: stats.pending > 1 ? "s" : ""
-                    })}
-                  </div>
-                )}
-              </div>
+                  {statusFilter === "pending" && stats.pending > 0 && (
+                    <div className="text-caption text-status-warning bg-warning-50 px-4 py-2 rounded-full border border-warning-200">
+                      {t("pages.statusIndicators.pendingBookings", { 
+                        count: stats.pending,
+                        plural: stats.pending > 1 ? "s" : ""
+                      })}
+                    </div>
+                  )}
+                </div>
 
-              {/* Booking cards grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
-                {getCurrentPageItems().map((booking) => (
-                  <BookingRequestCard
-                    key={booking.id}
-                    booking={booking}
-                    onBookingUpdate={handleBookingUpdate}
-                    competingBookings={competingBookingsMap[booking.id] || []}
-                  />
-                ))}
-              </div>
+                {/* Booking cards grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                  {getCurrentPageItems().map((booking) => (
+                    <BookingRequestCard
+                      key={booking.id}
+                      booking={booking}
+                      onBookingUpdate={handleBookingUpdate}
+                      competingBookings={competingBookingsMap[booking.id] || []}
+                    />
+                  ))}
+                </div>
 
                 {/* Pagination */}
                 <Pagination
@@ -433,7 +442,7 @@ export default function BookingsPage() {
         
         {/* Host view - Production-level booking request management */}
         {user?.userType === 'host' && (
-          <div className="spacing-container spacing-section max-w-7xl mx-auto">
+          <div className="w-full space-y-6">
 
             {/* Filters and controls */}
             <BookingFilters
@@ -451,12 +460,12 @@ export default function BookingsPage() {
 
             {/* Booking requests list */}
             {filteredBookings.length === 0 ? (
-              <div className="bg-white border border-gray-200 rounded-lg spacing-content text-center">
-                <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-bg-card border border-border-light rounded-lg shadow-ui text-center py-12 px-6">
+                <svg className="mx-auto h-16 w-16 text-neutral-400 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">{t("pages.emptyStates.noRequestsFound")}</h3>
-                <p className="text-gray-600">
+                <h3 className="text-heading-3 text-text-primary mb-3">{t("pages.emptyStates.noRequestsFound")}</h3>
+                <p className="text-body text-text-secondary max-w-md mx-auto">
                   {searchTerm || statusFilter !== "all" 
                     ? t("pages.emptyStates.adjustFilters")
                     : t("pages.emptyStates.noBookingsYet.host")
@@ -466,16 +475,16 @@ export default function BookingsPage() {
             ) : (
               <>
                 {/* Results header */}
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-medium text-gray-900">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-heading-2 text-text-primary">
                     {t(`pages.titles.host.${statusFilter === "all" ? "allRequests" : 
                       statusFilter === "paid_to_host" ? "paidRequests" : 
                       `${statusFilter}Requests`}`)}
-                    <span className="ml-2 text-sm text-gray-500">({filteredBookings.length})</span>
+                    <span className="ml-3 text-caption text-text-muted">({filteredBookings.length})</span>
                   </h2>
                   
                   {statusFilter === "pending" && stats.pending > 0 && (
-                    <div className="text-sm text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full">
+                    <div className="text-caption text-status-warning bg-warning-50 px-4 py-2 rounded-full border border-warning-200">
                       {(() => {
                         const count = stats.pending;
                         const currentLang = i18n.language || "en";
@@ -509,7 +518,7 @@ export default function BookingsPage() {
                 </div>
 
                 {/* Booking cards grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                   {getCurrentPageItems().map((booking) => (
                     <BookingRequestCard
                       key={booking.id}
@@ -537,7 +546,7 @@ export default function BookingsPage() {
         
         {/* Client view */}
         {user?.userType === 'client' && (
-          <div className="spacing-container spacing-section max-w-7xl mx-auto">
+          <div className="w-full space-y-6">
 
             {/* Filters and controls */}
             <BookingFilters
@@ -555,19 +564,22 @@ export default function BookingsPage() {
 
             {/* Bookings list */}
             {filteredBookings.length === 0 ? (
-              <div className="bg-white border border-gray-200 rounded-lg spacing-content text-center">
-                <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-bg-card border border-border-light rounded-lg shadow-ui text-center py-12 px-6">
+                <svg className="mx-auto h-16 w-16 text-neutral-400 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">{t("pages.emptyStates.noBookingsFound")}</h3>
-                <p className="text-gray-600 mb-4">
+                <h3 className="text-heading-3 text-text-primary mb-3">{t("pages.emptyStates.noBookingsFound")}</h3>
+                <p className="text-body text-text-secondary mb-6 max-w-md mx-auto">
                   {searchTerm || statusFilter !== "all" 
                     ? t("pages.emptyStates.adjustFilters")
                     : t("pages.emptyStates.noBookingsYet.client")
                   }
                 </p>
                 {!searchTerm && statusFilter === "all" && (
-                  <Link to="/" className="bg-primary text-white py-2 px-4 rounded-lg inline-block hover:bg-primary-dark transition-colors">
+                  <Link to="/" className="btn-primary btn-size-md inline-flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
                     {t("pages.emptyStates.findRooms")}
                   </Link>
                 )}
@@ -575,16 +587,16 @@ export default function BookingsPage() {
             ) : (
               <>
                 {/* Results header */}
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-medium text-gray-900">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-heading-2 text-text-primary">
                     {t(`pages.titles.client.${statusFilter === "all" ? "allBookings" : 
                       statusFilter === "approved" ? "confirmedBookings" : 
                       `${statusFilter}Bookings`}`)}
-                    <span className="ml-2 text-sm text-gray-500">({filteredBookings.length})</span>
+                    <span className="ml-3 text-caption text-text-muted">({filteredBookings.length})</span>
                   </h2>
                   
                   {statusFilter === "pending" && stats.pending > 0 && (
-                    <div className="text-sm text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full">
+                    <div className="text-caption text-status-warning bg-warning-50 px-4 py-2 rounded-full border border-warning-200">
                       {t("pages.statusIndicators.pendingBookings", { 
                         count: stats.pending,
                         plural: stats.pending > 1 ? "s" : ""
@@ -594,7 +606,7 @@ export default function BookingsPage() {
                 </div>
 
                 {/* Booking cards grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                   {getCurrentPageItems().map((booking) => (
                     <BookingRequestCard
                       key={booking.id}

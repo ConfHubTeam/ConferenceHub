@@ -7,7 +7,7 @@ import PhotoGallery from "../components/PhotoGallery";
 import BookingCard from "../components/BookingCard";
 import { UserContext } from "../components/UserContext";
 import { useNotification } from "../components/NotificationContext";
-import MapView from "../components/MapView";
+import PlaceStaticMap from "../components/PlaceStaticMap";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import PlaceDetailsInfo from "../components/PlaceDetailsInfo";
 import WeeklyAvailabilityDisplay from "../components/WeeklyAvailabilityDisplay";
@@ -168,134 +168,123 @@ export default function PlaceDetailPage() {
   const hasCoordinates = placeDetail.lat && placeDetail.lng;
 
   return (
-    <div className="mx-3 md:mx-8 lg:mx-14 -mt-4">
-      <div className="mb-4">
-        <h1 className="text-xl md:text-2xl mb-2 font-bold">{placeDetail.title}</h1>
-        <a
-          className="flex gap-1 font-semibold underline items-center text-sm md:text-base"
-          target="_blank"
-          href={placeDetail.lat && placeDetail.lng 
-            ? `http://maps.google.com/?q=${placeDetail.lat},${placeDetail.lng}`
-            : `http://maps.google.com/?q=${encodeURIComponent(placeDetail.address)}`}
-          rel="noopener noreferrer"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className="w-4 h-4 md:w-5 md:h-5"
+    <div className="bg-bg-primary min-h-screen">
+      <div className="spacing-container w-full">
+        {/* Header Section */}
+        <div className="pt-6 pb-6">
+          <h1 className="text-heading-1 mb-3 text-text-primary">{placeDetail.title}</h1>
+          <a
+            className="flex gap-2 font-medium underline items-center text-body text-accent-primary hover:text-accent-hover transition-colors"
+            target="_blank"
+            href={placeDetail.lat && placeDetail.lng 
+              ? `http://maps.google.com/?q=${placeDetail.lat},${placeDetail.lng}`
+              : `http://maps.google.com/?q=${encodeURIComponent(placeDetail.address)}`}
+            rel="noopener noreferrer"
           >
-            <path
-              fillRule="evenodd"
-              d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z"
-              clipRule="evenodd"
-            />
-          </svg>
-          {placeDetail.address}
-        </a>
-      </div>
-
-      {/* Owner notification */}
-      {isOwner && (
-        <div className="bg-green-100 p-4 mb-4 rounded-lg">
-          <p className="text-green-800 font-semibold text-sm md:text-base">{t('placeDetail.ownerNotification')}</p>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="w-5 h-5"
+            >
+              <path
+                fillRule="evenodd"
+                d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z"
+                clipRule="evenodd"
+              />
+            </svg>
+            {placeDetail.address}
+          </a>
         </div>
-      )}
 
-      {/* Agent notification */}
-      {user && user.userType === 'agent' && !isOwner && (
-        <div className="bg-blue-100 p-4 mb-4 rounded-lg">
-          <p className="text-blue-800 font-semibold text-sm md:text-base">{t('placeDetail.agentNotification')}</p>
-        </div>
-      )}
-
-      {/* Error notification */}
-      {error && (
-        <div className="bg-red-100 text-red-800 p-4 mb-4 rounded-lg">
-          {error}
-        </div>
-      )}
-
-      {/* Booking card for existing bookings */}
-      <BookingCard bookingDetail={bookingDetail} competingBookings={[]}/>
-
-      {/* Main content layout - photos and sidebar */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-        {/* Left side - Photos and description */}
-        <div className="lg:col-span-2">
-          <div className="mb-6">
-            <PhotoGallery placeDetail={placeDetail} />
+        {/* Error notification */}
+        {error && (
+          <div className="bg-error-50 border border-error-200 rounded-lg spacing-card mb-6">
+            <p className="text-error-700 text-body">{error}</p>
           </div>
-          
-          <div className="mt-6">
+        )}
+
+        {/* Booking card for existing bookings */}
+        <BookingCard bookingDetail={bookingDetail} competingBookings={[]}/>
+
+        {/* Main content layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left side - Photos and content */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Photo Gallery */}
+            <div className="card-base overflow-hidden">
+              <PhotoGallery placeDetail={placeDetail} />
+            </div>
+            
             {/* Place Details Info Section */}
-            <div className="mb-8">
-              <PlaceDetailsInfo placeDetail={placeDetail} />
+            <div className="card-base">
+              <div className="card-content">
+                <PlaceDetailsInfo placeDetail={placeDetail} />
+              </div>
             </div>
 
             {/* Description Section */}
-            <div className="mb-8">
-              <h2 className="text-xl md:text-2xl font-semibold mb-4">{t('placeDetail.sections.description')}</h2>
-              <p className="leading-6 md:leading-7 text-sm md:text-base text-gray-700">{placeDetail.description}</p>
-            </div>
+            {placeDetail.description && (
+              <div className="card-base">
+                <div className="card-content">
+                  <h2 className="text-heading-2 mb-4 text-text-primary flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mr-3 text-accent-primary">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-4.5B10.5 1.125 1.875 2.75 1.875 6.125v2.25" />
+                    </svg>
+                    {t('placeDetail.sections.description')}
+                  </h2>
+                  <p className="text-body text-text-secondary leading-relaxed">{placeDetail.description}</p>
+                </div>
+              </div>
+            )}
 
-            {/* Perks Section */}
+            {/* Availability Calendar Section - MOVED BEFORE PERKS */}
+            <PlaceAvailabilityCalendar 
+              placeDetail={placeDetail} 
+              onSelectedDatesChange={setSelectedCalendarDates}
+              selectedCalendarDates={selectedCalendarDates}
+            />
+
+            {/* Perks Section - NOW AFTER AVAILABILITY */}
             {placeDetail.perks && placeDetail.perks.length > 0 && (
-              <div className="mb-8">
-                <PlacePerks perks={placeDetail.perks} />
+              <div className="card-base">
+                <div className="card-content">
+                  <PlacePerks perks={placeDetail.perks} />
+                </div>
               </div>
             )}
 
             {/* Weekly Availability Section */}
-            <div className="mb-8">
-              <WeeklyAvailabilityDisplay 
-                weekdayTimeSlots={placeDetail.weekdayTimeSlots}
-                blockedWeekdays={placeDetail.blockedWeekdays}
-              />
-            </div>
-
-            {/* Availability Calendar Section */}
-            <div className="mb-8">
-              <PlaceAvailabilityCalendar 
-                placeDetail={placeDetail} 
-                onSelectedDatesChange={setSelectedCalendarDates}
-                selectedCalendarDates={selectedCalendarDates}
-              />
-            </div>
-
-            {/* Refund & Cancellation Policy Section */}
-            <div className="mb-8">
-              <RefundPolicyDisplay placeDetail={placeDetail} />
-            </div>
+            <WeeklyAvailabilityDisplay 
+              weekdayTimeSlots={placeDetail.weekdayTimeSlots}
+              blockedWeekdays={placeDetail.blockedWeekdays}
+            />
             
-            {/* Location Map - Hidden on mobile */}
+            {/* Location Map */}
             {hasCoordinates && (
-              <div className="mb-8 hidden md:block">
-                <h2 className="text-xl md:text-2xl font-semibold mb-4">{t('placeDetail.sections.location')}</h2>
-                <div className="h-64 rounded-lg overflow-hidden border">
-                  <MapView places={mapPlaces} disableInfoWindow={true} />
-                </div>
+              <div className="h-64 border-4 border-white rounded-lg shadow-ui bg-white">
+                <PlaceStaticMap place={placeDetail} />
               </div>
             )}
             
             {/* Extra Information Section */}
             {placeDetail.extraInfo && (
-              <div className="mb-8">
-                <h2 className="text-xl md:text-2xl font-semibold mb-4">{t('placeDetail.sections.additionalInfo')}</h2>
-                <p className="leading-6 md:leading-7 text-sm md:text-base text-gray-700">{placeDetail.extraInfo}</p>
+              <div className="card-base">
+                <div className="card-content">
+                  <h2 className="text-heading-2 mb-4 text-text-primary flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mr-3 text-accent-primary">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                    </svg>
+                    {t('placeDetail.sections.additionalInfo')}
+                  </h2>
+                  <p className="text-body text-text-secondary leading-relaxed">{placeDetail.extraInfo}</p>
+                </div>
               </div>
             )}
 
             {/* Refund Policy Section - Only for owners and agents */}
             {canManage && (
-              <div className="mb-8">
-                <RefundPolicyDisplay 
-                  refundPolicy={placeDetail.refundPolicy}
-                  placeId={placeDetail.id}
-                  isOwner={isOwner}
-                  canManage={canManage}
-                />
-              </div>
+              <RefundPolicyDisplay placeDetail={placeDetail} />
             )}
 
             {/* Reviews Section - Hidden on mobile, shown on desktop */}
@@ -306,74 +295,74 @@ export default function PlaceDetailPage() {
               />
             </div>
           </div>
-        </div>
 
-        {/* Right side - Booking widget or management options */}
-        <div className="lg:col-span-1">
-          <div className="sticky top-24">
-            {/* Show booking widget only for clients or if viewing a booking */}
-            {(!user || user.userType === 'client' || bookingId) && (
-              <BookingWidget
-                placeDetail={placeDetail}
-                buttonDisabled={buttonDisabled || canManage}
-                selectedCalendarDates={selectedCalendarDates}
-                onClearCalendarSelections={clearCalendarSelections}
-              />
-            )}
-            
-            {/* Show management options for hosts who own this conference room or agents */}
-            {user && canManage && !bookingId && (
-              <div className="bg-white shadow p-4 rounded-2xl">
-                <h2 className="text-xl font-semibold mb-4">{t('placeDetail.managementOptions.title')}</h2>
-                <div className="flex flex-col gap-2">
-                  <a 
-                    href={`/account/places/${placeId}`} 
-                    className="bg-green-500 py-2 px-5 rounded-2xl text-white text-center"
-                  >
-                    {t('placeDetail.managementOptions.edit')}
-                  </a>
-                  <button 
-                    className="bg-orange-500 py-2 px-5 rounded-2xl text-white"
-                    onClick={handleDeleteClick}
-                    disabled={isDeleting}
-                  >
-                    {isDeleting ? t('placeDetail.managementOptions.deleting') : t('placeDetail.managementOptions.delete')}
-                  </button>
+          {/* Right side - Booking widget or management options */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-24 space-y-6">
+              {/* Show booking widget only for clients or if viewing a booking */}
+              {(!user || user.userType === 'client' || bookingId) && (
+                <BookingWidget
+                  placeDetail={placeDetail}
+                  buttonDisabled={buttonDisabled || canManage}
+                  selectedCalendarDates={selectedCalendarDates}
+                  onClearCalendarSelections={clearCalendarSelections}
+                />
+              )}
+              
+              {/* Show management options for hosts who own this conference room or agents */}
+              {user && canManage && !bookingId && (
+                <div className="bg-white rounded-lg p-6 shadow-ui border border-border-light">
+                  <h2 className="text-heading-3 mb-4 text-text-primary">{t('placeDetail.managementOptions.title')}</h2>
+                  <div className="space-y-3">
+                    <a 
+                      href={`/account/places/${placeId}`} 
+                      className="btn-primary btn-size-md w-full"
+                    >
+                      {t('placeDetail.managementOptions.edit')}
+                    </a>
+                    <button 
+                      className="w-full px-4 py-2 bg-error-100 text-error-700 border border-error-200 rounded-lg font-medium hover:bg-error-200 hover:text-error-800 transition-colors disabled:opacity-50"
+                      onClick={handleDeleteClick}
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? t('placeDetail.managementOptions.deleting') : t('placeDetail.managementOptions.delete')}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Reviews Section - Shown on mobile after price section, hidden on desktop */}
-      <div className="block lg:hidden mt-8">
-        <PlaceReviews 
-          placeId={placeDetail.id} 
-          placeOwnerId={placeDetail.ownerId} 
+        {/* Reviews Section - Shown on mobile after main content, hidden on desktop */}
+        <div className="block lg:hidden mt-8">
+          <PlaceReviews 
+            placeId={placeDetail.id} 
+            placeOwnerId={placeDetail.ownerId} 
+          />
+        </div>
+
+        {/* Delete Confirmation Modal */}
+        <DeleteConfirmationModal
+          isOpen={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          onDelete={handleDelete}
+          title={t('placeDetail.deleteModal.title')}
+          itemToDelete={placeDetail}
+          itemDetails={[
+            { label: t('placeDetail.deleteModal.titleLabel'), value: placeDetail?.title },
+            { label: t('placeDetail.deleteModal.locationLabel'), value: placeDetail?.address },
+            { label: t('placeDetail.deleteModal.priceLabel'), value: `$${placeDetail?.price} / ${t('placeDetail.deleteModal.hour')}` }
+          ]}
+          consequences={[
+            t('placeDetail.deleteModal.consequences.roomDetails'),
+            t('placeDetail.deleteModal.consequences.photos'),
+            t('placeDetail.deleteModal.consequences.bookings'),
+            t('placeDetail.deleteModal.consequences.reviews')
+          ]}
+          deleteInProgress={deleteInProgress}
         />
       </div>
-
-      {/* Delete Confirmation Modal */}
-      <DeleteConfirmationModal
-        isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        onDelete={handleDelete}
-        title={t('placeDetail.deleteModal.title')}
-        itemToDelete={placeDetail}
-        itemDetails={[
-          { label: t('placeDetail.deleteModal.titleLabel'), value: placeDetail?.title },
-          { label: t('placeDetail.deleteModal.locationLabel'), value: placeDetail?.address },
-          { label: t('placeDetail.deleteModal.priceLabel'), value: `$${placeDetail?.price} / ${t('placeDetail.deleteModal.hour')}` }
-        ]}
-        consequences={[
-          t('placeDetail.deleteModal.consequences.roomDetails'),
-          t('placeDetail.deleteModal.consequences.photos'),
-          t('placeDetail.deleteModal.consequences.bookings'),
-          t('placeDetail.deleteModal.consequences.reviews')
-        ]}
-        deleteInProgress={deleteInProgress}
-      />
     </div>
   );
 }

@@ -793,6 +793,112 @@ class BookingNotificationService {
   }
 
   /**
+   * Create notification for cash payment selection (NEW FEATURE)
+   * @param {Object} booking - Booking object with place and user data
+   * @returns {Promise<Object>} Created notification for agent
+   */
+  static async createCashPaymentSelectedNotification(booking) {
+    if (!booking || !booking.placeId || !booking.userId) {
+      throw new Error("Invalid booking data for notification");
+    }
+
+    try {
+      // Use included Place data if available, otherwise fetch it
+      let place = booking.place || booking.Place;
+      if (!place) {
+        place = await Place.findByPk(booking.placeId, {
+          attributes: ["id", "title"]
+        });
+      }
+
+      if (!place) {
+        throw new Error("Place not found for cash payment notification");
+      }
+
+      // Get all agents (cash payments need agent approval)
+      const agents = await AgentService.getAllAgents();
+      
+      if (!agents || agents.length === 0) {
+        throw new Error("No agents available to receive cash payment notification");
+      }
+
+      // Create notification data
+      const bookingReference = booking.uniqueRequestId || booking.id;
+      const timeSlotInfo = booking.timeSlots && booking.timeSlots.length > 0 
+        ? ` from ${booking.timeSlots[0].startTime} to ${booking.timeSlots[booking.timeSlots.length - 1].endTime}`
+        : '';
+      
+      const dateRange = this._isSameDay(booking.checkInDate, booking.checkOutDate) 
+        ? this._formatDate(booking.checkInDate)
+        : `${this._formatDate(booking.checkInDate)} - ${this._formatDate(booking.checkOutDate)}`;
+
+      const notifications = [];
+
+      // Send notification to all agents
+      for (const agent of agents) {
+        // Get agent's preferred language
+        const agentLanguage = await this._getUserLanguage(agent.id);
+
+        // Create localized SMS message using i18n
+        const smsMessage = this._createLocalizedMessage("booking.cashSelected", {
+          bookingReference,
+          placeName: place.title,
+          dateRange: dateRange + timeSlotInfo
+        }, agentLanguage);
+
+        // Create notification for agent about cash payment selection
+        // Use existing booking_payment_pending type with cash payment metadata
+        const result = await UnifiedNotificationService.createBookingNotification({
+          userId: agent.id,
+          type: "booking_payment_pending",
+          // Store translation key for in-app notification (will be translated in UI)
+          translationKey: "booking_payment_pending",
+          // Store variables for in-app translation
+          translationVariables: {
+            bookingReference,
+            placeName: place.title,
+            // Send raw date data for frontend formatting
+            checkInDate: booking.checkInDate,
+            checkOutDate: booking.checkOutDate,
+            isDateRange: booking.checkOutDate && booking.checkInDate !== booking.checkOutDate,
+            // Send raw time slot data for frontend formatting
+            timeSlots: booking.timeSlots && booking.timeSlots.length > 0 ? {
+              startTime: booking.timeSlots[0].startTime,
+              endTime: booking.timeSlots[booking.timeSlots.length - 1].endTime
+            } : null,
+            paymentMethod: "cash"
+          },
+          // Keep SMS message as localized (existing SMS logic unchanged)
+          smsMessage: smsMessage,
+          bookingId: booking.id,
+          placeId: booking.placeId,
+          additionalMetadata: {
+            uniqueRequestId: booking.uniqueRequestId,
+            bookingReference,
+            placeName: place.title,
+            checkInDate: booking.checkInDate,
+            checkOutDate: booking.checkOutDate,
+            totalPrice: booking.totalPrice,
+            timeSlots: booking.timeSlots,
+            dateTimeWindow: `${dateRange}${timeSlotInfo}`,
+            notificationType: "agent_cash_payment_selected",
+            paymentMethod: "cash",
+            selectedAt: new Date().toISOString()
+          }
+        });
+
+        notifications.push(result.notification);
+      }
+
+      return notifications;
+
+    } catch (error) {
+      console.error("Error creating cash payment selected notification:", error);
+      throw new Error(`Failed to create cash payment selected notification: ${error.message}`);
+    }
+  }
+
+  /**
    * Get user's preferred language or fallback to Russian
    * @param {number} userId - User ID
    * @returns {Promise<string>} Language code (en, ru, uz)

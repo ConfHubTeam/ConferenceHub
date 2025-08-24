@@ -221,7 +221,7 @@ export default function SizeFilterModal({ isOpen, onClose }) {
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b flex-shrink-0 bg-gray-50">
-          <h2 className="text-lg sm:text-xl font-semibold text-brand-purple">{t("filters.modals.size.title")}</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{t("filters.modals.size.title")}</h2>
           <button 
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-200 transition-colors"
@@ -331,23 +331,23 @@ export default function SizeFilterModal({ isOpen, onClose }) {
         </div>
         
         {/* Footer */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-t flex-shrink-0 bg-white">
+        <div className="modal-footer">
           <button 
             onClick={handleClear}
-            className="text-brand-purple font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-brand-purple px-2 py-1 rounded-md text-sm sm:text-base"
+            className="btn-ghost btn-size-md text-accent-highlight"
           >
             {t("filters.modals.size.actions.clear")}
           </button>
           <div className="flex gap-3">
             <button 
               onClick={onClose}
-              className="px-4 sm:px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-purple transition-colors text-sm sm:text-base"
+              className="btn-outline btn-size-md"
             >
               {t("filters.modals.size.actions.cancel")}
             </button>
             <button 
               onClick={handleApply}
-              className="bg-brand-orange text-white rounded-lg px-4 sm:px-6 py-2 font-medium hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-orange transition-colors text-sm sm:text-base"
+              className="btn-primary btn-size-md"
             >
               {t("filters.modals.size.actions.apply")}
             </button>

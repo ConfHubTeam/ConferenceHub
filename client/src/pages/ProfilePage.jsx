@@ -404,20 +404,20 @@ export default function ProfilePage({}) {
   const accountInfo = getAccountTypeInfo();
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-bg-primary">
       <div className="max-w-6xl mx-auto spacing-container spacing-section">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Left Sidebar - Account Overview */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-sm border spacing-card sticky top-4 sm:top-8">
+            <div className="card-base spacing-card sticky top-4 sm:top-8">
               {/* Profile Header */}
               <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
+                <div className="w-20 h-20 bg-gradient-to-br from-accent-primary to-accent-hover rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
                   {displayName.charAt(0).toUpperCase()}
                 </div>
-                <h1 className="text-xl font-bold text-gray-900">{displayName}</h1>
+                <h1 className="text-heading-3 text-text-primary">{displayName}</h1>
                 {user.email && !user.email.includes("telegram_") && (
-                  <p className="text-sm text-gray-600 mt-1">{user.email}</p>
+                  <p className="text-caption text-text-secondary mt-1">{user.email}</p>
                 )}
               </div>
               
@@ -434,27 +434,27 @@ export default function ProfilePage({}) {
               
               {/* Quick Stats */}
               <div className="space-y-3 mb-6">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-600">{t("profile:sections.overview.memberSince")}</span>
-                  <span className="font-medium">
+                <div className="flex justify-between items-center text-caption">
+                  <span className="text-text-secondary">{t("profile:sections.overview.memberSince")}</span>
+                  <span className="font-medium text-text-primary">
                     {new Date().toLocaleDateString('en-US', {year: 'numeric', month: 'short'})}
                   </span>
                 </div>
                 
                 {user.telegramLinked !== undefined && (
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-600">{t("profile:sections.overview.telegram.status")}</span>
-                    <span className={`font-medium flex items-center ${user.telegramLinked ? 'text-success-600' : 'text-gray-500'}`}>
-                      <div className={`w-2 h-2 rounded-full mr-2 ${user.telegramLinked ? 'bg-success-500' : 'bg-gray-400'}`}></div>
+                  <div className="flex justify-between items-center text-caption">
+                    <span className="text-text-secondary">{t("profile:sections.overview.telegram.status")}</span>
+                    <span className={`font-medium flex items-center ${user.telegramLinked ? 'text-status-success' : 'text-text-muted'}`}>
+                      <div className={`w-2 h-2 rounded-full mr-2 ${user.telegramLinked ? 'bg-status-success' : 'bg-text-muted'}`}></div>
                       {user.telegramLinked ? t("profile:sections.overview.telegram.connected") : t("profile:sections.overview.telegram.notConnected")}
                     </span>
                   </div>
                 )}
                 
                 {user.telegramUsername && (
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-600">{t("profile:sections.overview.telegram.username")}</span>
-                    <span className="font-medium">@{user.telegramUsername}</span>
+                  <div className="flex justify-between items-center text-caption">
+                    <span className="text-text-secondary">{t("profile:sections.overview.telegram.username")}</span>
+                    <span className="font-medium text-text-primary">@{user.telegramUsername}</span>
                   </div>
                 )}
               </div>
@@ -463,7 +463,7 @@ export default function ProfilePage({}) {
               <div className="space-y-3">
                 <button 
                   onClick={user.telegramLinked ? logoutTelegram : logout} 
-                  className="w-full bg-gray-900 text-white py-3 px-4 rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center space-x-2"
+                  className="btn-primary btn-size-md w-full flex items-center justify-center space-x-2"
                   disabled={isLoggingOut}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -474,7 +474,7 @@ export default function ProfilePage({}) {
                 
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="w-full bg-orange-50 text-orange-600 py-3 px-4 rounded-lg hover:bg-orange-100 transition-colors flex items-center justify-center space-x-2 border border-orange-200"
+                  className="w-full bg-status-error text-white py-3 px-4 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center space-x-2 border border-status-error"
                   disabled={isDeleting}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -488,18 +488,18 @@ export default function ProfilePage({}) {
           
           {/* Main Content - Profile Details */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-sm border">
+            <div className="card-base">
               {/* Header */}
-              <div className="px-6 py-4 border-b border-gray-100">
+              <div className="px-6 py-4 border-b border-border-light">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-lg font-semibold text-gray-900">{t("profile:sections.profileInfo.title")}</h2>
-                    <p className="text-sm text-gray-600 mt-1">{t("profile:sections.profileInfo.subtitle")}</p>
+                    <h2 className="text-heading-3 text-text-primary">{t("profile:sections.profileInfo.title")}</h2>
+                    <p className="text-caption text-text-secondary mt-1">{t("profile:sections.profileInfo.subtitle")}</p>
                   </div>
                   {!isEditing && (
                     <button
                       onClick={startEditing}
-                      className="flex items-center space-x-2 bg-info-50 text-info-600 px-4 py-2 rounded-lg hover:bg-info-100 transition-colors"
+                      className="btn-primary btn-size-md flex items-center space-x-2"
                     >
                       <RiEditLine className="h-4 w-4" />
                       <span>{t("profile:actions.editProfile")}</span>
@@ -514,25 +514,25 @@ export default function ProfilePage({}) {
                   /* View Mode */
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-1">
-                      <label className="block text-sm font-medium text-gray-700">{t("profile:fields.fullName.label")}</label>
-                      <div className="text-base text-gray-900 bg-gray-50 px-3 py-2 rounded-lg">
+                      <label className="form-label">{t("profile:fields.fullName.label")}</label>
+                      <div className="text-body text-text-primary bg-bg-secondary px-3 py-2 rounded-lg">
                         {displayName}
                       </div>
                     </div>
                     
                     <div className="space-y-1">
-                      <label className="block text-sm font-medium text-gray-700">{t("profile:fields.phoneNumber.label")}</label>
-                      <div className="text-base text-gray-900 bg-gray-50 px-3 py-2 rounded-lg">
+                      <label className="form-label">{t("profile:fields.phoneNumber.label")}</label>
+                      <div className="text-body text-text-primary bg-bg-secondary px-3 py-2 rounded-lg">
                         {user.phoneNumber || (
-                          <span className="text-gray-500 italic">{t("profile:fields.email.notProvided")}</span>
+                          <span className="text-text-muted italic">{t("profile:fields.email.notProvided")}</span>
                         )}
                       </div>
                     </div>
                     
                     {user.email && !user.email.includes("telegram_") && (
                       <div className="space-y-1 md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700">{t("profile:fields.email.label")}</label>
-                        <div className="text-base text-gray-900 bg-gray-50 px-3 py-2 rounded-lg">
+                        <label className="form-label">{t("profile:fields.email.label")}</label>
+                        <div className="text-body text-text-primary bg-bg-secondary px-3 py-2 rounded-lg">
                           {user.email}
                         </div>
                       </div>
@@ -543,59 +543,59 @@ export default function ProfilePage({}) {
                   <div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                       <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">
-                          {t("profile:fields.fullName.label")} <span className="text-error-500">*</span>
+                        <label className="form-label">
+                          {t("profile:fields.fullName.label")} <span className="text-status-error">*</span>
                         </label>
                         <input
                           type="text"
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                          className="form-input"
                           placeholder={t("profile:fields.fullName.placeholder")}
                           disabled={isSaving}
                         />
                       </div>
                       
                       <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">{t("profile:fields.phoneNumber.label")}</label>
+                        <label className="form-label">{t("profile:fields.phoneNumber.label")}</label>
                         <CustomPhoneInput
                           value={editPhoneNumber}
                           onChange={setEditPhoneNumber}
                           placeholder={t("profile:fields.phoneNumber.placeholder")}
                           disabled={isSaving}
                         />
-                        <p className="text-xs text-gray-500">
+                        <p className="text-caption text-text-secondary">
                           {t("profile:fields.phoneNumber.help")}
                         </p>
                       </div>
                       
                       {user.email && !user.email.includes("telegram_") && (
                         <div className="space-y-2 md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700">{t("profile:fields.email.label")}</label>
-                          <div className="text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-lg border">
-                            {user.email} <span className="text-gray-400">({t("profile:fields.email.cannotChange")})</span>
+                          <label className="form-label">{t("profile:fields.email.label")}</label>
+                          <div className="text-caption text-text-secondary bg-bg-secondary px-3 py-2 rounded-lg border border-border-light">
+                            {user.email} <span className="text-text-muted">({t("profile:fields.email.cannotChange")})</span>
                           </div>
                         </div>
                       )}
                     </div>
                     
                     {/* Action buttons for edit mode */}
-                    <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-100">
+                    <div className="flex items-center justify-end space-x-3 pt-4 border-t border-border-light">
                       <button
                         onClick={cancelEditing}
-                        className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                        className="btn-ghost btn-size-md"
                         disabled={isSaving}
                       >
                         {t("profile:actions.cancel")}
                       </button>
                       <button
                         onClick={saveProfile}
-                        className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors flex items-center space-x-2"
+                        className="btn-primary btn-size-md flex items-center space-x-2"
                         disabled={isSaving || !editName.trim()}
                       >
                         {isSaving ? (
                           <>
-                            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                            <svg className="loading-spinner h-4 w-4" fill="none" viewBox="0 0 24 24">
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
@@ -617,18 +617,18 @@ export default function ProfilePage({}) {
             </div>
             
             {/* Password Change Section */}
-            <div className="bg-white rounded-xl shadow-sm border mt-6 h-fit">
+            <div className="card-base mt-6 h-fit">
               {/* Header */}
-              <div className="px-6 py-4 border-b border-gray-100">
+              <div className="px-6 py-4 border-b border-border-light">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-lg font-semibold text-gray-900">{t("profile:sections.password.title")}</h2>
-                    <p className="text-sm text-gray-600 mt-1">{t("profile:sections.password.subtitle")}</p>
+                    <h2 className="text-heading-3 text-text-primary">{t("profile:sections.password.title")}</h2>
+                    <p className="text-caption text-text-secondary mt-1">{t("profile:sections.password.subtitle")}</p>
                   </div>
                   {!showPasswordChange && (
                     <button
                       onClick={startPasswordChange}
-                      className="flex items-center space-x-2 bg-orange-50 text-orange-600 px-4 py-2 rounded-lg hover:bg-orange-100 transition-colors"
+                      className="btn-primary btn-size-md flex items-center space-x-2"
                     >
                       <RiKey2Line className="h-4 w-4" />
                       <span>{t("profile:actions.changePassword")}</span>
@@ -642,12 +642,12 @@ export default function ProfilePage({}) {
                 {!showPasswordChange ? (
                   /* View Mode */
                   <div className="text-center py-3">
-                    <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="w-10 h-10 bg-bg-secondary rounded-full flex items-center justify-center mx-auto mb-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
                     </div>
-                    <p className="text-gray-600 text-md">{t("profile:sections.password.description")}</p>
+                    <p className="text-text-secondary text-body">{t("profile:sections.password.description")}</p>
                   </div>
                 ) : (
                   /* Password Change Form */
@@ -655,22 +655,22 @@ export default function ProfilePage({}) {
                     <div className="space-y-6">
                       {/* New Password */}
                       <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">
-                          {t("profile:fields.password.new")} <span className="text-error-500">*</span>
+                        <label className="form-label">
+                          {t("profile:fields.password.new")} <span className="text-status-error">*</span>
                         </label>
                         <div className="relative">
                           <input
                             type={showNewPassword ? "text" : "password"}
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
-                            className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                            className="form-input pr-10"
                             placeholder={t("profile:fields.password.newPlaceholder")}
                             disabled={isUpdatingPassword}
                           />
                           <button
                             type="button"
                             onClick={() => setShowNewPassword(!showNewPassword)}
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-text-secondary"
                             disabled={isUpdatingPassword}
                           >
                             {showNewPassword ? (
@@ -688,35 +688,35 @@ export default function ProfilePage({}) {
                         
                         {/* Password Requirements */}
                         {newPassword && (
-                          <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                            <p className="text-sm font-medium text-gray-700 mb-2">{t("profile:fields.password.requirements")}</p>
+                          <div className="mt-3 p-3 bg-bg-secondary rounded-lg">
+                            <p className="text-caption font-medium text-text-primary mb-2">{t("profile:fields.password.requirements")}</p>
                             <div className="space-y-1">
-                              <div className={`flex items-center text-xs ${passwordChecklist.length ? 'text-success-600' : 'text-gray-500'}`}>
-                                <svg className={`w-3 h-3 mr-2 ${passwordChecklist.length ? 'text-success-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
+                              <div className={`flex items-center text-caption ${passwordChecklist.length ? 'text-status-success' : 'text-text-muted'}`}>
+                                <svg className={`w-3 h-3 mr-2 ${passwordChecklist.length ? 'text-status-success' : 'text-text-muted'}`} fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                 </svg>
                                 {t("profile:fields.password.requirement.length", { minLength: passwordRequirements.minLength })}
                               </div>
-                              <div className={`flex items-center text-xs ${passwordChecklist.lowercase ? 'text-success-600' : 'text-gray-500'}`}>
-                                <svg className={`w-3 h-3 mr-2 ${passwordChecklist.lowercase ? 'text-success-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
+                              <div className={`flex items-center text-caption ${passwordChecklist.lowercase ? 'text-status-success' : 'text-text-muted'}`}>
+                                <svg className={`w-3 h-3 mr-2 ${passwordChecklist.lowercase ? 'text-status-success' : 'text-text-muted'}`} fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                 </svg>
                                 {t("profile:fields.password.requirement.lowercase")}
                               </div>
-                              <div className={`flex items-center text-xs ${passwordChecklist.uppercase ? 'text-success-600' : 'text-gray-500'}`}>
-                                <svg className={`w-3 h-3 mr-2 ${passwordChecklist.uppercase ? 'text-success-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
+                              <div className={`flex items-center text-caption ${passwordChecklist.uppercase ? 'text-status-success' : 'text-text-muted'}`}>
+                                <svg className={`w-3 h-3 mr-2 ${passwordChecklist.uppercase ? 'text-status-success' : 'text-text-muted'}`} fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                 </svg>
                                 {t("profile:fields.password.requirement.uppercase")}
                               </div>
-                              <div className={`flex items-center text-xs ${passwordChecklist.number ? 'text-success-600' : 'text-gray-500'}`}>
-                                <svg className={`w-3 h-3 mr-2 ${passwordChecklist.number ? 'text-success-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
+                              <div className={`flex items-center text-caption ${passwordChecklist.number ? 'text-status-success' : 'text-text-muted'}`}>
+                                <svg className={`w-3 h-3 mr-2 ${passwordChecklist.number ? 'text-status-success' : 'text-text-muted'}`} fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                 </svg>
                                 {t("profile:fields.password.requirement.number")}
                               </div>
-                              <div className={`flex items-center text-xs ${passwordChecklist.specialChar ? 'text-success-600' : 'text-gray-500'}`}>
-                                <svg className={`w-3 h-3 mr-2 ${passwordChecklist.specialChar ? 'text-success-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
+                              <div className={`flex items-center text-caption ${passwordChecklist.specialChar ? 'text-status-success' : 'text-text-muted'}`}>
+                                <svg className={`w-3 h-3 mr-2 ${passwordChecklist.specialChar ? 'text-status-success' : 'text-text-muted'}`} fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                 </svg>
                                 {t("profile:fields.password.requirement.specialChar", { allowedChars: passwordRequirements.allowedSpecialChars })}
@@ -728,22 +728,22 @@ export default function ProfilePage({}) {
 
                       {/* Confirm Password */}
                       <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">
-                          {t("profile:fields.password.confirm")} <span className="text-error-500">*</span>
+                        <label className="form-label">
+                          {t("profile:fields.password.confirm")} <span className="text-status-error">*</span>
                         </label>
                         <div className="relative">
                           <input
                             type={showConfirmPassword ? "text" : "password"}
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                            className="form-input pr-10"
                             placeholder={t("profile:fields.password.confirmPlaceholder")}
                             disabled={isUpdatingPassword}
                           />
                           <button
                             type="button"
                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-text-secondary"
                             disabled={isUpdatingPassword}
                           >
                             {showConfirmPassword ? (
@@ -761,8 +761,8 @@ export default function ProfilePage({}) {
                         
                         {/* Password Match Indicator */}
                         {confirmPassword && (
-                          <div className={`flex items-center text-xs ${passwordsMatch ? 'text-success-600' : 'text-error-600'}`}>
-                            <svg className={`w-3 h-3 mr-2 ${passwordsMatch ? 'text-success-500' : 'text-error-500'}`} fill="currentColor" viewBox="0 0 20 20">
+                          <div className={`flex items-center text-caption ${passwordsMatch ? 'text-status-success' : 'text-status-error'}`}>
+                            <svg className={`w-3 h-3 mr-2 ${passwordsMatch ? 'text-status-success' : 'text-status-error'}`} fill="currentColor" viewBox="0 0 20 20">
                               {passwordsMatch ? (
                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                               ) : (
@@ -776,22 +776,22 @@ export default function ProfilePage({}) {
                     </div>
                     
                     {/* Action buttons for password change */}
-                    <div className="flex items-center justify-end space-x-3 pt-6 mt-6 border-t border-gray-100">
+                    <div className="flex items-center justify-end space-x-3 pt-6 mt-6 border-t border-border-light">
                       <button
                         onClick={cancelPasswordChange}
-                        className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                        className="btn-ghost btn-size-md"
                         disabled={isUpdatingPassword}
                       >
                         {t("profile:actions.cancel")}
                       </button>
                       <button
                         onClick={savePassword}
-                        className="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors flex items-center space-x-2"
+                        className="btn-primary btn-size-lg flex items-center space-x-2"
                         disabled={isUpdatingPassword || !newPassword || !confirmPassword || !passwordsMatch || !Object.values(passwordChecklist).every(Boolean)}
                       >
                         {isUpdatingPassword ? (
                           <>
-                            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                            <svg className="loading-spinner h-4 w-4" fill="none" viewBox="0 0 24 24">
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>

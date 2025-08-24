@@ -6,12 +6,68 @@
   "agent": {
     "title": "Agent Dashboard",
     "loading": "Loading dashboard...",
+    "dashboard": {
+      "title": "Agent Dashboard",
+      "subtitle": "Platform overview and management tools"
+    },
+    "error": {
+      "loadingDashboard": "Error Loading Dashboard",
+      "tryAgain": "Try Again"
+    },
+    "metrics": {
+      "totalPlaces": "Total Places",
+      "totalPaidToAgent": "Bookings Paid to Agent",
+      "totalPaidToHost": "Bookings Paid to Host",
+      "platformRating": "Platform Rating"
+    },
+    "bookingStatus": {
+      "title": "Overall Booking Status",
+      "subtitle": "Platform-wide booking statistics",
+      "pending": "Pending",
+      "approved": "Approved",
+      "selected": "Selected",
+      "paidToHost": "Paid to Host",
+      "cancelled": "Cancelled"
+    },
     "users": {
-      "title": "Users",
-      "clients": "Clients",
-      "hosts": "Hosts", 
+      "title": "Platform Users",
+      "subtitle": "User distribution and growth",
+      "hosts": "Hosts",
+      "clients": "Clients", 
       "agents": "Agents",
-      "total": "Total"
+      "total": "Total",
+      "monthlyGrowth": "Monthly Growth",
+      "thisMonth": "this month"
+    },
+    "reviews": {
+      "title": "Review Analytics",
+      "subtitle": "Overall platform review insights",
+      "totalReviews": "Total Reviews",
+      "averageRating": "Platform Rating",
+      "thisMonth": "This Month",
+      "pendingReviews": "Pending Reviews"
+    },
+    "trends": {
+      "title": "Monthly Trends", 
+      "subtitle": "Platform growth and activity statistics",
+      "userGrowth": "User Growth",
+      "bookingApprovals": "Booking Approvals",
+      "placesGrowth": "Places Growth",
+      "reviewActivity": "Review Activity"
+    },
+    "activity": {
+      "title": "Platform Activity",
+      "subtitle": "Real-time platform statistics",
+      "bookingsToday": "Bookings Today",
+      "activeHosts": "Active Hosts",
+      "activeClients": "Active Clients",
+      "totalUsers": "Total Users"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "manageBookings": "Manage Bookings",
+      "viewUsers": "View Users",
+      "viewPlaces": "View Places"
     },
     "places": {
       "title": "Conference Rooms",
@@ -30,6 +86,11 @@
       "manageBookings": "Manage Bookings",
       "viewUsers": "View Users",
       "viewRooms": "View Conference Rooms"
+    },
+    "placeholder": {
+      "title": "Agent Dashboard",
+      "description": "Manage and monitor the platform",
+      "availableActions": "Available actions:"
     }
   },
   "host": {

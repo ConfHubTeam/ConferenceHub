@@ -113,13 +113,40 @@ const createPlace = async (req, res) => {
     // Process refund options using service
     const processedRefundOptions = processRefundOptions(refundOptions);
     
+    // Process perks to support both legacy string format and new object format
+    let processedPerks = [];
+    if (Array.isArray(perks)) {
+      processedPerks = perks.map(perk => {
+        // If it's already an object with name and isPaid, keep it as is
+        if (typeof perk === 'object' && perk !== null && perk.name) {
+          return {
+            name: perk.name,
+            isPaid: Boolean(perk.isPaid) // Ensure isPaid is boolean
+          };
+        }
+        // If it's a string (legacy format), convert to object with isPaid: false
+        if (typeof perk === 'string') {
+          return {
+            name: perk,
+            isPaid: false // Default to free for legacy data
+          };
+        }
+        return null;
+      }).filter(Boolean); // Remove any null entries
+    }
+    
+    // Ensure processedPerks is valid JSON for JSONB field
+    if (!Array.isArray(processedPerks)) {
+      processedPerks = [];
+    }
+    
     const processedData = {
       ownerId: ownerId, // Use the determined ownerId (host ID for agents, user ID for hosts)
       title, 
       address, 
       photos: processedPhotos,
       description: description || "",
-      perks: Array.isArray(perks) ? perks : [],
+      perks: processedPerks,
       extraInfo: extraInfo || "",
       checkIn: checkIn || null,
       checkOut: checkOut || null,
@@ -311,12 +338,39 @@ const updatePlace = async (req, res) => {
       6: { start: "", end: "" }  // Saturday
     };
 
+    // Process perks to support both legacy string format and new object format
+    let processedPerks = [];
+    if (Array.isArray(perks)) {
+      processedPerks = perks.map(perk => {
+        // If it's already an object with name and isPaid, keep it as is
+        if (typeof perk === 'object' && perk !== null && perk.name) {
+          return {
+            name: perk.name,
+            isPaid: Boolean(perk.isPaid) // Ensure isPaid is boolean
+          };
+        }
+        // If it's a string (legacy format), convert to object with isPaid: false
+        if (typeof perk === 'string') {
+          return {
+            name: perk,
+            isPaid: false // Default to free for legacy data
+          };
+        }
+        return null;
+      }).filter(Boolean); // Remove any null entries
+    }
+    
+    // Ensure processedPerks is valid JSON for JSONB field
+    if (!Array.isArray(processedPerks)) {
+      processedPerks = [];
+    }
+
     // Update place properties
     place.title = title;
     place.address = address;
     place.photos = processedPhotos;
     place.description = description;
-    place.perks = perks;
+    place.perks = processedPerks;
     place.extraInfo = extraInfo;
     place.checkIn = checkIn;
     place.checkOut = checkOut;

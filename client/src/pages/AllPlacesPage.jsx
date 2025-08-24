@@ -10,7 +10,7 @@ import { useSizeFilter } from "../contexts/SizeFilterContext";
 import { usePerksFilter } from "../contexts/PerksFilterContext";
 import { usePoliciesFilter } from "../contexts/PoliciesFilterContext";
 import { convertCurrency } from "../utils/currencyUtils";
-import CloudinaryImage from "../components/CloudinaryImage";
+import PlaceCard from "../components/PlaceCard";
 import PriceDisplay from "../components/PriceDisplay";
 import Pagination from "../components/Pagination";
 import ActiveFilters, { FilterCreators } from "../components/ActiveFilters";
@@ -50,7 +50,7 @@ export default function AllPlacesPage() {
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(12);
+  const [itemsPerPage] = useState(50);
   const [totalPages, setTotalPages] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
 
@@ -325,14 +325,17 @@ export default function AllPlacesPage() {
   // Show loading state
   if (loading) {
     return (
-      <div>
-        
-        <div className="spacing-container spacing-section">
+      <div className="min-h-screen bg-bg-primary">
+        <div className="w-full px-4 sm:px-6 lg:px-8 pt-6">
           <div className="animate-pulse space-y-4">
-            <div className="h-16 bg-gray-200 rounded-lg mb-6"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="card-base">
+              <div className="h-16 bg-gray-200 rounded-lg"></div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-80 bg-gray-200 rounded-xl"></div>
+                <div key={i} className="card-base">
+                  <div className="h-80 bg-gray-200 rounded-xl"></div>
+                </div>
               ))}
             </div>
           </div>
@@ -342,182 +345,106 @@ export default function AllPlacesPage() {
   }
 
   return (
-    <div>
-      
-      <div className="spacing-container pb-20 md:pb-8">
+    <div className="min-h-screen bg-bg-primary">
+      <div className="w-full px-4 sm:px-6 lg:px-8 pt-6 pb-20 md:pb-8">
         
-        {/* Page header with Create Place button for agents */}
-        <div className="mb-6">
-          <div className="flex items-center justify-center">
+        {/* Page header with search and Add Place button in same row */}
+        <div className="card-base mb-6">
+          <div className="card-content p-4">
+            <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+              {/* Search input */}
+              <div className="flex-1">
+                <input
+                  id="search"
+                  type="text"
+                  placeholder={t('allPlacesPage.searchPlaceholder', 'Search by title, address, or host name...')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="input-base text-primary h-10"
+                />
+              </div>
+              
+              {/* Create Place button for agents */}
+              {user && user.userType === 'agent' && (
+                <div className="flex-shrink-0">
+                  <Link
+                    className="btn-primary h-10 px-6 rounded-xl inline-flex items-center gap-2"
+                    to={"/account/places/new"}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-5 h-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 4.5v15m7.5-7.5h-15"
+                      />
+                    </svg>
+                    {t('allPlacesPage.createPlace', 'Create Place')}
+                  </Link>
+                </div>
+              )}
+            </div>
             
-            {/* Create Place button for agents */}
-            {user && user.userType === 'agent' && (
-              <Link
-                className="inline-flex items-center gap-2 bg-primary text-white py-2 px-4 rounded-full hover:bg-primary-dark transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
-                to={"/account/places/new"}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-5 h-5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 4.5v15m7.5-7.5h-15"
-                  />
-                </svg>
-                {t('allPlacesPage.createPlace', 'Create Place')}
-              </Link>
-            )}
-          </div>
-        </div>
-        
-        {/* Filters and controls */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search input */}
-            <div className="flex-1">
-              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
-                {t('allPlacesPage.searchRooms', 'Search Rooms')}
-              </label>
-              <input
-                type="text"
-                placeholder={t('allPlacesPage.searchPlaceholder', 'Search by title, address, or host name...')}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 hover:border-gray-400 text-sm"
+            {/* Active filters */}
+            <div className="mt-4">
+              <ActiveFilters 
+                filters={getActiveFilters()}
+                onClearAllFilters={clearAllFilters}
               />
             </div>
           </div>
-          
-          {/* Active filters */}
-          <ActiveFilters 
-            filters={getActiveFilters()}
-            onClearAllFilters={clearAllFilters}
-          />
         </div>
         
         {/* Places listing */}
         {filteredPlaces.length === 0 ? (
-          <div className="bg-white spacing-card rounded-lg shadow-md text-center">
-            <div className="w-16 h-16 mx-auto mb-4 text-gray-400">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H9m0 0H5m4 0V9a2 2 0 012-2h2a2 2 0 012 2v8" />
-              </svg>
+          <div className="card-base text-center">
+            <div className="card-content">
+              <div className="w-16 h-16 mx-auto mb-4 text-gray-400">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H9m0 0H5m4 0V9a2 2 0 012-2h2a2 2 0 012 2v8" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-primary mb-2">{t('allPlacesPage.noRoomsFound', 'No conference rooms found')}</h3>
+              <p className="text-secondary mb-4">
+                {selectedUserId || searchTerm 
+                  ? t('allPlacesPage.tryAdjustingFilters', 'Try adjusting your filters to see more results.') 
+                  : t('allPlacesPage.noRoomsListed', 'No conference rooms have been listed yet.')
+                }
+              </p>
+              {(selectedUserId || searchTerm) && (
+                <button
+                  onClick={clearAllFilters}
+                  className="btn-outline"
+                >
+                  {t('allPlacesPage.clearAllFilters', 'Clear all filters')}
+                </button>
+              )}
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">{t('allPlacesPage.noRoomsFound', 'No conference rooms found')}</h3>
-            <p className="text-gray-500 mb-4">
-              {selectedUserId || searchTerm 
-                ? t('allPlacesPage.tryAdjustingFilters', 'Try adjusting your filters to see more results.') 
-                : t('allPlacesPage.noRoomsListed', 'No conference rooms have been listed yet.')
-              }
-            </p>
-            {(selectedUserId || searchTerm) && (
-              <button
-                onClick={clearAllFilters}
-                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
-              >
-                {t('allPlacesPage.clearAllFilters', 'Clear all filters')}
-              </button>
-            )}
           </div>
         ) : (
-          <div className="mb-8">
-            {/* Results summary */}
-            <div className="mb-4 text-sm text-gray-600">
-              {t('allPlacesPage.showingResults', 'Showing {{count}} of {{total}} conference room{{plural}}', {
-                count: filteredPlaces.length,
-                total: totalItems,
-                plural: totalItems !== 1 ? 's' : ''
-              })}
-              {selectedUserId && ` ${t('allPlacesPage.byHost', 'by {{hostName}}', { hostName: getSelectedUser()?.name })}`}
-              {searchTerm && ` ${t('allPlacesPage.matching', 'matching "{{searchTerm}}"', { searchTerm })}`}
+          <div>
+            {/* Results header */}
+            <div className="flex items-center justify-between mb-spacing-md">
+              <h2 className="text-lg font-semibold text-primary">
+                {t('allPlacesPage.allRooms', 'All Conference Rooms')}
+                <span className="ml-2 text-sm text-secondary">({filteredPlaces.length})</span>
+              </h2>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredPlaces.map(place => (
-                <div key={place.id} className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200 hover:border-gray-400 hover:shadow-lg transition-all duration-200">
-                  <a href={`/place/${place.id}${location.search}`} className="block">
-                    <div className="h-48 bg-gray-200 relative overflow-hidden">
-                      {place.photos?.[0] && (
-                        <CloudinaryImage
-                          photo={place.photos[0]}
-                          alt={place.title}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-                        />
-                      )}
-                      {!place.photos?.[0] && (
-                        <div className="flex items-center justify-center h-full text-gray-400">
-                          <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-4">
-                      <h3 className="text-xl font-semibold mb-1 truncate">{place.address}</h3>
-                      <p className="text-base text-gray-500 mb-2 truncate">{place.title}</p>
-                      
-                      {/* Rating and max guests row */}
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center space-x-3">
-                          {/* Rating display */}
-                          <div className="flex items-center text-base text-gray-600">
-                            <svg className="w-5 h-5 mr-1 fill-current text-yellow-400" viewBox="0 0 20 20">
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                            <span className="font-medium">{place.averageRating || t('common:status.new', 'New')}</span>
-                            {place.totalReviews > 0 && (
-                              <span className="ml-1">({place.totalReviews})</span>
-                            )}
-                          </div>
-                          
-                          {/* Max guests */}
-                          {place.maxGuests && (
-                            <div className="flex items-center text-base text-gray-600">
-                              <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                              </svg>
-                              {place.maxGuests} {t('common:units.guests_plural', 'guests')}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {/* Additional details */}
-                      <div className="space-y-2 mb-3">
-                        {place.squareMeters && (
-                          <div className="flex items-center text-sm text-gray-600">
-                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                            </svg>
-                            {place.squareMeters} m²
-                          </div>
-                        )}
-                      </div>
-                      
-                      {place.owner && (
-                        <div className="flex items-center justify-between mt-3 pt-3 border-t">
-                          <span className="bg-success-100 text-success-800 text-sm px-3 py-1 rounded-full">
-                            {t('allPlacesPage.host', 'Host')}: {place.owner.name}
-                          </span>
-                          <span className="text-base text-primary font-semibold">
-                            <PriceDisplay 
-                              price={place.price} 
-                              currency={place.currency}
-                              suffix="/hr"
-                              priceClassName="text-base"
-                            />
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </a>
-                </div>
+
+            {/* Places grid using PlaceCard component */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredPlaces.map((place) => (
+                <PlaceCard
+                  key={place.id}
+                  place={place}
+                  showActions={false}
+                />
               ))}
             </div>
           </div>
