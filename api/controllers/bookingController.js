@@ -694,7 +694,33 @@ const selectCashPayment = async (req, res) => {
       });
     }
 
-    // TODO: Add duplicate notification check later
+    // Check if cash payment notification has already been sent
+    if (booking.cashNotificationSent) {
+      // Get agent information for response
+      const AgentService = require('../services/agentService');
+      const agents = await AgentService.getAllAgents();
+      const primaryAgent = agents && agents.length > 0 ? agents[0] : null;
+      
+      return res.json({
+        success: true,
+        message: 'Cash payment was already selected. Agents were previously notified.',
+        booking: {
+          id: booking.id,
+          uniqueRequestId: booking.uniqueRequestId,
+          status: booking.status,
+          paymentMethod: 'cash',
+          cashPaymentSelected: true,
+          cashPaymentSelectedAt: booking.cashPaymentSelectedAt,
+          cashNotificationSent: booking.cashNotificationSent,
+          cashNotificationSentAt: booking.cashNotificationSentAt
+        },
+        agentContact: primaryAgent ? {
+          name: primaryAgent.name,
+          phone: primaryAgent.phone
+        } : null,
+        alreadyNotified: true
+      });
+    }
 
     // Import the notification service
     const BookingNotificationService = require('../services/bookingNotificationService');
@@ -709,8 +735,14 @@ const selectCashPayment = async (req, res) => {
     // Send notification to agents
     const notifications = await BookingNotificationService.createCashPaymentSelectedNotification(booking);
 
-    console.log(`💰 Client ${userData.name} selected cash payment for booking #${booking.uniqueRequestId || booking.id}`);
-    console.log(`📧 Notified ${notifications.length} agent(s) about cash payment selection`);
+    // Update booking to mark cash payment selected and notification sent
+    const now = new Date();
+    await booking.update({
+      cashPaymentSelected: true,
+      cashPaymentSelectedAt: now,
+      cashNotificationSent: true,
+      cashNotificationSentAt: now
+    });
 
     res.json({
       success: true,
@@ -719,7 +751,11 @@ const selectCashPayment = async (req, res) => {
         id: booking.id,
         uniqueRequestId: booking.uniqueRequestId,
         status: booking.status,
-        paymentMethod: 'cash'
+        paymentMethod: 'cash',
+        cashPaymentSelected: true,
+        cashPaymentSelectedAt: now,
+        cashNotificationSent: true,
+        cashNotificationSentAt: now
       },
       agentContact: primaryAgent ? {
         name: primaryAgent.name,

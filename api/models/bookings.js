@@ -137,6 +137,32 @@ const Booking = sequelize.define('Booking', {
     allowNull: true,
     field: 'paid_at',
     comment: 'When the payment was successfully completed'
+  },
+  cashPaymentSelected: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+    field: 'cash_payment_selected',
+    comment: 'Whether client has selected cash payment method for this booking'
+  },
+  cashPaymentSelectedAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    field: 'cash_payment_selected_at',
+    comment: 'Timestamp when cash payment was selected by client'
+  },
+  cashNotificationSent: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+    field: 'cash_notification_sent',
+    comment: 'Whether cash payment notification has been sent to agents'
+  },
+  cashNotificationSentAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    field: 'cash_notification_sent_at',
+    comment: 'Timestamp when cash payment notification was sent to agents'
   }
 }, {
   timestamps: true
