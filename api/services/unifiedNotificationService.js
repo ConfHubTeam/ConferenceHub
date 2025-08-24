@@ -11,10 +11,7 @@
  * Implements DRY principle by centralizing notification logic and template generation
  */
 
-const Notification = require("../models/notification");
-const User = require("../models/users");
-const Place = require("../models/places");
-const Booking = require("../models/bookings");
+const { Notification, User, Place, Booking } = require("../models");
 const eskizSMSService = require("./eskizSMSService");
 
 class UnifiedNotificationService {

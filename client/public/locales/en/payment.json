@@ -38,6 +38,19 @@
   "paymePayment": {
     "button": "Pay with Payme"
   },
+  "cash": {
+    "modalTitle": "Cash Payment",
+    "instruction": "Contact our agent to arrange cash payment for your booking.",
+    "contactTitle": "Agent Contact",
+    "contactUnavailable": "Agent contact information will be provided after confirmation.",
+    "step1": "Our agent will be notified",
+    "step2": "Agent will contact you",
+    "step3": "Complete payment and confirm booking",
+    "confirm": "Notify Agent"
+  },
+  "methods": {
+    "cash": "Cash"
+  },
   "errors": {
     "phoneRequired": "Phone number is required",
     "invalidPhone": "Please enter a valid phone number",

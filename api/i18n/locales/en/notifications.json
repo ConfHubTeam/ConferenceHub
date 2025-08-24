@@ -6,7 +6,8 @@
     "booking_confirmed": "Booking Confirmed",
     "booking_selected": "Booking Selected",
     "booking_rejected": "Booking Declined",
-    "booking_paid_to_host": "Payment to Host"
+    "booking_paid_to_host": "Payment to Host",
+    "booking_payment_pending": "Cash Payment Request"
   },
   "messages": {
     "booking_requested": "New booking request {{bookingReference}} for \"{{placeName}}\" on {{dateRange}}",
@@ -17,7 +18,8 @@
     "booking_confirmed_client": "Your booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been confirmed!",
     "booking_selected": "Booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been selected. Please proceed with payment.",
     "booking_rejected": "Booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been declined. We apologize for any inconvenience.",
-    "booking_paid_to_host": "Payout of {{amount}} has been made for booking {{bookingReference}}"
+    "booking_paid_to_host": "Payout of {{amount}} has been made for booking {{bookingReference}}",
+    "booking_payment_pending": "Client with booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}} selected cash as payment method. Please collect payment offline."
   },
   "booking": {
     "requested": "New booking request {{bookingReference}} for \"{{placeName}}\" on {{dateRange}}",
@@ -32,7 +34,8 @@
     },
     "selected": "Booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been selected. Please proceed with payment.",
     "rejected": "Booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been declined. We apologize for any inconvenience.",
-    "paidToHost": "Payout of {{amount}} has been made for booking {{bookingReference}}"
+    "paidToHost": "Payout of {{amount}} has been made for booking {{bookingReference}}",
+    "paymentPending": "Client with booking {{bookingReference}} for \"{{placeName}}\" on {{dateRange}} selected cash as payment method. Please collect payment offline."
   },
   "payment": {
     "success": "Payment successful",

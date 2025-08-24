@@ -55,6 +55,10 @@
     "offline": "Oflayn"
   },
   "loading": "Yuklanmoqda...",
+  "name": "Ism",
+  "phone": "Telefon",
+  "email": "Email", 
+  "hours": "Ish soatlari",
   "messages": {
     "noData": "Ma'lumot mavjud emas",
     "noResults": "Natija topilmadi",

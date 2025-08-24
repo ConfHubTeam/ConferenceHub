@@ -430,6 +430,38 @@ GetSpace.uz platformasiga kirish uchun tasdiqlash kodi: {{code}}. 5 daqiqa amal 
 
 **For Eskiz Submission:** Please submit all three language versions above for immediate approval to resolve production issues.
 
+### **HIGH PRIORITY: Cash Payment Selection Templates**
+
+**Status:** ❌ Not approved - causing SMS delivery failures for agent notifications
+**Priority:** HIGH - affecting agent notification when clients select cash payment
+
+#### English Template:
+```
+Client selected cash payment for booking #{{bookingReference}} of "{{placeName}}" on {{dateRange}}. Please collect payment offline.
+```
+**Example:** Client selected cash payment for booking #REQ-67890 of "Luxury Conference Room" on Aug 10, 2025 - Aug 12, 2025. Please collect payment offline.
+
+#### Russian Template:
+```
+Клиент выбрал наличную оплату за бронирование #{{bookingReference}} для "{{placeName}}" на {{dateRange}}. Получите оплату офлайн.
+```
+**Example:** Клиент выбрал наличную оплату за бронирование #REQ-67890 для "Роскошный конференц-зал" на 10 авг. 2025 - 12 авг. 2025. Получите оплату офлайн.
+
+#### Uzbek Template:
+```
+"{{placeName}}" uchun {{dateRange}} sanasiga band qilish #{{bookingReference}} uchun mijoz naqd to'lovni tanladi. Iltimos, to'lovni oflayn oling.
+```
+**Example:** "Luxury Conference Room" uchun Aug 10, 2025 - Aug 12, 2025 sanasiga band qilish #REQ-67890 uchun mijoz naqd to'lovni tanladi. Iltimos, to'lovni oflayn oling.
+
+**Technical Details:**
+- Used when client selects cash payment method instead of online payment
+- Notifies agents that offline payment collection is required
+- Template key: `sms:booking.cashSelected`
+- Implementation: `/api/services/bookingNotificationService.js`
+- **Impact:** Currently causing SMS failures when agents should be notified of cash payment selections
+
+**For Eskiz Submission:** Please submit all three language versions above for immediate approval to resolve production issues.
+
 ---
 
 ## � **UZBEK TEMPLATES FOR ESKIZ SUBMISSION**

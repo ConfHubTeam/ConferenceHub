@@ -51,6 +51,9 @@ router.put("/:id", userController.updateUser);
 // Get admin contact information (public endpoint)
 router.get("/admin/contact", userController.getAdminContact);
 
+// Get agent contact information (public endpoint for cash payments)
+router.get("/agents/contact", userController.getAgentContact);
+
 // Delete a user (agent only)
 router.delete("/:id", userController.deleteUser);
 

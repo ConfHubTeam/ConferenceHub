@@ -6,7 +6,8 @@
     "booking_confirmed": "Band qilish tasdiqlandi",
     "booking_selected": "Band qilish tanlandi",
     "booking_rejected": "Band qilish rad etildi",
-    "booking_paid_to_host": "Uy egasiga to'lov"
+    "booking_paid_to_host": "Uy egasiga to'lov",
+    "booking_payment_pending": "Naqd to'lov so'rovi"
   },
   "messages": {
     "booking_requested": "Yangi band qilish so'rovi {{bookingReference}} \"{{placeName}}\" uchun {{dateRange}} kunlariga",
@@ -17,7 +18,8 @@
     "booking_confirmed_client": "Sizning {{bookingReference}} band qilishingiz \"{{placeName}}\" uchun {{dateRange}} kunlariga tasdiqlandi!",
     "booking_selected": "{{bookingReference}} band qilish \"{{placeName}}\" uchun {{dateRange}} kunlariga tanlandi. Iltimos, to'lovni amalga oshiring.",
     "booking_rejected": "{{bookingReference}} band qilish \"{{placeName}}\" uchun {{dateRange}} kunlariga rad etildi. Noqulaylik uchun uzr so'raymiz.",
-    "booking_paid_to_host": "{{amount}} miqdorida to'lov {{bookingReference}} band qilish uchun amalga oshirildi"
+    "booking_paid_to_host": "{{amount}} miqdorida to'lov {{bookingReference}} band qilish uchun amalga oshirildi",
+    "booking_payment_pending": "{{bookingReference}} band qilish \"{{placeName}}\" uchun {{dateRange}} kunlariga mijoz naqd to'lovni tanladi. Iltimos, to'lovni oflayn qabul qiling."
   },
   "booking": {
     "requested": "Yangi band qilish so'rovi {{bookingReference}} \"{{placeName}}\" uchun {{dateRange}} kunlariga",
@@ -32,7 +34,8 @@
     },
     "selected": "{{bookingReference}} band qilish \"{{placeName}}\" uchun {{dateRange}} kunlariga tanlandi. Iltimos, to'lovni amalga oshiring.",
     "rejected": "{{bookingReference}} band qilish \"{{placeName}}\" uchun {{dateRange}} kunlariga rad etildi. Noqulaylik uchun uzr so'raymiz.",
-    "paidToHost": "{{amount}} miqdorida to'lov {{bookingReference}} band qilish uchun amalga oshirildi"
+    "paidToHost": "{{amount}} miqdorida to'lov {{bookingReference}} band qilish uchun amalga oshirildi",
+    "paymentPending": "{{bookingReference}} band qilish \"{{placeName}}\" uchun {{dateRange}} kunlariga mijoz naqd to'lovni tanladi. Iltimos, to'lovni oflayn qabul qiling."
   },
   "payment": {
     "success": "To'lov muvaffaqiyatli",

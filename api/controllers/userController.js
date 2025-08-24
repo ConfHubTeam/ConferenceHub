@@ -2228,6 +2228,47 @@ const getLanguagePreference = async (req, res) => {
   }
 };
 
+/**
+ * Get agent contact information for cash payments
+ */
+const getAgentContact = async (req, res) => {
+  try {
+    // Get the first available agent for contact info
+    const agent = await User.findOne({
+      where: {
+        userType: 'agent'
+      },
+      attributes: ['id', 'name', 'email', 'phoneNumber'],
+      order: [['createdAt', 'ASC']] // Get the first created agent
+    });
+
+    if (!agent) {
+      return res.status(404).json({
+        success: false,
+        message: 'No agents available',
+        agentContact: null
+      });
+    }
+
+    res.json({
+      success: true,
+      agentContact: {
+        name: agent.name,
+        phone: agent.phoneNumber,
+        email: agent.email
+      }
+    });
+
+  } catch (error) {
+    console.error("Error getting agent contact:", error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get agent contact information',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -2243,6 +2284,7 @@ module.exports = {
   getHostReviews,
   updateLanguagePreference,
   getLanguagePreference,
+  getAgentContact,
   sendPhoneVerification,
   verifyPhoneAndUpdate
 };

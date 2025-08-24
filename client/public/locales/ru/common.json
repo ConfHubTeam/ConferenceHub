@@ -55,6 +55,10 @@
     "offline": "Офлайн"
   },
   "loading": "Загрузка...",
+  "name": "Имя",
+  "phone": "Телефон",
+  "email": "Email", 
+  "hours": "Рабочие часы",
   "messages": {
     "noData": "Нет данных",
     "noResults": "Результаты не найдены",

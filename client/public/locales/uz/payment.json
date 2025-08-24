@@ -38,6 +38,19 @@
   "paymePayment": {
     "button": "Payme orqali to'lash"
   },
+  "cash": {
+    "modalTitle": "Naqd pul to'lovi",
+    "instruction": "Bandlashingiz uchun naqd pul to'lovini tashkil qilish uchun bizning agentimiz bilan bog'laning.",
+    "contactTitle": "Agent aloqa ma'lumotlari",
+    "contactUnavailable": "Agent aloqa ma'lumotlari tasdiqlashdan keyin taqdim etiladi.",
+    "step1": "Bizning agentimiz xabardor qilinadi",
+    "step2": "Agent siz bilan bog'lanadi",
+    "step3": "To'lovni yakunlang va bandlashni tasdiqlang",
+    "confirm": "Agentni xabardor qilish"
+  },
+  "methods": {
+    "cash": "Naqd pul"
+  },
   "errors": {
     "phoneRequired": "Telefon raqami majburiy",
     "invalidPhone": "Iltimos, to'g'ri telefon raqamini kiriting",

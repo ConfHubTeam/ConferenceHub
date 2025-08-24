@@ -24,7 +24,7 @@ class AgentService {
         where: {
           userType: "agent"
         },
-        attributes: ["id", "name", "email"]
+        attributes: ["id", "name", "email", "phoneNumber"]
       });
 
       return agents;
@@ -44,7 +44,7 @@ class AgentService {
         where: {
           userType: "agent"
         },
-        attributes: ["id", "name", "email"]
+        attributes: ["id", "name", "email", "phoneNumber"]
       });
 
       return agent;

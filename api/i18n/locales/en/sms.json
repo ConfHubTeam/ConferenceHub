@@ -15,6 +15,7 @@
     },
     "paid": "Payment received for booking #{{bookingReference}} of \"{{placeName}}\" on {{dateRange}}. Payout to host required.",
     "rejected": "Booking #{{bookingReference}} for \"{{placeName}}\" on {{dateRange}} has been rejected.",
-    "paidToHost": "Payout of {{amount}} has been processed for booking #{{bookingReference}}"
+    "paidToHost": "Payout of {{amount}} has been processed for booking #{{bookingReference}}",
+    "cashSelected": "Client with booking #{{bookingReference}} for \"{{placeName}}\" on {{dateRange}} selected cash as payment method. Please collect payment offline."
   }
 }

@@ -15,6 +15,7 @@
     },
     "paid": "\"{{placeName}}\" uchun {{dateRange}} sanasiga band qilish #{{bookingReference}} uchun to'lov qabul qilindi. Egaga to'lov talab qilinadi.",
     "rejected": "\"{{placeName}}\" uchun {{dateRange}} sanasiga band qilish #{{bookingReference}} rad etildi.",
-    "paidToHost": "Band qilish #{{bookingReference}} uchun {{amount}} miqdorda to'lov amalga oshirildi"
+    "paidToHost": "Band qilish #{{bookingReference}} uchun {{amount}} miqdorda to'lov amalga oshirildi",
+    "cashSelected": "{{bookingReference}} band qilish \"{{placeName}}\" uchun {{dateRange}} sanasiga mijoz naqd to'lovni tanladi. Iltimos, to'lovni oflayn qabul qiling."
   }
 }
