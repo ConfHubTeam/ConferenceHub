@@ -4,9 +4,19 @@
 
 ## � **CURRENT STATUS**
 
-- **✅ English & Russian:** 100% approved and working for booking notifications
+- **✅ English & Russian:** 8/9 approved ### 📈 **CURRENT STATUS:**
+- **✅ 8 booking message types working in Russian** (100% approval rate for RU booking messages)
+- **✅ 8 booking message types working in English** (100% approval rate for EN booking messages)
+- **❌ 1 booking rejection/cancellation message FAILING in all languages** (needs immediate approval)
+- **❌ 1 phone verification message FAILING in all languages** (needs immediate approval)
+- **⏳ 9 booking message types pending in Uzbek** (0% approval rate for UZ booking messages)
+- **🌍 2 languages fully supported for bookings** (English, Russian - except rejection/cancellation)
+- **📱 SMS delivery confirmed** for approved booking messages
+- **🚫 Phone verification BLOCKED** until Eskiz approval
+- **🚫 Booking rejection/cancellation BLOCKED** until Eskiz approvaling for booking notifications (rejection/cancellation pending)
 - **⏳ Uzbek:** 0% approved - all templates need submission
 - **❌ Phone Verification:** NEW TEMPLATE - needs submission for all languages
+- **❌ Booking Rejection/Cancellation:** NEW TEMPLATE - needs submission for all languages
 
 The system supports SMS notifications in **English** and **Russian** for booking flows, with **Uzbek** templates and **Phone Verification** templates ready for Eskiz approval.
 
@@ -64,7 +74,12 @@ All booking notification messages are **approved** and sending successfully in *
    Payout of $250.00 has been made for booking #REQ-67890
    ```
 
-9. **❌ Phone Verification** (phone_verification) - NEW TEMPLATE NEEDS APPROVAL:
+9. **❌ Booking Rejection/Cancellation** (booking_rejected) - NEW TEMPLATE NEEDS APPROVAL:
+   ```
+   Booking #REQ-67890 for "Luxury Conference Room" on Aug 10, 2025 - Aug 12, 2025 has been rejected.
+   ```
+
+10. **❌ Phone Verification** (phone_verification) - NEW TEMPLATE NEEDS APPROVAL:
    ```
    Verification code for login to GetSpace.uz platform: 123456. Valid for 5 minutes.
    ```
@@ -111,7 +126,12 @@ All booking notification messages are **approved** and sending successfully in *
    Выплата в размере $250.00 произведена за бронирование #REQ-67890
    ```
 
-9. **❌ Подтверждение телефона** (phone_verification) - НОВЫЙ ШАБЛОН ТРЕБУЕТ ОДОБРЕНИЯ:
+9. **❌ Отклонение/отмена бронирования** (booking_rejected) - НОВЫЙ ШАБЛОН ТРЕБУЕТ ОДОБРЕНИЯ:
+   ```
+   Бронирование #REQ-67890 для "Роскошный конференц-зал" на 10 авг. 2025 - 12 авг. 2025 было отклонено.
+   ```
+
+10. **❌ Подтверждение телефона** (phone_verification) - НОВЫЙ ШАБЛОН ТРЕБУЕТ ОДОБРЕНИЯ:
    ```
    Код верификации для входа в систему GetSpace.uz: 123456. Действителен 5 минут.
    ```
@@ -160,7 +180,12 @@ All booking notification messages are **approved** and sending successfully in *
    Band qilish #REQ-67890 uchun $250.00 miqdorda to'lov amalga oshirildi
    ```
 
-9. **⏳ Telefon tasdiqlash** (phone_verification) - YANGI SHABLON TASDIQLASH KUTILMOQDA:
+9. **⏳ Band qilishni rad etish/bekor qilish** (booking_rejected) - YANGI SHABLON TASDIQLASH KUTILMOQDA:
+   ```
+   "Luxury Conference Room" uchun Aug 10, 2025 - Aug 12, 2025 sanasiga band qilish #REQ-67890 rad etildi.
+   ```
+
+10. **⏳ Telefon tasdiqlash** (phone_verification) - YANGI SHABLON TASDIQLASH KUTILMOQDA:
    ```
    GetSpace.uz platformasiga kirish uchun tasdiqlash kodi: 123456. 5 daqiqa amal qiladi.
    ```
@@ -177,12 +202,11 @@ All booking notification messages are **approved** and sending successfully in *
 - **� Phone verification BLOCKED** until Eskiz approval
 
 ### 🎯 **APPROVAL BREAKDOWN:**
-- **English Booking Messages:** ✅ Fully approved and working
-- **Russian Booking Messages:** ✅ Fully approved and working  
-- **Uzbek Booking Messages:** ❌ All templates need Eskiz approval
+- **English Booking Messages:** ✅ 8/9 approved and working (rejection/cancellation pending)
+- **Russian Booking Messages:** ✅ 8/9 approved and working (rejection/cancellation pending)
+- **Uzbek Booking Messages:** ❌ All 9 templates need Eskiz approval
 - **Phone Verification (ALL languages):** ❌ URGENT - needs immediate approval
-
-## 📝 **APPROVED MESSAGE TEMPLATES WITH VARIATIONS**
+- **Booking Rejection/Cancellation (ALL languages):** ❌ URGENT - needs immediate approval## 📝 **APPROVED MESSAGE TEMPLATES WITH VARIATIONS**
 
 ### Language Support
 - **Primary Language:** English (en) - Default fallback
@@ -321,9 +345,9 @@ The i18n system is ready for additional languages:
 
 ### New Message Types (Future Eskiz Approval Needed)
 When implementing new features, these message types may need approval:
-- Booking rejection notifications
+- ❌ Booking rejection notifications (URGENT - currently blocking production)
+- ❌ Booking cancellation notifications (URGENT - currently blocking production)
 - Booking reminder notifications  
-- Booking cancellation notifications
 - Late payment warnings
 - Review request notifications
 
@@ -332,6 +356,36 @@ When implementing new features, these message types may need approval:
 ---
 
 ## 🚨 **IMMEDIATE SUBMISSION REQUIRED**
+
+### **HIGH PRIORITY: Booking Rejection/Cancellation Templates**
+
+**Status:** ❌ Not approved - causing SMS delivery failures for host notifications
+**Priority:** HIGH - affecting user experience when bookings are rejected or cancelled
+
+#### English Template:
+```
+Booking #{{bookingReference}} for "{{placeName}}" on {{dateRange}} has been rejected.
+```
+**Example:** Booking #REQ-67890 for "Luxury Conference Room" on Aug 10, 2025 - Aug 12, 2025 has been rejected.
+
+#### Russian Template:
+```
+Бронирование #{{bookingReference}} для "{{placeName}}" на {{dateRange}} было отклонено.
+```
+**Example:** Бронирование #REQ-67890 для "Роскошный конференц-зал" на 10 авг. 2025 - 12 авг. 2025 было отклонено.
+
+#### Uzbek Template:
+```
+"{{placeName}}" uchun {{dateRange}} sanasiga band qilish #{{bookingReference}} rad etildi.
+```
+**Example:** "Luxury Conference Room" uchun Aug 10, 2025 - Aug 12, 2025 sanasiga band qilish #REQ-67890 rad etildi.
+
+**Technical Details:**
+- Used for booking rejection by host/agent and booking cancellation by client
+- Same template used for both rejection and cancellation scenarios
+- Template key: `sms:booking.rejected`
+- Implementation: `/api/services/bookingNotificationService.js`
+- **Impact:** Currently causing SMS failures when hosts should be notified of booking changes
 
 ### **UPDATED: SMS Provider Compliance Requirements**
 
@@ -424,7 +478,19 @@ GetSpace.uz platformasiga kirish uchun tasdiqlash kodi: {{code}}. 5 daqiqa amal 
 ```
 **Example:** "Luxury Conference Room" uchun Aug 10, 2025 - Aug 12, 2025 sanasiga band qilish #REQ-67890 uchun to'lov qabul qilindi. Egaga to'lov talab qilinadi.
 
-### Template 8: Phone Verification (NEW - NEEDS APPROVAL)
+### Template 8: Payout to Host
+```
+Band qilish #{{bookingReference}} uchun {{amount}} miqdorda to'lov amalga oshirildi
+```
+**Example:** Band qilish #REQ-67890 uchun $250.00 miqdorda to'lov amalga oshirildi
+
+### Template 9: Booking Rejection/Cancellation (NEW - NEEDS APPROVAL)
+```
+"{{placeName}}" uchun {{dateRange}} sanasiga band qilish #{{bookingReference}} rad etildi.
+```
+**Example:** "Luxury Conference Room" uchun Aug 10, 2025 - Aug 12, 2025 sanasiga band qilish #REQ-67890 rad etildi.
+
+### Template 10: Phone Verification (NEW - NEEDS APPROVAL)
 ```
 GetSpace.uz platformasiga kirish uchun tasdiqlash kodi: {{code}}. 5 daqiqa amal qiladi.
 ```
@@ -435,14 +501,20 @@ GetSpace.uz platformasiga kirish uchun tasdiqlash kodi: {{code}}. 5 daqiqa amal 
 ## �📋 **ESKIZ SUBMISSION CHECKLIST**
 
 ### ✅ Ready for Submission:
-- [x] English templates (already approved)
-- [x] Russian templates (already approved)
-- [x] Uzbek templates (ready for approval)
+- [x] English templates (8 approved, 1 pending - rejection/cancellation)
+- [x] Russian templates (8 approved, 1 pending - rejection/cancellation)
+- [x] Uzbek templates (ready for approval - all 9 templates)
+- [x] Phone verification templates (ready for approval - all 3 languages)
+- [x] Booking rejection/cancellation templates (ready for approval - all 3 languages)
 - [x] Variable interpolation documented
 - [x] Message flow documented
 - [x] Technical implementation documented
 
 ### 📝 **For Eskiz Team:**
-Please approve the Uzbek message templates above. They follow the same format and structure as the already-approved English and Russian templates, with proper localization for Uzbek language.
+Please approve the following templates:
 
-**Technical Note:** All messages use the same variable interpolation system (`{{variableName}}`) and follow identical message flows. Only the language has been translated while preserving the exact same functionality and structure.
+1. **HIGH PRIORITY - Booking Rejection/Cancellation templates** (all 3 languages) - Currently blocking host notifications for booking rejections and client cancellations
+2. **HIGH PRIORITY - Phone Verification templates** (all 3 languages) - Currently blocking user registration and login
+3. **Uzbek booking templates** (9 templates) - For market expansion
+
+**Technical Note:** All messages use the same variable interpolation system (`{{variableName}}`) and follow identical message flows as the already-approved English and Russian templates. Only the language has been translated while preserving the exact same functionality and structure.

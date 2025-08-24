@@ -155,7 +155,7 @@ export default function Header() {
               </div>
             ) : (
               <>
-                <div className="bg-rose-400 text-white rounded-full w-8 h-8 flex items-center justify-center font-semibold">
+                <div className="bg-accent-primary text-white rounded-full w-8 h-8 flex items-center justify-center font-semibold">
                   {getFirstLetter()}
                 </div>
               </>
@@ -179,7 +179,7 @@ export default function Header() {
               {user && (
                 <div className="border-b border-gray-200 p-4">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="bg-rose-400 text-white rounded-full w-10 h-10 flex items-center justify-center font-semibold">
+                    <div className="bg-accent-primary text-white rounded-full w-10 h-10 flex items-center justify-center font-semibold">
                       {getFirstLetter()}
                     </div>
                     <div>

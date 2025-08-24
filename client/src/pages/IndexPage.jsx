@@ -39,7 +39,7 @@ function IndexPageBase() {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const itemsPerPage = 10; // Number of places to show per page
+  const itemsPerPage = 50; // Number of places to show per page
   
   // Resizable layout state
   const [listingsWidth, setListingsWidth] = useState(50); // Percentage width of listings section
@@ -91,12 +91,10 @@ function IndexPageBase() {
   const location = useLocation();
   
   // Pagination calculations
-  const totalPages = Math.ceil(filteredPlaces.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentPagePlaces = filteredPlaces.slice(startIndex, endIndex);
-  const showingFrom = filteredPlaces.length === 0 ? 0 : startIndex + 1;
-  const showingTo = Math.min(endIndex, filteredPlaces.length);
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const currentPagePlaces = filteredPlaces; // Server already returns the correct page
+  const showingFrom = totalItems === 0 ? 0 : ((currentPage - 1) * itemsPerPage) + 1;
+  const showingTo = Math.min(currentPage * itemsPerPage, totalItems);
   
   // Handle page change
   const handlePageChange = (newPage) => {
@@ -107,6 +105,11 @@ function IndexPageBase() {
       listingsSection.scrollTop = 0;
     }
   };
+  
+  // Reset to page 1 when filters change (location.search changes)
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [location.search]);
   
   // Handle map bounds changes
   const handleMapBoundsChanged = useCallback((bounds) => {
@@ -158,9 +161,12 @@ function IndexPageBase() {
   
   useEffect(() => {
     setIsLoading(true);
-    setCurrentPage(1); // Reset to first page when search changes
     // Get URL params if any
     const params = new URLSearchParams(location.search);
+    
+    // Add pagination parameters
+    params.set('page', currentPage.toString());
+    params.set('limit', itemsPerPage.toString());
     
     // Initialize DateTimeFilter from URL parameters
     if (params.has('dates') || params.has('startTime') || params.has('endTime')) {
@@ -189,15 +195,25 @@ function IndexPageBase() {
       });
     }
     
-    // Using our API utility instead of direct axios import
-    api.get("/places/home" + (location.search ? location.search : "")).then((response) => {
-      setPlaces(response.data);
-      setFilteredPlaces(response.data);
-      setPlacesForMap(response.data);
-      setTotalItems(response.data.length);
+    // Using our API utility with pagination parameters
+    api.get("/places/home?" + params.toString()).then((response) => {
+      // Handle both old format (direct array) and new format (with pagination)
+      if (response.data.places) {
+        // New paginated format
+        setPlaces(response.data.places);
+        setFilteredPlaces(response.data.places);
+        setPlacesForMap(response.data.places);
+        setTotalItems(response.data.pagination.totalItems);
+      } else {
+        // Old format fallback
+        setPlaces(response.data);
+        setFilteredPlaces(response.data);
+        setPlacesForMap(response.data);
+        setTotalItems(response.data.length);
+      }
       setIsLoading(false);
     });
-  }, [location.search, setFromSerializedValues, setAttendeesFromSerializedValues, setSizeFromSerializedValues]);
+  }, [location.search, currentPage, itemsPerPage, setFromSerializedValues, setAttendeesFromSerializedValues, setSizeFromSerializedValues]);
 
   // Helper function to check if a place belongs to a region (address match or proximity)
   const placeMatchesRegion = useCallback((place, regionId) => {
@@ -256,164 +272,34 @@ function IndexPageBase() {
     return false;
   }, [regionService]);
 
-  // Apply all filters whenever any filter or places change
+  // Apply basic filters (only region and map bounds for display, since server handles main filtering)
   useEffect(() => {
-    const applyFilters = async () => {
-      let filtered = [...places];
-      
-      // Apply region filter when map is closed (list view only)
-      if (!mapVisible && selectedRegionId) {
-        const beforeCount = filtered.length;
-        filtered = filtered.filter(place => 
-          placeMatchesRegion(place, selectedRegionId)
+    let displayPlaces = [...places];
+    
+    // Apply region filter when map is closed (list view only)
+    if (!mapVisible && selectedRegionId) {
+      displayPlaces = displayPlaces.filter(place => 
+        placeMatchesRegion(place, selectedRegionId)
+      );
+    }
+    
+    // For map display, always show all places from current page
+    setPlacesForMap(places);
+    
+    // Apply map bounds filter only for the listing display (only if bounds are available)
+    if (mapBounds && mapVisible && window.google && window.google.maps) {
+      displayPlaces = places.filter(place => {
+        if (!place.lat || !place.lng) return false;
+        const position = new window.google.maps.LatLng(
+          parseFloat(place.lat), 
+          parseFloat(place.lng)
         );
-      }
-      
-      // Check if any filters are active (excluding region filter for listing purposes)
-      const hasRegionFilter = selectedRegionId !== null;
-      
-      // If no other filters are active, show all places (with optional region filtering)
-      if (!hasActiveAttendeesFilter && !hasActivePriceFilter && !hasActiveSizeFilter && !hasSelectedPerks && !hasSelectedPolicies) {
-        // Set places for map (all places, no bounds filtering)
-        setPlacesForMap(places);
-        
-        // For list view, use the filtered places (which may include region filtering)
-        let listFiltered = filtered;
-        
-        // Apply map bounds filter only for the listing display (only if bounds are available)
-        if (mapBounds && mapVisible && window.google && window.google.maps) {
-          listFiltered = places.filter(place => {
-            if (!place.lat || !place.lng) return false;
-            const position = new window.google.maps.LatLng(
-              parseFloat(place.lat), 
-              parseFloat(place.lng)
-            );
-            return mapBounds.contains(position);
-          });
-        } else if (!mapVisible) {
-          // If map is not visible, use the region-filtered places
-          listFiltered = filtered;
-        } else {
-          // If map is visible but bounds are not available yet, show all places
-          listFiltered = places;
-        }
-        setFilteredPlaces(listFiltered);
-        setTotalItems(listFiltered.length);
-        return;
-      }
-      
-      // Apply attendees filter
-      if (hasActiveAttendeesFilter) {
-        filtered = filterPlacesByAttendees(filtered);
-      }
-      
-      // Apply size filter
-      if (hasActiveSizeFilter) {
-        filtered = filterPlacesBySize(filtered);
-      }
-      
-      // Apply perks filter
-      if (hasSelectedPerks) {
-        filtered = filterPlacesByPerks(filtered);
-      }
-      
-      // Apply policies filter
-      if (hasSelectedPolicies) {
-        filtered = filterPlacesByPolicies(filtered);
-      }
-      
-      // Apply price filter
-      if (hasActivePriceFilter && filtered.length > 0) {
-        try {
-          // Get the currency to filter in (from price filter context or current currency context)
-          const filterCurrency = priceFilterCurrency || selectedCurrency;
-          
-          if (filterCurrency) {
-            const priceFiltered = [];
-            
-            for (const place of filtered) {
-              // Get place price and currency
-              const placePrice = place.price;
-              const placeCurrency = place.currency;
-              
-              // Skip places without price or currency info
-              if (!placePrice || !placeCurrency) {
-                continue;
-              }
-              
-              let convertedPrice = placePrice;
-              
-              // Convert place price to filter currency if they're different
-              if (placeCurrency.charCode !== filterCurrency.charCode) {
-                try {
-                  convertedPrice = await convertCurrency(
-                    placePrice, 
-                    placeCurrency.charCode, 
-                    filterCurrency.charCode
-                  );
-                } catch (error) {
-                  console.error("Error converting price for filtering:", error);
-                  // If conversion fails, skip this place from filtering
-                  continue;
-                }
-              }
-              
-              // Apply price range filter
-              let passesFilter = true;
-              
-              if (minPrice !== null && minPrice !== undefined) {
-                if (convertedPrice < minPrice) {
-                  passesFilter = false;
-                }
-              }
-              
-              if (maxPrice !== null && maxPrice !== undefined) {
-                if (convertedPrice > maxPrice) {
-                  passesFilter = false;
-                }
-              }
-              
-              if (passesFilter) {
-                priceFiltered.push(place);
-              }
-            }
-            
-            filtered = priceFiltered;
-          }
-        } catch (error) {
-          console.error("Error applying price filter:", error);
-          // On error, don't apply price filter
-        }
-      }
-      
-      // Set places for map (all filtered places without bounds filtering)
-      setPlacesForMap(filtered);
-      
-      // Apply map bounds filter as the final step for the listing display only (only if bounds are available)
-      let displayFiltered = filtered;
-      if (mapBounds && mapVisible && window.google && window.google.maps) {
-        displayFiltered = filtered.filter(place => {
-          // Skip places without coordinates
-          if (!place.lat || !place.lng) return false;
-          
-          const position = new window.google.maps.LatLng(
-            parseFloat(place.lat), 
-            parseFloat(place.lng)
-          );
-          return mapBounds.contains(position);
-        });
-      } else if (mapVisible) {
-        // If map is visible but bounds are not available yet, show all filtered places
-        displayFiltered = filtered;
-      }
-      
-      setFilteredPlaces(displayFiltered);
-      setTotalItems(displayFiltered.length);
-      setCurrentPage(1); // Reset to first page when filter changes
-    };
-
-    applyFilters();
-  }, [places, minPrice, maxPrice, hasActivePriceFilter, priceFilterCurrency, selectedCurrency, hasActiveAttendeesFilter, filterPlacesByAttendees, hasActiveSizeFilter, filterPlacesBySize, hasSelectedPerks, filterPlacesByPerks, hasSelectedPolicies, filterPlacesByPolicies, mapBounds, mapVisible, selectedRegionId, placeMatchesRegion]);
+        return mapBounds.contains(position);
+      });
+    }
+    
+    setFilteredPlaces(displayPlaces);
+  }, [places, mapBounds, mapVisible, selectedRegionId, placeMatchesRegion]);
 
   // Performance optimization: Memoize region change handler to prevent unnecessary map focus calls
   const lastRegionRef = useRef(null);
@@ -449,9 +335,6 @@ function IndexPageBase() {
         onMapFocus(mapConfig);
       }
     }
-    
-    // Reset to first page when region changes
-    setCurrentPage(1);
   }, [selectedRegionId, regionService, onMapFocus]);
 
   // Resizable functionality
@@ -588,7 +471,7 @@ function IndexPageBase() {
                   {ready ? t("places:search_results.loading") : "Loading venues..."}
                 </span>
               </div>
-            ) : filteredPlaces.length === 0 ? (
+            ) : totalItems === 0 ? (
               <div className="text-center my-12">
                 <h3 className="text-xl font-bold text-gray-700">
                   {ready ? t("places:search_results.no_results") : "No results found"}
@@ -677,14 +560,14 @@ function IndexPageBase() {
             )}
             
             {/* Pagination */}
-            {!isLoading && filteredPlaces.length > 0 && (
+            {!isLoading && totalItems > 0 && (
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
                 onPageChange={handlePageChange}
                 showingFrom={showingFrom}
                 showingTo={showingTo}
-                totalItems={filteredPlaces.length}
+                totalItems={totalItems}
                 itemName={ready ? t("places:search_results.places") : "places"}
               />
             )}
