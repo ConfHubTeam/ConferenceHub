@@ -3,7 +3,20 @@ const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { sequelize, User, Place, Booking, UserFavorite } = require('./models');
+const { 
+  sequelize, 
+  User, 
+  Place, 
+  Booking, 
+  Currency,
+  Transaction,
+  Review,
+  ReviewReply,
+  ReviewHelpful,
+  ReviewReport,
+  Notification,
+  UserFavorite 
+} = require('./models');
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const path = require('path');
@@ -72,59 +85,33 @@ app.use(languageMiddleware);
 
 const bcryptSalt = authConfig.bcrypt.generateSalt();
 
-// Import currency seeder
-const { seedDefaultCurrencies } = require('./routes/currencySeeder');
+// Import optimized startup manager for US-LOCK-001
+const StartupManager = require('./services/startupManager');
 
-// Replace MongoDB connection with PostgreSQL connection
-sequelize.authenticate()
-  .then(() => {
-    console.log('Connection to PostgreSQL has been established successfully.');
-    // Sync all models with the database
-    return sequelize.sync({ alter: true }); // In production, use migrations instead
-  })
-  .then(async () => {
-    console.log('All models were synchronized successfully.');
-    // Create admin account if it doesn't exist
-    await createAdminAccountIfNotExists();
-    // Seed default currencies if they don't exist
-    await seedDefaultCurrencies();
+// Replace problematic sequelize.sync with optimized sequential initialization
+const startupManager = new StartupManager(sequelize, { 
+  User, 
+  Place, 
+  Booking, 
+  Currency,
+  Transaction,
+  Review,
+  ReviewReply, 
+  ReviewHelpful,
+  ReviewReport,
+  Notification,
+  UserFavorite
+});
+
+// Initialize application with optimized approach to prevent lock exhaustion
+startupManager.initializeApplication()
+  .then((result) => {
+    console.log('✅ Application startup completed:', result);
   })
   .catch(err => {
-    console.error('Unable to connect to the database:', err);
+    console.error('❌ Application startup failed:', err);
+    process.exit(1); // Exit with error code for monitoring
   });
-
-// Function to create admin account if it doesn't exist
-async function createAdminAccountIfNotExists() {
-  try {
-    // Admin credentials from environment variables
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@conferencehub.com';
-    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123!@#'; // Default password, should be changed in production
-    const adminName = process.env.ADMIN_NAME || 'System Administrator';
-    
-    // Check if admin account already exists
-    const existingAdmin = await User.findOne({ 
-      where: { 
-        email: adminEmail,
-        userType: 'agent' 
-      } 
-    });
-    
-    if (!existingAdmin) {
-      console.log('Creating admin account...');
-      await User.create({
-        name: adminName,
-        email: adminEmail,
-        password: bcrypt.hashSync(adminPassword, bcryptSalt),
-        userType: 'agent' // 'agent' is the admin role
-      });
-      console.log('Admin account created successfully.');
-    } else {
-      console.log('Admin account already exists.');
-    }
-  } catch (error) {
-    console.error('Error creating admin account:', error);
-  }
-}
 
 // Import Uzbekistan timezone utilities
 const { getCurrentDateInUzbekistan } = require('./utils/uzbekistanTimezoneUtils');
@@ -221,4 +208,28 @@ app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+
+// Graceful shutdown handlers for US-LOCK-001
+process.on('SIGTERM', async () => {
+  console.log('🛑 SIGTERM received, shutting down gracefully...');
+  await startupManager.gracefulShutdown();
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  console.log('🛑 SIGINT received, shutting down gracefully...');
+  await startupManager.gracefulShutdown();
+  process.exit(0);
+});
+
+// Handle uncaught exceptions to prevent memory leaks
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
 });

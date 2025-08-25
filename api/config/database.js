@@ -1,4 +1,5 @@
 const { Sequelize } = require('sequelize');
+const optimizationConfig = require('./databaseOptimization');
 require('dotenv').config();
 
 // Function to parse database URL (useful for Render's EXTERNAL_URL format)
@@ -27,18 +28,15 @@ if (process.env.DB_URL) {
   sequelize = new Sequelize(process.env.DB_URL, {
     dialect: 'postgres',
     dialectOptions: {
+      ...optimizationConfig.sequelize.dialectOptions,
       ssl: {
         require: true,
         rejectUnauthorized: false // Required for Render PostgreSQL service
       }
     },
-    logging: process.env.NODE_ENV === 'production' ? false : console.log,
-    pool: {
-      max: 5,
-      min: 0,
-      acquire: 30000,
-      idle: 10000
-    }
+    logging: optimizationConfig.sequelize.logging,
+    pool: optimizationConfig.sequelize.pool,
+    retry: optimizationConfig.sequelize.retry
   });
 } else {
   // Use individual connection parameters (local development)
@@ -50,13 +48,10 @@ if (process.env.DB_URL) {
       host: process.env.POSTGRES_HOST || 'localhost',
       port: process.env.POSTGRES_PORT || 5432,
       dialect: 'postgres',
-      logging: console.log,
-      pool: {
-        max: 5,
-        min: 0,
-        acquire: 30000,
-        idle: 10000
-      }
+      logging: optimizationConfig.sequelize.logging,
+      pool: optimizationConfig.sequelize.pool,
+      retry: optimizationConfig.sequelize.retry,
+      dialectOptions: optimizationConfig.sequelize.dialectOptions
     }
   );
 }
