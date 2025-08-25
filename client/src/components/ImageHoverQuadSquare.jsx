@@ -1,8 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CloudinaryImage from "./CloudinaryImage";
 
-export default function ImageHoverQuadSquare({ photos, title, className = "" }) {
+export default function ImageHoverQuadSquare({ photos, title, className = "", active = false }) {
   const [isHovered, setIsHovered] = useState(false);
+  const showQuad = isHovered || active;
+
+  // Sync hover state to active prop for smooth transitions when forced active
+  useEffect(() => {
+    if (active) {
+      // briefly set hovered for consistent transition behavior
+      setIsHovered(true);
+    }
+    // Don't force false to allow mouse leave to work naturally
+  }, [active]);
 
   // Handle no photos case
   if (!photos || photos.length === 0) {
@@ -44,7 +54,7 @@ export default function ImageHoverQuadSquare({ photos, title, className = "" }) 
       >
         <div className="w-full h-full relative">
           {/* Single main image */}
-          <div className={`absolute inset-0 transition-opacity duration-500 ease-out ${isHovered ? 'opacity-0' : 'opacity-100'}`}>
+          <div className={`absolute inset-0 transition-opacity duration-500 ease-out ${showQuad ? 'opacity-0' : 'opacity-100'}`}>
             <CloudinaryImage
               photo={photos[0]}
               alt={title}
@@ -53,7 +63,7 @@ export default function ImageHoverQuadSquare({ photos, title, className = "" }) 
           </div>
           
           {/* Two images split vertically */}
-          <div className={`absolute inset-0 transition-opacity duration-500 ease-out ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+          <div className={`absolute inset-0 transition-opacity duration-500 ease-out ${showQuad ? 'opacity-100' : 'opacity-0'}`}>
             <div className="w-full h-full flex flex-col gap-0.5">
               <div className="relative overflow-hidden flex-1">
                 <CloudinaryImage
@@ -89,7 +99,7 @@ export default function ImageHoverQuadSquare({ photos, title, className = "" }) 
       >
         <div className="w-full h-full relative">
           {/* Single main image */}
-          <div className={`absolute inset-0 transition-opacity duration-500 ease-out ${isHovered ? 'opacity-0' : 'opacity-100'}`}>
+          <div className={`absolute inset-0 transition-opacity duration-500 ease-out ${showQuad ? 'opacity-0' : 'opacity-100'}`}>
             <CloudinaryImage
               photo={photos[0]}
               alt={title}
@@ -98,7 +108,7 @@ export default function ImageHoverQuadSquare({ photos, title, className = "" }) 
           </div>
           
           {/* Three images layout: top split, bottom full */}
-          <div className={`absolute inset-0 transition-opacity duration-500 ease-out ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+          <div className={`absolute inset-0 transition-opacity duration-500 ease-out ${showQuad ? 'opacity-100' : 'opacity-0'}`}>
             <div className="w-full h-full flex flex-col gap-0.5">
               {/* Top row: two images side by side */}
               <div className="flex flex-row gap-0.5 flex-1">
@@ -145,8 +155,8 @@ export default function ImageHoverQuadSquare({ photos, title, className = "" }) 
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="w-full h-full relative">
-        {/* Single main image */}
-        <div className={`absolute inset-0 transition-opacity duration-500 ease-out ${isHovered ? 'opacity-0' : 'opacity-100'}`}>
+  {/* Single main image */}
+  <div className={`absolute inset-0 transition-opacity duration-500 ease-out ${showQuad ? 'opacity-0' : 'opacity-100'}`}>
           <CloudinaryImage
             photo={photos[0]}
             alt={title}
@@ -154,8 +164,8 @@ export default function ImageHoverQuadSquare({ photos, title, className = "" }) 
           />
         </div>
         
-        {/* Quad layout - 2x2 grid */}
-        <div className={`absolute inset-0 transition-opacity duration-500 ease-out ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+  {/* Quad layout - 2x2 grid */}
+  <div className={`absolute inset-0 transition-opacity duration-500 ease-out ${showQuad ? 'opacity-100' : 'opacity-0'}`}>
           <div className="w-full h-full grid grid-cols-2 grid-rows-2 gap-0.5">
             {[0, 1, 2, 3].map((index) => (
               <div 

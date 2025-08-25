@@ -30,6 +30,10 @@ function IndexPageBase() {
   const [isLoading, setIsLoading] = useState(true);
   const [hoveredPlaceId, setHoveredPlaceId] = useState(null);
   const [isClientPaginated, setIsClientPaginated] = useState(false);
+  const [visibleCardId, setVisibleCardId] = useState(null);
+  const cardRefs = useRef(new Map());
+  const observerRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(false);
   
   // Map bounds state for additional filtering
   const [mapBounds, setMapBounds] = useState(null);
@@ -152,6 +156,14 @@ function IndexPageBase() {
       mapFocusRef.current = mapRef.current;
     }
   }, [mapFocusRef]);
+
+  // Track mobile viewport to enable scroll-based selection on mobile
+  useEffect(() => {
+    const updateIsMobile = () => setIsMobile(window.innerWidth < 768);
+    updateIsMobile();
+    window.addEventListener('resize', updateIsMobile);
+    return () => window.removeEventListener('resize', updateIsMobile);
+  }, []);
   
   // Reset map bounds when map visibility changes
   useEffect(() => {
@@ -159,6 +171,61 @@ function IndexPageBase() {
       setMapBounds(null);
     }
   }, [mapVisible]);
+
+  // IntersectionObserver to set the most visible card as selected on mobile scroll
+  useEffect(() => {
+    if (!isMobile) {
+      // Cleanup if switching to desktop
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+        observerRef.current = null;
+      }
+      return;
+    }
+
+    const options = {
+      root: null,
+      rootMargin: '0px',
+      threshold: [0.25, 0.5, 0.75, 0.9]
+    };
+
+    const visibility = new Map(); // id -> ratio
+
+    const handleIntersect = (entries) => {
+      for (const entry of entries) {
+        const id = entry.target.getAttribute('data-place-id');
+        if (!id) continue;
+        visibility.set(id, entry.intersectionRatio || 0);
+      }
+
+      // Pick the id with the highest visibility
+      let maxId = null;
+      let maxRatio = 0;
+      for (const [id, ratio] of visibility.entries()) {
+        if (ratio > maxRatio) {
+          maxRatio = ratio;
+          maxId = id;
+        }
+      }
+      if (maxId) {
+        const parsed = isNaN(Number(maxId)) ? maxId : Number(maxId);
+        setVisibleCardId(parsed);
+      }
+    };
+
+    const observer = new IntersectionObserver(handleIntersect, options);
+    observerRef.current = observer;
+
+    // Observe current cards
+    cardRefs.current.forEach((el) => {
+      if (el) observer.observe(el);
+    });
+
+    return () => {
+      observer.disconnect();
+      observerRef.current = null;
+    };
+  }, [isMobile, filteredPlaces]);
   
   useEffect(() => {
     setIsLoading(true);
@@ -562,6 +629,17 @@ function IndexPageBase() {
                   <div 
                     key={place.id} 
                     className="relative group transition-transform duration-200 hover:scale-[1.02]"
+                    data-place-id={place.id}
+                    ref={(el) => {
+                      if (el) {
+                        cardRefs.current.set(place.id, el);
+                        if (observerRef.current) observerRef.current.observe(el);
+                      } else {
+                        const prev = cardRefs.current.get(place.id);
+                        if (prev && observerRef.current) observerRef.current.unobserve(prev);
+                        cardRefs.current.delete(place.id);
+                      }
+                    }}
                     onMouseEnter={() => setHoveredPlaceId(place.id)}
                     onMouseLeave={() => setHoveredPlaceId(null)}
                   >
@@ -575,6 +653,7 @@ function IndexPageBase() {
                         <ImageHoverQuadSquare 
                           photos={place.photos}
                           title={place.title}
+                          active={isMobile && visibleCardId === place.id}
                         />
                         <div className="p-5 bg-gradient-to-br from-white to-gray-50/50">
                           <h2 className="font-bold text-lg truncate text-gray-900 group-hover:text-primary transition-colors duration-200">{place.title}</h2>
