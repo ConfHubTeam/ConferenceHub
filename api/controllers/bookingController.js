@@ -1,6 +1,7 @@
 const { Booking, Place, User, Currency } = require("../models");
 const { getUserDataFromToken } = require("../middleware/auth");
 const BookingService = require("../services/bookingService");
+const OptimizedBookingService = require("../services/optimizedBookingService");
 const BookingValidationService = require("../services/bookingValidationService");
 const { cleanupExpiredBookings } = require("../utils/bookingUtils");
 const { 
@@ -9,6 +10,9 @@ const {
   getAvailableDatesFromUzbekistan,
   isDateInPastUzbekistan
 } = require("../utils/uzbekistanTimezoneUtils");
+
+// Initialize optimized service for US-LOCK-004
+const optimizedBookingService = new OptimizedBookingService();
 
 /**
  * Create a new booking
@@ -40,11 +44,12 @@ const createBooking = async (req, res) => {
 
 /**
  * Get bookings based on user role and filters
+ * Optimized for US-LOCK-004: Uses shallow queries and caching for better performance
  */
 const getBookings = async (req, res) => {
   try {
     const userData = await getUserDataFromToken(req);
-    const { userId, paidFilter } = req.query;
+    const { userId, paidFilter, optimized, page, limit } = req.query;
     
     // For agents with userId parameter - get bookings for a specific user
     if (userData.userType === 'agent' && userId) {
@@ -52,7 +57,12 @@ const getBookings = async (req, res) => {
       return res.json(userBookings);
     }
     
-    // Get bookings based on user type with optional paid filter
+    // Use optimized service if requested (US-LOCK-004)
+    if (optimized === 'true') {
+      return await getOptimizedBookings(req, res, userData, { paidFilter }, { page, limit });
+    }
+    
+    // Legacy implementation (preserved for backward compatibility)
     const bookings = await BookingService.getBookings(userData, { paidFilter });
     res.json(bookings);
   } catch (error) {
@@ -61,6 +71,40 @@ const getBookings = async (req, res) => {
     res.status(statusCode).json({ error: error.message });
   }
 };
+
+/**
+ * Optimized version of getBookings using shallow queries and caching (US-LOCK-004)
+ * 
+ * @private
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ * @param {Object} userData - User data from authentication
+ * @param {Object} filters - Filtering options
+ * @param {Object} pagination - Pagination options
+ */
+async function getOptimizedBookings(req, res, userData, filters, pagination) {
+  const startTime = Date.now();
+  
+  try {
+    // Use optimized booking service for US-LOCK-004
+    const result = await optimizedBookingService.getOptimizedBookings(userData, filters, pagination);
+    
+    const processingTime = Date.now() - startTime;
+    
+    // Log optimization metrics in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🚀 US-LOCK-004 Optimized Bookings: ${result.bookings.length} bookings loaded in ${processingTime}ms`);
+    }
+    
+    // Add processing time to optimization metadata
+    result._optimization.totalProcessingTime = processingTime;
+    
+    res.json(result);
+  } catch (error) {
+    console.error("Error in optimized bookings:", error);
+    res.status(422).json({ error: error.message });
+  }
+}
 
 /**
  * Update booking status (approve/reject)
@@ -342,15 +386,21 @@ const getCompetingBookings = async (req, res) => {
 
 /**
  * Get a single booking by ID with all related information
+ * Optimized for US-LOCK-004: Uses shallow queries with caching
  */
 const getBookingById = async (req, res) => {
   try {
     const userData = await getUserDataFromToken(req);
     const { id } = req.params;
+    const { optimized } = req.query;
     
-    // Get booking by ID using service
+    // Use optimized service if requested (US-LOCK-004)
+    if (optimized === 'true') {
+      return await getOptimizedBookingById(req, res, id, userData);
+    }
+    
+    // Legacy implementation (preserved for backward compatibility)
     const booking = await BookingService.getBookingById(id, userData);
-    
     res.json(booking);
   } catch (error) {
     console.error("Error fetching booking:", error);
@@ -358,6 +408,43 @@ const getBookingById = async (req, res) => {
     res.status(statusCode).json({ error: error.message });
   }
 };
+
+/**
+ * Optimized version of getBookingById using shallow queries and caching (US-LOCK-004)
+ * 
+ * @private
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ * @param {string} bookingId - Booking ID
+ * @param {Object} userData - User data from authentication
+ */
+async function getOptimizedBookingById(req, res, bookingId, userData) {
+  const startTime = Date.now();
+  
+  try {
+    // Use optimized booking service for US-LOCK-004
+    const booking = await optimizedBookingService.getOptimizedBookingById(bookingId, userData);
+    
+    const processingTime = Date.now() - startTime;
+  
+    // Add optimization metadata
+    const result = {
+      ...booking,
+      _optimization: {
+        userStory: 'US-LOCK-004',
+        processingTime,
+        cacheHit: optimizedBookingService._getCacheHitCount() > 0,
+        optimizedQueries: true
+      }
+    };
+    
+    res.json(result);
+  } catch (error) {
+    console.error("Error in optimized booking details:", error);
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({ error: error.message });
+  }
+}
 
 /**
  * Mark booking as paid to host (Agent-only action)
@@ -639,6 +726,69 @@ const manualCleanupExpiredBookings = async (req, res) => {
 };
 
 /**
+ * Get lock monitoring report for booking operations (US-LOCK-004)
+ */
+const getBookingLockMonitoringReport = async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+    
+    // Only agents can view lock monitoring
+    if (userData.userType !== 'agent') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only agents can view lock monitoring reports.'
+      });
+    }
+    
+    const report = optimizedBookingService.getLockMonitoringReport();
+    
+    res.json({
+      success: true,
+      ...report,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error("Error getting booking lock monitoring report:", error);
+    res.status(500).json({ 
+      success: false,
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Clear booking optimization cache (US-LOCK-004)
+ */
+const clearBookingOptimizationCache = async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+    
+    // Only agents can clear cache
+    if (userData.userType !== 'agent') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only agents can clear optimization cache.'
+      });
+    }
+    
+    optimizedBookingService.clearCache();
+    
+    res.json({
+      success: true,
+      message: 'Booking optimization cache cleared successfully',
+      userStory: 'US-LOCK-004',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error("Error clearing booking optimization cache:", error);
+    res.status(500).json({ 
+      success: false,
+      error: error.message 
+    });
+  }
+};
+
+/**
  * Select cash payment for a booking (Client only)
  * Notifies agents that client wants to pay with cash
  */
@@ -789,5 +939,8 @@ module.exports = {
   checkPaymentStatus,
   checkPaymentStatusSmart,
   selectCashPayment,
-  manualCleanupExpiredBookings
+  manualCleanupExpiredBookings,
+  // US-LOCK-004 Optimized endpoints
+  getBookingLockMonitoringReport,
+  clearBookingOptimizationCache
 };

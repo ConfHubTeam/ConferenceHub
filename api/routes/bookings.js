@@ -42,4 +42,8 @@ router.post("/:id/select-cash", authenticateToken, bookingController.selectCashP
 // Manual cleanup of expired bookings (agent only)
 router.post("/cleanup-expired", authenticateToken, bookingController.manualCleanupExpiredBookings);
 
+// US-LOCK-004 Optimized endpoints
+router.get("/lock-monitoring", authenticateToken, bookingController.getBookingLockMonitoringReport);
+router.post("/clear-cache", authenticateToken, bookingController.clearBookingOptimizationCache);
+
 module.exports = router;
