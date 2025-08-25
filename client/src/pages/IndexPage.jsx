@@ -653,7 +653,6 @@ function IndexPageBase() {
                         <ImageHoverQuadSquare 
                           photos={place.photos}
                           title={place.title}
-                          active={isMobile && visibleCardId === place.id}
                         />
                         <div className="p-5 bg-gradient-to-br from-white to-gray-50/50">
                           <h2 className="font-bold text-lg truncate text-gray-900 group-hover:text-primary transition-colors duration-200">{place.title}</h2>
