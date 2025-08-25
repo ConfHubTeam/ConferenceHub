@@ -66,6 +66,8 @@ class DatabaseInitializer {
     console.log('🔄 Auto-syncing all models with full schema synchronization...');
     
     try {
+  // Ensure critical column types are compatible before syncing models
+  await this.ensurePerksIsJsonb();
       // Define model sync order based on dependencies (independent models first)
       const syncOrder = [
         'User',           // No dependencies
@@ -94,6 +96,81 @@ class DatabaseInitializer {
     } catch (error) {
       console.error('❌ Auto-sync failed:', error);
       throw error; // Throw error since we want full sync to work
+    }
+  }
+
+  /**
+   * Ensure Places.perks column is JSONB with proper default and values.
+   * Handles legacy formats observed in cloud DB like {a,b,c} arrays and {0} when none.
+   */
+  async ensurePerksIsJsonb() {
+    try {
+      // Check current data_type
+      const [col] = await this.sequelize.query(`
+        SELECT data_type, udt_name, column_default, is_nullable
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'Places' AND column_name = 'perks'
+      `);
+
+      const current = col && col[0];
+
+      // If column doesn't exist yet, nothing to do here
+      if (!current) {
+        return;
+      }
+
+      // Alter column type to JSONB safely using USING clause
+      await this.sequelize.query(`
+        ALTER TABLE "Places"
+        ALTER COLUMN "perks" DROP DEFAULT;
+      `).catch(() => {});
+
+      await this.sequelize.query(`
+        ALTER TABLE "Places"
+        ALTER COLUMN "perks" TYPE JSONB USING (
+          CASE
+            WHEN pg_typeof("perks")::text = 'jsonb' THEN "perks"
+            WHEN pg_typeof("perks")::text = 'json' THEN "perks"::jsonb
+            WHEN pg_typeof("perks")::text LIKE '%[]' THEN to_jsonb("perks")
+            WHEN pg_typeof("perks")::text IN ('text','varchar','character varying') THEN (
+              CASE
+                WHEN "perks" IS NULL OR "perks" = '' OR "perks" = '{0}' THEN '[]'::jsonb
+                WHEN "perks" ~ '^[\\[{]' THEN ("perks")::jsonb -- already JSON text
+                WHEN "perks" LIKE '{%' THEN (
+                  to_jsonb(string_to_array(regexp_replace(regexp_replace("perks", '^\\{', ''), '\\}$', ''), ','))
+                )
+                ELSE to_jsonb(string_to_array("perks", ','))
+              END
+            )
+            ELSE to_jsonb("perks")
+          END
+        );
+      `);
+
+      await this.sequelize.query(`
+        ALTER TABLE "Places" ALTER COLUMN "perks" SET DEFAULT '[]'::jsonb;
+        ALTER TABLE "Places" ALTER COLUMN "perks" SET NOT NULL;
+      `);
+
+      // Convert any JSONB array of strings to array of objects { name, isPaid: false }
+      await this.sequelize.query(`
+        UPDATE "Places"
+        SET "perks" = (
+          SELECT COALESCE(
+            jsonb_agg(jsonb_build_object('name', val, 'isPaid', false)),
+            '[]'::jsonb
+          )
+          FROM jsonb_array_elements_text("perks") AS t(val)
+        )
+        WHERE jsonb_typeof("perks") = 'array'
+          AND EXISTS (
+            SELECT 1 FROM jsonb_array_elements("perks") AS e(value)
+            WHERE jsonb_typeof(e.value) = 'string'
+          );
+      `);
+    } catch (e) {
+      // Log and continue; the subsequent sync may still succeed if already correct
+      console.log('ℹ️  ensurePerksIsJsonb skipped or partially applied:', e.message);
     }
   }
 

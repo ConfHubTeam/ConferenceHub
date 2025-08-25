@@ -27,7 +27,7 @@ const Place = sequelize.define('Place', {
     allowNull: true
   },
   perks: {
-    type: DataTypes.JSON,
+    type: DataTypes.JSONB,
     defaultValue: [],
     allowNull: false
   },
