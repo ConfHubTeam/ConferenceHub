@@ -29,6 +29,7 @@ function IndexPageBase() {
   const [placesForMap, setPlacesForMap] = useState([]); // Places for map markers (without bounds filtering)
   const [isLoading, setIsLoading] = useState(true);
   const [hoveredPlaceId, setHoveredPlaceId] = useState(null);
+  const [isClientPaginated, setIsClientPaginated] = useState(false);
   
   // Map bounds state for additional filtering
   const [mapBounds, setMapBounds] = useState(null);
@@ -163,11 +164,7 @@ function IndexPageBase() {
     setIsLoading(true);
     // Get URL params if any
     const params = new URLSearchParams(location.search);
-    
-    // Add pagination parameters
-    params.set('page', currentPage.toString());
-    params.set('limit', itemsPerPage.toString());
-    
+
     // Initialize DateTimeFilter from URL parameters
     if (params.has('dates') || params.has('startTime') || params.has('endTime')) {
       setFromSerializedValues({
@@ -176,16 +173,16 @@ function IndexPageBase() {
         endTime: params.get('endTime') || ''
       });
     }
-    
-    // Initialize AttendeesFilter from URL parameters
-    if (params.has('attendeesMin') || params.has('attendeesMax') || params.has('attendeesRange')) {
+
+    // Initialize AttendeesFilter from URL parameters (normalized to context keys)
+    if (params.has('minAttendees') || params.has('maxAttendees') || params.has('attendeesRange')) {
       setAttendeesFromSerializedValues({
-        minAttendees: params.get('attendeesMin') || '',
-        maxAttendees: params.get('attendeesMax') || '',
+        minAttendees: params.get('minAttendees') || '',
+        maxAttendees: params.get('maxAttendees') || '',
         attendeesRange: params.get('attendeesRange') || ''
       });
     }
-    
+
     // Initialize SizeFilter from URL parameters
     if (params.has('minSize') || params.has('maxSize') || params.has('sizeRange')) {
       setSizeFromSerializedValues({
@@ -194,26 +191,40 @@ function IndexPageBase() {
         sizeRange: params.get('sizeRange') || ''
       });
     }
-    
-    // Using our API utility with pagination parameters
+
+    // Decide whether to use server or client pagination based on active non-availability filters
+    const nonAvailabilityFiltersActive = hasActivePriceFilter || hasActiveAttendeesFilter || hasActiveSizeFilter || hasSelectedPerks || hasSelectedPolicies || !!selectedRegionId;
+
+    // Apply pagination parameters only when using server pagination
+    if (!nonAvailabilityFiltersActive) {
+      params.set('page', currentPage.toString());
+      params.set('limit', itemsPerPage.toString());
+    } else {
+      params.delete('page');
+      params.delete('limit');
+    }
+
     api.get("/places/home?" + params.toString()).then((response) => {
       // Handle both old format (direct array) and new format (with pagination)
-      if (response.data.places) {
-        // New paginated format
+      if (!nonAvailabilityFiltersActive && response.data.places) {
+        // New paginated format (server pagination)
         setPlaces(response.data.places);
         setFilteredPlaces(response.data.places);
         setPlacesForMap(response.data.places);
         setTotalItems(response.data.pagination.totalItems);
+        setIsClientPaginated(false);
       } else {
-        // Old format fallback
-        setPlaces(response.data);
-        setFilteredPlaces(response.data);
-        setPlacesForMap(response.data);
-        setTotalItems(response.data.length);
+        // Old format or client-side pagination mode
+        const list = response.data.places ? response.data.places : response.data;
+        setPlaces(list);
+        setFilteredPlaces(list);
+        setPlacesForMap(list);
+        setTotalItems(Array.isArray(list) ? list.length : 0);
+        setIsClientPaginated(true);
       }
       setIsLoading(false);
     });
-  }, [location.search, currentPage, itemsPerPage, setFromSerializedValues, setAttendeesFromSerializedValues, setSizeFromSerializedValues]);
+  }, [location.search, currentPage, itemsPerPage, setFromSerializedValues, setAttendeesFromSerializedValues, setSizeFromSerializedValues, hasActivePriceFilter, hasActiveAttendeesFilter, hasActiveSizeFilter, hasSelectedPerks, hasSelectedPolicies, selectedRegionId]);
 
   // Helper function to check if a place belongs to a region (address match or proximity)
   const placeMatchesRegion = useCallback((place, regionId) => {
@@ -272,34 +283,97 @@ function IndexPageBase() {
     return false;
   }, [regionService]);
 
-  // Apply basic filters (only region and map bounds for display, since server handles main filtering)
+  // Apply all client-side filters (perks, policies, attendees, size, price, region, map bounds) and handle pagination
   useEffect(() => {
-    let displayPlaces = [...places];
-    
-    // Apply region filter when map is closed (list view only)
-    if (!mapVisible && selectedRegionId) {
-      displayPlaces = displayPlaces.filter(place => 
-        placeMatchesRegion(place, selectedRegionId)
-      );
-    }
-    
-    // For map display, always show all places from current page
-    setPlacesForMap(places);
-    
-    // Apply map bounds filter only for the listing display (only if bounds are available)
-    if (mapBounds && mapVisible && window.google && window.google.maps) {
-      displayPlaces = places.filter(place => {
-        if (!place.lat || !place.lng) return false;
-        const position = new window.google.maps.LatLng(
-          parseFloat(place.lat), 
-          parseFloat(place.lng)
-        );
-        return mapBounds.contains(position);
-      });
-    }
-    
-    setFilteredPlaces(displayPlaces);
-  }, [places, mapBounds, mapVisible, selectedRegionId, placeMatchesRegion]);
+    let cancelled = false;
+
+    const runFiltering = async () => {
+      let working = Array.isArray(places) ? [...places] : [];
+
+      // Apply perks and policies first (fast, synchronous)
+      working = filterPlacesByPerks(working);
+      working = filterPlacesByPolicies(working);
+
+      // Apply attendees and size filters
+      working = filterPlacesByAttendees(working);
+      working = filterPlacesBySize(working);
+
+      // Apply price filter with currency conversion
+      if (hasActivePriceFilter && (minPrice != null || maxPrice != null)) {
+        const targetCode = (priceFilterCurrency && priceFilterCurrency.charCode) || (selectedCurrency && selectedCurrency.charCode) || null;
+        if (targetCode) {
+          const matches = await Promise.all(
+            working.map(async (place) => {
+              const placeCurrency = place.currency?.charCode || null;
+              const basePrice = place.price;
+              if (basePrice == null || isNaN(parseFloat(basePrice))) return false;
+
+              try {
+                let comparable = basePrice;
+                if (placeCurrency && placeCurrency !== targetCode) {
+                  comparable = await convertCurrency(basePrice, placeCurrency, targetCode);
+                }
+                if (minPrice != null && comparable < minPrice) return false;
+                if (maxPrice != null && comparable > maxPrice) return false;
+                return true;
+              } catch (e) {
+                // On conversion failure, be conservative and include only if within raw price
+                if (minPrice != null && basePrice < minPrice) return false;
+                if (maxPrice != null && basePrice > maxPrice) return false;
+                return true;
+              }
+            })
+          );
+          working = working.filter((_, idx) => matches[idx]);
+        }
+      }
+
+      // Apply region filter when map is closed (list view only)
+      if (!mapVisible && selectedRegionId) {
+        working = working.filter(place => placeMatchesRegion(place, selectedRegionId));
+      }
+
+      // Set data for map markers prior to bounds filtering so map shows all filtered items
+      const mapData = working;
+
+      // Apply map bounds filter only for the listing display (only if bounds are available)
+      let displayPlaces = working;
+      if (mapBounds && mapVisible && window.google && window.google.maps) {
+        displayPlaces = working.filter(place => {
+          if (!place.lat || !place.lng) return false;
+          const position = new window.google.maps.LatLng(
+            parseFloat(place.lat), 
+            parseFloat(place.lng)
+          );
+          return mapBounds.contains(position);
+        });
+      }
+
+      // Handle pagination depending on mode
+      if (isClientPaginated) {
+        const total = displayPlaces.length;
+        const startIdx = (currentPage - 1) * itemsPerPage;
+        const endIdx = startIdx + itemsPerPage;
+        const pageSlice = displayPlaces.slice(startIdx, endIdx);
+
+        if (!cancelled) {
+          setTotalItems(total);
+          setFilteredPlaces(pageSlice);
+          setPlacesForMap(mapData);
+        }
+      } else {
+        // Server pagination mode; keep totalItems from server, but apply display filters
+        if (!cancelled) {
+          setFilteredPlaces(displayPlaces);
+          setPlacesForMap(mapData);
+        }
+      }
+    };
+
+    runFiltering();
+
+    return () => { cancelled = true; };
+  }, [places, filterPlacesByPerks, filterPlacesByPolicies, filterPlacesByAttendees, filterPlacesBySize, hasActivePriceFilter, minPrice, maxPrice, priceFilterCurrency, selectedCurrency, mapVisible, selectedRegionId, mapBounds, placeMatchesRegion, isClientPaginated, currentPage, itemsPerPage]);
 
   // Performance optimization: Memoize region change handler to prevent unnecessary map focus calls
   const lastRegionRef = useRef(null);
