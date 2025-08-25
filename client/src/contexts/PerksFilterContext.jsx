@@ -184,10 +184,23 @@ export const PerksFilterProvider = ({ children }) => {
     }
 
     return places.filter(place => {
-      // Check if place has all selected perks
-      return selectedPerks.every(selectedPerk => {
-        return place.perks && place.perks.includes(selectedPerk);
-      });
+      if (!place || !place.perks) return false;
+
+      // Normalize perks to an array of perk names to support both legacy (string[]) and new ({name,isPaid}[]) formats
+      const perkNames = Array.isArray(place.perks)
+        ? place.perks
+            .map(p => {
+              if (typeof p === 'string') return p;
+              if (p && typeof p === 'object' && p.name) return p.name;
+              return null;
+            })
+            .filter(Boolean)
+        : [];
+
+      if (perkNames.length === 0) return false;
+
+      // Check if place has all selected perks by name
+      return selectedPerks.every(selectedPerk => perkNames.includes(selectedPerk));
     });
   }, [selectedPerks]);
 
