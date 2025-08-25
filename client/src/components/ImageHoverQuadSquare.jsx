@@ -3,7 +3,11 @@ import CloudinaryImage from "./CloudinaryImage";
 
 export default function ImageHoverQuadSquare({ photos, title, className = "", active = false }) {
   const [isHovered, setIsHovered] = useState(false);
-  const showQuad = isHovered || active;
+  const [isMobile, setIsMobile] = useState(false);
+  const [touchActive, setTouchActive] = useState(false);
+
+  // Quad shows on hover (desktop) or when explicitly activated via touch on mobile
+  const showQuad = isHovered || active || (isMobile && touchActive);
 
   // Sync hover state to active prop for smooth transitions when forced active
   useEffect(() => {
@@ -14,10 +18,29 @@ export default function ImageHoverQuadSquare({ photos, title, className = "", ac
     // Don't force false to allow mouse leave to work naturally
   }, [active]);
 
+  // Track mobile viewport to enable tap-to-toggle behavior
+  useEffect(() => {
+    const handler = () => setIsMobile(typeof window !== 'undefined' && window.innerWidth < 768);
+    handler();
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+
+  // On first tap on mobile, prevent navigation and show quad; subsequent tap navigates
+  const handleClick = (e) => {
+    if (!isMobile) return; // Desktop: allow normal link navigation
+    if (!touchActive) {
+      e.preventDefault();
+      e.stopPropagation();
+      setTouchActive(true);
+    }
+    // If already active, let the click bubble to navigate
+  };
+
   // Handle no photos case
   if (!photos || photos.length === 0) {
     return (
-      <div className={`aspect-square overflow-hidden relative ${className}`}>
+      <div className={`aspect-square overflow-hidden relative ${className}`} onClick={handleClick}>
         <div className="w-full h-full bg-gray-200 flex items-center justify-center">
           <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -32,7 +55,7 @@ export default function ImageHoverQuadSquare({ photos, title, className = "", ac
   // If only one photo, show single image without hover effect
   if (photos.length === 1) {
     return (
-      <div className={`aspect-square overflow-hidden relative ${className}`}>
+      <div className={`aspect-square overflow-hidden relative ${className}`} onClick={handleClick}>
         <CloudinaryImage
           photo={photos[0]}
           alt={title}
@@ -51,6 +74,7 @@ export default function ImageHoverQuadSquare({ photos, title, className = "", ac
         className={`aspect-square overflow-hidden relative ${className}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
+        onClick={handleClick}
       >
         <div className="w-full h-full relative">
           {/* Single main image */}
@@ -96,6 +120,7 @@ export default function ImageHoverQuadSquare({ photos, title, className = "", ac
         className={`aspect-square overflow-hidden relative ${className}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
+        onClick={handleClick}
       >
         <div className="w-full h-full relative">
           {/* Single main image */}
@@ -153,6 +178,7 @@ export default function ImageHoverQuadSquare({ photos, title, className = "", ac
       className={`aspect-square overflow-hidden relative ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={handleClick}
     >
       <div className="w-full h-full relative">
   {/* Single main image */}
