@@ -15,6 +15,11 @@ router.get("/user-places", isAuthenticated, placeController.getUserPlaces);
 // Get filtered places for homepage
 router.get("/home", placeController.getHomePlaces);
 
+// US-LOCK-002 Optimized endpoints
+router.post("/check-availability", placeController.checkPlaceAvailability);
+router.get("/lock-monitoring", placeController.getLockMonitoringReport);
+router.post("/clear-cache", placeController.clearOptimizationCache);
+
 // Get specific place by ID
 router.get("/:id", placeController.getPlaceById);
 
