@@ -233,7 +233,7 @@ export default function DateTimeFilterModal({ isOpen, onClose }) {
     <div className="modal-overlay" style={{ zIndex: 999999 }}>
       <div 
         ref={modalRef}
-        className="modal-container max-w-sm sm:max-w-md md:max-w-4xl max-h-[90vh] relative z-[99999]"
+        className="modal-container max-w-[18rem] sm:max-w-md md:max-w-4xl max-h-[90vh] relative z-[99999]"
         style={{ zIndex: 999999 }}
       >
         {/* Header - Minimal padding */}

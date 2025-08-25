@@ -336,7 +336,7 @@
     },
     "pricing": {
       "hourlyRate": "Soatlik tarif",
-      "fullDay": "To'liq kun ({{hours}}s)"
+  "fullDay": "To'liq kun ({{hours}} soat)"
     },
     "capacity": {
       "maxAttendees": "Maksimal ishtirokchilar",
