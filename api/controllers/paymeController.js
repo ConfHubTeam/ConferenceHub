@@ -9,7 +9,7 @@ const { User, Booking } = require("../models");
  */
 const pay = async (req, res) => {
   let requestId = null; // Define outside try-catch for error handling
-  
+
   try {
     const { method, params, id } = req.body;
     requestId = id; // Store for error handling
@@ -37,12 +37,13 @@ const pay = async (req, res) => {
       }
       case PaymeMethod.GetStatement: {
         const result = await paymeService.getStatement(params, id);
-        return res.json({ result: { transactions: result } });
+        // result already shaped as { transactions: [...] }
+        return res.json({ result });
       }
     }
   } catch (error) {
     console.error('Payme webhook error:', error);
-    
+
     // Handle PaymeTransactionError with proper JSON-RPC format
     if (error.isTransactionError) {
       const response = {
@@ -55,7 +56,7 @@ const pay = async (req, res) => {
       };
       return res.status(200).json(response); // Payme always expects 200 status
     }
-    
+
     // Handle other errors
     console.error('Error details:', {
       name: error.name,
@@ -63,14 +64,14 @@ const pay = async (req, res) => {
       stack: error.stack,
       statusCode: error.statusCode
     });
-    
+
     // Generic error response in JSON-RPC format
     const response = {
       error: {
         code: -32000, // Server error
         message: {
           en: "Internal server error",
-          ru: "Внутренняя ошибка сервера", 
+          ru: "Внутренняя ошибка сервера",
           uz: "Ichki server xatosi"
         },
         data: null
@@ -140,14 +141,14 @@ const checkPaymentStatus = async (req, res) => {
     // Map Payme transaction states to unified payment status
     // Payme states: 1 = pending, 2 = paid, -1 = cancelled, -2 = cancelled after payment
     let paymentStatus, isPaid, errorCode, message;
-    
+
     switch (paymeTransaction.state) {
       case 2: // Paid
         isPaid = true;
         paymentStatus = 2;
         errorCode = 0;
         message = "Payment completed successfully";
-        
+
         // Update booking if not already updated
         if (booking.status !== 'approved' || !booking.paidAt) {
           await booking.update({
@@ -157,28 +158,28 @@ const checkPaymentStatus = async (req, res) => {
           });
         }
         break;
-        
+
       case 1: // Pending
         isPaid = false;
         paymentStatus = 1;
         errorCode = 0;
         message = "Payment is pending";
         break;
-        
+
       case -1: // Cancelled from pending
         isPaid = false;
         paymentStatus = -1;
         errorCode = -1;
         message = "Payment was cancelled";
         break;
-        
+
       case -2: // Cancelled after payment (refunded)
         isPaid = false;
         paymentStatus = -2;
         errorCode = -2;
         message = "Payment was cancelled after completion";
         break;
-        
+
       default:
         isPaid = false;
         paymentStatus = null;
@@ -198,7 +199,7 @@ const checkPaymentStatus = async (req, res) => {
 
   } catch (error) {
     console.error('Payme payment status check error:', error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: "Failed to check payment status",
       details: error.message,
       success: false,
@@ -241,10 +242,10 @@ const checkout = async (req, res) => {
 
     // Amount in tiyin (multiply by 100)
     const amount = Math.round(booking.totalPrice * 100);
-    
+
     // Create the account parameter for Payme
     const account = `booking_id=${bookingId}`;
-    
+
     // Create the base64 encoded parameter
     const params = `m=${MERCHANT_ID};ac.${account};a=${amount};c=${returnUrl || 'https://airbnb-clone.uz/bookings'}`;
     const encodedParams = base64.encode(params);
@@ -253,9 +254,9 @@ const checkout = async (req, res) => {
     // Production: https://checkout.paycom.uz/
     // Development/Test: https://checkout.test.paycom.uz/
     const isProduction = process.env.NODE_ENV === 'production';
-    
-    const checkoutBaseUrl = isProduction 
-      ? 'https://checkout.paycom.uz' 
+
+    const checkoutBaseUrl = isProduction
+      ? 'https://checkout.paycom.uz'
       : 'https://checkout.test.paycom.uz';
 
     const paymentUrl = `${checkoutBaseUrl}/${encodedParams}`;
@@ -269,7 +270,7 @@ const checkout = async (req, res) => {
       amount: booking.totalPrice
     });
 
-    return res.json({ 
+    return res.json({
       success: true,
       url: paymentUrl,
       bookingId,
@@ -279,7 +280,7 @@ const checkout = async (req, res) => {
 
   } catch (error) {
     console.error('Payme checkout error:', error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: "Failed to generate payment link",
       details: error.message
     });
@@ -292,7 +293,7 @@ const checkout = async (req, res) => {
 const getUserPhone = async (req, res) => {
   try {
     const userData = await getUserDataFromToken(req);
-    
+
     const user = await User.findByPk(userData.id, {
       attributes: ['id', 'phoneNumber', 'paymePhoneNumber']
     });
@@ -318,7 +319,7 @@ const getUserPhone = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching user phone:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: "Failed to fetch phone number",
       details: error.message
     });
@@ -363,7 +364,7 @@ const updatePaymePhone = async (req, res) => {
     });
   } catch (error) {
     console.error('Error updating Payme phone:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: "Failed to update phone number",
       details: error.message
     });
@@ -376,7 +377,7 @@ const updatePaymePhone = async (req, res) => {
 const getConfig = async (req, res) => {
   try {
     const MERCHANT_ID = process.env.PAYME_MERCHANT_ID;
-    
+
     if (!MERCHANT_ID) {
       return res.status(500).json({ error: "Payme merchant ID not configured" });
     }
@@ -392,7 +393,7 @@ const getConfig = async (req, res) => {
     });
   } catch (error) {
     console.error('Error getting Payme config:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: "Failed to get configuration",
       details: error.message
     });
