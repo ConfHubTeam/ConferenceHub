@@ -243,11 +243,11 @@ const checkout = async (req, res) => {
     // Amount in tiyin (multiply by 100)
     const amount = Math.round(booking.totalPrice * 100);
 
-    // Create the account parameter for Payme
-    const account = `booking_id=${bookingId}`;
+    // Create the account parameter for Payme (use order_id for consistency)
+    const account = `order_id=${bookingId}`;
 
     // Create the base64 encoded parameter
-    const params = `m=${MERCHANT_ID};ac.${account};a=${amount};c=${returnUrl || 'https://airbnb-clone.uz/bookings'}`;
+    const params = `m=${MERCHANT_ID};ac.${account};a=${amount};c=${returnUrl}`;
     const encodedParams = base64.encode(params);
 
     // Determine checkout URL based on environment
