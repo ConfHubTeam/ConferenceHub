@@ -440,8 +440,10 @@ class PaymeService {
         id: transaction.providerTransactionId,
         time: transaction.createDate.getTime(),
         amount: transaction.providerData?.originalAmount || (transaction.amount * 100),
+        // Expose order_id for consistency with incoming webhook expectations.
+        // Note: Webhook handlers still accept both order_id and booking_id.
         account: {
-          booking_id: transaction.bookingId.toString()
+          order_id: transaction.bookingId.toString()
         },
         create_time: transaction.createDate.getTime(),
         perform_time: transaction.performDate ? transaction.performDate.getTime() : 0,
