@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { UserContext } from "./UserContext";
 import { useCurrency } from "../contexts/CurrencyContext";
@@ -10,37 +10,87 @@ import UserNavigation from "./UserNavigation";
 
 export default function Header() {
   const { t } = useTranslation("navigation");
-  const {user} = useContext(UserContext);
+  const { user } = useContext(UserContext);
   const { selectedCurrency, changeCurrency, availableCurrencies } = useCurrency();
+  const location = useLocation();
+  const isLanding = location.pathname === "/"; // Landing page route
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuRef = useRef(null);
+  const currencyRef = useRef(null);
+  const languageRef = useRef(null);
   const menuButtonRef = useRef(null);
+  const navScrollRef = useRef(null);
+  const navContentRef = useRef(null);
+
+  // Horizontal nav overflow detection for desktop
+  const [navHasOverflow, setNavHasOverflow] = useState(false);
+  const [atStart, setAtStart] = useState(true);
+  const [atEnd, setAtEnd] = useState(false);
+
+  useEffect(() => {
+    const el = navScrollRef.current;
+    if (!el) return;
+
+    const update = () => {
+      const hasOverflow = el.scrollWidth > el.clientWidth + 1; // tolerance
+      setNavHasOverflow(hasOverflow);
+      setAtStart(el.scrollLeft <= 1);
+      setAtEnd(el.scrollLeft + el.clientWidth >= el.scrollWidth - 1);
+    };
+
+    // Trigger after layout settles
+    requestAnimationFrame(() => requestAnimationFrame(update));
+    const id = window.setTimeout(update, 250);
+
+    el.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    window.addEventListener("load", update);
+
+    // Observe size/content changes
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    if (navContentRef.current) ro.observe(navContentRef.current);
+
+    return () => {
+      el.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+      window.removeEventListener("load", update);
+      window.clearTimeout(id);
+      ro.disconnect();
+    };
+  }, []);
+
+  const scrollNavBy = (delta) => {
+    const el = navScrollRef.current;
+    if (!el) return;
+    el.scrollBy({ left: delta, behavior: "smooth" });
+  };
 
   // Handle clicks outside the menu to close it
   useEffect(() => {
     function handleClickOutside(event) {
       // Handle mobile menu closing
       if (
-        mobileMenuOpen && 
-        menuRef.current && 
-        !menuRef.current.contains(event.target) && 
-        menuButtonRef.current && 
+        mobileMenuOpen &&
+        menuRef.current &&
+        !menuRef.current.contains(event.target) &&
+        menuButtonRef.current &&
         !menuButtonRef.current.contains(event.target)
       ) {
         setMobileMenuOpen(false);
       }
     }
-    
+
     // Add event listener when component mounts
     document.addEventListener('mousedown', handleClickOutside);
-    
+
     // Prevent body scrolling when menu is open
     if (mobileMenuOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
-    
+
     // Clean up
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
@@ -55,7 +105,7 @@ export default function Header() {
     }
     return "";
   };
-  
+
   // Function to handle menu link clicks
   const handleMenuLinkClick = () => {
     setMobileMenuOpen(false);
@@ -63,58 +113,102 @@ export default function Header() {
 
   return (
     <>
-      <header className="flex items-center justify-between pl-2 pr-4 md:pl-6 md:pr-14 py-5 relative z-[70] bg-white sticky top-0 border-b border-gray-200 flex-shrink-0">
+      <header className="flex items-center justify-between pl-2 pr-4 md:pl-6 md:pr-14 py-5 relative z-[70] bg-accent-primary text-white sticky top-0 border-b border-navy-700 flex-shrink-0">
         {/* Logo - Fixed width */}
         <div className="flex-shrink-0">
-          <Link to={user ? "/places" : "/"} className="logo flex items-center gap-1 mt-1">
-            <img 
-              src="/getSpace_logo.png" 
+          <Link to={user ? "/places" : "/"} className="logo flex items-center gap-1 mt-1 rounded-full border border-white/30 p-1.5 hover:bg-white/10 hover:border-white/50 transition-colors md:border-0 md:p-0 md:hover:bg-transparent">
+            <img
+              src="/getSpace_logo.png"
               alt={t("header.logo.alt")}
               title={t("header.logo.title")}
-              className="h-6 sm:h-7 lg:h-8 w-auto object-contain logo-navy"
-              style={{ 
+              className="h-6 sm:h-7 lg:h-8 w-auto object-contain logo-white"
+              style={{
                 transform: "translateZ(0)"
               }}
             />
           </Link>
         </div>
-        
-        {/* User Navigation - Desktop only, centered between logo and right section */}
-        <div className="hidden md:flex flex-1 min-w-0 mx-4 justify-center">
-          <UserNavigation />
+
+        {/* User Navigation - Desktop only, horizontally scrollable with indicators */}
+        <div className="hidden md:block flex-1 min-w-0 mx-4 relative">
+          <div
+            ref={navScrollRef}
+            className={`overflow-x-auto overflow-y-visible scroll-smooth flex ${navHasOverflow ? 'justify-start' : 'justify-center'}`}
+            style={{ scrollbarWidth: 'none' }}
+          >
+            <div ref={navContentRef} className="inline-flex items-center gap-4">
+              <UserNavigation />
+            </div>
+          </div>
+
+          {/* Edge fade indicators */}
+          {navHasOverflow && !atStart && (
+            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-accent-primary to-transparent" />
+          )}
+          {navHasOverflow && !atEnd && (
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-accent-primary to-transparent" />
+          )}
+
+          {/* Right scroll indicator */}
+          {navHasOverflow && !atEnd && (
+            <button
+              type="button"
+              aria-label="Scroll navigation right"
+              onClick={() => scrollNavBy(Math.max(160, (navScrollRef.current?.clientWidth || 400) * 0.6))}
+              className="absolute right-0 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white rounded-full w-8 h-8 flex items-center justify-center ring-1 ring-white/25 backdrop-blur-sm"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+
+          {/* Left scroll indicator */}
+          {navHasOverflow && !atStart && (
+            <button
+              type="button"
+              aria-label="Scroll navigation left"
+              onClick={() => scrollNavBy(-Math.max(160, (navScrollRef.current?.clientWidth || 400) * 0.6))}
+              className="absolute left-0 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white rounded-full w-8 h-8 flex items-center justify-center ring-1 ring-white/25 backdrop-blur-sm"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
         </div>
-        
+
         {/* Right section - Mobile: notification + hamburger + profile, Desktop: all elements */}
         <div className="flex items-center gap-3 relative z-30 flex-shrink-0">
           {/* Notification Bell - only shown for logged-in users */}
-          <NotificationBell />
-          
+          <NotificationBell theme="dark" />
+
           {/* Currency Selector */}
-          <div className="hidden md:block" style={{ width: '100px' }}>
+      <div className="hidden md:block" style={{ width: '100px' }}>
             <CurrencySelector
               selectedCurrency={selectedCurrency}
               onChange={changeCurrency}
               availableCurrencies={availableCurrencies}
               compact={true}
-              theme="light"
+        theme={isLanding ? "transparent" : "navy"}
             />
           </div>
-          
+
           {/* Language Selector - clearly separated from currency */}
-          <div className="hidden md:block" style={{ width: '80px' }}>
-            <LanguageSelector 
+      <div className="hidden md:block" style={{ width: '80px' }}>
+            <LanguageSelector
               variant="default"
               showFlag={false}
               showText={false}
-              theme="light"
+        theme={isLanding ? "transparent" : "navy"}
             />
           </div>
-          
+
           {/* Hamburger menu button - only shown on mobile */}
-          <button 
+          <button
             ref={menuButtonRef}
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
-            className="md:hidden border border-gray-300 rounded-full p-2 bg-white hover:shadow-md transition-shadow"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden border border-white/30 rounded-full p-2 text-white hover:bg-white/10 hover:border-white/50 transition-colors"
             aria-label={t("header.mobileMenu.toggleMenu")}
           >
             <svg
@@ -132,10 +226,10 @@ export default function Header() {
               />
             </svg>
           </button>
-          
+
           <Link
             to={user ? "/account" : "/login"}
-            className="profile flex items-center justify-center w-full px-1 py-3 text-base border border-border-default rounded-full bg-bg-card hover:bg-bg-secondary transition-all duration-200 hover:scale-[1.02] hover:shadow-md hover:border-accent-primary gap-2 relative"
+            className="profile flex items-center justify-center w-full px-1 py-3 text-base border rounded-full transition-all duration-200 hover:scale-[1.02] hover:shadow-md gap-2 relative text-white border-white/30 hover:bg-white/10 hover:border-white/50"
             style={{ minWidth: '60px', height: '48px' }}
           >
             {!user ? (
@@ -143,8 +237,8 @@ export default function Header() {
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
-                  fill="#717171ff"
-                  className="w-7 h-7"
+                  fill="currentColor"
+                  className="w-7 h-7 text-white"
                 >
                   <path
                     fillRule="evenodd"
@@ -155,44 +249,44 @@ export default function Header() {
               </div>
             ) : (
               <>
-                <div className="bg-accent-primary text-white rounded-full w-8 h-8 flex items-center justify-center font-semibold">
+                <div className="bg-white text-accent-primary rounded-full w-8 h-8 flex items-center justify-center font-semibold">
                   {getFirstLetter()}
                 </div>
               </>
             )}
           </Link>
         </div>
-        
+
         {/* Semi-transparent overlay when menu is open */}
         {mobileMenuOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-[85]" />
         )}
-        
+
         {/* Enhanced Mobile menu with better navigation for authenticated users */}
         {mobileMenuOpen && (
-          <div 
+          <div
             ref={menuRef}
-            className="absolute top-16 left-0 right-0 bg-white shadow-lg z-[90] md:hidden rounded-b-lg max-h-[calc(100vh-80px)] overflow-y-auto"
+            className="absolute top-16 left-0 right-0 mx-2 sm:mx-3 bg-accent-primary text-white z-[90] md:hidden rounded-xl max-h-[calc(100vh-80px)] overflow-y-auto shadow-2xl ring-1 ring-white/15 border border-white/10"
           >
             <div className="flex flex-col">
               {/* User Navigation Section for authenticated users */}
               {user && (
-                <div className="border-b border-gray-200 p-4">
+                <div className="border-b border-white/20 p-4">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="bg-accent-primary text-white rounded-full w-10 h-10 flex items-center justify-center font-semibold">
+                    <div className="bg-white text-accent-primary rounded-full w-10 h-10 flex items-center justify-center font-semibold">
                       {getFirstLetter()}
                     </div>
                     <div>
-                      <div className="font-semibold text-gray-900">{user.name}</div>
-                      <div className="text-sm text-gray-500 capitalize">{user.userType}</div>
+                      <div className="font-semibold text-white">{user.name}</div>
+                      <div className="text-sm text-white/80 capitalize">{user.userType}</div>
                     </div>
                   </div>
-                  
+
                   {/* Quick Navigation Links */}
                   <div className="grid grid-cols-2 gap-2">
-                    <Link 
-                      to="/places" 
-                      className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
+                    <Link
+                      to="/places"
+                      className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-all duration-200 hover-pop-sm text-white"
                       onClick={handleMenuLinkClick}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -200,9 +294,9 @@ export default function Header() {
                       </svg>
                       {t("header.navigation.home", "Home")}
                     </Link>
-                    <Link 
-                      to="/account" 
-                      className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
+                    <Link
+                      to="/account"
+                      className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-all duration-200 hover-pop-sm text-white"
                       onClick={handleMenuLinkClick}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -210,9 +304,9 @@ export default function Header() {
                       </svg>
                       {t("accountNav.profile")}
                     </Link>
-                    <Link 
-                      to="/account/bookings" 
-                      className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
+                    <Link
+                      to="/account/bookings"
+                      className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-all duration-200 hover-pop-sm text-white"
                       onClick={handleMenuLinkClick}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -220,12 +314,12 @@ export default function Header() {
                       </svg>
                       {t("accountNav.bookings")}
                     </Link>
-                    
+
                     {/* Show favorites only for clients */}
                     {user.userType !== 'host' && user.userType !== 'agent' && (
-                      <Link 
-                        to="/account/favorites" 
-                        className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
+                      <Link
+                        to="/account/favorites"
+                        className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-all duration-200 hover-pop-sm text-white"
                         onClick={handleMenuLinkClick}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -234,15 +328,15 @@ export default function Header() {
                         {t("accountNav.favorites")}
                       </Link>
                     )}
-                    
 
-                    
+
+
                     {/* Host specific links */}
                     {user.userType === 'host' && (
                       <>
-                        <Link 
-                          to="/account/user-places" 
-                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
+                        <Link
+                          to="/account/user-places"
+                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-all duration-200 hover-pop-sm text-white"
                           onClick={handleMenuLinkClick}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -250,9 +344,9 @@ export default function Header() {
                           </svg>
                           {t("header.navigation.myPlaces", "My Places")}
                         </Link>
-                        <Link 
-                          to="/account/calendar" 
-                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
+                        <Link
+                          to="/account/calendar"
+                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-all duration-200 hover-pop-sm text-white"
                           onClick={handleMenuLinkClick}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -260,9 +354,9 @@ export default function Header() {
                           </svg>
                           {t("accountNav.calendar", "Calendar")}
                         </Link>
-                        <Link 
-                          to="/account/hostdashboard" 
-                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
+                        <Link
+                          to="/account/hostdashboard"
+                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-all duration-200 hover-pop-sm text-white"
                           onClick={handleMenuLinkClick}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -272,13 +366,13 @@ export default function Header() {
                         </Link>
                       </>
                     )}
-                    
+
                     {/* Agent specific links */}
                     {user.userType === 'agent' && (
                       <>
-                        <Link 
-                          to="/account/users" 
-                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
+                        <Link
+                          to="/account/users"
+                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-all duration-200 hover-pop-sm text-white"
                           onClick={handleMenuLinkClick}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -286,9 +380,9 @@ export default function Header() {
                           </svg>
                           {t("accountNav.users")}
                         </Link>
-                        <Link 
-                          to="/account/all-places" 
-                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
+                        <Link
+                          to="/account/all-places"
+                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-all duration-200 hover-pop-sm text-white"
                           onClick={handleMenuLinkClick}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -297,9 +391,9 @@ export default function Header() {
                           </svg>
                           {t("accountNav.places")}
                         </Link>
-                        <Link 
-                          to="/account/calendar" 
-                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
+                        <Link
+                          to="/account/calendar"
+                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-all duration-200 hover-pop-sm text-white"
                           onClick={handleMenuLinkClick}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -307,9 +401,9 @@ export default function Header() {
                           </svg>
                           {t("accountNav.calendar", "Calendar")}
                         </Link>
-                        <Link 
-                          to="/account/reviews" 
-                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
+                        <Link
+                          to="/account/reviews"
+                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-all duration-200 hover-pop-sm text-white"
                           onClick={handleMenuLinkClick}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -317,9 +411,9 @@ export default function Header() {
                           </svg>
                           {t("accountNav.reviews")}
                         </Link>
-                        <Link 
-                          to="/account/dashboard" 
-                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-bg-secondary text-sm transition-all duration-200 hover-pop-sm"
+                        <Link
+                          to="/account/dashboard"
+                          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-all duration-200 hover-pop-sm text-white"
                           onClick={handleMenuLinkClick}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -332,42 +426,70 @@ export default function Header() {
                   </div>
                 </div>
               )}
-              
+
               {/* Settings and Options Section */}
-              <div className="p-4">
+              <div className="p-4 text-white">
                 {/* Currency and Language selectors side by side */}
                 <div className="mb-4">
                   <div className="grid grid-cols-2 gap-4">
                     {/* Currency selector */}
-                    <div>
+                    <div ref={currencyRef}>
                       <div className="w-full">
                         <CurrencySelector
                           selectedCurrency={selectedCurrency}
                           onChange={changeCurrency}
                           availableCurrencies={availableCurrencies}
+                          theme="light"
+                          textColorClass="text-accent-primary"
+                          size="md"
+                          onOpen={() => {
+                            // Auto-scroll currency into view when its dropdown opens
+                            const container = menuRef.current;
+                            const target = currencyRef.current;
+                            if (container && target) {
+                              const rectContainer = container.getBoundingClientRect();
+                              const rectTarget = target.getBoundingClientRect();
+                              const offset = rectTarget.top - rectContainer.top;
+                              container.scrollTo({ top: offset - 16, behavior: 'smooth' });
+                            }
+                          }}
                         />
                       </div>
                     </div>
-                    
+
                     {/* Language selector */}
-                    <div>
+                    <div ref={languageRef}>
                       <div className="w-full">
-                        <LanguageSelector 
+                        <LanguageSelector
                           variant="dropdown"
                           showFlag={true}
                           showText={true}
+                          theme="light"
+                          textColorClass="text-accent-primary"
+                          size="md"
+                          onOpen={() => {
+                            // Auto-scroll language into view when its dropdown opens
+                            const container = menuRef.current;
+                            const target = languageRef.current;
+                            if (container && target) {
+                              const rectContainer = container.getBoundingClientRect();
+                              const rectTarget = target.getBoundingClientRect();
+                              const offset = rectTarget.top - rectContainer.top;
+                              container.scrollTo({ top: offset - 16, behavior: 'smooth' });
+                            }
+                          }}
                         />
                       </div>
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Authentication section for unauthenticated users */}
                 {!user && (
-                  <div className="border-t pt-4">
-                    <Link 
-                      to="/login" 
-                      className="flex items-center py-3 px-3 hover:bg-gray-50 rounded-lg mb-2"
+                  <div className="border-t border-white/20 pt-4">
+                    <Link
+                      to="/login"
+                      className="flex items-center py-3 px-3 hover:bg-white/10 rounded-lg mb-2 text-white"
                       onClick={handleMenuLinkClick}
                     >
                       <span className="mr-3">
@@ -377,9 +499,9 @@ export default function Header() {
                       </span>
                       {t("header.userMenu.login")}
                     </Link>
-                    <Link 
-                      to="/register" 
-                      className="flex items-center py-3 px-3 hover:bg-gray-50 rounded-lg"
+                    <Link
+                      to="/register"
+                      className="flex items-center py-3 px-3 hover:bg-white/10 rounded-lg text-white"
                       onClick={handleMenuLinkClick}
                     >
                       <span className="mr-3">

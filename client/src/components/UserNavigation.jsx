@@ -192,9 +192,9 @@ export default function UserNavigation() {
       {showLeftArrow && (
         <button
           onClick={scrollLeft}
-          className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm p-1 rounded-full shadow-sm hover:bg-white transition-all border border-gray-200"
+          className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/10 backdrop-blur-sm p-1 rounded-full shadow-sm hover:bg-white/20 transition-all border border-white/30"
         >
-          <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
@@ -204,9 +204,9 @@ export default function UserNavigation() {
       {showRightArrow && (
         <button
           onClick={scrollRight}
-          className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm p-1 rounded-full shadow-sm hover:bg-white transition-all border border-gray-200"
+          className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/10 backdrop-blur-sm p-1 rounded-full shadow-sm hover:bg-white/20 transition-all border border-white/30"
         >
-          <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
@@ -223,10 +223,10 @@ export default function UserNavigation() {
           {allNavItems.map((item) => (
             <Link
               key={item.key}
-              className={`relative inline-flex items-center gap-2 px-3 py-2 rounded-lg text-base font-medium transition-all duration-200 flex-shrink-0 whitespace-nowrap hover-pop-sm ${
+              className={`relative inline-flex items-center gap-2 px-3 py-2 rounded-lg text-base font-medium transition-all duration-200 flex-shrink-0 whitespace-nowrap hover-pop-sm border ${
                 item.key === subpage
-                  ? 'bg-bg-card text-accent-primary border border-accent-primary shadow-sm'
-                  : 'bg-bg-card text-text-secondary border border-transparent hover:text-accent-primary hover:bg-bg-secondary'
+                  ? 'bg-accent-hover text-white border-white/40 shadow-sm'
+                  : 'bg-accent-primary text-white border-transparent hover:bg-accent-hover'
               }`}
               to={item.to}
             >

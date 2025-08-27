@@ -123,30 +123,30 @@ function IndexPageBase() {
   
   // Handle when map is ready - connect ref to Layout's mapFocusRef and do initial focus
   const handleMapReady = useCallback((mapInstance) => {
-    // Map is ready for focus operations
+    // Connect the imperative handle from MapView to Layout's ref
     if (mapFocusRef && mapRef.current) {
       mapFocusRef.current = mapRef.current;
     }
-    
-    // If we have a selected region when map loads, focus on it
+
+    // Defer initial focus until the imperative handle reports readiness
     if (selectedRegionId && regionService && onMapFocus) {
-      if (selectedRegionId === 'tashkent-city') {
-        // For the default region, use the exact DEFAULT_MAP_CONFIG to ensure consistent zoom
-        const defaultRegion = regionService.getDefaultRegion();
-        if (defaultRegion) {
-          onMapFocus({
-            center: defaultRegion.coordinates,
-            zoom: DEFAULT_MAP_CONFIG.zoom, // Use exact default zoom
-            regionId: defaultRegion.id
-          });
+      setTimeout(() => {
+        if (selectedRegionId === 'tashkent-city') {
+          const defaultRegion = regionService.getDefaultRegion();
+          if (defaultRegion) {
+            onMapFocus({
+              center: defaultRegion.coordinates,
+              zoom: DEFAULT_MAP_CONFIG.zoom,
+              regionId: defaultRegion.id
+            });
+          }
+        } else {
+          const mapConfig = regionService.getMapConfigForRegion(selectedRegionId, 'CITY');
+          if (mapConfig) {
+            onMapFocus(mapConfig);
+          }
         }
-      } else {
-        // For other regions, use the standard approach
-        const mapConfig = regionService.getMapConfigForRegion(selectedRegionId, 'CITY');
-        if (mapConfig) {
-          onMapFocus(mapConfig);
-        }
-      }
+      }, 0);
     }
   }, [mapFocusRef, selectedRegionId, regionService, onMapFocus]);
   
@@ -448,7 +448,7 @@ function IndexPageBase() {
   // Handle region selection separately - only affects map focus, not listing filtering
   useEffect(() => {
     // Performance optimization: Skip if same region or missing dependencies
-    if (!selectedRegionId || !regionService || !mapRef.current || !onMapFocus) {
+  if (!selectedRegionId || !regionService || !mapRef.current || !onMapFocus) {
       return;
     }
     

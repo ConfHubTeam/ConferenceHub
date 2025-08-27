@@ -6,7 +6,10 @@ export default function CurrencySelector({
   onChange, 
   availableCurrencies, 
   compact = false,
-  theme = "light" // Default to light theme
+  theme = "light", // Default to light theme
+  textColorClass = "", // Optional override for main text color (e.g., 'text-accent-primary')
+  onOpen,
+  size = "md"
 }) {
   const [currencies, setCurrencies] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -117,6 +120,13 @@ export default function CurrencySelector({
     };
   }, [isOpen]);
 
+  // Notify parent when dropdown opens so it can auto-scroll into view
+  useEffect(() => {
+    if (isOpen && typeof onOpen === "function") {
+      try { onOpen(); } catch (_) {}
+    }
+  }, [isOpen, onOpen]);
+
   const handleSelect = (currency) => {
     onChange(currency);
     setIsOpen(false);
@@ -171,18 +181,30 @@ export default function CurrencySelector({
             ? 'px-4 py-4 text-sm h-10' 
             : 'px-4 py-3 text-base'
         } ${
-          theme === "dark" 
-            ? 'bg-black text-white border-white/30 hover:bg-white/15 hover:border-white/50' 
-            : 'bg-bg-card border border-border-default hover:bg-bg-secondary hover:border-accent-primary'
+          theme === "dark"
+            ? 'bg-black text-white border-white/30 hover:bg-white/15 hover:border-white/50'
+            : theme === 'navy'
+              ? 'bg-accent-primary text-white border border-white/20 hover:bg-white/10 hover:border-white/50'
+              : theme === 'transparent'
+                ? 'bg-transparent text-white hover:bg-white/10'
+                : 'bg-bg-card border border-border-default hover:bg-bg-secondary hover:border-accent-primary'
         } rounded-full cursor-pointer transition-all duration-200 hover:shadow-md transform hover:scale-[1.02] ${
           isOpen 
-            ? theme === "dark" 
-              ? 'border-white/50 ring-2 ring-white/20 shadow-sm' 
-              : 'border-navy-400 ring-2 ring-navy-400 ring-opacity-20 shadow-sm'
-            : theme === "dark"
-              ? 'focus:border-white/50 focus:ring-2 focus:ring-white/20'
-              : 'focus:border-navy-400 focus:ring-2 focus:ring-navy-400 focus:ring-opacity-20'
-        }`}
+            ? (theme === 'dark'
+                ? 'border-white/50 ring-2 ring-white/20 shadow-sm'
+                : theme === 'transparent'
+                  ? 'ring-2 ring-white/20 shadow-sm'
+                  : theme === 'navy'
+                    ? 'border-white/50 ring-2 ring-white/20 shadow-sm'
+                    : 'border-navy-400 ring-2 ring-navy-400 ring-opacity-20 shadow-sm')
+            : (theme === 'dark'
+                ? 'focus:border-white/50 focus:ring-2 focus:ring-white/20'
+                : theme === 'transparent'
+                  ? 'focus:ring-2 focus:ring-white/20'
+                  : theme === 'navy'
+                    ? 'focus:border-white/50 focus:ring-2 focus:ring-white/20'
+                    : 'focus:border-navy-400 focus:ring-2 focus:ring-navy-400 focus:ring-opacity-20')
+        } ${size === 'sm' ? 'h-10' : size === 'lg' ? 'h-14' : 'h-12'}`}
         onClick={() => setIsOpen(!isOpen)}
         tabIndex={0}
         role="combobox"
@@ -198,12 +220,12 @@ export default function CurrencySelector({
                 // Professional compact mode: clean, inline layout - similar to LanguageSelector
                 <div className="flex items-center space-x-2">
                   <span className={`font-medium text-sm ${
-                    theme === "dark" ? 'text-white/80' : 'text-gray-700'
+                    textColorClass || ((theme === "dark" || theme === 'navy' || theme === 'transparent') ? 'text-white/80' : 'text-gray-700')
                   }`}>
                     {getCurrencyInfo(selectedCurrency.charCode).symbol}
                   </span>
                   <span className={`font-medium text-sm ${
-                    theme === "dark" ? 'text-white' : 'text-gray-900'
+                    textColorClass || ((theme === "dark" || theme === 'navy' || theme === 'transparent') ? 'text-white' : 'text-gray-900')
                   }`}>
                     {getCurrencyInfo(selectedCurrency.charCode).displayCode}
                   </span>
@@ -212,19 +234,19 @@ export default function CurrencySelector({
                 // Full mode: professional layout with icon
                 <>
                   <div className={`flex items-center justify-center w-8 h-8 rounded-full border ${
-                    theme === "dark" 
-                      ? 'bg-white/10 border-white/20' 
+                    (theme === "dark" || theme === 'navy' || theme === 'transparent')
+                      ? 'bg-white/10 border-white/20'
                       : 'bg-gray-50 border-gray-200'
                   }`}>
                     <span className={`font-semibold text-sm ${
-                      theme === "dark" ? 'text-white' : 'text-gray-700'
+                      textColorClass || ((theme === "dark" || theme === 'navy' || theme === 'transparent') ? 'text-white' : 'text-gray-700')
                     }`}>
                       {getCurrencyInfo(selectedCurrency.charCode).symbol}
                     </span>
                   </div>
                   <div className="flex flex-col min-w-0 ml-3">
                     <span className={`font-medium text-base ${
-                      theme === "dark" ? 'text-white' : 'text-gray-900'
+                      textColorClass || ((theme === "dark" || theme === 'navy' || theme === 'transparent') ? 'text-white' : 'text-gray-900')
                     }`}>
                       {getCurrencyInfo(selectedCurrency.charCode).displayCode}
                     </span>
@@ -235,7 +257,7 @@ export default function CurrencySelector({
           )}
           {!selectedCurrency && (
             <span className={`font-medium text-sm ${
-              theme === "dark" ? 'text-white/60' : 'text-gray-400'
+              textColorClass || ((theme === "dark" || theme === 'navy' || theme === 'transparent') ? 'text-white/60' : 'text-gray-400')
             }`}>Select Currency</span>
           )}
         </div>

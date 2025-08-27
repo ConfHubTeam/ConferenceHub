@@ -5,6 +5,9 @@ import { useTranslation } from "react-i18next";
 // Get Google Maps API key from environment variables
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 
+// Define libraries as a constant outside the component to prevent recreation on each render
+const libraries = ["places"]; 
+
 // Map container style
 const containerStyle = {
   width: '100%',
@@ -128,7 +131,7 @@ export default function PlaceStaticMap({ place }) {
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
-    libraries: ["places"]
+  libraries: libraries
   });
 
   // Error handling

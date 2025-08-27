@@ -43,6 +43,7 @@
   "unavailable": "Unavailable",
   "selectDate": "Select a date",
   "selectPlace": "Select a place",
+  "ownedBy": "Owner",
   "selectPlaceToStart": "Select a place to get started",
   "chooseFromDropdown": "Choose a place from the dropdown above to view its calendar and manage availability.",
   "clickDateToView": "Click on any date in the calendar to view its availability details.",

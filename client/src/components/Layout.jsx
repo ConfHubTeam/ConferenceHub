@@ -26,21 +26,31 @@ function IndexPageLayout() {
   }, []);
   
   // Handle map focus requests
-  const handleMapFocus = useCallback(async (regionConfig) => {
-    if (!mapFocusRef.current) return;
-    
+  const handleMapFocus = useCallback(async (regionConfig, attempts = 0) => {
+    const ref = mapFocusRef.current;
+    // Guard until the MapView imperative handle is ready and map is initialized
+    if (!ref || !ref.isFocusReady) {
+      // Retry a few times to cover initial mount race conditions
+      if (attempts < 10) {
+        setTimeout(() => handleMapFocus(regionConfig, attempts + 1), 100);
+      } else {
+        console.warn("Map not ready for focusing after retries");
+      }
+      return;
+    }
+
     try {
       if (regionConfig) {
         // Focus on specific region
-        await mapFocusRef.current.focusOnRegion(regionConfig, { animate: true });
+        await ref.focusOnRegion(regionConfig, { animate: true });
       } else {
         // Reset to default region when no region config provided
-        await mapFocusRef.current.resetToDefault({ animate: true });
+        await ref.resetToDefault({ animate: true });
       }
     } catch (error) {
       console.error('Error focusing map:', error);
     }
-  }, []);
+  }, [mapFocusRef]);
   
   return (
     <div className="flex flex-col h-screen overflow-hidden">
