@@ -10,6 +10,7 @@ const NAMESPACES = [
   "navigation", 
   "landing",
   "booking",
+  "calendar",
   "forms",
   "places",
   "auth",

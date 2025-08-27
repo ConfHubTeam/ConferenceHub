@@ -105,18 +105,18 @@ function LandingHeaderBase({
             onChange={changeCurrency}
             availableCurrencies={availableCurrencies}
             compact={true}
-            theme="dark"
+            theme="transparent"
           />
         </div>
         
         {/* Language Selector - Desktop only */}
-        <div className="hidden md:block">
+    <div className="hidden md:block">
           <LanguageSelector 
             variant="compact"
-            showFlag={true}
+            showFlag={false}
             showText={false}
-            className="border-l border-white/30 pl-2 ml-2"
-            theme="dark"
+      className="pl-2 ml-2"
+            theme="transparent"
           />
         </div>
 

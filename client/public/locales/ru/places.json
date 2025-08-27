@@ -135,7 +135,7 @@
       "weekdays": {
         "sunday": "Воскресенье",
         "monday": "Понедельник",
-        "tuesday": "Вторник", 
+        "tuesday": "Вторник",
         "wednesday": "Среда",
         "thursday": "Четверг",
         "friday": "Пятница",
@@ -143,7 +143,7 @@
         "sun": "Вс",
         "mon": "Пн",
         "tue": "Вт",
-        "wed": "Ср", 
+        "wed": "Ср",
         "thu": "Чт",
         "fri": "Пт",
         "sat": "Сб"
@@ -423,6 +423,7 @@
     "tryAdjustingFilters": "Попробуйте изменить фильтры для большего количества результатов.",
     "noRoomsListed": "Конференц-залы еще не размещены.",
     "clearAllFilters": "Очистить все фильтры",
+    "allRooms": "Все конференц-залы",
     "showingResults": "Показано {{count}} из {{total}}",
     "byHost": "от {{hostName}}",
     "matching": "соответствующий \"{{searchTerm}}\"",
@@ -433,6 +434,7 @@
     "searchPlaceholder": "Поиск по названию или адресу..."
   },
   "calendar": {
-    "selectPlace": "Выберите место"
+    "selectPlace": "Выберите место",
+    "ownedBy": "Владелец"
   }
 }

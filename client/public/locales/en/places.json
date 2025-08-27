@@ -121,7 +121,7 @@
       "hideBlockSpecificDates": "Hide block specific dates",
       "timeSlotsTitle": "Time slots by weekday",
       "from": "From",
-      "to": "To", 
+      "to": "To",
       "select": "Select",
       "selectStartTimeFirst": "Select start time",
       "notAvailable": "Not available",
@@ -134,7 +134,7 @@
       "clearAll": "Clear all",
       "weekdays": {
         "sunday": "Sunday",
-        "monday": "Monday", 
+        "monday": "Monday",
         "tuesday": "Tuesday",
         "wednesday": "Wednesday",
         "thursday": "Thursday",
@@ -142,7 +142,7 @@
         "saturday": "Saturday",
         "sun": "Sun",
         "mon": "Mon",
-        "tue": "Tue", 
+        "tue": "Tue",
         "wed": "Wed",
         "thu": "Thu",
         "fri": "Fri",
@@ -423,6 +423,7 @@
     "tryAdjustingFilters": "Try adjusting your filters to see more results.",
     "noRoomsListed": "No conference rooms have been listed yet.",
     "clearAllFilters": "Clear all filters",
+    "allRooms": "All Conference Rooms",
     "showingResults": "Showing {{count}} of {{total}} conference room{{plural}}",
     "byHost": "by {{hostName}}",
     "matching": "matching \"{{searchTerm}}\"",
@@ -433,6 +434,7 @@
     "searchPlaceholder": "Search by property name or address..."
   },
   "calendar": {
-    "selectPlace": "Select a place"
+    "selectPlace": "Select a place",
+    "ownedBy": "Owner"
   }
 }

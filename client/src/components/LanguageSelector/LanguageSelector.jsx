@@ -15,7 +15,10 @@ const LanguageSelector = ({
   showFlag = true,
   showText = true,
   placement = "bottom-right",
-  theme = "light" // Default to light theme
+  theme = "light", // Default to light theme
+  textColorClass = "", // Optional override for main text color (e.g., 'text-accent-primary')
+  size = "md", // new: align sizes with currency selector
+  onOpen
 }) => {
   const { t } = useTranslation("common");
   const { 
@@ -162,8 +165,15 @@ const LanguageSelector = ({
     }
   };
 
+  // Notify parent when dropdown opens so it can auto-scroll into view
+  useEffect(() => {
+    if (isOpen && typeof onOpen === "function") {
+      try { onOpen(); } catch (_) {}
+    }
+  }, [isOpen, onOpen]);
+
   return (
-    <div className={`relative w-full ${className}`}>
+  <div className={`relative w-full ${className}`}>
       {/* Language Selector Button */}
       <button
         ref={buttonRef}
@@ -174,13 +184,18 @@ const LanguageSelector = ({
           flex items-center w-full
           ${theme === "dark"
             ? 'bg-black text-white hover:bg-white/10'
-            : 'bg-bg-card border border-border-default hover:bg-bg-secondary'}
+            : theme === 'navy'
+              ? 'bg-accent-primary text-white border border-white/20 hover:bg-white/10 hover:border-white/50'
+              : theme === 'transparent'
+                ? 'bg-transparent text-white hover:bg-white/10'
+                : 'bg-bg-card border border-border-default hover:bg-bg-secondary'}
           rounded-full cursor-pointer
           focus:outline-none focus:ring-2 focus:ring-offset-2
-          ${theme === "dark" ? 'focus:ring-white/20' : 'focus:ring-accent-primary'}
-          transition-all duration-200 hover:scale-[1.02] hover:shadow-md hover:border-accent-primary
+          ${theme === "dark" || theme === 'transparent' ? 'focus:ring-white/20' : 'focus:ring-white/20'}
+          transition-all duration-200 hover:scale-[1.02] hover:shadow-md ${theme === 'transparent' ? '' : 'hover:border-white/50'}
           disabled:opacity-50 disabled:cursor-not-allowed
-          ${styles.button}
+      ${styles.button}
+      ${size === 'sm' ? 'h-10' : size === 'md' ? 'h-12' : 'h-14'}
         `}
         aria-label={t("language.select")}
         aria-expanded={isOpen}
@@ -190,20 +205,20 @@ const LanguageSelector = ({
         <div className="flex items-center flex-1 min-w-0">
           {/* Show language code instead of flag when selected */}
           <span className={`font-medium text-base ${
-            theme === "dark" ? 'text-white' : 'text-gray-700'
+            textColorClass || ((theme === "dark" || theme === 'navy' || theme === 'transparent') ? 'text-white' : 'text-gray-700')
           }`}>
             {currentLanguageObject.code.toUpperCase()}
           </span>
           {showText && (
             <span className={`font-medium text-base ml-3 ${
-              theme === "dark" ? 'text-white' : 'text-gray-700'
+              textColorClass || ((theme === "dark" || theme === 'navy' || theme === 'transparent') ? 'text-white' : 'text-gray-700')
             }`}>
               {languageConfig[currentLanguageObject.code]?.nativeName || currentLanguageObject.name}
             </span>
           )}
           {!showText && !showFlag && (
             <GlobeAltIcon className={`w-5 h-5 ${
-              theme === "dark" ? 'text-white/80' : 'text-gray-600'
+              (theme === "dark" || theme === 'navy' || theme === 'transparent') ? 'text-white/80' : 'text-gray-600'
             }`} />
           )}
         </div>
@@ -278,5 +293,10 @@ const LanguageSelector = ({
     </div>
   );
 };
+
+// Notify parent when dropdown opens so it can auto-scroll into view
+// Do it via effect near the end to ensure state is set
+// Note: defined after component to avoid recreating effect earlier
+// We'll attach effect inside the component above at the right place
 
 export default LanguageSelector;

@@ -136,7 +136,7 @@
         "sunday": "Yakshanba",
         "monday": "Dushanba",
         "tuesday": "Seshanba",
-        "wednesday": "Chorshanba", 
+        "wednesday": "Chorshanba",
         "thursday": "Payshanba",
         "friday": "Juma",
         "saturday": "Shanba",
@@ -144,7 +144,7 @@
         "mon": "Du",
         "tue": "Se",
         "wed": "Cho",
-        "thu": "Pa", 
+        "thu": "Pa",
         "fri": "Ju",
         "sat": "Sh"
       }
@@ -336,7 +336,7 @@
     },
     "pricing": {
       "hourlyRate": "Soatlik tarif",
-  "fullDay": "To'liq kun ({{hours}} soat)"
+      "fullDay": "To'liq kun ({{hours}} soat)"
     },
     "capacity": {
       "maxAttendees": "Maksimal ishtirokchilar",
@@ -407,6 +407,7 @@
     "tryAdjustingFilters": "Ko'proq natijalar ko'rish uchun filtrlarni o'zgartirib ko'ring.",
     "noRoomsListed": "Hali konferens xonalari ro'yxatga olinmagan.",
     "clearAllFilters": "Barcha filtrlarni tozalash",
+    "allRooms": "Barcha konferens xonalari",
     "showingResults": "{{total}} konferens xonadan {{count}} tasi",
     "byHost": "{{hostName}} tomonidan",
     "matching": "\"{{searchTerm}}\" ga mos",
@@ -433,6 +434,7 @@
     "submitFailed": "Jo'natish muvaffaqiyatsiz, iltimos keyinroq urinib ko'ring."
   },
   "calendar": {
-    "selectPlace": "Joyni tanlang"
+    "selectPlace": "Joyni tanlang",
+    "ownedBy": "Egasi"
   }
 }
