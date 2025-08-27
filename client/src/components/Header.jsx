@@ -113,10 +113,10 @@ export default function Header() {
 
   return (
     <>
-      <header className="flex items-center justify-between pl-2 pr-4 md:pl-6 md:pr-14 py-5 relative z-[70] bg-accent-primary text-white sticky top-0 border-b border-navy-700 flex-shrink-0">
+    <header className="flex items-center justify-between pl-2 pr-4 md:pl-6 md:pr-14 py-3 relative z-[70] bg-accent-primary text-white sticky top-0 border-b border-navy-700 flex-shrink-0">
         {/* Logo - Fixed width */}
         <div className="flex-shrink-0">
-          <Link to={user ? "/places" : "/"} className="logo flex items-center gap-1 mt-1 rounded-full border border-white/30 p-1.5 hover:bg-white/10 hover:border-white/50 transition-colors md:border-0 md:p-0 md:hover:bg-transparent">
+          <Link to={user ? "/places" : "/"} className="logo flex items-center gap-1 rounded-full transition-colors">
             <img
               src="/getSpace_logo.png"
               alt={t("header.logo.alt")}
@@ -229,8 +229,7 @@ export default function Header() {
 
           <Link
             to={user ? "/account" : "/login"}
-            className="profile flex items-center justify-center w-full px-1 py-3 text-base border rounded-full transition-all duration-200 hover:scale-[1.02] hover:shadow-md gap-2 relative text-white border-white/30 hover:bg-white/10 hover:border-white/50"
-            style={{ minWidth: '60px', height: '48px' }}
+            className="profile flex items-center justify-center h-12 px-2 md:px-3 text-base rounded-full transition-all duration-200 hover:scale-[1.02] hover:shadow-md gap-2 relative text-white bg-accent-primary border border-white/20 hover:bg-white/10 hover:border-white/50 flex-shrink-0"
           >
             {!user ? (
               <div className="user">
@@ -266,7 +265,7 @@ export default function Header() {
         {mobileMenuOpen && (
           <div
             ref={menuRef}
-            className="absolute top-16 left-0 right-0 mx-2 sm:mx-3 bg-accent-primary text-white z-[90] md:hidden rounded-xl max-h-[calc(100vh-80px)] overflow-y-auto shadow-2xl ring-1 ring-white/15 border border-white/10"
+            className="absolute top-14 left-0 right-0 mx-2 sm:mx-3 bg-accent-primary text-white z-[90] md:hidden rounded-xl max-h-[calc(100vh-56px)] overflow-y-auto shadow-2xl ring-1 ring-white/15 border border-white/10"
           >
             <div className="flex flex-col">
               {/* User Navigation Section for authenticated users */}
