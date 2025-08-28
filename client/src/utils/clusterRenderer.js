@@ -147,6 +147,7 @@ export const customClusterRenderer = {
    * @returns {google.maps.Marker} Custom cluster marker
    */
   render: (cluster, stats) => {
+    try {
     const count = cluster.count;
     const position = cluster.position;
     
@@ -167,11 +168,13 @@ export const customClusterRenderer = {
       medium: { width: 42, height: 42 },
       large: { width: 50, height: 50 }
     };
-    
-    const sizeConfig = {
-      width: Math.round((sizeConfigs[size] || sizeConfigs.medium).width * uiScale),
-      height: Math.round((sizeConfigs[size] || sizeConfigs.medium).height * uiScale)
-    };
+      // Compute UI scale here (bug fix: uiScale must be defined in this scope)
+      const uiScale = getUiScaleFactor();
+      const baseDims = sizeConfigs[size] || sizeConfigs.medium;
+      const sizeConfig = {
+        width: Math.round(baseDims.width * uiScale),
+        height: Math.round(baseDims.height * uiScale)
+      };
     
     // Create and return the cluster marker
     const marker = new window.google.maps.Marker({
@@ -207,6 +210,14 @@ export const customClusterRenderer = {
     });
     
     return marker;
+    } catch (err) {
+      // Defensive fallback: return a minimal marker to avoid breaking clustering
+      try {
+        return new window.google.maps.Marker({ position: cluster.position, title: `${cluster.count} locations` });
+      } catch (_) {
+        return null;
+      }
+    }
   }
 };
 
