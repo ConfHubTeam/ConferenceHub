@@ -1,6 +1,9 @@
 /**
- * Marker size utility functions for map markers
- * C/**
+ * Marker size utility functions for map markers with responsive scaling.
+ * Ensures markers are readable across large monitors and zoomed-out browsers.
+ */
+
+/**
  * Gets the anchor point for a marker based on its size
  * The anchor point determines where the marker is positioned relative to its coordinates
  * @param {string} size - Size category ('small', 'medium', or 'large')
@@ -16,7 +19,7 @@ export const getMarkerAnchorPoint = (size = 'medium') => {
   };
 };
 
-// Marker size configurations - smaller and more rounded
+// Base marker size configurations (will be scaled by UI factor)
 export const MARKER_SIZE_CONFIGS = {
   small: {
     width: 40,
@@ -45,6 +48,35 @@ export const ZOOM_THRESHOLDS = {
 };
 
 /**
+ * Compute a UI scale factor based on viewport width and browser zoom.
+ * - Scales up on wide/4K screens
+ * - Compensates when browser zoom is < 100% (devicePixelRatio < 1)
+ * Clamped to a safe range to avoid oversized markers.
+ */
+export const getUiScaleFactor = () => {
+  if (typeof window === 'undefined') return 1;
+  const w = window.innerWidth || 1440;
+  const dpr = window.devicePixelRatio || 1;
+
+  let scale = 1;
+  if (w >= 3440) scale = 1.6; // ultrawide/5K
+  else if (w >= 2560) scale = 1.45; // 2.5K/4K
+  else if (w >= 1920) scale = 1.25; // FHD+
+  else if (w >= 1680) scale = 1.12; // HD+
+  else if (w >= 1440) scale = 1.05; // 1440px wide
+  else if (w <= 480) scale = 0.9; // small phones
+
+  // If user zoomed out (dpr < 1), counterbalance to keep markers readable
+  if (dpr < 1) {
+    scale *= (1 / dpr);
+  }
+
+  // Clamp to avoid extremes
+  scale = Math.min(Math.max(scale, 0.85), 1.75);
+  return scale;
+};
+
+/**
  * Determines the appropriate marker size based on zoom level
  * @param {number} zoomLevel - Current map zoom level
  * @returns {string} Size category ('small', 'medium', or 'large')
@@ -62,10 +94,18 @@ export const getMarkerSizeByZoom = (zoomLevel) => {
 /**
  * Gets the size configuration for a given size category
  * @param {string} size - Size category ('small', 'medium', or 'large')
+ * @param {number} [uiScale] - Optional UI scale factor; defaults to computed factor
  * @returns {object} Configuration object with width, height, fontSize, and borderRadius
  */
-export const getMarkerSizeConfig = (size = 'medium') => {
-  return MARKER_SIZE_CONFIGS[size] || MARKER_SIZE_CONFIGS.medium;
+export const getMarkerSizeConfig = (size = 'medium', uiScale) => {
+  const base = MARKER_SIZE_CONFIGS[size] || MARKER_SIZE_CONFIGS.medium;
+  const scale = uiScale != null ? uiScale : getUiScaleFactor();
+  return {
+    width: Math.round(base.width * scale),
+    height: Math.round(base.height * scale),
+    fontSize: Math.round(base.fontSize * scale),
+    borderRadius: Math.round(base.borderRadius * scale)
+  };
 };
 
 /**
