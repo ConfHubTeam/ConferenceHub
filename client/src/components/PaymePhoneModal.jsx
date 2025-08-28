@@ -8,12 +8,12 @@ import CustomPhoneInput, { isValidPhoneNumber } from "./CustomPhoneInput";
  * Shows current user phone and allows editing for Payme payment verification
  * Matches the ClickPhoneModal styling and functionality
  */
-const PaymePhoneModal = ({ 
-  isOpen, 
-  onClose, 
-  booking, 
-  onPaymentSuccess, 
-  onPaymentError 
+const PaymePhoneModal = ({
+  isOpen,
+  onClose,
+  booking,
+  onPaymentSuccess,
+  onPaymentError
 }) => {
   const { t } = useTranslation(["payment", "common"]);
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -40,12 +40,12 @@ const PaymePhoneModal = ({
         const response = await api.get("/payme/user-phone");
         if (response.data.success && response.data.phoneNumber) {
           const { phoneNumber, paymePhoneNumber, profilePhoneNumber, hasPaymePhone } = response.data;
-          
+
           setOriginalPhone(phoneNumber);
           setPhoneNumber(phoneNumber);
           setProfilePhone(profilePhoneNumber || "");
           setHasPaymePhone(hasPaymePhone);
-          
+
           // Only show editing mode if no phone number at all
           setIsEditing(!phoneNumber);
         } else {
@@ -80,17 +80,17 @@ const PaymePhoneModal = ({
     if (!phone) {
       return t("payment:errors.phoneRequired", "Phone number is required");
     }
-    
+
     if (!isValidPhoneNumber(phone)) {
       return t("payment:errors.invalidPhone", "Please enter a valid phone number");
     }
-    
+
     return null;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const validationError = validatePhoneNumber(phoneNumber);
     if (validationError) {
       setError(validationError);
@@ -122,12 +122,12 @@ const PaymePhoneModal = ({
           // Don't block payment flow for this
         });
       }
-      
+
       // Create a form and submit it to Payme using POST method
       // This is the correct way according to Payme documentation
-      
+
       let MERCHANT_ID = import.meta.env.VITE_PAYME_MERCHANT_ID;
-      
+
       // If merchant ID is not in environment, try to get it from backend
       if (!MERCHANT_ID) {
         try {
@@ -144,11 +144,11 @@ const PaymePhoneModal = ({
 
       // Calculate amount in tiyin (multiply by 100)
       const amount = Math.round((booking.finalTotal || booking.totalPrice) * 100);
-      
+
       // Get the correct URL from backend configuration
       const configResponse = await api.get("/payme/config");
       const checkoutUrl = configResponse.data.checkoutUrl || 'https://checkout.paycom.uz';
-      
+
       // Create form element
       const form = document.createElement('form');
       form.method = 'POST';
@@ -165,7 +165,8 @@ const PaymePhoneModal = ({
         lang: 'ru',
         callback: `${window.location.origin}/bookings?transaction=:transaction`,
         callback_timeout: 15000,
-        description: `Booking payment #${booking.id} - ${booking.place?.title || 'Property'}`, // Use English to avoid encoding issues
+        // Display both booking reference and numeric order id
+        description: `Booking: #${booking.uniqueRequestId}, order_id: ${booking.id}, - ${booking.place?.title}`, // Use English to avoid encoding issues
       };
 
       // Add detail object for receipt (optional but recommended)
@@ -200,9 +201,9 @@ const PaymePhoneModal = ({
 
       // Add form to page and submit
       document.body.appendChild(form);
-      
+
       form.submit();
-      
+
       // Remove form after submission
       setTimeout(() => {
         if (document.body.contains(form)) {
@@ -289,18 +290,18 @@ const PaymePhoneModal = ({
           ) : (
             <div className="mb-4">
               <p className="text-sm text-gray-600 mb-4">
-                {originalPhone 
-                  ? hasPaymePhone 
+                {originalPhone
+                  ? hasPaymePhone
                     ? t("payment:payme.verifyPaymeDescription", "Your Payme phone number will be used for payment verification.")
                     : t("payment:payme.verifyProfileDescription", "Your profile phone number will be used for Payme payment.")
                   : t("payment:payme.enterDescription", "Please enter your phone number registered with Payme.")
                 }
               </p>
-              
+
               <label htmlFor="paymePhone" className="block text-sm font-medium text-gray-700 mb-2">
                 {t("payment:payme.phoneLabel", "Payme Account Phone Number")}
               </label>
-              
+
               {!isEditing && originalPhone ? (
                 // Display mode - show phone with edit button
                 <div className="flex items-center space-x-3">
@@ -328,7 +329,7 @@ const PaymePhoneModal = ({
                     required
                     error={error}
                   />
-                  
+
                   {isEditing && originalPhone && (
                     <div className="mt-2 flex space-x-2">
                       <button
@@ -343,7 +344,7 @@ const PaymePhoneModal = ({
                   )}
                 </div>
               )}
-              
+
             </div>
           )}
 
@@ -376,15 +377,14 @@ const PaymePhoneModal = ({
             >
               {t("common:cancel", "Cancel")}
             </button>
-            
+
             <button
               type="submit"
               disabled={isProcessing || isLoadingUserPhone || !phoneNumber}
-              className={`flex-1 px-4 py-2 rounded-md transition-colors ${
-                isProcessing || isLoadingUserPhone || !phoneNumber
+              className={`flex-1 px-4 py-2 rounded-md transition-colors ${isProcessing || isLoadingUserPhone || !phoneNumber
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-blue-600 hover:bg-blue-700 text-white'
-              }`}
+                }`}
             >
               {isProcessing ? (
                 <div className="flex items-center justify-center">
