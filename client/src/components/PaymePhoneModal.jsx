@@ -97,11 +97,20 @@ const PaymePhoneModal = ({
       return;
     }
 
+    // iOS Safari popup handling: open a named blank window synchronously
+    // so the browser associates it with the user's gesture.
+    let checkoutWindow = null;
+    try {
+      checkoutWindow = window.open("about:blank", "payme_checkout");
+    } catch (_) {
+      // ignore; will fall back to same-tab
+    }
+
     setIsProcessing(true);
     setError("");
 
     try {
-      await createPayment();
+      await createPayment(checkoutWindow);
     } catch (error) {
       console.error("Payme payment creation failed:", error);
       const errorMessage = error.response?.data?.error || error.message || "Payment initialization failed";
@@ -112,7 +121,7 @@ const PaymePhoneModal = ({
     }
   };
 
-  const createPayment = async () => {
+  const createPayment = async (checkoutWindow) => {
     try {
       // Save phone number to user profile in background (non-blocking)
       if (phoneNumber !== originalPhone) {
@@ -151,9 +160,11 @@ const PaymePhoneModal = ({
 
       // Create form element
       const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = checkoutUrl; // Use environment-aware URL from backend
-      form.target = '_blank'; // Open in new tab
+  form.method = 'POST';
+  form.action = checkoutUrl; // Use environment-aware URL from backend
+  // Target the pre-opened window when available; otherwise, same tab fallback
+  const targetName = checkoutWindow && !checkoutWindow.closed ? 'payme_checkout' : '_self';
+  form.target = targetName;
 
       // Add form fields according to Payme documentation
       const fields = {
@@ -202,7 +213,7 @@ const PaymePhoneModal = ({
       // Add form to page and submit
       document.body.appendChild(form);
 
-      form.submit();
+  form.submit();
 
       // Remove form after submission
       setTimeout(() => {
