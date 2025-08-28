@@ -545,7 +545,7 @@ function IndexPageBase() {
   const memoizedPlacesForMap = useMemo(() => placesForMap, [placesForMap]);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-bg-primary">
       {/* Mobile Map View - Full Screen */}
       {isMobileMapView && (
         <div className="md:hidden fixed inset-0 z-[70] bg-white flex flex-col">
@@ -604,7 +604,7 @@ function IndexPageBase() {
           }}
           data-listings-section
         >
-          <div className="p-4 pb-20 md:pb-4 bg-white/50 backdrop-blur-sm rounded-t-3xl mx-2 mt-2 shadow-sm">
+          <div className="p-4 pb-20 md:pb-4 bg-transparent mx-2 mt-2">
             {isLoading ? (
               <div className="flex justify-center my-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -649,12 +649,12 @@ function IndexPageBase() {
                     </div>
 
                     <Link to={`/place/${place.id}${location.search}`}>
-                      <div className="bg-white overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl border border-gray-100 hover:border-primary group hover:-translate-y-1">
+                      <div className="bg-white overflow-hidden shadow-md shadow-ui hover:shadow-xl transition-all duration-300 rounded-2xl border border-border-light hover:border-primary group hover:-translate-y-1">
                         <ImageHoverQuadSquare 
                           photos={place.photos}
                           title={place.title}
                         />
-                        <div className="p-5 bg-gradient-to-br from-white to-gray-50/50">
+                        <div className="p-5 bg-white">
                           <h2 className="font-bold text-lg truncate text-gray-900 group-hover:text-primary transition-colors duration-200">{place.title}</h2>
                           <div className="flex items-center text-gray-500 text-sm mt-2">
                             <svg className="w-4 h-4 mr-1 flex-shrink-0 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
