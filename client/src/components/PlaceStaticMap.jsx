@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
 import { useTranslation } from "react-i18next";
 
@@ -50,36 +50,45 @@ const mapOptions = {
 export default function PlaceStaticMap({ place }) {
   const { t } = useTranslation();
   const [map, setMap] = useState(null);
+  const [showPicker, setShowPicker] = useState(false);
+  const pickerRef = useRef(null);
+
+  // Build provider-specific direction URLs
+  const buildDirectionsUrl = useCallback((provider) => {
+    const hasCoords = place && place.lat && place.lng;
+    const lat = hasCoords ? parseFloat(place.lat) : null;
+    const lng = hasCoords ? parseFloat(place.lng) : null;
+    const addr = place?.address ? encodeURIComponent(place.address) : "";
+
+    switch (provider) {
+      case "google":
+        return hasCoords
+          ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`
+          : `https://www.google.com/maps/dir/?api=1&destination=${addr}&travelmode=driving`;
+      case "yandex":
+        // rtext: from~to, using ~ means current location
+        return hasCoords
+          ? `https://yandex.com/maps/?rtext=~${lat},${lng}&rtt=auto`
+          : `https://yandex.com/maps/?rtext=~${addr}&rtt=auto`;
+      default:
+        return hasCoords
+          ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
+          : `https://www.google.com/maps/dir/?api=1&destination=${addr}`;
+    }
+  }, [place]);
 
   // Handle marker click - open in map provider
   const handleMarkerClick = useCallback(() => {
-    const { lat, lng } = {
-      lat: parseFloat(place.lat),
-      lng: parseFloat(place.lng)
-    };
-    
-    // Try to open in Apple Maps first (iOS/macOS), then Google Maps
-    const appleMapsUrl = `maps://maps.apple.com/?q=${lat},${lng}`;
-    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-    
-    // Check if we're on iOS/macOS
-    const isAppleDevice = /iPad|iPhone|iPod|Mac/.test(navigator.userAgent);
-    
-    if (isAppleDevice) {
-      // Try Apple Maps first
-      const link = document.createElement('a');
-      link.href = appleMapsUrl;
-      link.click();
-      
-      // Fallback to Google Maps after a short delay if Apple Maps doesn't open
-      setTimeout(() => {
-        window.open(googleMapsUrl, '_blank');
-      }, 1000);
-    } else {
-      // Open Google Maps directly
-      window.open(googleMapsUrl, '_blank');
-    }
-  }, [place]);
+    // Toggle provider picker on marker click
+    setShowPicker((prev) => !prev);
+  }, []);
+
+  const handleOpenProvider = useCallback((provider) => {
+    const url = buildDirectionsUrl(provider);
+    // Open in new tab/window for web; mobile devices may intercept and open app
+    window.open(url, "_blank", "noopener,noreferrer");
+    setShowPicker(false);
+  }, [buildDirectionsUrl]);
 
   // Map load callback
   const onLoad = useCallback((mapInstance) => {
@@ -126,6 +135,24 @@ export default function PlaceStaticMap({ place }) {
   const onUnmount = useCallback(() => {
     setMap(null);
   }, []);
+
+  // Close picker when clicking outside
+  useEffect(() => {
+    function onDocClick(e) {
+      if (!pickerRef.current) return;
+      if (!pickerRef.current.contains(e.target)) {
+        setShowPicker(false);
+      }
+    }
+    if (showPicker) {
+      document.addEventListener("mousedown", onDocClick);
+      document.addEventListener("touchstart", onDocClick);
+    }
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("touchstart", onDocClick);
+    };
+  }, [showPicker]);
 
   // Load Google Maps API
   const { isLoaded, loadError } = useJsApiLoader({
@@ -182,15 +209,51 @@ export default function PlaceStaticMap({ place }) {
   };
 
   return (
-    <GoogleMap
-      mapContainerStyle={containerStyle}
-      center={center}
-      zoom={15}
-      onLoad={onLoad}
-      onUnmount={onUnmount}
-      options={mapOptions}
-    >
-      {/* Marker is created directly in onLoad using native Google Maps API */}
-    </GoogleMap>
+    <div className="relative w-full h-full">
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={center}
+        zoom={15}
+        onLoad={onLoad}
+        onUnmount={onUnmount}
+        options={mapOptions}
+      >
+        {/* Marker is created directly in onLoad using native Google Maps API */}
+      </GoogleMap>
+
+      {/* Directions floating button */}
+      <div className="absolute bottom-3 right-3">
+        <button
+          type="button"
+          onClick={() => setShowPicker((p) => !p)}
+          className="px-3 py-2 rounded-md shadow-ui bg-white border border-border-light text-sm font-medium text-text-primary hover:bg-bg-secondary"
+        >
+          {t("common:openDirections", "Directions")}
+        </button>
+      </div>
+
+      {/* Provider picker */}
+      {showPicker && (
+        <div ref={pickerRef} className="absolute bottom-14 right-3 bg-white rounded-lg shadow-xl border border-border-light w-56 z-10">
+          <div className="p-2">
+            <button
+              type="button"
+              onClick={() => handleOpenProvider("google")}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-bg-secondary text-sm text-text-primary"
+            >
+              <span className="inline-block w-2.5 h-2.5 bg-[#4285F4] rounded-sm" /> Google Maps
+            </button>
+            <button
+              type="button"
+              onClick={() => handleOpenProvider("yandex")}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-bg-secondary text-sm text-text-primary"
+            >
+              <span className="inline-block w-2.5 h-2.5 bg-[#FFCC00] rounded-sm" /> Yandex Maps
+            </button>
+            {/* Apple Maps intentionally omitted per requirements */}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
