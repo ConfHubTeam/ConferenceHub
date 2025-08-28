@@ -166,7 +166,7 @@ const PaymePhoneModal = ({
         callback: `${window.location.origin}/bookings?transaction=:transaction`,
         callback_timeout: 15000,
         // Display both booking reference and numeric order id
-        description: `Booking: #${booking.uniqueRequestId}, order_id: ${booking.id}, - ${booking.place?.title}`, // Use English to avoid encoding issues
+        description: `Booking: #${booking.uniqueRequestId}, - ${booking.place?.title}`, // Use English to avoid encoding issues
       };
 
       // Add detail object for receipt (optional but recommended)
