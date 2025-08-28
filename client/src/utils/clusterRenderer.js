@@ -10,6 +10,8 @@
  * @param {boolean} isHovered - Whether the cluster is being hovered
  * @returns {string} Data URL of the cluster icon
  */
+import { getUiScaleFactor } from './markerSizeUtils';
+
 export const createClusterIcon = (count, size = 'medium', isHovered = false) => {
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
@@ -39,7 +41,14 @@ export const createClusterIcon = (count, size = 'medium', isHovered = false) => 
     }
   };
   
-  const config = sizeConfigs[size] || sizeConfigs.medium;
+  const uiScale = getUiScaleFactor();
+  const base = sizeConfigs[size] || sizeConfigs.medium;
+  const config = {
+    width: Math.round(base.width * uiScale),
+    height: Math.round(base.height * uiScale),
+    fontSize: Math.round(base.fontSize * uiScale),
+    borderRadius: Math.round(base.borderRadius * uiScale)
+  };
   const { width, height, fontSize, borderRadius } = config;
   
   // Set canvas dimensions accounting for device pixel ratio
@@ -159,7 +168,10 @@ export const customClusterRenderer = {
       large: { width: 50, height: 50 }
     };
     
-    const sizeConfig = sizeConfigs[size];
+    const sizeConfig = {
+      width: Math.round((sizeConfigs[size] || sizeConfigs.medium).width * uiScale),
+      height: Math.round((sizeConfigs[size] || sizeConfigs.medium).height * uiScale)
+    };
     
     // Create and return the cluster marker
     const marker = new window.google.maps.Marker({

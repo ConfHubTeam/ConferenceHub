@@ -659,6 +659,24 @@ const MapView = memo(forwardRef(function MapView({
     updateMarkerIcons();
   }, [selectedCurrency, createPriceMarkerIcon, map]);
 
+  // Recompute marker sizes when viewport size or browser zoom changes
+  useEffect(() => {
+    if (!map) return;
+    const handleResize = () => {
+      const z = map?.getZoom() || 12;
+      updateMarkerSizes(z);
+    };
+    window.addEventListener('resize', handleResize, { passive: true });
+    window.addEventListener('orientationchange', handleResize, { passive: true });
+    // Some browsers fire 'visibilitychange' when zoom level changes via OS scaling
+    document.addEventListener('visibilitychange', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+      document.removeEventListener('visibilitychange', handleResize);
+    };
+  }, [map, updateMarkerSizes]);
+
   // Expose map focus methods through ref
   useImperativeHandle(ref, () => ({
     focusOnCoordinates,
