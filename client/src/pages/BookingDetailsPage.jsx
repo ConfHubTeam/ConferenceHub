@@ -101,9 +101,10 @@ export default function BookingDetailsPage() {
     },
     // Options for enhanced restart behavior
     {
-      autoRestart: true, // Auto restart on page load/refresh
-      enablePageVisibilityRestart: true, // Restart when page becomes visible
-      restartStatuses: ['pending', 'selected'] // Only restart for these statuses
+      // Disable auto restarts; polling must be explicitly started by Click flow
+      autoRestart: false,
+      enablePageVisibilityRestart: false,
+      restartStatuses: ['selected']
     }
   );
 
@@ -120,15 +121,10 @@ export default function BookingDetailsPage() {
       if (paymentStatus === 'success' || transactionId) {
         notify(t('notifications.paymentCompleted'), "success");
         
-        // MINIMAL: Start polling if booking still selected
-        const { data } = await api.get(`/bookings/${bookingId}`);
-        setBooking(data);
-        
-        if (data.status === 'selected') {
-          startPolling();
-        } else {
-          notify(t('notifications.statusUpdated'), "success");
-        }
+  // Do not auto-start polling here; it will be started only from Click flow
+  const { data } = await api.get(`/bookings/${bookingId}`);
+  setBooking(data);
+  notify(t('notifications.statusUpdated'), "success");
       } else if (paymentStatus === 'failed') {
         notify(t('notifications.paymentNotCompleted'), "warning");
       } else if (paymentStatus === 'cancelled') {
@@ -181,10 +177,12 @@ export default function BookingDetailsPage() {
     }
   };
 
-  // Check for payment return parameters
+  // Check for payment return parameters (Click/Payme legacy and Octo)
   useEffect(() => {
     const paymentStatus = searchParams.get('payment_status');
     const transactionId = searchParams.get('transaction_id');
+    const provider = searchParams.get('provider');
+    const returnedBookingId = searchParams.get('booking_id');
     const error = searchParams.get('error');
 
     if (paymentStatus || transactionId || error) {
@@ -193,8 +191,31 @@ export default function BookingDetailsPage() {
       
       // Clean up URL parameters
       setSearchParams({});
+  } else if (provider === 'octo' && (!error)) {
+      // Octo redirect: run a one-shot smart check and refresh booking
+      (async () => {
+        try {
+          // Only proceed if this redirect matches the current booking
+          if (!returnedBookingId || String(returnedBookingId) === String(bookingId)) {
+            const { data } = await api.post(`/bookings/${bookingId}/check-payment-smart`);
+            if (data?.success && data?.isPaid && data?.booking) {
+              setBooking(data.booking);
+              notify(t('notifications.paymentCompleted'), 'success');
+            } else {
+              // No polling for Octo; rely on webhook + manual refresh
+              const cur = await api.get(`/bookings/${bookingId}`);
+              setBooking(cur.data);
+            }
+          }
+        } catch (e) {
+          console.warn('Octo return check failed:', e);
+        } finally {
+          // Clean up the provider params from URL
+          setSearchParams({});
+        }
+      })();
     }
-  }, [searchParams, setSearchParams, bookingId, notify]);
+  }, [searchParams, setSearchParams, bookingId, notify, startPolling, t]);
 
   // Fetch booking details
   useEffect(() => {
@@ -584,8 +605,8 @@ export default function BookingDetailsPage() {
                         isPaymentAvailable={isPaymentAvailable()}
                         onPaymentInitiated={(paymentData) => {
                           notify(t('notifications.paymentWindowOpened'), "success");
-                          // Start polling for selected bookings only
-                          if (booking.status === 'selected') {
+                          // Start polling only for Click and only when booking is selected
+                          if (paymentData?.provider === 'click' && booking.status === 'selected') {
                             startPolling();
                           }
                         }}

@@ -26,26 +26,52 @@ class DatabaseInitializer {
     };
   }
 
+  isAutoSyncEnabled() {
+    const mode = (process.env.DB_INIT_MODE || '').toLowerCase();
+    const autoSync = (process.env.DB_AUTOSYNC || '').toLowerCase() === 'true';
+    // Only enable autosync when explicitly requested
+    return mode === 'autosync' || autoSync === true;
+  }
+
+  isMigrationsOnlyMode() {
+    // Default to migrations-only to avoid runtime DDL and lock exhaustion
+    // Autosync must be explicitly opted in via DB_INIT_MODE=autosync or DB_AUTOSYNC=true
+    const mode = (process.env.DB_INIT_MODE || '').toLowerCase();
+    const migrationsOnlyFlag = (process.env.MIGRATIONS_ONLY || '').toLowerCase() === 'true';
+    const autosync = this.isAutoSyncEnabled();
+    if (autosync) return false;
+    return mode === 'migrations' || migrationsOnlyFlag || true; // default true
+  }
+
   /**
    * Initialize database with full auto-sync approach
    * This automatically handles all schema changes including missing columns
    */
   async initializeDatabase() {
     this.initializationStartTime = Date.now();
-    console.log('🚀 Starting auto-sync database initialization...');
+  console.log('🚀 Starting database initialization...');
     
     try {
       // Step 1: Test connection
       await this.testConnection();
       
-      // Step 2: Full auto-sync for all models (this handles everything automatically)
-      await this.autoSyncAllModels();
-      
-      // Step 3: Create indexes for performance (always check/create for optimization)
-      await this.createOptimizationIndexes();
-      
-      // Step 4: Verify database integrity
-      await this.verifyDatabaseIntegrity();
+      const migrationsOnly = this.isMigrationsOnlyMode();
+      console.log(`🧭 Initialization mode: ${migrationsOnly ? 'migrations-only' : 'auto-sync'}`);
+      if (migrationsOnly) {
+        console.log('🛑 Skipping sequelize auto-sync and index creation (migrations-only mode).');
+        console.log('👉 Ensure your database migrations are applied before starting the app.');
+        // Optionally verify integrity without altering schema
+        await this.verifyDatabaseIntegrity();
+      } else {
+        // Step 2: Full auto-sync for all models (this handles everything automatically)
+        await this.autoSyncAllModels();
+        
+        // Step 3: Create indexes for performance (always check/create for optimization)
+        await this.createOptimizationIndexes();
+        
+        // Step 4: Verify database integrity
+        await this.verifyDatabaseIntegrity();
+      }
       
       const totalTime = Date.now() - this.initializationStartTime;
       console.log(`✅ Database initialization completed successfully in ${totalTime}ms`);
@@ -66,8 +92,7 @@ class DatabaseInitializer {
     console.log('🔄 Auto-syncing all models with full schema synchronization...');
     
     try {
-  // Ensure critical column types are compatible before syncing models
-  await this.ensurePerksIsJsonb();
+  // Runtime schema alteration helpers removed; rely on migrations for schema changes
       // Define model sync order based on dependencies (independent models first)
       const syncOrder = [
         'User',           // No dependencies
@@ -99,80 +124,6 @@ class DatabaseInitializer {
     }
   }
 
-  /**
-   * Ensure Places.perks column is JSONB with proper default and values.
-   * Handles legacy formats observed in cloud DB like {a,b,c} arrays and {0} when none.
-   */
-  async ensurePerksIsJsonb() {
-    try {
-      // Check current data_type
-      const [col] = await this.sequelize.query(`
-        SELECT data_type, udt_name, column_default, is_nullable
-        FROM information_schema.columns
-        WHERE table_schema = 'public' AND table_name = 'Places' AND column_name = 'perks'
-      `);
-
-      const current = col && col[0];
-
-      // If column doesn't exist yet, nothing to do here
-      if (!current) {
-        return;
-      }
-
-      // Alter column type to JSONB safely using USING clause
-      await this.sequelize.query(`
-        ALTER TABLE "Places"
-        ALTER COLUMN "perks" DROP DEFAULT;
-      `).catch(() => {});
-
-      await this.sequelize.query(`
-        ALTER TABLE "Places"
-        ALTER COLUMN "perks" TYPE JSONB USING (
-          CASE
-            WHEN pg_typeof("perks")::text = 'jsonb' THEN "perks"
-            WHEN pg_typeof("perks")::text = 'json' THEN "perks"::jsonb
-            WHEN pg_typeof("perks")::text LIKE '%[]' THEN to_jsonb("perks")
-            WHEN pg_typeof("perks")::text IN ('text','varchar','character varying') THEN (
-              CASE
-                WHEN "perks" IS NULL OR "perks" = '' OR "perks" = '{0}' THEN '[]'::jsonb
-                WHEN "perks" ~ '^[\\[{]' THEN ("perks")::jsonb -- already JSON text
-                WHEN "perks" LIKE '{%' THEN (
-                  to_jsonb(string_to_array(regexp_replace(regexp_replace("perks", '^\\{', ''), '\\}$', ''), ','))
-                )
-                ELSE to_jsonb(string_to_array("perks", ','))
-              END
-            )
-            ELSE to_jsonb("perks")
-          END
-        );
-      `);
-
-      await this.sequelize.query(`
-        ALTER TABLE "Places" ALTER COLUMN "perks" SET DEFAULT '[]'::jsonb;
-        ALTER TABLE "Places" ALTER COLUMN "perks" SET NOT NULL;
-      `);
-
-      // Convert any JSONB array of strings to array of objects { name, isPaid: false }
-      await this.sequelize.query(`
-        UPDATE "Places"
-        SET "perks" = (
-          SELECT COALESCE(
-            jsonb_agg(jsonb_build_object('name', val, 'isPaid', false)),
-            '[]'::jsonb
-          )
-          FROM jsonb_array_elements_text("perks") AS t(val)
-        )
-        WHERE jsonb_typeof("perks") = 'array'
-          AND EXISTS (
-            SELECT 1 FROM jsonb_array_elements("perks") AS e(value)
-            WHERE jsonb_typeof(e.value) = 'string'
-          );
-      `);
-    } catch (e) {
-      // Log and continue; the subsequent sync may still succeed if already correct
-      console.log('ℹ️  ensurePerksIsJsonb skipped or partially applied:', e.message);
-    }
-  }
 
   /**
    * Auto-sync a single model with full schema synchronization
@@ -544,7 +495,7 @@ class DatabaseInitializer {
       {
         name: 'idx_bookings_time_slots_gin',
         table: 'Bookings', 
-        sql: 'CREATE INDEX IF NOT EXISTS idx_bookings_time_slots_gin ON "Bookings" USING GIN("timeSlots")',
+  sql: 'CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_bookings_time_slots_gin ON "Bookings" USING GIN("timeSlots")',
         description: 'Optimize time slot queries'
       },
       
@@ -602,7 +553,7 @@ class DatabaseInitializer {
       } else {
         // Standard column index
         const sql = `
-          CREATE INDEX IF NOT EXISTS "${indexConfig.name}"
+          CREATE INDEX CONCURRENTLY IF NOT EXISTS "${indexConfig.name}"
           ON "${indexConfig.table}" (${indexConfig.columns.map(col => `"${col}"`).join(', ')})
         `;
         await this.sequelize.query(sql);

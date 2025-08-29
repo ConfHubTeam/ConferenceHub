@@ -25,7 +25,7 @@ const Transaction = sequelize.define('Transaction', {
     defaultValue: DataTypes.NOW
   },
   provider: {
-    type: DataTypes.ENUM('payme', 'click'),
+    type: DataTypes.ENUM('payme', 'click', 'octo'),
     allowNull: false,
     defaultValue: 'payme'
   },
@@ -54,7 +54,10 @@ const Transaction = sequelize.define('Transaction', {
   paymeTransId: {
     type: DataTypes.STRING,
     allowNull: true,
-    unique: true
+    // Do not declare a column-level unique constraint here to avoid
+    // Sequelize auto-creating duplicate unique constraints during sync.
+    // We enforce uniqueness for Payme via a partial unique index instead.
+    unique: false
   },
 }, {
   timestamps: true,

@@ -544,9 +544,9 @@ const checkPaymentStatusSmart = async (req, res) => {
       });
     }
 
-    // First check for Payme payment (since it updates via webhook immediately)
-    const TransactionService = require("../services/transactionService");
-    const paymeTransaction = await TransactionService.getPaymeTransactionByBooking(id);
+  // First check for Payme payment (since it updates via webhook immediately)
+  const TransactionService = require("../services/transactionService");
+  const paymeTransaction = await TransactionService.getPaymeTransactionByBooking(id);
     
     if (paymeTransaction) {
       console.log(`🔍 Found Payme transaction for booking ${id}, state: ${paymeTransaction.state}`);
@@ -602,6 +602,159 @@ const checkPaymentStatusSmart = async (req, res) => {
         default:
           console.warn(`Unknown Payme transaction state: ${paymeTransaction.state}`);
           // Continue to check Click.uz payment as fallback
+      }
+    }
+
+    // Then check for Octo payment (webhook also updates immediately)
+    const octoTransaction = await TransactionService.getOctoTransactionByBooking(id);
+    if (octoTransaction) {
+      switch (octoTransaction.state) {
+        case 2: { // Paid
+          if (booking.status !== 'approved' || !booking.paidAt || !booking.paymentResponse) {
+            const pd = octoTransaction.providerData || {};
+            const api = pd.apiResponse || {};
+            const data = api.data || api || {};
+            const payed_time = pd.payed_time || data.payed_time || undefined;
+            const paymentResponse = {
+              provider: 'octo',
+              octo_payment_UUID: octoTransaction.providerTransactionId,
+              shop_transaction_id: pd.shopTransactionId || data.shop_transaction_id,
+              total_sum: data.total_sum || api.total_sum,
+              transfer_sum: data.transfer_sum || api.transfer_sum,
+              refunded_sum: data.refunded_sum || api.refunded_sum || 0,
+              status: data.status || api.status || 'succeeded',
+              payed_time
+            };
+
+            await booking.update({
+              status: 'approved',
+              paidAt: octoTransaction.performDate || (payed_time ? new Date(payed_time) : new Date()),
+              approvedAt: octoTransaction.performDate || (payed_time ? new Date(payed_time) : new Date()),
+              paymentResponse
+            });
+          }
+          const updatedBooking = await BookingService.getBookingById(id, userData);
+          return res.json({
+            success: true,
+            isPaid: true,
+            paymentStatus: 2,
+            errorCode: 0,
+            paymentId: octoTransaction.providerTransactionId,
+            booking: updatedBooking,
+            provider: 'octo',
+            message: 'Payment confirmed via Octo'
+          });
+        }
+        case 1: {
+          // Proactive status re-check with Octo by reusing prepare_payment (idempotent by shop_transaction_id)
+          try {
+            const OctoService = require('../services/octoService');
+            const octo = new OctoService();
+            const { User } = require('../models');
+            const user = await User.findByPk(booking.userId);
+            const returnUrlBase = process.env.FRONTEND_URL?.replace(/\/$/, '') || '';
+            const returnUrl = `${returnUrlBase}/account/bookings/${id}`;
+            const result = await octo.preparePayment({ booking, user, returnUrl, test: true, language: 'uz' });
+
+            // Map status
+            const mapStatus = (s) => {
+              const v = (s || '').toLowerCase();
+              if (v === 'succeeded') return 2;
+              if (v === 'created' || v === 'processing') return 1;
+              return -1;
+            };
+            const newState = mapStatus(result.status);
+
+            // Update transaction provider id (if changed) and state
+            const updatedTxn = await TransactionService.updateById(octoTransaction.id, {
+              providerTransactionId: result.octoPaymentUUID || octoTransaction.providerTransactionId,
+              state: newState,
+              providerData: {
+                ...(octoTransaction.providerData || {}),
+                shopTransactionId: result.shopTransactionId || (octoTransaction.providerData || {}).shopTransactionId,
+                payUrl: result.payUrl || (octoTransaction.providerData || {}).payUrl,
+                apiResponse: result.raw || (octoTransaction.providerData || {}).apiResponse,
+                recheckedAt: new Date()
+              },
+              performDate: newState === 2 ? new Date(result.raw?.payed_time || Date.now()) : octoTransaction.performDate
+            });
+
+            if (newState === 2) {
+              // Mark booking as paid
+              const pd = updatedTxn.providerData || {};
+              const api = pd.apiResponse || {};
+              const data = api.data || api || {};
+              const payed_time = data.payed_time || api.payed_time;
+              const paymentResponse = {
+                provider: 'octo',
+                octo_payment_UUID: result.octoPaymentUUID,
+                shop_transaction_id: pd.shopTransactionId || data.shop_transaction_id,
+                total_sum: data.total_sum || api.total_sum,
+                transfer_sum: data.transfer_sum || api.transfer_sum,
+                refunded_sum: data.refunded_sum || api.refunded_sum || 0,
+                status: data.status || api.status || 'succeeded',
+                payed_time
+              };
+
+              await booking.update({
+                status: 'approved',
+                paidAt: updatedTxn.performDate || (payed_time ? new Date(payed_time) : new Date()),
+                approvedAt: updatedTxn.performDate || (payed_time ? new Date(payed_time) : new Date()),
+                paymentResponse
+              });
+
+              const updatedBooking = await BookingService.getBookingById(id, userData);
+              return res.json({
+                success: true,
+                isPaid: true,
+                paymentStatus: 2,
+                errorCode: 0,
+                paymentId: result.octoPaymentUUID,
+                booking: updatedBooking,
+                provider: 'octo',
+                message: 'Payment confirmed via Octo (verified)'
+              });
+            }
+
+            // Still pending
+            return res.json({
+              success: true,
+              isPaid: false,
+              paymentStatus: 1,
+              errorCode: 0,
+              paymentId: result.octoPaymentUUID || octoTransaction.providerTransactionId,
+              booking,
+              provider: 'octo',
+              message: 'Octo payment is pending'
+            });
+          } catch (recheckErr) {
+            console.warn('Octo recheck failed:', recheckErr?.message || recheckErr);
+            return res.json({
+              success: true,
+              isPaid: false,
+              paymentStatus: 1,
+              errorCode: 0,
+              paymentId: octoTransaction.providerTransactionId,
+              booking,
+              provider: 'octo',
+              message: 'Octo payment is pending'
+            });
+          }
+        }
+        case -1:
+        case -2:
+          return res.json({
+            success: true,
+            isPaid: false,
+            paymentStatus: -1,
+            errorCode: -1,
+            paymentId: octoTransaction.providerTransactionId,
+            booking, provider: 'octo',
+            message: 'Octo payment was cancelled'
+          });
+        default:
+          // Continue to Click fallback
+          break;
       }
     }
 

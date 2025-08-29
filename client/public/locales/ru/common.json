@@ -1,5 +1,10 @@
 {
   "cancel": "Отменить",
+  "openDirections": "Открыть маршрут",
+  "error": {
+    "mapLoadFailed": "Не удалось загрузить карту",
+    "locationNotAvailable": "Местоположение недоступно"
+  },
   "buttons": {
     "save": "Сохранить",
     "cancel": "Отменить",

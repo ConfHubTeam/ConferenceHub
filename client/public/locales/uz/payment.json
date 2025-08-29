@@ -38,6 +38,15 @@
   "paymePayment": {
     "button": "Payme orqali to'lash"
   },
+  "octo": {
+    "title": "Octo to'lovi",
+    "description": "Bandlash tafsilotlarini tasdiqlang va Octo orqali to'lovni davom ettiring.",
+    "bookingId": "Bandlash ID:",
+    "requestRef": "Ma'lumotnoma:",
+    "paymentAmount": "To'lov miqdori:",
+    "processing": "Qayta ishlanmoqda...",
+    "payButton": "Octo orqali to'lash"
+  },
   "cash": {
     "modalTitle": "Naqd pul to'lovi",
     "instruction": "Bandlashingiz uchun naqd pul to'lovini tashkil qilish uchun bizning agentimiz bilan bog'laning.",
@@ -48,6 +57,24 @@
     "step3": "To'lovni yakunlang va bandlashni tasdiqlang",
     "confirm": "Agentni xabardor qilish"
   },
+  "providers": {
+    "click": {
+      "available": "Click to'lovi mavjud",
+      "unavailable": "Click to'lovi mavjud emas"
+    },
+    "payme": {
+      "available": "Payme to'lovi mavjud",
+      "unavailable": "Payme to'lovi mavjud emas"
+    },
+    "octo": {
+      "available": "Octo to'lovi mavjud",
+      "unavailable": "Octo to'lovi mavjud emas"
+    },
+    "generic": {
+      "available": "{{provider}} to'lovi mavjud",
+      "unavailable": "{{provider}} to'lovi mavjud emas"
+    }
+  },
   "methods": {
     "cash": "Naqd pul"
   },
@@ -55,6 +82,7 @@
     "phoneRequired": "Telefon raqami majburiy",
     "invalidPhone": "Iltimos, to'g'ri telefon raqamini kiriting",
     "failedToLoadPhone": "Telefon raqamini yuklab bo'lmadi",
-    "bookingNotSelected": "Xost sizning bandlashingizni tanlaganidan keyin to'lov mavjud bo'ladi"
+    "bookingNotSelected": "Xost sizning bandlashingizni tanlaganidan keyin to'lov mavjud bo'ladi",
+    "paymentFailed": "To'lov yaratilmadi. Iltimos, qayta urinib ko'ring."
   }
 }
