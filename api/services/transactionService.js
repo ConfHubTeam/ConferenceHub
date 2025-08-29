@@ -180,6 +180,19 @@ class TransactionService {
   }
 
   /**
+   * Get Octo transaction by booking ID
+   */
+  static async getOctoTransactionByBooking(bookingId) {
+    return await Transaction.findOne({
+      where: {
+        bookingId,
+        provider: 'octo'
+      },
+      order: [['createDate', 'DESC']]
+    });
+  }
+
+  /**
    * Delete transaction by ID (for testing and cleanup)
    */
   static async deleteTransaction(transactionId) {

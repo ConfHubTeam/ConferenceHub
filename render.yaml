@@ -80,6 +80,14 @@ services:
         sync: false
       - key: PAYME_TEST_KEY
         sync: false
+      - key: OCTO_SECRET
+        sync: false
+      - key: OCTO_SHOP_ID
+        sync: false
+      - key: MIGRATIONS_ONLY
+        sync: false
+      - key: DB_AUTOSYNC
+        sync: false
       - key: VITE_PAYME_MERCHANT_ID
         sync: false
       - key: PRODUCTION_DOMAIN

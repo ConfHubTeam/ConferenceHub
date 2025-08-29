@@ -48,9 +48,9 @@ export const useSmartPaymentPolling = (bookingId, onPaymentSuccess, onPaymentErr
 
   // Configuration options
   const {
-    autoRestart = true, // Automatically restart polling on page load/refresh
-    enablePageVisibilityRestart = true, // Restart when page becomes visible again
-    restartStatuses = ['pending', 'selected'] // Booking statuses that should trigger auto restart
+    autoRestart = false, // Explicitly disabled; must be started by Click flow
+    enablePageVisibilityRestart = false,
+    restartStatuses = ['selected']
   } = options;
 
   // Clear timeout on unmount
@@ -83,7 +83,13 @@ export const useSmartPaymentPolling = (bookingId, onPaymentSuccess, onPaymentErr
         return;
       }
 
-      // Handle Payme-specific status codes
+      // Explicitly ignore non-Click providers; no periodic polling for them
+      if (provider && provider !== 'click') {
+        stopPolling('non_click_provider');
+        return;
+      }
+
+      // Handle Payme-specific status codes (legacy support, but we won't poll for Payme)
       if (provider === 'payme') {
         if (status === 2) {
           // Payme payment successful - should have been caught above, but double-check
@@ -93,7 +99,8 @@ export const useSmartPaymentPolling = (bookingId, onPaymentSuccess, onPaymentErr
           return;
         } else if (status === 1) {
           // Payme payment pending - check frequently
-          scheduleNextCheck(POLLING_CONFIG.PROCESSING_INTERVAL);
+          // Do not continue polling for Payme
+          stopPolling('payme_no_polling');
           return;
         } else if (status === -1 || status === -2) {
           // Payme payment cancelled
@@ -103,7 +110,7 @@ export const useSmartPaymentPolling = (bookingId, onPaymentSuccess, onPaymentErr
           return;
         } else {
           // Unknown Payme status - use normal interval
-          scheduleNextCheck(POLLING_CONFIG.CREATED_INTERVAL);
+          stopPolling('payme_no_polling');
           return;
         }
       }
@@ -183,7 +190,7 @@ export const useSmartPaymentPolling = (bookingId, onPaymentSuccess, onPaymentErr
     setHasBeenStopped(false);
     startTimeRef.current = Date.now();
     
-    // Start with immediate check
+  // Start with immediate check
     setTimeout(checkPaymentStatus, POLLING_CONFIG.IMMEDIATE_CHECK);
   }, [isPolling, checkPaymentStatus]);
 
@@ -224,35 +231,13 @@ export const useSmartPaymentPolling = (bookingId, onPaymentSuccess, onPaymentErr
   // Auto-restart polling on page visibility change (when user returns to tab)
   useEffect(() => {
     if (!enablePageVisibilityRestart || !bookingId) return;
-
-    const handleVisibilityChange = () => {
-      if (!document.hidden && hasBeenStopped && !isPolling) {
-        restartPolling();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [enablePageVisibilityRestart, bookingId, hasBeenStopped, isPolling, restartPolling]);
+    // Explicitly disabled unless enabled via options
+  }, [enablePageVisibilityRestart, bookingId]);
 
   // Auto-restart polling on component mount/page refresh
   useEffect(() => {
-    if (!autoRestart || !bookingId || isPolling) return;
-
-    const autoRestartOnMount = async () => {
-      // Small delay to ensure component is fully mounted
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      if (!isPolling && !hasBeenStopped) {
-        restartPolling();
-      }
-    };
-
-    autoRestartOnMount();
-  }, [autoRestart, bookingId, isPolling, hasBeenStopped, restartPolling]);
+    // Auto-restart disabled by default
+  }, []);
 
   return {
     isPolling,

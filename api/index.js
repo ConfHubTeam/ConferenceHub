@@ -41,6 +41,7 @@ const currencyRoutes = require('./routes/currency');
 const clickRoutes = require('./routes/click');
 const paymeRoutes = require('./routes/payme');
 const reviewRoutes = require('./routes/reviews');
+const octoRoutes = require('./routes/octo');
 const notificationRoutes = require('./routes/notifications');
 const favoritesRoutes = require('./routes/favorites');
 
@@ -175,6 +176,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/currency', currencyRoutes);
 app.use('/api/click', clickRoutes);
 app.use('/api/payme', paymeRoutes);
+app.use('/api/octo', octoRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/favorites', favoritesRoutes);

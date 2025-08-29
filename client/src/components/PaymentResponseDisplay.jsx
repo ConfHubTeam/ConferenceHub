@@ -49,7 +49,10 @@ const PaymentResponseDisplay = ({ paymentResponse, bookingId, booking }) => {
     if (booking?.click_payment_id || booking?.click_invoice_id || paymentResponse?.payment_id) {
       return 'Click';
     }
-    // Future: Add logic for Octo when implemented
+    // Octo payment
+    if (paymentResponse?.provider === 'octo' || paymentResponse?.octo_payment_UUID) {
+      return 'Octo';
+    }
     return 'Payment Provider';
   };
 
@@ -69,6 +72,12 @@ const PaymentResponseDisplay = ({ paymentResponse, bookingId, booking }) => {
       }
     }
     
+    // Octo: when provider is octo, prefer booking approval to mark success
+    if (paymentResponse?.provider === 'octo') {
+      const isApproved = booking?.status === 'approved';
+      if (isApproved) return t('details.paymentResponse.status.success');
+    }
+
     // Handle Click.uz numeric status codes from the actual response
     if (typeof status === 'number') {
       switch (status) {
@@ -98,6 +107,8 @@ const PaymentResponseDisplay = ({ paymentResponse, bookingId, booking }) => {
         return t('details.paymentResponse.status.created');
       case 'processing':
         return t('details.paymentResponse.status.processing');
+      case 'succeeded':
+        return t('details.paymentResponse.status.success');
       case 'success':
         return t('details.paymentResponse.status.success');
       case 'cancelled':
@@ -125,6 +136,11 @@ const PaymentResponseDisplay = ({ paymentResponse, bookingId, booking }) => {
       }
     }
     
+    // Octo-specific success color when booking approved
+    if (paymentResponse?.provider === 'octo' && booking?.status === 'approved') {
+      return 'bg-green-50 border-green-200 text-green-800';
+    }
+
     // Handle Click.uz numeric status codes
     if (typeof status === 'number') {
       switch (status) {
@@ -147,6 +163,8 @@ const PaymentResponseDisplay = ({ paymentResponse, bookingId, booking }) => {
     
     // Handle string statuses
     switch (status?.toLowerCase()) {
+      case 'succeeded':
+        return 'bg-green-50 border-green-200 text-green-800';
       case 'success':
         return 'bg-green-50 border-green-200 text-green-800';
       case 'failed':
@@ -164,6 +182,10 @@ const PaymentResponseDisplay = ({ paymentResponse, bookingId, booking }) => {
     if (paymentResponse?.provider === 'payme' && paymentResponse?.transaction_id) {
       return paymentResponse.transaction_id;
     }
+    // For Octo payments, prefer octo_payment_UUID
+    if (paymentResponse?.provider === 'octo') {
+      return paymentResponse?.octo_payment_UUID || paymentResponse?.shop_transaction_id || 'N/A';
+    }
     // For Click payments, use actual database fields
     return booking?.click_payment_id || paymentResponse?.payment_id || 'N/A';
   };
@@ -177,6 +199,11 @@ const PaymentResponseDisplay = ({ paymentResponse, bookingId, booking }) => {
     // Try alternative field names (camelCase)
     if (booking?.paidAt) {
       return formatPaymentDate(booking.paidAt);
+    }
+
+    // Fallback: some Octo callbacks include payed_time in paymentResponse
+    if (paymentResponse?.provider === 'octo' && paymentResponse?.payed_time) {
+      return formatPaymentDate(paymentResponse.payed_time);
     }
     
     return 'N/A';

@@ -38,6 +38,15 @@
   "paymePayment": {
     "button": "Pay with Payme"
   },
+  "octo": {
+    "title": "Octo Payment",
+    "description": "Please confirm your booking details and proceed to Octo payment.",
+    "bookingId": "Booking ID:",
+    "requestRef": "Reference:",
+    "paymentAmount": "Payment Amount:",
+    "processing": "Processing...",
+    "payButton": "Pay with Octo"
+  },
   "cash": {
     "modalTitle": "Cash Payment",
     "instruction": "Contact our agent to arrange cash payment for your booking.",
@@ -48,6 +57,24 @@
     "step3": "Complete payment and confirm booking",
     "confirm": "Notify Agent"
   },
+  "providers": {
+    "click": {
+      "available": "Click payment is available",
+      "unavailable": "Click payment is unavailable"
+    },
+    "payme": {
+      "available": "Payme payment is available",
+      "unavailable": "Payme payment is unavailable"
+    },
+    "octo": {
+      "available": "Octo payment is available",
+      "unavailable": "Octo payment is unavailable"
+    },
+    "generic": {
+      "available": "{{provider}} payment is available",
+      "unavailable": "{{provider}} payment is unavailable"
+    }
+  },
   "methods": {
     "cash": "Cash"
   },
@@ -55,6 +82,7 @@
     "phoneRequired": "Phone number is required",
     "invalidPhone": "Please enter a valid phone number",
     "failedToLoadPhone": "Failed to load phone number",
-    "bookingNotSelected": "Payment will be available once the host selects your booking"
+  "bookingNotSelected": "Payment will be available once the host selects your booking",
+  "paymentFailed": "Payment creation failed. Please try again."
   }
 }

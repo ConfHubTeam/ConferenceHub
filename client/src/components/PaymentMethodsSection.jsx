@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import ClickPhoneModal from "./ClickPhoneModal";
 import PaymePhoneModal from "./PaymePhoneModal";
 import CashPaymentModal from "./CashPaymentModal";
+import OctoPaymentModal from "./OctoPaymentModal";
 import api from "../utils/api";
 
 /**
@@ -21,6 +22,7 @@ const PaymentMethodsSection = ({
   const [isPaymeModalOpen, setIsPaymeModalOpen] = useState(false);
   const [isCashModalOpen, setIsCashModalOpen] = useState(false);
   const [agentContact, setAgentContact] = useState(null);
+  const [isOctoModalOpen, setIsOctoModalOpen] = useState(false);
 
   const handleClickPayment = () => {
     if (!isPaymentAvailable) {
@@ -39,7 +41,11 @@ const PaymentMethodsSection = ({
   };
 
   const handleOctoPayment = () => {
-    onPaymentError?.("Octo payment is coming soon!");
+    if (!isPaymentAvailable) {
+      onPaymentError?.(t("payment:errors.bookingNotSelected", "Payment will be available once the host selects your booking"));
+      return;
+    }
+    setIsOctoModalOpen(true);
   };
 
   const handleCashPayment = () => {
@@ -92,7 +98,8 @@ const PaymentMethodsSection = ({
 
   const handleClickPaymentSuccess = (paymentData) => {
     setIsClickModalOpen(false);
-    onPaymentInitiated?.(paymentData);
+    // Tag provider explicitly to allow Click-only polling upstream
+    onPaymentInitiated?.({ ...paymentData, provider: 'click' });
   };
 
   const handleClickPaymentError = (error) => {
@@ -156,11 +163,15 @@ const PaymentMethodsSection = ({
           />
         </button>
 
-        {/* Octo Payment - Placeholder */}
+        {/* Octo Payment */}
         <button
           onClick={handleOctoPayment}
-          disabled={true}
-          className="p-4 border-2 border-gray-200 rounded-lg opacity-50 cursor-not-allowed h-32 flex items-center justify-center grayscale"
+          disabled={!isPaymentAvailable}
+          className={`p-4 border-2 rounded-lg transition-all duration-200 h-32 flex items-center justify-center ${
+            isPaymentAvailable
+              ? 'border-blue-200 hover:border-blue-400 hover:shadow-md cursor-pointer'
+              : 'border-gray-200 cursor-not-allowed opacity-50 grayscale'
+          }`}
         >
           <img 
             src="/images/octo_pay_icon.webp" 
@@ -248,6 +259,21 @@ const PaymentMethodsSection = ({
         onConfirm={handleCashPaymentConfirm}
         booking={booking}
         agentContact={agentContact}
+      />
+
+      {/* Octo Payment Modal */}
+      <OctoPaymentModal
+        isOpen={isOctoModalOpen}
+        onClose={() => setIsOctoModalOpen(false)}
+        booking={booking}
+        onPaymentSuccess={(data) => {
+          setIsOctoModalOpen(false);
+          onPaymentInitiated?.(data);
+        }}
+        onPaymentError={(err) => {
+          // Keep modal open to retry
+          onPaymentError?.(err);
+        }}
       />
     </div>
   );
