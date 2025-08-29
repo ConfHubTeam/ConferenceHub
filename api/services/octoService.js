@@ -10,6 +10,7 @@ class OctoService {
     this.shopId = parseInt(process.env.OCTO_SHOP_ID || '0', 10);
     this.secret = process.env.OCTO_SECRET;
     this.notifyUrl = process.env.OCTO_NOTIFY_URL || `${process.env.FRONTEND_URL?.replace(/\/$/, '') || ''}/api/octo/notify`;
+  // Test flag is provided per call; default behavior lives in controller via OCTO_TEST/NODE_ENV
   }
 
   /**

@@ -47,7 +47,13 @@ const prepare = async (req, res) => {
     const base = host ? `${proto}://${host}` : (process.env.FRONTEND_URL || '').replace(/\/$/, '');
     const notifyUrl = `${base}/api/octo/notify`;
 
-    const result = await octo.preparePayment({ booking, user, returnUrl, test: true, language, notifyUrl });
+    // Determine Octo test mode: prefer explicit OCTO_TEST, otherwise false in production
+    const envTest = typeof process.env.OCTO_TEST === 'string'
+      ? process.env.OCTO_TEST.toLowerCase() === 'true'
+      : undefined;
+    const isTest = envTest !== undefined ? envTest : (process.env.NODE_ENV !== 'production');
+
+    const result = await octo.preparePayment({ booking, user, returnUrl, test: isTest, language, notifyUrl });
 
     // Idempotent behavior: update existing Octo transaction for this booking if present
     const existingTxn = await TransactionService.getOctoTransactionByBooking(booking.id);
