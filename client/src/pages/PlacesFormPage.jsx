@@ -1,3 +1,4 @@
+
 import { useContext, useEffect, useState, useRef } from "react";
 import PerkSelections from "./PerkSelections";
 import PhotoUploader from "../components/PhotoUploader";
@@ -14,8 +15,89 @@ import HostSelector from "../components/HostSelector";
 import RefundOptions from "../components/RefundOptions";
 import { useTranslation } from "react-i18next";
 
+// Modern warning card that updates on language switch
+function LanguageWarningCard({ i18n }) {
+  const [lang, setLang] = useState(i18n.language);
+
+  useEffect(() => {
+    const handleLangChange = (lng) => setLang(lng);
+    i18n.on("languageChanged", handleLangChange);
+    return () => i18n.off("languageChanged", handleLangChange);
+  }, [i18n]);
+
+  let title = "Which categories are not allowed";
+  let subtitle = "We specialize in business, educational, and cultural events. To maintain a professional format, we do not provide venues for events related to:";
+  let body = (
+    <ul className="list-disc pl-5 space-y-1 text-yellow-900">
+      <li>Cryptocurrency, forex, and trading</li>
+      <li>Network marketing (MLM)</li>
+      <li>Religious organizations and missionary activities</li>
+      <li>Betting, casinos, and other gambling</li>
+      <li>18+ topics and intimate sphere</li>
+      <li>Promotion of alcohol, tobacco, or similar products</li>
+      <li>Weapons, violence, or discrimination</li>
+      <li>Discos, night parties, and club-party formats</li>
+      <li>Illegal and suspicious activities</li>
+    </ul>
+  );
+  if (lang.startsWith("ru")) {
+    title = "С какими направлениями мы не работаем";
+    subtitle = "Мы специализируемся на деловых, образовательных и культурных мероприятиях. Для сохранения профессионального формата мы не предоставляем залы для мероприятий, связанных с:";
+    body = (
+      <ul className="list-disc pl-5 space-y-1 text-yellow-900">
+        <li>Криптовалюта, форекс и трейдинг</li>
+        <li>Сетевой маркетинг (MLM)</li>
+        <li>Религиозные организации и миссионерская деятельность</li>
+        <li>Ставки, казино и другие азартные игры</li>
+        <li>Тематика 18+ и интимная сфера</li>
+        <li>Продвижение алкоголя, табака или схожих продуктов</li>
+        <li>Оружие, насилие или дискриминация</li>
+        <li>Дискотеки, ночные вечеринки и форматы club-party</li>
+        <li>Незаконная и сомнительная деятельность</li>
+      </ul>
+    );
+  } else if (lang.startsWith("uz")) {
+    title = "Qaysi yo‘nalishlar bilan ishlamaymiz";
+    subtitle = "Biz biznes, taʼlim va madaniy tadbirlarga ixtisoslashganmiz. Professional formatni saqlash uchun quyidagi yo‘nalishlar bo‘yicha tadbirlar uchun zallar taqdim etilmaydi:";
+    body = (
+      <ul className="list-disc pl-5 space-y-1 text-yellow-900">
+        <li>Kriptovalyuta, forex va treyding</li>
+        <li>Tarmoq marketingi (MLM)</li>
+        <li>Diniy tashkilotlar va missionerlik faoliyati</li>
+        <li>Garovlar, kazino va boshqa qimor o‘yinlari</li>
+        <li>18+ mavzular va intim soha</li>
+        <li>Alkogol, tamaki yoki shunga o‘xshash mahsulotlarni targ‘ib qilish</li>
+        <li>Qurol, zo‘ravonlik yoki kamsitish</li>
+        <li>Diskotekalar, tungi kechalar va club-party formatlari</li>
+        <li>Noqonuniy va shubhali faoliyat</li>
+      </ul>
+    );
+  }
+
+  return (
+    <div className="relative overflow-hidden rounded-xl border border-yellow-300 bg-gradient-to-br from-yellow-50 to-yellow-100 shadow-lg p-6 mb-6 mt-2">
+      <div className="flex items-start gap-4">
+        <div className="flex-shrink-0 mt-1">
+          <svg className="h-8 w-8 text-yellow-500 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="#FEF3C7" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01" />
+          </svg>
+        </div>
+        <div>
+          <h3 className="text-xl font-bold text-yellow-800 mb-1 flex items-center gap-2">
+            <span className="inline-block bg-yellow-200 rounded px-2 py-0.5 text-yellow-900 text-base font-semibold shadow-sm">{title}</span>
+          </h3>
+          <div className="text-yellow-900 text-sm mb-2 font-medium">{subtitle}</div>
+          {body}
+        </div>
+      </div>
+      <div className="absolute right-0 top-0 h-16 w-16 bg-yellow-100 rounded-bl-full opacity-60 blur-2xl pointer-events-none" />
+    </div>
+  );
+}
+
 export default function PlacesFormPage() {
-  const { t } = useTranslation(['places', 'forms', 'common']);
+  const { t, i18n } = useTranslation(['places', 'forms', 'common']);
   const { id } = useParams();
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
@@ -730,11 +812,14 @@ export default function PlacesFormPage() {
               {preInput("placeCreate.photos", "placeCreate.photosDescription", true)}
               <PhotoUploader
                 addedPhotos={addedPhotos}
-                setAddedPhotos={setAddedPhotos}
-              />
-            </div>
-          </div>
-          
+        setAddedPhotos={setAddedPhotos}
+        />
+      </div>
+      </div>
+
+      {/* Warning: Not Allowed Categories Section */}
+      <LanguageWarningCard i18n={i18n} />
+
           {/* Media Section */}
           <div className="card-base mb-6">
             <div className="card-content">

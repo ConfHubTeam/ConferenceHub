@@ -6,6 +6,7 @@ import { MobileNavigation } from "./ResponsiveUtils";
 import CurrencySelector from "./CurrencySelector";
 import LanguageSelector from "./LanguageSelector/LanguageSelector";
 import { withTranslationLoading } from "../i18n/hoc/withTranslationLoading";
+import AboutUsModal from "./AboutUsModal";
 import { useTranslation } from "react-i18next";
 
 /**
@@ -22,8 +23,9 @@ function LandingHeaderBase({
   user = null
 }) {
   const { selectedCurrency, changeCurrency, availableCurrencies } = useContext(CurrencyContext);
-  const { t, ready } = useTranslation(["common", "navigation", "auth"]);
+  const { t, ready, i18n } = useTranslation(["common", "navigation", "auth"]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
@@ -64,7 +66,24 @@ function LandingHeaderBase({
               }}
             />
         </Link>
+        {/* About Us button - styled inline with nav buttons */}
+        <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8 ml-6" role="navigation">
+          <button
+            className="text-white hover:text-brand-orange hover:bg-white/10 hover:scale-[1.02] transition-all duration-200 flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg px-3 py-2 text-sm lg:text-base font-medium"
+            onClick={() => setAboutOpen(true)}
+            type="button"
+          >
+            {(() => {
+              const lang = i18n.language ? i18n.language.split('-')[0] : 'en';
+              if (lang === 'uz') return 'Biz haqimizda';
+              if (lang === 'ru') return 'О нас';
+              return 'About Us';
+            })()}
+          </button>
+        </nav>
       </div>
+  {/* About Us Modal */}
+  <AboutUsModal open={aboutOpen} onClose={() => setAboutOpen(false)} />
 
       {/* Desktop Navigation */}
       {showNavigation && (
