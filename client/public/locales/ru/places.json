@@ -241,6 +241,7 @@
     "price_per_night": "/ночь",
     "price_per_day": "/день",
     "new_rating": "Новый",
+    "no_rating": "Нет рейтинга",
     "guests": "чел.",
     "hosted_by": "Принимает",
     "actions": {
