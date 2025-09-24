@@ -19,6 +19,7 @@ import { setMarkerClusterer, clearMarkerClusterer } from "../utils/markerCluster
 import { getClusterOptions } from "../utils/clusterRenderer";
 import { useMapTouchHandler } from "../hooks/useMapTouchHandler";
 import { useMapFocus } from "../hooks/useMapFocus";
+import { getPlaceRatingDisplay } from "../utils/placeUtils";
 import { DEFAULT_MAP_CONFIG } from "../utils/regionConstants.js";
 
 // Custom styles to hide the InfoWindow close button and arrow
@@ -827,7 +828,7 @@ const MapView = memo(forwardRef(function MapView({
                         <span className="text-xs font-medium text-gray-800">
                           {selectedPlace.averageRating ? 
                             `${selectedPlace.averageRating}${selectedPlace.totalReviews > 0 ? ` (${selectedPlace.totalReviews})` : ''}` :
-                            t("places:card.new_rating")
+                            getPlaceRatingDisplay(selectedPlace, t)
                           }
                         </span>
                       </div>
@@ -837,7 +838,7 @@ const MapView = memo(forwardRef(function MapView({
                           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                         </svg>
                         <span className="text-xs font-medium text-gray-500">
-                          {t("places:card.new_rating")}
+                          {getPlaceRatingDisplay(selectedPlace, t)}
                         </span>
                       </div>
                     )}

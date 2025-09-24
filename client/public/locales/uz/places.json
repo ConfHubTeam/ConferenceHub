@@ -225,6 +225,7 @@
     "price_per_night": "/kecha",
     "price_per_day": "/kun",
     "new_rating": "Yangi",
+    "no_rating": "Reyting yo'q",
     "guests": "kishi",
     "hosted_by": "Mezbonlik qiladi",
     "actions": {
