@@ -240,17 +240,12 @@ export default function PlacesFormPage() {
     }
   }, [id, user?.userType]); // reactive values referenced inside of the above setup code
 
-  // Geocode address when it changes (with debounce) - but only for new places
+  // Geocode address when it changes (with debounce)
   useEffect(() => {
     // Skip geocoding if address is empty or too short
     if (!address || address.length < 5) {
       setGeocodingSuccess(null);
       lastGeocodedAddress.current = '';
-      return;
-    }
-
-    // We're editing an existing place with coordinates
-    if (id && lat && lng) {
       return;
     }
 

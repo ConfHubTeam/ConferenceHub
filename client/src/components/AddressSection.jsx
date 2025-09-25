@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import MapPicker from "./MapPicker";
 
 /**
@@ -38,6 +39,7 @@ export default function AddressSection({
   // Place ID for determining if this is creation or editing (kept for future extensibility)
   placeId = null
 }) {
+  const { t } = useTranslation('forms');
   // Track whether the address was manually edited after pin placement
   const [addressManuallyEdited, setAddressManuallyEdited] = useState(false);
   // Track full screen state for the map - start with false (embedded view)
@@ -196,13 +198,18 @@ export default function AddressSection({
         )}
         {geocodingSuccess === false && (
           <p className="text-amber-500 text-sm ml-2">
-            Address lookup failed. You can still set coordinates by pinning on map.
+            {t('messages.addressLookupFailed')}
           </p>
         )}
         {geocodingSuccess === true && (
-          <p className="text-green-500 text-sm ml-2">
-            Coordinates set successfully! You can still edit the name/address.
-          </p>
+          <div className="ml-2 text-sm">
+            <p className="text-green-500">
+              {t('messages.coordinatesSetSuccess')}
+            </p>
+            <p className="text-green-500 mt-1">
+              {t('messages.dragMapPin')}
+            </p>
+          </div>
         )}
       </div>
       

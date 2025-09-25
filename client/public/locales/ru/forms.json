@@ -101,7 +101,10 @@
     "charactersRemaining": "Остался {{count}} символ",
     "charactersRemaining_plural": "Осталось {{count}} символов",
     "wordsCount": "{{count, number}} слово",
-    "wordsCount_plural": "{{count, number}} слов"
+    "wordsCount_plural": "{{count, number}} слов",
+    "coordinatesSetSuccess": "Координаты успешно установлены! Вы все еще можете редактировать название/адрес.",
+    "addressLookupFailed": "Поиск адреса не удался. Вы все еще можете установить координаты, отметив место на карте.",
+    "dragMapPin": "Вы также можете перетащить метку на карте."
   },
   "options": {
     "yes": "Да",
