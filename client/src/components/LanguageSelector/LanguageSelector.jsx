@@ -185,13 +185,13 @@ const LanguageSelector = ({
           ${theme === "dark"
             ? 'bg-black text-white hover:bg-white/10'
             : theme === 'navy'
-              ? 'bg-accent-primary text-white border border-white/20 hover:bg-white/10 hover:border-white/50'
+              ? 'bg-transparent text-white border border-white/20 hover:bg-accent-highlight/20 hover:border-accent-highlight/50'
               : theme === 'transparent'
                 ? 'bg-transparent text-white hover:bg-white/10'
                 : 'bg-bg-card border border-border-default hover:bg-bg-secondary'}
           rounded-full cursor-pointer
           focus:outline-none focus:ring-2 focus:ring-offset-2
-          ${theme === "dark" || theme === 'transparent' ? 'focus:ring-white/20' : 'focus:ring-white/20'}
+          ${theme === "dark" || theme === 'transparent' || theme === 'navy' ? 'focus:ring-accent-highlight/20' : 'focus:ring-white/20'}
           transition-all duration-200 hover:scale-[1.02] hover:shadow-md ${theme === 'transparent' ? '' : 'hover:border-white/50'}
           disabled:opacity-50 disabled:cursor-not-allowed
       ${styles.button}

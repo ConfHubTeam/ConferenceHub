@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 export default function BackgroundCarousel({ 
   images, 
   interval = 5000, 
-  overlayColor = "from-brand-orange/30 via-purple-900/40 to-brand-purple/50",
+  overlayColor = "from-accent-primary/30 via-navy-800/40 to-navy-900/50",
   filterStyle = "sepia(20%) saturate(120%) hue-rotate(15deg) brightness(0.8)",
   onImageChange
 }) {
@@ -31,7 +31,7 @@ export default function BackgroundCarousel({
 
   if (!images || images.length === 0) {
     return (
-      <div className="fixed inset-0 bg-gradient-to-br from-brand-orange to-brand-purple"></div>
+      <div className="fixed inset-0 bg-gradient-to-br from-accent-primary to-navy-900"></div>
     );
   }
 
@@ -55,7 +55,7 @@ export default function BackgroundCarousel({
 
       {/* Gradient Overlay */}
       <div className={`fixed inset-0 bg-gradient-to-br ${overlayColor} z-10`}></div>
-      <div className="fixed inset-0 bg-black/20 z-10"></div>
+      <div className="fixed inset-0 bg-navy-900/20 z-10"></div>
     </>
   );
 }
