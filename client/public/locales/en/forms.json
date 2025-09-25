@@ -101,7 +101,10 @@
     "charactersRemaining": "{{count}} character remaining",
     "charactersRemaining_plural": "{{count}} characters remaining",
     "wordsCount": "{{count, number}} word",
-    "wordsCount_plural": "{{count, number}} words"
+    "wordsCount_plural": "{{count, number}} words",
+    "coordinatesSetSuccess": "Coordinates set successfully! You can still edit the name/address.",
+    "addressLookupFailed": "Address lookup failed. You can still set coordinates by pinning on map.",
+    "dragMapPin": "You can also drag the location pin on the map."
   },
   "options": {
     "yes": "Yes",

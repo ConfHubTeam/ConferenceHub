@@ -101,7 +101,10 @@
     "charactersRemaining": "{{count}} belgi qoldi",
     "charactersRemaining_plural": "{{count}} belgi qoldi",
     "wordsCount": "{{count, number}} so'z",
-    "wordsCount_plural": "{{count, number}} so'z"
+    "wordsCount_plural": "{{count, number}} so'z",
+    "coordinatesSetSuccess": "Koordinatalar muvaffaqiyatli o'rnatildi! Siz hali ham nom/manzilni tahrirlashingiz mumkin.",
+    "addressLookupFailed": "Manzilni qidirish muvaffaqiyatsiz tugadi. Siz hali ham xaritada belgi qo'yish orqali koordinatalarni o'rnatishingiz mumkin.",
+    "dragMapPin": "Siz xaritadagi joylashuv belgisini sudrab belgilashiz mumkin."
   },
   "options": {
     "yes": "Ha",
