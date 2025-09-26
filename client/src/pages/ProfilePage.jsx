@@ -23,6 +23,8 @@ export default function ProfilePage({}) {
   // Account deletion state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showAccountOptions, setShowAccountOptions] = useState(false);
+  const accountOptionsRef = useRef(null);
   
   // Profile editing state
   const [isEditing, setIsEditing] = useState(false);
@@ -123,6 +125,20 @@ export default function ProfilePage({}) {
       setPasswordsMatch(true); // Don't show error for empty confirm password
     }
   }, [newPassword, confirmPassword]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (accountOptionsRef.current && !accountOptionsRef.current.contains(event.target)) {
+        setShowAccountOptions(false);
+      }
+    }
+
+    if (showAccountOptions) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showAccountOptions]);
 
   if (!isReady) {
     return <div className="spacing-container"><p>Loading...</p></div>;
@@ -472,16 +488,47 @@ export default function ProfilePage({}) {
                   <span>{isLoggingOut ? t("profile:actions.loggingOut") : t("profile:actions.signOut")}</span>
                 </button>
                 
-                <button
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="w-full bg-status-error text-white py-3 px-4 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center space-x-2 border border-status-error"
-                  disabled={isDeleting}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  <span>{t("profile:actions.deleteAccount")}</span>
-                </button>
+                {/* Account Options Dropdown */}
+                <div className="relative" ref={accountOptionsRef}>
+                  <button
+                    onClick={() => setShowAccountOptions(!showAccountOptions)}
+                    className="w-full bg-bg-secondary text-text-primary py-2 px-3 rounded-lg hover:bg-bg-tertiary transition-colors flex items-center justify-center space-x-2 border border-border-light text-sm"
+                    disabled={isDeleting}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>{t("profile:actions.accountOptions")}</span>
+                    <svg 
+                      className={`h-3 w-3 transition-transform duration-200 ${showAccountOptions ? 'rotate-180' : ''}`} 
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {showAccountOptions && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-bg-card border border-border-light rounded-lg shadow-lg py-2 z-10">
+                      <button
+                        onClick={() => {
+                          setShowDeleteConfirm(true);
+                          setShowAccountOptions(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-status-error hover:bg-error-50 transition-colors flex items-center space-x-2"
+                        disabled={isDeleting}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        <span>{t("profile:actions.deleteAccount")}</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

@@ -111,6 +111,7 @@
     "signOut": "Выйти",
     "loggingOut": "Выход...",
     "deleteAccount": "Удалить аккаунт",
+    "accountOptions": "Опции аккаунта",
     "changePassword": "Изменить пароль",
     "updatePassword": "Обновить пароль",
     "updatingPassword": "Обновление пароля..."

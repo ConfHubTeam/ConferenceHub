@@ -111,6 +111,7 @@
     "signOut": "Chiqish",
     "loggingOut": "Chiqishda...",
     "deleteAccount": "Hisobni o'chirish",
+    "accountOptions": "Hisob variantlari",
     "changePassword": "Parolni o'zgartirish",
     "updatePassword": "Parolni yangilash",
     "updatingPassword": "Parol yangilanmoqda..."

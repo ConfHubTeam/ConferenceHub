@@ -111,6 +111,7 @@
     "signOut": "Sign Out",
     "loggingOut": "Logging out...",
     "deleteAccount": "Delete Account",
+    "accountOptions": "Account Options",
     "changePassword": "Change Password",
     "updatePassword": "Update Password",
     "updatingPassword": "Updating Password..."
