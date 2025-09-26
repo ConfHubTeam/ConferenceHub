@@ -17,7 +17,7 @@ export default function PhoneVerificationModal({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [sessionId, setSessionId] = useState("");
-  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState(60); // 1 minute in seconds (changed from 5 minutes)
   const [isSendingCode, setIsSendingCode] = useState(false);
 
   // Timer for countdown
@@ -67,8 +67,8 @@ export default function PhoneVerificationModal({
 
       if (response.data.success) {
         setSessionId(response.data.sessionId);
-        setTimeLeft(response.data.expiresIn || 300);
-        console.log("Verification code sent, timer started with:", response.data.expiresIn || 300, "seconds");
+        setTimeLeft(response.data.expiresIn || 60);
+        console.log("Verification code sent, timer started with:", response.data.expiresIn || 60, "seconds");
       } else {
         setError(response.data.error || t('profile:phoneVerification.sendError'));
       }
@@ -116,7 +116,7 @@ export default function PhoneVerificationModal({
         // Reset state
         setVerificationCode("");
         setSessionId("");
-        setTimeLeft(300);
+        setTimeLeft(60);
       } else {
         setError(response.data.error || t('profile:phoneVerification.verifyError'));
       }
@@ -151,7 +151,7 @@ export default function PhoneVerificationModal({
     setVerificationCode("");
     setError("");
     setSessionId("");
-    setTimeLeft(300);
+    setTimeLeft(60);
     onClose();
   };
 
