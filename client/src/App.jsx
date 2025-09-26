@@ -7,6 +7,7 @@ import LandingPage from "./pages/LandingPage.jsx";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import Layout from "./components/Layout";
+import AboutPage from "./pages/AboutPage";
 import { UserContextProvider } from "./components/UserContext";
 import { NotificationProvider } from "./components/NotificationContext";
 import { ReviewNotificationProvider } from "./contexts/ReviewNotificationContext";
@@ -69,6 +70,7 @@ function App() {
             <Route path="/landingpage" element={<LandingPage />} />
             <Route path="/places" element={<IndexPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/about" element={<AboutPage />} />
             <Route path="/admin" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/telegram-auth" element={<TelegramAuth />} />

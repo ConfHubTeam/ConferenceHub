@@ -68,10 +68,9 @@ function LandingHeaderBase({
         </Link>
         {/* About Us button - styled inline with nav buttons */}
         <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8 ml-6" role="navigation">
-          <button
+          <Link
+            to="/about"
             className="text-white hover:text-brand-orange hover:bg-white/10 hover:scale-[1.02] transition-all duration-200 flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg px-3 py-2 text-sm lg:text-base font-medium"
-            onClick={() => setAboutOpen(true)}
-            type="button"
           >
             {(() => {
               const lang = i18n.language ? i18n.language.split('-')[0] : 'en';
@@ -79,11 +78,11 @@ function LandingHeaderBase({
               if (lang === 'ru') return 'О нас';
               return 'About Us';
             })()}
-          </button>
+          </Link>
         </nav>
       </div>
   {/* About Us Modal */}
-  <AboutUsModal open={aboutOpen} onClose={() => setAboutOpen(false)} />
+
 
       {/* Desktop Navigation */}
       {showNavigation && (

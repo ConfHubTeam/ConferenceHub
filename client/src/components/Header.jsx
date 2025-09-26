@@ -7,7 +7,7 @@ import CurrencySelector from "./CurrencySelector";
 import NotificationBell from "./NotificationBell";
 import LanguageSelector from "./LanguageSelector/LanguageSelector";
 import UserNavigation from "./UserNavigation";
-import AboutUsModal from "./AboutUsModal";
+
 
 export default function Header() {
   const { t } = useTranslation("navigation");
@@ -16,7 +16,7 @@ export default function Header() {
   const location = useLocation();
   const isLanding = location.pathname === "/"; // Landing page route
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [aboutOpen, setAboutOpen] = useState(false);
+
   const menuRef = useRef(null);
   const currencyRef = useRef(null);
   const languageRef = useRef(null);
@@ -132,17 +132,15 @@ export default function Header() {
         </div>
 
         {/* About Us button (only on landing page) */}
+
         {isLanding && (
-          <button
+          <Link
+            to="/about"
             className="ml-4 px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 text-white font-medium transition-colors"
-            onClick={() => setAboutOpen(true)}
-            type="button"
           >
             {t("header.aboutUs", "About Us")}
-          </button>
+          </Link>
         )}
-  {/* About Us Modal */}
-  <AboutUsModal open={aboutOpen} onClose={() => setAboutOpen(false)} />
 
         {/* User Navigation - Desktop only, horizontally scrollable with indicators */}
         <div className="hidden md:block flex-1 min-w-0 mx-4 relative">
