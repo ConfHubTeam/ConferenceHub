@@ -1,8 +1,50 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import CloudinaryImage from "./CloudinaryImage";
 
 export default function ImageHoverQuad({ photos, title, className = "" }) {
   const [isHovered, setIsHovered] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+
+  // Track mobile viewport
+  useEffect(() => {
+    const handler = () => setIsMobile(typeof window !== 'undefined' && window.innerWidth < 768);
+    handler();
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+
+  // Handle touch events for swiping
+  const handleTouchStart = (e) => {
+    if (!isMobile || photos.length <= 1) return;
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isMobile || photos.length <= 1) return;
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    if (!isMobile || photos.length <= 1) return;
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const swipeThreshold = 50;
+    const swipeDistance = touchStartX.current - touchEndX.current;
+
+    if (Math.abs(swipeDistance) > swipeThreshold) {
+      if (swipeDistance > 0) {
+        // Swipe left - next image
+        setCurrentImageIndex((prev) => (prev + 1) % photos.length);
+      } else {
+        // Swipe right - previous image
+        setCurrentImageIndex((prev) => (prev - 1 + photos.length) % photos.length);
+      }
+    }
+  };
 
   // Handle no photos case
   if (!photos || photos.length === 0) {
@@ -26,6 +68,38 @@ export default function ImageHoverQuad({ photos, title, className = "" }) {
           alt={title}
           className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
         />
+      </div>
+    );
+  }
+
+  // Mobile: Show swipeable single images
+  if (isMobile && photos.length > 1) {
+    return (
+      <div 
+        className={`relative aspect-[4/3] overflow-hidden ${className}`}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <CloudinaryImage
+          photo={photos[currentImageIndex]}
+          alt={`${title} - Image ${currentImageIndex + 1}`}
+          className="w-full h-full object-cover transition-all duration-300 ease-out"
+        />
+        
+        {/* Image indicator dots */}
+        {photos.length > 1 && (
+          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
+            {photos.map((_, index) => (
+              <div
+                key={index}
+                className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
+                  index === currentImageIndex ? 'bg-white' : 'bg-white/40'
+                }`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     );
   }
