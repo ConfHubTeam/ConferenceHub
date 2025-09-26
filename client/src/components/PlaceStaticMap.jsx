@@ -222,7 +222,7 @@ export default function PlaceStaticMap({ place }) {
       </GoogleMap>
 
       {/* Directions floating button */}
-      <div className="absolute bottom-3 right-3">
+      <div className="absolute bottom-3 left-3">
         <button
           type="button"
           onClick={() => setShowPicker((p) => !p)}
@@ -234,7 +234,7 @@ export default function PlaceStaticMap({ place }) {
 
       {/* Provider picker */}
       {showPicker && (
-        <div ref={pickerRef} className="absolute bottom-14 right-3 bg-white rounded-lg shadow-xl border border-border-light w-56 z-10">
+        <div ref={pickerRef} className="absolute bottom-14 left-3 bg-white rounded-lg shadow-xl border border-border-light w-56 z-10">
           <div className="p-2">
             <button
               type="button"
