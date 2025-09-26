@@ -248,8 +248,8 @@ export default function SearchFilter({
             <button
               type="button"
               onClick={() => setIsDateTimeModalOpen(true)}
-              className={`w-full text-left text-sm sm:text-base lg:text-lg bg-transparent outline-none focus:ring-0 border-0 font-medium pt-0 pl-0 hover:text-brand-purple transition-colors truncate ${
-                hasActiveDateTimeFilter ? 'text-orange-500' : 'text-gray-400'
+              className={`w-full text-left text-sm sm:text-base lg:text-lg bg-transparent outline-none focus:ring-0 border-0 font-medium pt-0 pl-0 hover:text-accent-primary transition-colors truncate ${
+                hasActiveDateTimeFilter ? 'text-accent-highlight' : 'text-gray-400'
               }`}
               aria-label={t("form.aria_labels.select_dates")}
             >
@@ -265,8 +265,8 @@ export default function SearchFilter({
             <button
               type="button"
               onClick={() => setIsPriceModalOpen(true)}
-              className={`w-full text-left text-sm sm:text-base lg:text-lg bg-transparent outline-none focus:ring-0 border-0 font-medium pt-0 pl-0 hover:text-brand-purple transition-colors truncate ${
-                hasActivePriceFilter ? 'text-orange-500' : 'text-gray-400'
+              className={`w-full text-left text-sm sm:text-base lg:text-lg bg-transparent outline-none focus:ring-0 border-0 font-medium pt-0 pl-0 hover:text-accent-primary transition-colors truncate ${
+                hasActivePriceFilter ? 'text-accent-highlight' : 'text-gray-400'
               }`}
               aria-label={t("form.aria_labels.select_price")}
             >
@@ -282,8 +282,8 @@ export default function SearchFilter({
             <button
               type="button"
               onClick={() => setIsAttendeesModalOpen(true)}
-              className={`w-full text-left text-sm sm:text-base lg:text-lg bg-transparent outline-none focus:ring-0 border-0 font-medium pt-0 pl-0 hover:text-brand-purple transition-colors truncate ${
-                hasActiveAttendeesFilter ? 'text-orange-500' : 'text-gray-400'
+              className={`w-full text-left text-sm sm:text-base lg:text-lg bg-transparent outline-none focus:ring-0 border-0 font-medium pt-0 pl-0 hover:text-accent-primary transition-colors truncate ${
+                hasActiveAttendeesFilter ? 'text-accent-highlight' : 'text-gray-400'
               }`}
               aria-label={t("form.aria_labels.select_attendees")}
             >
@@ -299,8 +299,8 @@ export default function SearchFilter({
             <button
               type="button"
               onClick={() => setIsSizeModalOpen(true)}
-              className={`w-full text-left text-sm sm:text-base lg:text-lg bg-transparent outline-none focus:ring-0 border-0 font-medium pt-0 pl-0 hover:text-brand-purple transition-colors truncate ${
-                hasActiveSizeFilter ? 'text-orange-500' : 'text-gray-400'
+              className={`w-full text-left text-sm sm:text-base lg:text-lg bg-transparent outline-none focus:ring-0 border-0 font-medium pt-0 pl-0 hover:text-accent-primary transition-colors truncate ${
+                hasActiveSizeFilter ? 'text-accent-highlight' : 'text-gray-400'
               }`}
               aria-label={t("form.aria_labels.select_size")}
             >
@@ -312,7 +312,7 @@ export default function SearchFilter({
           <div className="px-4 py-3 lg:px-3 lg:py-2.5 flex items-center justify-center bg-white border-t lg:border-t-0 lg:border-l border-gray-100">
             <button
               type="submit"
-              className="w-full lg:w-auto bg-black hover:bg-gray-800 text-white px-5 lg:px-5 py-2 sm:py-2 lg:py-2.5 rounded-lg font-semibold text-sm sm:text-base transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 flex items-center justify-center space-x-2 shadow-md"
+              className="w-full lg:w-auto bg-accent-primary hover:bg-accent-hover text-white px-5 lg:px-5 py-2 sm:py-2 lg:py-2.5 rounded-lg font-semibold text-sm sm:text-base transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 flex items-center justify-center space-x-2 shadow-md"
               aria-label={t("form.aria_labels.search")}
             >
               <span>{t("form.search")}</span>

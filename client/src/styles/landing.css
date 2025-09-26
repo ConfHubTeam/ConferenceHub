@@ -106,16 +106,16 @@
   left: 100%;
 }
 
-/* Brand color animations */
-.brand-gradient-text {
-  background: linear-gradient(135deg, #f38129, #3b2881);
+/* Navy color animations */
+.navy-gradient-text {
+  background: linear-gradient(135deg, #1D2A50, #4F6EF7);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.brand-gradient-bg {
-  background: linear-gradient(135deg, #f38129, #3b2881);
+.navy-gradient-bg {
+  background: linear-gradient(135deg, #1D2A50, #2E3D69);
 }
 
 /* Responsive typography scaling */
@@ -144,7 +144,7 @@
 }
 
 .search-input:focus + .search-label {
-  color: #f38129;
+  color: #1D2A50;
   transform: translateY(-2px);
 }
 
@@ -165,7 +165,7 @@
 
 /* Loading animation enhancement */
 .loading-gradient {
-  background: conic-gradient(from 0deg, #f38129, #3b2881, #f38129);
+  background: conic-gradient(from 0deg, #1D2A50, #4F6EF7, #1D2A50);
   animation: spin 2s linear infinite;
 }
 

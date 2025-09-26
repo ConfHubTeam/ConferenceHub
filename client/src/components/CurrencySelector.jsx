@@ -184,7 +184,7 @@ export default function CurrencySelector({
           theme === "dark"
             ? 'bg-black text-white border-white/30 hover:bg-white/15 hover:border-white/50'
             : theme === 'navy'
-              ? 'bg-accent-primary text-white border border-white/20 hover:bg-white/10 hover:border-white/50'
+              ? 'bg-transparent text-white border border-white/20 hover:bg-accent-highlight/20 hover:border-accent-highlight/50'
               : theme === 'transparent'
                 ? 'bg-transparent text-white hover:bg-white/10'
                 : 'bg-bg-card border border-border-default hover:bg-bg-secondary hover:border-accent-primary'
@@ -195,14 +195,14 @@ export default function CurrencySelector({
                 : theme === 'transparent'
                   ? 'ring-2 ring-white/20 shadow-sm'
                   : theme === 'navy'
-                    ? 'border-white/50 ring-2 ring-white/20 shadow-sm'
+                    ? 'border-accent-highlight/50 ring-2 ring-accent-highlight/20 shadow-sm'
                     : 'border-navy-400 ring-2 ring-navy-400 ring-opacity-20 shadow-sm')
             : (theme === 'dark'
                 ? 'focus:border-white/50 focus:ring-2 focus:ring-white/20'
                 : theme === 'transparent'
                   ? 'focus:ring-2 focus:ring-white/20'
                   : theme === 'navy'
-                    ? 'focus:border-white/50 focus:ring-2 focus:ring-white/20'
+                    ? 'focus:border-accent-highlight/50 focus:ring-2 focus:ring-accent-highlight/20'
                     : 'focus:border-navy-400 focus:ring-2 focus:ring-navy-400 focus:ring-opacity-20')
         } ${size === 'sm' ? 'h-10' : size === 'lg' ? 'h-14' : 'h-12'}`}
         onClick={() => setIsOpen(!isOpen)}

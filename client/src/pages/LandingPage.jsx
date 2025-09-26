@@ -8,11 +8,11 @@ import SearchFilter from "../components/SearchFilter";
 import { withTranslationLoading } from "../i18n/hoc/withTranslationLoading";
 import "../styles/landing.css";
 
-// Configuration for event space images
+// Configuration for professional conference and business event space images
+// Selected for navy/blue color harmony and conference booking theme
 const SPACE_IMAGES = [
-  "https://images.unsplash.com/photo-1582192730841-2a682d7375f9?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Conference setup with presenter
-  "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Audience in event space
-  "https://images.unsplash.com/photo-1607952885616-557c53a641c0?q=80&w=1626&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"  // Modern event hall setup
+  "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Executive boardroom with professional navy blue theme
+  "https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"  // Modern auditorium with sophisticated blue color scheme
 ];
 
 /**
@@ -28,7 +28,7 @@ function LandingPageBase() {
   // Loading state with enhanced styling
   if (!isReady || !ready) {
     return (
-      <div className="h-screen relative overflow-hidden flex flex-col items-center justify-center bg-gradient-to-br from-brand-orange to-brand-purple">
+      <div className="h-screen relative overflow-hidden flex flex-col items-center justify-center bg-gradient-to-br from-accent-primary to-navy-900">
         <div className="loading-gradient rounded-full h-16 w-16 relative">
           <div className="absolute inset-2 bg-white rounded-full"></div>
         </div>
@@ -63,15 +63,15 @@ function LandingPageBase() {
       {/* Background Carousel with Enhanced Styling */}
       <BackgroundCarousel 
         images={SPACE_IMAGES}
-        interval={5000}
-        overlayColor="from-brand-orange/10 via-purple-900/15 to-brand-purple/20"
-        filterStyle="sepia(5%) saturate(115%) hue-rotate(5deg) brightness(0.95)"
+        interval={6000}
+        overlayColor="from-accent-primary/15 via-navy-700/20 to-navy-900/25"
+        filterStyle="sepia(8%) saturate(110%) hue-rotate(210deg) brightness(0.88) contrast(1.1)"
       />
 
       {/* Floating Decorative Elements */}
       <div className="fixed inset-0 z-10 pointer-events-none">
-        <div className="absolute top-1/4 left-10 w-64 h-64 bg-brand-orange/10 rounded-full blur-3xl floating-animation"></div>
-        <div className="absolute bottom-1/4 right-10 w-80 h-80 bg-brand-purple/10 rounded-full blur-3xl floating-animation" style={{animationDelay: '2s'}}></div>
+        <div className="absolute top-1/4 left-10 w-64 h-64 bg-accent-highlight/10 rounded-full blur-3xl floating-animation"></div>
+        <div className="absolute bottom-1/4 right-10 w-80 h-80 bg-navy-700/10 rounded-full blur-3xl floating-animation" style={{animationDelay: '2s'}}></div>
       </div>
 
       {/* Header */}
@@ -126,7 +126,7 @@ function LandingPageBase() {
       </main>
 
       {/* Background footer covering 30% of the bottom */}
-      <div className="absolute bottom-0 left-0 right-0 h-[30%] z-20 bg-gradient-to-t from-black/80 via-brand-purple/50 to-transparent"></div>
+      <div className="absolute bottom-0 left-0 right-0 h-[30%] z-20 bg-gradient-to-t from-navy-900/80 via-navy-800/50 to-transparent"></div>
       
       {/* Large print on bottom left - Hidden on mobile */}
       <div className="absolute bottom-16 left-8 z-40 hidden md:block">
@@ -160,7 +160,7 @@ export default withTranslationLoading(LandingPageBase, {
   namespaces: ["landing", "common", "navigation"],
   preloadNamespaces: ["places", "search"],
   loadingComponent: ({ children, ...props }) => (
-    <div className="h-screen relative overflow-hidden flex flex-col items-center justify-center bg-gradient-to-br from-brand-orange to-brand-purple">
+    <div className="h-screen relative overflow-hidden flex flex-col items-center justify-center bg-gradient-to-br from-accent-primary to-navy-900">
       <div className="loading-gradient rounded-full h-16 w-16 relative">
         <div className="absolute inset-2 bg-white rounded-full animate-pulse"></div>
       </div>
@@ -168,13 +168,13 @@ export default withTranslationLoading(LandingPageBase, {
     </div>
   ),
   errorComponent: ({ error, retry, ...props }) => (
-    <div className="h-screen relative overflow-hidden flex flex-col items-center justify-center bg-gradient-to-br from-brand-orange to-brand-purple">
+    <div className="h-screen relative overflow-hidden flex flex-col items-center justify-center bg-gradient-to-br from-accent-primary to-navy-900">
       <div className="text-center text-white">
         <h2 className="text-2xl font-bold mb-4">Translation Error</h2>
         <p className="mb-4">Failed to load translations</p>
         <button 
           onClick={retry}
-          className="bg-white text-brand-orange px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+          className="bg-white text-accent-primary px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
         >
           Retry
         </button>
