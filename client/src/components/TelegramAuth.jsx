@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { withTranslationLoading } from "../i18n/hoc/withTranslationLoading";
 import { UserContext } from "./UserContext";
 import { useNotification } from "./NotificationContext";
-import { performAuthCleanup } from "../utils/cookieUtils";
+import { performAuthCleanup, performAccountSwitchCleanup } from "../utils/cookieUtils";
 
 function TelegramAuthBase() {
   const { t, ready } = useTranslation(["auth", "common"]);
@@ -116,8 +116,8 @@ function TelegramAuthBase() {
 
   const handleTelegramLogout = async () => {
     try {
-      // Use utility function to clear all auth data
-      performAuthCleanup();
+      // Use enhanced utility function for account switching cleanup
+      await performAccountSwitchCleanup();
       
       notify(
         ready 

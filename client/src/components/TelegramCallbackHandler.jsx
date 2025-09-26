@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
 import { UserContext } from "./UserContext";
-import { performAuthCleanup } from "../utils/cookieUtils";
+import { performAuthCleanup, performAccountSwitchCleanup } from "../utils/cookieUtils";
 
 export default function TelegramCallbackHandler() {
   const [loading, setLoading] = useState(true);

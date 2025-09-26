@@ -10,7 +10,7 @@ import PhoneVerificationModal from "../components/PhoneVerificationModal";
 import { isValidPhoneNumber, isPossiblePhoneNumber } from "react-phone-number-input";
 import { checkPasswordSpecialChars } from "../utils/formUtils";
 import { RiKey2Line, RiEditLine } from "react-icons/ri";
-import { performAuthCleanup, clearAuthLocalStorage } from "../utils/cookieUtils";
+import { performAuthCleanup, performAccountSwitchCleanup, clearAuthLocalStorage } from "../utils/cookieUtils";
 
 export default function ProfilePage({}) {
   const [redirect, setRedirect] = useState(); // control the redirect after logout
@@ -166,8 +166,8 @@ export default function ProfilePage({}) {
       // Regular logout
       await api.post("/auth/logout");
       
-      // Use utility function to clear all auth data and cache
-      performAuthCleanup();
+      // Use enhanced utility function to clear all auth data and cache
+      await performAccountSwitchCleanup();
       
       notify(t("profile:messages.logoutSuccess"), "success");
       setRedirect("/");
