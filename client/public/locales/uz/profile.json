@@ -4,104 +4,104 @@
   "sections": {
     "overview": {
       "title": "Hisob ko'rinishi",
-      "memberSince": "A'zo bo'lgan",
-      "telegram": {
-        "status": "Telegram",
-        "connected": "Ulangan",
-        "notConnected": "Ulanmagan",
-        "username": "Foydalanuvchi nomi"
-      }
-    },
-    "profileInfo": {
-      "title": "Profil ma'lumotlari",
-      "subtitle": "Shaxsiy ma'lumotlaringiz va aloqa ma'lumotlarini boshqaring"
-    },
-    "password": {
-      "title": "Parol va xavfsizlik",
-      "subtitle": "Parolingizni o'zgartiring va xavfsizlik sozlamalarini boshqaring",
-      "description": "Hisobingizni xavfsiz saqlash uchun parolingizni yangilang."
-    },
-    "accountSettings": {
-      "title": "Hisob sozlamalari",
-      "subtitle": "Hisob sozlamalaringiz va xavfsizligini boshqaring"
+    "memberSince": "A'zo bo'lgan",
+    "telegram": {
+      "status": "Telegram",
+      "connected": "Ulangan",
+      "notConnected": "Ulanmagan",
+      "username": "Foydalanuvchi nomi"
     }
   },
-  "accountTypes": {
-    "client": {
-      "label": "Mijoz hisobi",
-      "description": "Konferens xonalarini band qilish"
-    },
-    "host": {
-      "label": "Mezbor hisobi", 
-      "description": "Konferens xonalari va bronlarni boshqarish"
-    },
-    "agent": {
-      "label": "Agent hisobi",
-      "description": "Tizim boshqaruvi ruxsati"
+  "profileInfo": {
+    "title": "Profil ma'lumotlari",
+    "subtitle": "Shaxsiy ma'lumotlaringiz va aloqa ma'lumotlarini boshqaring"
+  },
+  "password": {
+    "title": "Parol va xavfsizlik",
+    "subtitle": "Parolingizni o'zgartiring va xavfsizlik sozlamalarini boshqaring",
+    "description": "Hisobingizni xavfsiz saqlash uchun parolingizni yangilang."
+  },
+  "accountSettings": {
+    "title": "Hisob sozlamalari",
+    "subtitle": "Hisob sozlamalaringiz va xavfsizligini boshqaring"
+  }
+},
+"accountTypes": {
+  "client": {
+    "label": "Mijoz hisobi",
+    "description": "Konferens xonalarini band qilish"
+  },
+  "host": {
+    "label": "Mezbor hisobi",
+    "description": "Konferens xonalari va bronlarni boshqarish"
+  },
+  "agent": {
+    "label": "Agent hisobi",
+    "description": "Tizim boshqaruvi ruxsati"
+  }
+},
+"fields": {
+  "fullName": {
+    "label": "To'liq ism",
+    "placeholder": "To'liq ismingizni kiriting",
+    "required": "Ism majburiy"
+  },
+  "phoneNumber": {
+    "label": "Telefon raqami",
+    "placeholder": "Telefon raqamingizni kiriting",
+    "help": "Telefon raqamini xalqaro formatda kiriting (masalan, +998901234567). Telefon raqamini olib tashlash uchun bo'sh qoldiring.",
+    "validation": {
+      "invalid": "Iltimos, to'g'ri telefon raqamini kiriting",
+      "invalidCountry": "Iltimos, tanlangan mamlakat uchun to'g'ri telefon raqamini kiriting"
     }
   },
-  "fields": {
-    "fullName": {
-      "label": "To'liq ism",
-      "placeholder": "To'liq ismingizni kiriting",
-      "required": "Ism majburiy"
-    },
-    "phoneNumber": {
-      "label": "Telefon raqami",
-      "placeholder": "Telefon raqamingizni kiriting",
-      "help": "Telefon raqamini xalqaro formatda kiriting (masalan, +998901234567). Telefon raqamini olib tashlash uchun bo'sh qoldiring.",
-      "validation": {
-        "invalid": "Iltimos, to'g'ri telefon raqamini kiriting",
-        "invalidCountry": "Iltimos, tanlangan mamlakat uchun to'g'ri telefon raqamini kiriting"
-      }
-    },
-    "email": {
-      "label": "Elektron pochta manzili",
-      "cannotChange": "Emailni o'zgartirib bo'lmaydi",
-      "notProvided": "Ko'rsatilmagan",
-      "noEmail": "Email yo'q"
-    },
-    "password": {
-      "current": "Joriy parol",
-      "new": "Yangi parol",
-      "confirm": "Yangi parolni tasdiqlang",
-      "currentPlaceholder": "Joriy parolingizni kiriting",
-      "newPlaceholder": "Yangi parolni kiriting",
-      "confirmPlaceholder": "Yangi parolni tasdiqlang",
-      "requirements": "Parol talablari:",
-      "requirement": {
-        "length": "Kamida {{minLength}} ta belgi",
-        "lowercase": "Kamida bitta kichik harf",
-        "uppercase": "Kamida bitta katta harf",
-        "number": "Kamida bitta raqam",
-        "specialChar": "Kamida bitta maxsus belgi: {{allowedChars}}"
-      },
-      "validation": {
-        "allFieldsRequired": "Barcha parol maydonlari majburiy",
-        "passwordsDoNotMatch": "Parollar mos kelmaydi",
-        "passwordsMatch": "Parollar mos keladi",
-        "requirementsNotMet": "Parol barcha talablarga javob berishi kerak",
-        "currentPasswordIncorrect": "Joriy parol noto'g'ri",
-        "invalidPassword": "Parol xavfsizlik talablariga javob bermaydi",
-        "confirmRequired": "Iltimos, yangi parolni tasdiqlang",
-        "newPasswordRequired": "Iltimos, yangi parolni kiriting"
-      }
-    }
+  "email": {
+    "label": "Elektron pochta manzili",
+    "cannotChange": "Emailni o'zgartirib bo'lmaydi",
+    "notProvided": "Ko'rsatilmagan",
+    "noEmail": "Email yo'q"
   },
-  "phoneVerification": {
-    "title": "Telefon raqamini tasdiqlash",
-    "description": "Biz 6 xonali tasdiqlash kodini yuborgan:",
-    "codeLabel": "Tasdiqlash kodi",
-    "verify": "Tasdiqlash",
-    "verifying": "Tasdiqlanmoqda...",
-    "resend": "Qayta yuborish",
-    "sending": "Yuborilmoqda...",
-    "expiresIn": "Kod tugaydi",
-    "expired": "Kod muddati tugadi",
-    "note": "Tasdiqlash kodi bir necha daqiqa ichida kelishi mumkin.",
-    "invalidCodeLength": "Iltimos, 6 xonali tasdiqlash kodini kiriting",
-    "sendError": "Tasdiqlash kodini yuborib bo'lmadi. Qayta urinib ko'ring.",
-    "verifyError": "Kodni tasdiqlab bo'lmadi. Qayta urinib ko'ring."
+  "password": {
+    "current": "Joriy parol",
+    "new": "Yangi parol",
+    "confirm": "Yangi parolni tasdiqlang",
+    "currentPlaceholder": "Joriy parolingizni kiriting",
+    "newPlaceholder": "Yangi parolni kiriting",
+    "confirmPlaceholder": "Yangi parolni tasdiqlang",
+    "requirements": "Parol talablari:",
+    "requirement": {
+      "length": "Kamida {{minLength}} ta belgi",
+      "lowercase": "Kamida bitta kichik harf",
+      "uppercase": "Kamida bitta katta harf",
+      "number": "Kamida bitta raqam",
+      "specialChar": "Kamida bitta maxsus belgi: {{allowedChars}}"
+    },
+    "validation": {
+      "allFieldsRequired": "Barcha parol maydonlari majburiy",
+      "passwordsDoNotMatch": "Parollar mos kelmaydi",
+      "passwordsMatch": "Parollar mos keladi",
+      "requirementsNotMet": "Parol barcha talablarga javob berishi kerak",
+      "currentPasswordIncorrect": "Joriy parol noto'g'ri",
+      "invalidPassword": "Parol xavfsizlik talablariga javob bermaydi",
+      "confirmRequired": "Iltimos, yangi parolni tasdiqlang",
+      "newPasswordRequired": "Iltimos, yangi parolni kiriting"
+    }
+  }
+},
+"phoneVerification": {
+  "title": "Telefon raqamini tasdiqlash",
+  "description": "Biz 6 xonali tasdiqlash kodini yuborgan:",
+  "codeLabel": "Tasdiqlash kodi",
+  "verify": "Tasdiqlash",
+  "verifying": "Tasdiqlanmoqda...",
+  "resend": "Qayta yuborish",
+  "sending": "Yuborilmoqda...",
+  "expiresIn": "Kod tugaydi",
+  "expired": "Kod muddati tugadi",
+  "note": "Tasdiqlash kodi bir necha daqiqa ichida kelishi mumkin.",
+  "invalidCodeLength": "Iltimos, 6 xonali tasdiqlash kodini kiriting",
+  "sendError": "Tasdiqlash kodini yuborib bo'lmadi. Qayta urinib ko'ring.",
+  "verifyError": "Kodni tasdiqlab bo'lmadi. Qayta urinib ko'ring."
   },
   "actions": {
     "editProfile": "Profilni tahrirlash",
@@ -114,53 +114,51 @@
     "accountOptions": "Hisob variantlari",
     "changePassword": "Parolni o'zgartirish",
     "updatePassword": "Parolni yangilash",
-    "updatingPassword": "Parol yangilanmoqda..."
+    "updatingPassword": "Parol yangilanmoqda...",
+    "telegramLogout": "Telegram'dan chiqish",
+    "telegramLogoutTooltip": "Telegram'dan chiqish va akkauntni almashtirish"
   },
-  "messages": {
-    "profileUpdated": "Profil muvaffaqiyatli yangilandi",
-    "logoutSuccess": "Muvaffaqiyatli chiqish",
-    "accountCreated": "Sizning konferens hub hisobingiz muvaffaqiyatli yaratildi!",
-    "loginSuccess": "Muvaffaqiyatli kirish!",
-    "logoutError": "Chiqishda xatolik. Iltimos, qayta urinib ko'ring.",
-    "updateError": "Profilni yangilashda xatolik",
-    "phoneNumberExists": "Bunday telefon raqamiga ega foydalanuvchi allaqachon mavjud",
-    "invalidPhoneFormat": "Iltimos, to'g'ri telefon raqamini xalqaro formatda kiriting",
-    "deleteSuccess": "Sizning hisobingiz muvaffaqiyatli o'chirildi",
-    "deleteError": "Hisobni o'chirishda xatolik. Iltimos, qayta urinib ko'ring.",
-    "passwordUpdated": "Parol muvaffaqiyatli yangilandi",
-    "passwordUpdateError": "Parolni yangilashda xatolik. Iltimos, qayta urinib ko'ring.",
-    "userUpdated": "Foydalanuvchi muvaffaqiyatli yangilandi",
-    "userUpdateError": "Foydalanuvchini yangilashda xatolik. Iltimos, qayta urinib ko'ring."
-  },
-  "deleteConfirmation": {
-    "title": "Hisobni o'chirish",
-    "consequences": {
-      "common": [
-        "Sizning hisobingiz va profil ma'lumotlaringiz",
-        "Barcha bronlaringiz"
-      ],
-      "host": [
-        "Sizga tegishli barcha konferens xonalari",
-        "Sizning xonalaringiz bilan bog'liq barcha bronlar"
-      ],
-      "agent": [
-        "Tizimga barcha administrativ ruxsat",
-        "Foydalanuvchilar va bronlarni boshqarishga ruxsat"
-      ]
-    }
-  },
-  "editModal": {
-    "title": "Foydalanuvchini tahrirlash",
-    "userId": "ID: {{id}}",
-    "userType": {
-      "host": "Mezbor",
-      "agent": "Agent", 
-      "client": "Mijoz"
-    },
-    "passwordSection": {
-      "title": "Parol boshqaruvi",
-      "show": "O'zgartirish",
-      "hide": "Parol o'zgartirishni bekor qilish"
-    }
+"messages": {
+  "updateSuccess": "Profil muvaffaqiyatli yangilandi",
+  "updateError": "Profilni yangilashda xatolik",
+  "passwordUpdateSuccess": "Parol muvaffaqiyatli yangilandi",
+  "passwordUpdateError": "Parolni yangilashda xatolik",
+  "logoutSuccess": "Muvaffaqiyatli chiqildi",
+  "logoutError": "Chiqishda xatolik",
+  "telegramLogoutSuccess": "Telegram'dan muvaffaqiyatli chiqildi. Endi boshqa akkaunt bilan kirishingiz mumkin.",
+  "telegramLogoutError": "Telegram'dan chiqishda xatolik. Qaytadan urinib ko'ring.",
+  "deleteSuccess": "Hisob muvaffaqiyatli o'chirildi",
+  "deleteError": "Hisobni o'chirishda xatolik"
+},
+"deleteConfirmation": {
+  "title": "Hisobni o'chirish",
+  "consequences": {
+    "common": [
+      "Sizning hisobingiz va profil ma'lumotlaringiz",
+      "Barcha bronlaringiz"
+    ],
+    "host": [
+      "Sizga tegishli barcha konferens xonalari",
+      "Sizning xonalaringiz bilan bog'liq barcha bronlar"
+    ],
+    "agent": [
+      "Tizimga barcha administrativ ruxsat",
+      "Foydalanuvchilar va bronlarni boshqarishga ruxsat"
+    ]
   }
+},
+"editModal": {
+  "title": "Foydalanuvchini tahrirlash",
+  "userId": "ID: {{id}}",
+  "userType": {
+    "host": "Mezbor",
+    "agent": "Agent",
+    "client": "Mijoz"
+  },
+  "passwordSection": {
+    "title": "Parol boshqaruvi",
+    "show": "O'zgartirish",
+    "hide": "Parol o'zgartirishni bekor qilish"
+  }
+}
 }

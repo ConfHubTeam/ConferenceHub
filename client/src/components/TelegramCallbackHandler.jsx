@@ -1,7 +1,9 @@
 import { useEffect, useState, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import axios from "axios";
 import { UserContext } from "./UserContext";
+import { performAuthCleanup } from "../utils/cookieUtils";
 
 export default function TelegramCallbackHandler() {
   const [loading, setLoading] = useState(true);
@@ -9,6 +11,7 @@ export default function TelegramCallbackHandler() {
   const location = useLocation();
   const navigate = useNavigate();
   const { setUser } = useContext(UserContext);
+  const { t, ready } = useTranslation(["auth", "common"]);
 
   useEffect(() => {
     async function processCallback() {
@@ -49,7 +52,7 @@ export default function TelegramCallbackHandler() {
             navigate('/account?login_success=true');
           }
         } else {
-          setError(response.data.error || "Authentication failed");
+          setError(response.data.error || (ready ? t("auth:errors.authenticationFailed") : "Authentication failed"));
           setLoading(false);
         }
       } catch (err) {
@@ -68,17 +71,16 @@ export default function TelegramCallbackHandler() {
               const attemptedType = match[2];
               
               // Use notification context to show error on the login page
-              const errorMsg = `Your Telegram account is already registered as a ${existingType}. You cannot login as a ${attemptedType}.`;
+              const errorMsg = ready 
+                ? t("auth:telegram.userTypeMismatch", {
+                    existingType: existingType,
+                    attemptedType: attemptedType
+                  })
+                : `Your Telegram account is already registered as a ${existingType}. You cannot login as a ${attemptedType}.`;
               localStorage.setItem('telegram_auth_error', errorMsg);
               
-              // Clear all cookies and session data
-              localStorage.removeItem('token');
-              localStorage.removeItem('telegram_auth_user_type');
-              
-              // Clear cookies by setting their expiration to past date
-              document.cookie.split(";").forEach(function(c) {
-                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-              });
+              // Clear all cookies and session data using utility
+              performAuthCleanup();
               
               // Redirect to login
               navigate(`/login`);
@@ -88,7 +90,7 @@ export default function TelegramCallbackHandler() {
           
           setError(errorMessage);
         } else {
-          setError("Failed to complete authentication. Please try again.");
+          setError(ready ? t("auth:errors.authenticationCompleteFailed") : "Failed to complete authentication. Please try again.");
         }
         
         setLoading(false);
@@ -107,12 +109,14 @@ export default function TelegramCallbackHandler() {
   if (loading) {
     return (
       <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-xl shadow-md">
-        <h1 className="text-2xl font-bold text-center mb-4">Completing Authentication</h1>
+        <h1 className="text-2xl font-bold text-center mb-4">
+          {ready ? t("auth:telegram.completingAuth") : "Completing Authentication"}
+        </h1>
         <div className="flex justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
         </div>
         <p className="text-center mt-4 text-gray-600">
-          Please wait while we complete your Telegram authentication...
+          {ready ? t("auth:telegram.pleaseWaitAuth") : "Please wait while we complete your Telegram authentication..."}
         </p>
       </div>
     );
@@ -121,7 +125,9 @@ export default function TelegramCallbackHandler() {
   if (error) {
     return (
       <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-xl shadow-md">
-        <h1 className="text-2xl font-bold text-center mb-4">Authentication Error</h1>
+        <h1 className="text-2xl font-bold text-center mb-4">
+          {ready ? t("auth:telegram.authError") : "Authentication Error"}
+        </h1>
         <div className="bg-red-100 text-red-800 p-3 rounded-lg mb-4">
           {error}
         </div>
@@ -130,7 +136,7 @@ export default function TelegramCallbackHandler() {
             onClick={() => navigate('/login')}
             className="mt-4 px-6 py-2 bg-primary text-white rounded-md hover:bg-primary-dark"
           >
-            Back to Login
+            {ready ? t("auth:telegram.backToLogin") : "Back to Login"}
           </button>
         </div>
       </div>

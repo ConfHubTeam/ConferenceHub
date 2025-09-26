@@ -225,7 +225,8 @@
       "invalidFormat": "Noto'g'ri format",
       "missingData": "Kerakli ma'lumot kiritilmagan",
       "operationFailed": "Amal bajarilmadi",
-      "bulkDeleteFailed": "Tanlangan elementlarni o'chirib bo'lmadi"
+      "bulkDeleteFailed": "Tanlangan elementlarni o'chirib bo'lmadi",
+      "sessionClear": "Sessiyani tozalashda xato. Iltimos, sahifani yangilang."
     },
     "warning": {
       "unsavedChanges": "Saqlanmagan o'zgarishlar mavjud",

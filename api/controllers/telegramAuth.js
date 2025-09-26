@@ -517,17 +517,27 @@ exports.logoutTelegram = async (req, res) => {
     
     await user.save();
     
-    // Clear the token cookie with appropriate options
-    res.clearCookie('token', {
-      path: '/',
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    // Clear all cookies - get all cookie names and clear them
+    const allCookieNames = ['token', 'connect.sid', 'session', 'telegram_auth', 'auth'];
+    allCookieNames.forEach(cookieName => {
+      res.clearCookie(cookieName, {
+        path: '/',
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+      });
+      // Also clear with different path options to be thorough
+      res.clearCookie(cookieName, {
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+      });
     });
     
     return res.json({
       ok: true,
-      message: 'Successfully logged out from Telegram'
+      message: 'Successfully logged out from Telegram',
+      clearCookies: true // Signal to frontend to clear cookies as well
     });
   } catch (error) {
     console.error('Telegram logout error:', error);

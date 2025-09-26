@@ -232,7 +232,8 @@
       "invalidFormat": "Invalid format",
       "missingData": "Required data missing",
       "operationFailed": "Operation failed",
-      "bulkDeleteFailed": "Failed to delete selected items"
+      "bulkDeleteFailed": "Failed to delete selected items",
+      "sessionClear": "Error clearing session. Please refresh the page."
     },
     "warning": {
       "unsavedChanges": "You have unsaved changes",

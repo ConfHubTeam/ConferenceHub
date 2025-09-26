@@ -20,7 +20,11 @@ class PhoneVerificationService {
     // Store verification codes in memory with expiration
     // In production, use Redis or similar for distributed systems
     this.verificationCodes = new Map();
-    this.codeExpirationTime = 5 * 60 * 1000; // 5 minutes in milliseconds
+    this.codeExpirationTime = 1 * 60 * 1000; // 1 minute in milliseconds (changed from 5 minutes)
+    
+    // Track SMS send attempts per phone number to prevent abuse
+    this.smsSendAttempts = new Map(); // { phoneNumber: { lastSentAt: Date, count: number } }
+    this.smsCooldownTime = 1 * 60 * 1000; // 1 minute cooldown between SMS sends
   }
 
   /**
@@ -52,6 +56,16 @@ class PhoneVerificationService {
         throw new Error(translate('errors.invalidPhoneFormat', { lng: language, ns: 'auth' }));
       }
 
+      // Check SMS rate limiting
+      const rateLimitCheck = this.checkSMSRateLimit(phoneNumber);
+      if (!rateLimitCheck.allowed) {
+        throw new Error(translate('errors.smsTooFrequent', { 
+          lng: language, 
+          ns: 'auth',
+          remainingTime: Math.ceil(rateLimitCheck.remainingTime / 1000)
+        }) || `Please wait ${Math.ceil(rateLimitCheck.remainingTime / 1000)} seconds before requesting a new code.`);
+      }
+
       // Generate verification code and session ID
       const verificationCode = this.generateVerificationCode();
       const sessionId = this.generateSessionId();
@@ -73,6 +87,9 @@ class PhoneVerificationService {
       const smsResult = await eskizSMSService.sendSMS(phoneNumber, smsMessage);
 
       if (smsResult.success) {
+        // Record successful SMS send for rate limiting
+        this.recordSMSSend(phoneNumber);
+        
         console.log(`✅ VERIFICATION CODE SENT - Session: ${sessionId}, RequestID: ${smsResult.requestId}`);
         return {
           success: true,
@@ -159,24 +176,73 @@ class PhoneVerificationService {
   }
 
   /**
-   * Clean up expired verification codes (should be called periodically)
+   * Check if SMS can be sent to a phone number (rate limiting)
+   * @param {string} phoneNumber - Phone number to check
+   * @returns {object} Rate limit check result
+   */
+  checkSMSRateLimit(phoneNumber) {
+    const attempts = this.smsSendAttempts.get(phoneNumber);
+    
+    if (!attempts) {
+      return { allowed: true, remainingTime: 0 };
+    }
+    
+    const timeSinceLastSend = Date.now() - attempts.lastSentAt.getTime();
+    
+    if (timeSinceLastSend < this.smsCooldownTime) {
+      return {
+        allowed: false,
+        remainingTime: this.smsCooldownTime - timeSinceLastSend
+      };
+    }
+    
+    return { allowed: true, remainingTime: 0 };
+  }
+
+  /**
+   * Record SMS send attempt for rate limiting
+   * @param {string} phoneNumber - Phone number that received SMS
+   */
+  recordSMSSend(phoneNumber) {
+    const now = new Date();
+    const existing = this.smsSendAttempts.get(phoneNumber);
+    
+    this.smsSendAttempts.set(phoneNumber, {
+      lastSentAt: now,
+      count: existing ? existing.count + 1 : 1
+    });
+  }
+
+  /**
+   * Clean up expired verification codes and SMS attempts (should be called periodically)
    */
   cleanupExpiredCodes() {
     const now = new Date();
-    let cleanedCount = 0;
+    let cleanedCodesCount = 0;
+    let cleanedSMSCount = 0;
 
+    // Clean up expired verification codes
     for (const [sessionId, data] of this.verificationCodes.entries()) {
       if (now > data.expiresAt) {
         this.verificationCodes.delete(sessionId);
-        cleanedCount++;
+        cleanedCodesCount++;
       }
     }
 
-    if (cleanedCount > 0) {
-      console.log(`🧹 CLEANUP - Removed ${cleanedCount} expired verification codes`);
+    // Clean up old SMS send attempts (older than 1 hour)
+    for (const [phoneNumber, attempts] of this.smsSendAttempts.entries()) {
+      const timeSinceLastSend = now.getTime() - attempts.lastSentAt.getTime();
+      if (timeSinceLastSend > 60 * 60 * 1000) { // 1 hour
+        this.smsSendAttempts.delete(phoneNumber);
+        cleanedSMSCount++;
+      }
     }
 
-    return cleanedCount;
+    if (cleanedCodesCount > 0 || cleanedSMSCount > 0) {
+      console.log(`🧹 CLEANUP - Removed ${cleanedCodesCount} expired verification codes and ${cleanedSMSCount} old SMS attempts`);
+    }
+
+    return { codes: cleanedCodesCount, sms: cleanedSMSCount };
   }
 
   /**
