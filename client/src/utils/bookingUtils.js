@@ -49,7 +49,7 @@ export const canPerformBookingAction = (user, booking, action, competingBookings
   // Define which statuses allow which actions
   const allowedStatusesForAction = {
     "approve": ["pending", "selected"], // Can approve pending or selected bookings
-    "reject": ["pending", "selected"],  // Can reject pending or selected bookings
+    "reject": ["pending", "selected", "approved"],  // Can reject pending, selected, or approved bookings (agents can reject approved)
     "select": ["pending"],              // Can only select pending bookings
     "cancel": ["pending", "selected"],  // Clients can cancel pending or selected bookings
     "view": ["pending", "selected", "approved", "rejected", "cancelled"], // Can view any status
@@ -69,6 +69,11 @@ export const canPerformBookingAction = (user, booking, action, competingBookings
       );
       
       if (!hasAuthorization) return false;
+      
+      // Special case: only agents can reject approved bookings
+      if (action === "reject" && status === "approved" && userType !== "agent") {
+        return false;
+      }
       
       // For approve action, check competing bookings
       if (action === "approve" && status === "pending") {
