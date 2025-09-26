@@ -29,7 +29,7 @@
     },
     "name": "Property Name",
     "namePlaceholder": "Enter property name",
-    "description": "Description",
+    "description": "Description and rules",
     "descriptionPlaceholder": "Describe your conference room's features, ambiance, available resources, etc.",
     "address": "Address of your place",
     "addressPlaceholder": "Address of your place",
