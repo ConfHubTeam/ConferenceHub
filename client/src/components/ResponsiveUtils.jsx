@@ -171,6 +171,13 @@ export const MobileNavigation = ({ isOpen, onToggle, onClose, user = null }) => 
                       {t("header.navigation.browseSpaces", "Browse Spaces")}
                     </a>
                     <a 
+                      href="/about" 
+                      className="hover:text-brand-orange transition-colors py-2" 
+                      onClick={onClose}
+                    >
+                      {t("header.aboutUs", "About Us")}
+                    </a>
+                    <a 
                       href="/account" 
                       className="hover:text-brand-orange transition-colors py-2" 
                       onClick={onClose}
@@ -197,6 +204,13 @@ export const MobileNavigation = ({ isOpen, onToggle, onClose, user = null }) => 
                       onClick={onClose}
                     >
                       {t("header.navigation.browseSpaces", "Browse Spaces")}
+                    </a>
+                    <a 
+                      href="/about" 
+                      className="hover:text-brand-orange transition-colors py-2" 
+                      onClick={onClose}
+                    >
+                      {t("header.aboutUs", "About Us")}
                     </a>
                     <a 
                       href="/login" 

@@ -23,7 +23,8 @@
       "language": "Язык",
       "toggleMenu": "Переключить меню",
       "closeMenu": "Закрыть меню"
-    }
+    },
+    "aboutUs": "О нас"
   },
   "accountNav": {
     "profile": "Профиль",

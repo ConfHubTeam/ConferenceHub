@@ -23,7 +23,8 @@
       "language": "Language",
       "toggleMenu": "Toggle menu",
       "closeMenu": "Close menu"
-    }
+    },
+    "aboutUs": "About Us"
   },
   "accountNav": {
     "profile": "Profile",
