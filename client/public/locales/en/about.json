@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "About Us",
+    "subtitle": "GetSpace is a modern platform for renting spaces for every occasion.",
+    "bodyBlocks": [
+      "We have gathered the best venues in the city: from stylish conference halls and cozy offices to photo studios, podcast and interview studios, as well as unique locations for creative and business events. Want to hold a business meeting, organize a training, record a podcast, or have a photo shoot? You can find it all with us.",
+      "Convenient search filters, real photos, and up-to-date prices make the selection and booking process fast and transparent. You compare venues online and book in a few clicks — easily, safely, and without unnecessary calls.",
+      "The mission of GetSpace is to give people the freedom to find the perfect space for any moment in life: work, creativity, or celebration."
+    ],
+    "features": [
+      {
+        "title": "Premium locations",
+        "description": "Handpicked venues in top cities for your events."
+      },
+      {
+        "title": "Easy online booking",
+        "description": "Book, manage, and pay for spaces in minutes."
+      },
+      {
+        "title": "Customizable amenities",
+        "description": "Tailor your space with tech, catering, and more."
+      }
+    ],
+    "copyright": "© {{year}} GetSpace. All rights reserved."
+  },
+  "navigation": {
+    "back": "Back"
+  }
+}
