@@ -28,7 +28,7 @@ export default function HostBookingManagementPage() {
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(12);
   
   // Summary stats
   const [stats, setStats] = useState({
@@ -91,11 +91,24 @@ export default function HostBookingManagementPage() {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(booking => {
+        // Phone number search - check both guest phone and user phone
+        const phoneMatch = booking.guestPhone && (
+          booking.guestPhone.toLowerCase().includes(term) ||
+          booking.guestPhone.replace(/[^\d]/g, '').includes(term.replace(/[^\d]/g, ''))
+        );
+        
+        const userPhoneMatch = booking.user?.phoneNumber && (
+          booking.user.phoneNumber.toLowerCase().includes(term) ||
+          booking.user.phoneNumber.replace(/[^\d]/g, '').includes(term.replace(/[^\d]/g, ''))
+        );
+        
         return (
           booking.place?.title?.toLowerCase().includes(term) ||
           booking.place?.address?.toLowerCase().includes(term) ||
           booking.uniqueRequestId?.toLowerCase().includes(term) ||
-          `req-${booking.id}`.toLowerCase().includes(term)
+          `req-${booking.id}`.toLowerCase().includes(term) ||
+          phoneMatch ||
+          userPhoneMatch
         );
       });
     }

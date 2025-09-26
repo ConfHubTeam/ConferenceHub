@@ -757,7 +757,7 @@ class BookingService {
             {
               model: User,
               as: 'owner',
-              attributes: ['id', 'name', 'email']
+              attributes: ['id', 'name', 'email', 'phoneNumber']
             },
             {
               model: Currency,
@@ -770,7 +770,7 @@ class BookingService {
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'name', 'email']
+          attributes: ['id', 'name', 'email', 'phoneNumber']
         }
       ],
       order: [['createdAt', 'DESC']]
@@ -808,7 +808,7 @@ class BookingService {
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'name', 'email']
+          attributes: ['id', 'name', 'email', 'phoneNumber']
         }
       ],
       where: whereClause, // Apply status/paid filters here

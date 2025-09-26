@@ -111,7 +111,7 @@ class BookingValidationService {
    */
   static validatePagination(page, limit) {
     const pageNum = parseInt(page) || 1;
-    const limitNum = parseInt(limit) || 10;
+    const limitNum = parseInt(limit) || 12;
     
     if (pageNum < 1) {
       const error = new Error("Page must be greater than 0");
