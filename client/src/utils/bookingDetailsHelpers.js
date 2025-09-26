@@ -291,6 +291,19 @@ export const getPageHeaderProps = (booking) => ({
 export const getModalConfiguration = (modalConfig, isUpdating) => {
   const t = i18n.getFixedT(null, 'booking');
   
+  // Handle delete from database action specifically
+  if (modalConfig.action === 'delete_from_database') {
+    return {
+      title: modalConfig.title,
+      message: modalConfig.message,
+      confirmText: t('details.actions.buttons.deleteFromDatabase'),
+      cancelText: t('common.buttons.cancel'),
+      confirmButtonClass: "bg-red-600 hover:bg-red-700", // Strong red for dangerous action
+      isLoading: isUpdating,
+      showPaymentOptions: false
+    };
+  }
+  
   return {
     title: modalConfig.title,
     message: modalConfig.requiresPaymentCheck && modalConfig.paymentMessage ? 

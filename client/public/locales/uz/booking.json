@@ -98,7 +98,11 @@
       "loginRequired": "Anjuman xonasini bron qilish uchun tizimga kiring",
       "cannotBookOwn": "Siz o'zingizning anjuman xonangizni bron qila olmaysiz",
       "clientsOnly": "Faqat mijozlar anjuman xonalarini bron qilishlari mumkin. Joy egralari va agentlar bron qila olmaydi.",
-      "reservationFailed": "Bron qilishda xatolik yuz berdi. Iltimos, qaytadan urining."
+      "reservationFailed": "Bron qilishda xatolik yuz berdi. Iltimos, qaytadan urining.",
+      "accessDenied": "Kirish rad etildi. Sizda bu amalni bajarish uchun ruxsat yo'q.",
+      "cleanupFailed": "Muddati o'tgan bron qilishlarni o'chirishda xatolik yuz berdi. Iltimos, qaytadan urining.",
+      "deleteFailed": "Bron qilishni ma'lumotlar bazasidan o'chirishda xatolik yuz berdi. Iltimos, qaytadan urining.",
+      "deleteSuccess": "Bron qilish ma'lumotlar bazasidan butunlay o'chirildi."
     }
   },
   "notifications": {
@@ -447,7 +451,8 @@
         "cancel": "Bekor qilish",
         "markPaid": "Joy egasiga to'langan deb belgilash",
         "select": "Tanlash",
-        "selectBooking": "Bron qilishni tanlash"
+        "selectBooking": "Bron qilishni tanlash",
+        "deleteFromDatabase": "Ma'lumotlar bazasidan o'chirish"
       },
       "confirmations": {
         "approve": "Ushbu bron qilishni tasdiqlashni xohlaysizmi?",
@@ -456,7 +461,8 @@
         "markPaid": "Joy egasiga to'lovni yakunlangan deb belgilashni xohlaysizmi?",
         "paymentConfirmed": "To'lov tasdiqlandi - Tasdiqlash",
         "approveWithoutPayment": "To'lov tasdiqlanmasdan tasdiqlash",
-        "select": "Ushbu bron qilishni tanlamoqchimisiz?"
+        "select": "Ushbu bron qilishni tanlamoqchimisiz?",
+        "deleteFromDatabase": "Ushbu bron qilishni ma'lumotlar bazasidan butunlay o'chirishni xohlaysizmi? Bu amalni bekor qilish mumkin emas."
       }
     },
     "paymentResponse": {

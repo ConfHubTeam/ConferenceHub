@@ -549,7 +549,6 @@ const checkPaymentStatusSmart = async (req, res) => {
   const paymeTransaction = await TransactionService.getPaymeTransactionByBooking(id);
     
     if (paymeTransaction) {
-      console.log(`🔍 Found Payme transaction for booking ${id}, state: ${paymeTransaction.state}`);
       
       switch (paymeTransaction.state) {
         case 2: // Paid
@@ -852,12 +851,8 @@ const manualCleanupExpiredBookings = async (req, res) => {
       });
     }
 
-    console.log(`🧹 Agent ${userData.name} (${userData.email}) initiated manual cleanup of expired bookings`);
-
     // Perform the cleanup
     const deletedCount = await cleanupExpiredBookings();
-
-    console.log(`✅ Manual cleanup completed: ${deletedCount} expired bookings deleted`);
 
     res.json({
       success: true,
@@ -1079,6 +1074,91 @@ const selectCashPayment = async (req, res) => {
   }
 };
 
+/**
+ * Delete booking from database (Admin/Agent only)
+ * Permanently removes booking record - use with caution
+ */
+const deleteBookingFromDatabase = async (req, res) => {
+  try {
+    const userData = await getUserDataFromToken(req);
+    const { id } = req.params;
+
+    // Only agents can delete bookings from database
+    if (userData.userType !== 'agent') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only agents can delete bookings from database.'
+      });
+    }
+
+    // Get the booking first to verify it exists
+    const booking = await Booking.findByPk(id, {
+      include: [
+        {
+          model: Place,
+          as: "place",
+          attributes: ["id", "title", "ownerId"]
+        },
+        {
+          model: User,
+          as: "user",
+          attributes: ["id", "name", "email", "phoneNumber"]
+        }
+      ]
+    });
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: 'Booking not found'
+      });
+    }
+
+    // Store booking info for logging before deletion
+    const bookingInfo = {
+      id: booking.id,
+      uniqueRequestId: booking.uniqueRequestId,
+      status: booking.status,
+      guestName: booking.guestName,
+      guestPhone: booking.guestPhone,
+      userEmail: booking.user?.email,
+      placeName: booking.place?.title,
+      totalPrice: booking.totalPrice,
+      timeSlots: booking.timeSlots,
+      createdAt: booking.createdAt
+    };
+
+    // Delete the booking permanently
+    await booking.destroy();
+
+    res.json({
+      success: true,
+      message: 'Booking has been permanently deleted from database',
+      deletedBooking: {
+        id: bookingInfo.id,
+        uniqueRequestId: bookingInfo.uniqueRequestId,
+        status: bookingInfo.status,
+        guestName: bookingInfo.guestName,
+        placeName: bookingInfo.placeName
+      },
+      deletedBy: {
+        agentId: userData.id,
+        agentName: userData.name,
+        agentEmail: userData.email
+      },
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('❌ Error deleting booking from database:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete booking from database',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   createBooking,
   getBookings,
@@ -1092,6 +1172,7 @@ module.exports = {
   checkPaymentStatus,
   checkPaymentStatusSmart,
   selectCashPayment,
+  deleteBookingFromDatabase,
   manualCleanupExpiredBookings,
   // US-LOCK-004 Optimized endpoints
   getBookingLockMonitoringReport,
