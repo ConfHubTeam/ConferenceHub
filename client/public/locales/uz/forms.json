@@ -122,5 +122,20 @@
     "selfEmployed": "Yakka tartibdagi tadbirkor",
     "unemployed": "Ishsiz",
     "retired": "Pensioner"
+  },
+  "restrictedCategories": {
+    "title": "Qaysi yo'nalishlar bilan ishlamaymiz",
+    "subtitle": "Biz biznes, taʼlim va madaniy tadbirlarga ixtisoslashganmiz. Professional formatni saqlash uchun quyidagi yo'nalishlar bo'yicha tadbirlar uchun zallar taqdim etilmaydi:",
+    "categories": [
+      "Kriptovalyuta, forex va treyding",
+      "Tarmoq marketingi (MLM)",
+      "Diniy tashkilotlar va missionerlik faoliyati",
+      "Garovlar, kazino va boshqa qimor o'yinlari",
+      "18+ mavzular va intim soha",
+      "Alkogol, tamaki yoki shunga o'xshash mahsulotlarni targ'ib qilish",
+      "Qurol, zo'ravonlik yoki kamsitish",
+      "Diskotekalar, tungi kechalar va club-party formatlari",
+      "Noqonuniy va shubhali faoliyat"
+    ]
   }
 }

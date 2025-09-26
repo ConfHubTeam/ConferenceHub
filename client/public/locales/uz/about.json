@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Biz haqimizda",
+    "subtitle": "GetSpace — har qanday tadbir uchun zamonaviy joylarni ijaraga olish platformasi.",
+    "bodyBlocks": [
+      "Biz shahardagi eng yaxshi joylarni to'pladik: zamonaviy konferensiya zallari va qulay ofislardan tortib, fotosessiya, podkast va intervyu studiyalari hamda ijodiy va biznes tadbirlar uchun noyob lokatsiyalargacha. Biznes uchrashuv o'tkazmoqchimisiz, trening tashkil qilmoqchimisiz, podkast yozmoqchimisiz yoki fotosessiya qilmoqchimisiz? Bularning barchasini bizda topasiz.",
+      "Qulay qidiruv filtrlari, haqiqiy suratlar va dolzarb narxlar tanlash va bron qilish jarayonini tez va shaffof qiladi. Siz joylarni onlayn taqqoslaysiz va bir necha bosishda bron qilasiz — oson, xavfsiz va ortiqcha qo'ng'iroqlarsiz.",
+      "GetSpace missiyasi — har qanday hayot lahzasi uchun: ish, ijod yoki bayram uchun mukammal joyni topishda odamlar uchun erkinlik yaratish."
+    ],
+    "features": [
+      {
+        "title": "Premium joylar",
+        "description": "Tadbirlaringiz uchun eng yaxshi joylar."
+      },
+      {
+        "title": "Oson onlayn bronlash",
+        "description": "Joylarni bir necha daqiqada bron qiling, boshqaring va to'lang."
+      },
+      {
+        "title": "Moslashtiriladigan qulayliklar",
+        "description": "Joyingizni texnika, taom va boshqa xizmatlar bilan to'ldiring."
+      }
+    ],
+    "copyright": "© {{year}} GetSpace. Barcha huquqlar himoyalangan."
+  },
+  "navigation": {
+    "back": "Orqaga"
+  }
+}
