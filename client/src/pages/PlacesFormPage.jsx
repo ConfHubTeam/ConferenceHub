@@ -16,63 +16,33 @@ import RefundOptions from "../components/RefundOptions";
 import { useTranslation } from "react-i18next";
 
 // Modern warning card that updates on language switch
-function LanguageWarningCard({ i18n }) {
-  const [lang, setLang] = useState(i18n.language);
+function LanguageWarningCard() {
+  const { t } = useTranslation("forms");
 
-  useEffect(() => {
-    const handleLangChange = (lng) => setLang(lng);
-    i18n.on("languageChanged", handleLangChange);
-    return () => i18n.off("languageChanged", handleLangChange);
-  }, [i18n]);
-
-  let title = "Which categories are not allowed";
-  let subtitle = "We specialize in business, educational, and cultural events. To maintain a professional format, we do not provide venues for events related to:";
-  let body = (
+  const title = t("restrictedCategories.title", "Restricted Categories");
+  const subtitle = t("restrictedCategories.subtitle", "We specialize in business, educational and cultural events. To maintain professional format, we do not provide halls for events related to:");
+  const categories = t("restrictedCategories.categories", { returnObjects: true });
+  
+  // Ensure categories is an array, provide fallback if translation is missing
+  const categoriesList = Array.isArray(categories) ? categories : [
+    "Cryptocurrency, forex and trading",
+    "Network marketing (MLM)",
+    "Religious organizations and missionary activities",
+    "Betting, casinos and other gambling",
+    "18+ topics and intimate sphere",
+    "Promotion of alcohol, tobacco or similar products",
+    "Weapons, violence or discrimination",
+    "Discos, night parties and club-party formats",
+    "Illegal and suspicious activities"
+  ];
+  
+  const body = (
     <ul className="list-disc pl-5 space-y-1 text-yellow-900">
-      <li>Cryptocurrency, forex, and trading</li>
-      <li>Network marketing (MLM)</li>
-      <li>Religious organizations and missionary activities</li>
-      <li>Betting, casinos, and other gambling</li>
-      <li>18+ topics and intimate sphere</li>
-      <li>Promotion of alcohol, tobacco, or similar products</li>
-      <li>Weapons, violence, or discrimination</li>
-      <li>Discos, night parties, and club-party formats</li>
-      <li>Illegal and suspicious activities</li>
+      {categoriesList.map((category, index) => (
+        <li key={index}>{category}</li>
+      ))}
     </ul>
   );
-  if (lang.startsWith("ru")) {
-    title = "С какими направлениями мы не работаем";
-    subtitle = "Мы специализируемся на деловых, образовательных и культурных мероприятиях. Для сохранения профессионального формата мы не предоставляем залы для мероприятий, связанных с:";
-    body = (
-      <ul className="list-disc pl-5 space-y-1 text-yellow-900">
-        <li>Криптовалюта, форекс и трейдинг</li>
-        <li>Сетевой маркетинг (MLM)</li>
-        <li>Религиозные организации и миссионерская деятельность</li>
-        <li>Ставки, казино и другие азартные игры</li>
-        <li>Тематика 18+ и интимная сфера</li>
-        <li>Продвижение алкоголя, табака или схожих продуктов</li>
-        <li>Оружие, насилие или дискриминация</li>
-        <li>Дискотеки, ночные вечеринки и форматы club-party</li>
-        <li>Незаконная и сомнительная деятельность</li>
-      </ul>
-    );
-  } else if (lang.startsWith("uz")) {
-    title = "Qaysi yo‘nalishlar bilan ishlamaymiz";
-    subtitle = "Biz biznes, taʼlim va madaniy tadbirlarga ixtisoslashganmiz. Professional formatni saqlash uchun quyidagi yo‘nalishlar bo‘yicha tadbirlar uchun zallar taqdim etilmaydi:";
-    body = (
-      <ul className="list-disc pl-5 space-y-1 text-yellow-900">
-        <li>Kriptovalyuta, forex va treyding</li>
-        <li>Tarmoq marketingi (MLM)</li>
-        <li>Diniy tashkilotlar va missionerlik faoliyati</li>
-        <li>Garovlar, kazino va boshqa qimor o‘yinlari</li>
-        <li>18+ mavzular va intim soha</li>
-        <li>Alkogol, tamaki yoki shunga o‘xshash mahsulotlarni targ‘ib qilish</li>
-        <li>Qurol, zo‘ravonlik yoki kamsitish</li>
-        <li>Diskotekalar, tungi kechalar va club-party formatlari</li>
-        <li>Noqonuniy va shubhali faoliyat</li>
-      </ul>
-    );
-  }
 
   return (
     <div className="relative overflow-hidden rounded-xl border border-yellow-300 bg-gradient-to-br from-yellow-50 to-yellow-100 shadow-lg p-6 mb-6 mt-2">
@@ -818,7 +788,7 @@ export default function PlacesFormPage() {
       </div>
 
       {/* Warning: Not Allowed Categories Section */}
-      <LanguageWarningCard i18n={i18n} />
+      <LanguageWarningCard />
 
           {/* Media Section */}
           <div className="card-base mb-6">

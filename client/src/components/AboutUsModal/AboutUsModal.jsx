@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 
 // SVG logo styled similar to uic.group/about
 const GetSpaceLogo = () => (
@@ -10,6 +11,8 @@ const GetSpaceLogo = () => (
 );
 
 const AboutUsModal = ({ isOpen, onClose }) => {
+  const { t } = useTranslation("about");
+  
   if (!isOpen) return null;
 
   return (
@@ -23,23 +26,20 @@ const AboutUsModal = ({ isOpen, onClose }) => {
           <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
         <GetSpaceLogo />
-  <h2 className="mt-6 text-2xl font-bold text-white text-center">About GetSpace</h2>
-  <p className="mt-4 text-gray-200 text-center text-base leading-relaxed">
-          GetSpace is dedicated to providing flexible, modern conference and event spaces for teams and organizations of all sizes. Our platform makes booking, managing, and customizing your space seamless and efficient.
+        <h2 className="mt-6 text-2xl font-bold text-white text-center">{t("page.title")}</h2>
+        <p className="mt-4 text-gray-200 text-center text-base leading-relaxed">
+          {t("page.subtitle")}
         </p>
         <div className="mt-6 w-full flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-blue-600" />
-            <span className="text-sm text-gray-200">Premium locations</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
-            <span className="text-sm text-gray-200">Easy online booking</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-yellow-500" />
-            <span className="text-sm text-gray-200">Customizable amenities</span>
-          </div>
+          {t("page.features", { returnObjects: true }).map((feature, index) => {
+            const colors = ["bg-blue-600", "bg-green-500", "bg-yellow-500"];
+            return (
+              <div key={index} className="flex items-center gap-2">
+                <span className={`inline-block w-2 h-2 rounded-full ${colors[index]}`} />
+                <span className="text-sm text-gray-200">{feature.title}</span>
+              </div>
+            );
+          })}
         </div>
         <div className="mt-8 w-full flex flex-col items-center gap-4">
           <a
@@ -49,7 +49,7 @@ const AboutUsModal = ({ isOpen, onClose }) => {
             Learn more
           </a>
           <div className="text-xs text-gray-400 text-center">
-            &copy; {new Date().getFullYear()} GetSpace. All rights reserved.
+            {t("page.copyright", { year: new Date().getFullYear() })}
           </div>
         </div>
       </div>

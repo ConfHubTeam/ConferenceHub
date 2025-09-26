@@ -122,5 +122,20 @@
     "selfEmployed": "Self-employed",
     "unemployed": "Unemployed",
     "retired": "Retired"
+  },
+  "restrictedCategories": {
+    "title": "Which categories are not allowed",
+    "subtitle": "We specialize in business, educational, and cultural events. To maintain a professional format, we do not provide venues for events related to:",
+    "categories": [
+      "Cryptocurrency, forex, and trading",
+      "Network marketing (MLM)",
+      "Religious organizations and missionary activities",
+      "Betting, casinos, and other gambling",
+      "18+ topics and intimate sphere",
+      "Promotion of alcohol, tobacco, or similar products",
+      "Weapons, violence, or discrimination",
+      "Discos, night parties, and club-party formats",
+      "Illegal and suspicious activities"
+    ]
   }
 }
