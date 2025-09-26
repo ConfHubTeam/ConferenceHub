@@ -16,7 +16,10 @@ export function clearAuthCookies() {
   // Critical authentication cookies that must be cleared
   const criticalCookies = [
     'token', 'connect.sid', 'session', 'telegram_auth', 'auth', 
-    'jwt', 'refreshToken', 'accessToken', 'PHPSESSID', 'JSESSIONID'
+    'jwt', 'refreshToken', 'accessToken', 'PHPSESSID', 'JSESSIONID',
+    // Telegram OAuth specific cookies
+    'stel_ssid', 'stel_token', 'stel_acid', 'telegram_oauth', 'tg_auth', 'tg_session',
+    'oauth_token', 'oauth_verifier', 'csrf_token', 'state_token'
   ];
   
   // Comprehensive cookie clearing function
@@ -32,9 +35,17 @@ export function clearAuthCookies() {
       document.cookie = `${cookieName}=; expires=${expireDate}; path=/; domain=.${currentHostname};`;
     }
     
-    // Clear for getspace.uz domain specifically
+    // Clear for getspace.uz domain specifically (all variations)
     document.cookie = `${cookieName}=; expires=${expireDate}; path=/; domain=getspace.uz;`;
     document.cookie = `${cookieName}=; expires=${expireDate}; path=/; domain=.getspace.uz;`;
+    document.cookie = `${cookieName}=; expires=${expireDate}; path=/; domain=www.getspace.uz;`;
+    document.cookie = `${cookieName}=; expires=${expireDate}; path=/; domain=.www.getspace.uz;`;
+    
+    // Clear for Telegram OAuth domain (oauth.telegram.org)
+    document.cookie = `${cookieName}=; expires=${expireDate}; path=/; domain=oauth.telegram.org;`;
+    document.cookie = `${cookieName}=; expires=${expireDate}; path=/; domain=.oauth.telegram.org;`;
+    document.cookie = `${cookieName}=; expires=${expireDate}; path=/; domain=telegram.org;`;
+    document.cookie = `${cookieName}=; expires=${expireDate}; path=/; domain=.telegram.org;`;
     
     // Clear with secure flag (for HTTPS cookies)
     document.cookie = `${cookieName}=; expires=${expireDate}; path=/; secure;`;
@@ -42,6 +53,13 @@ export function clearAuthCookies() {
     document.cookie = `${cookieName}=; expires=${expireDate}; path=/; domain=.${currentHostname}; secure;`;
     document.cookie = `${cookieName}=; expires=${expireDate}; path=/; domain=getspace.uz; secure;`;
     document.cookie = `${cookieName}=; expires=${expireDate}; path=/; domain=.getspace.uz; secure;`;
+    document.cookie = `${cookieName}=; expires=${expireDate}; path=/; domain=www.getspace.uz; secure;`;
+    document.cookie = `${cookieName}=; expires=${expireDate}; path=/; domain=.www.getspace.uz; secure;`;
+    // Telegram OAuth with secure flag
+    document.cookie = `${cookieName}=; expires=${expireDate}; path=/; domain=oauth.telegram.org; secure;`;
+    document.cookie = `${cookieName}=; expires=${expireDate}; path=/; domain=.oauth.telegram.org; secure;`;
+    document.cookie = `${cookieName}=; expires=${expireDate}; path=/; domain=telegram.org; secure;`;
+    document.cookie = `${cookieName}=; expires=${expireDate}; path=/; domain=.telegram.org; secure;`;
     
     // Clear with SameSite attributes (modern browsers)
     document.cookie = `${cookieName}=; expires=${expireDate}; path=/; SameSite=Strict;`;
@@ -49,13 +67,20 @@ export function clearAuthCookies() {
     document.cookie = `${cookieName}=; expires=${expireDate}; path=/; SameSite=None; secure;`;
     
     // Clear with various path combinations
-    const paths = ['/', '/auth', '/api', '/telegram-auth'];
+    const paths = ['/', '/auth', '/api', '/telegram-auth', '/oauth', '/login'];
     paths.forEach(path => {
       document.cookie = `${cookieName}=; expires=${expireDate}; path=${path};`;
       document.cookie = `${cookieName}=; expires=${expireDate}; path=${path}; domain=${currentHostname};`;
       document.cookie = `${cookieName}=; expires=${expireDate}; path=${path}; domain=.${currentHostname};`;
       document.cookie = `${cookieName}=; expires=${expireDate}; path=${path}; domain=getspace.uz;`;
       document.cookie = `${cookieName}=; expires=${expireDate}; path=${path}; domain=.getspace.uz;`;
+      document.cookie = `${cookieName}=; expires=${expireDate}; path=${path}; domain=www.getspace.uz;`;
+      document.cookie = `${cookieName}=; expires=${expireDate}; path=${path}; domain=.www.getspace.uz;`;
+      // Telegram OAuth domain paths
+      document.cookie = `${cookieName}=; expires=${expireDate}; path=${path}; domain=oauth.telegram.org;`;
+      document.cookie = `${cookieName}=; expires=${expireDate}; path=${path}; domain=.oauth.telegram.org;`;
+      document.cookie = `${cookieName}=; expires=${expireDate}; path=${path}; domain=telegram.org;`;
+      document.cookie = `${cookieName}=; expires=${expireDate}; path=${path}; domain=.telegram.org;`;
     });
   };
   
@@ -71,6 +96,18 @@ export function clearAuthCookies() {
     const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
     if (name && name.length > 0) {
       clearCookieCompletely(name);
+      
+      // Additional manual clearing for specific domain combinations including Telegram OAuth
+      const expireDate = 'Thu, 01 Jan 1970 00:00:00 UTC';
+      document.cookie = `${name}=; expires=${expireDate}; path=/; domain=getspace.uz;`;
+      document.cookie = `${name}=; expires=${expireDate}; path=/; domain=.getspace.uz;`;
+      document.cookie = `${name}=; expires=${expireDate}; path=/; domain=www.getspace.uz;`;
+      document.cookie = `${name}=; expires=${expireDate}; path=/; domain=.www.getspace.uz;`;
+      // Telegram OAuth domains
+      document.cookie = `${name}=; expires=${expireDate}; path=/; domain=oauth.telegram.org;`;
+      document.cookie = `${name}=; expires=${expireDate}; path=/; domain=.oauth.telegram.org;`;
+      document.cookie = `${name}=; expires=${expireDate}; path=/; domain=telegram.org;`;
+      document.cookie = `${name}=; expires=${expireDate}; path=/; domain=.telegram.org;`;
     }
   });
   
@@ -225,4 +262,96 @@ export function performAuthCleanup() {
   clearAuthCookies();
   clearAuthLocalStorage();
   console.log('🚪 Logout cleanup completed');
+}
+
+/**
+ * Advanced Telegram OAuth cleanup
+ * Note: Due to browser security, we cannot directly clear cookies from oauth.telegram.org
+ * This function provides instructions and alternative cleanup methods
+ */
+export function clearTelegramOAuthCookies() {
+  console.log('🔄 Starting Telegram OAuth cleanup...');
+  
+  // Try to clear any Telegram-related cookies in current domain
+  const telegramCookies = [
+    'stel_ssid', 'stel_token', 'telegram_oauth', 'tg_auth', 'tg_session',
+    'oauth_token', 'oauth_verifier', 'csrf_token', 'state_token',
+    'telegram_auth_token', 'tg_oauth_state', 'telegram_user_id'
+  ];
+  
+  telegramCookies.forEach(cookieName => {
+    const expireDate = 'Thu, 01 Jan 1970 00:00:00 UTC';
+    
+    // Clear in current domain
+    document.cookie = `${cookieName}=; expires=${expireDate}; path=/;`;
+    document.cookie = `${cookieName}=; expires=${expireDate}; path=/; secure;`;
+    document.cookie = `${cookieName}=; expires=${expireDate}; path=/; SameSite=None; secure;`;
+    
+    console.log(`🗑️ Attempted to clear Telegram cookie: ${cookieName}`);
+  });
+  
+  // Instructions for manual cleanup (since we can't clear cross-domain cookies via JS)
+  console.log('⚠️ Manual Telegram OAuth cleanup required:');
+  console.log('1. Go to Chrome Settings → Privacy and Security → Cookies and other site data');
+  console.log('2. Click "See all cookies and site data"');
+  console.log('3. Search for "telegram.org" and "oauth.telegram.org"');
+  console.log('4. Delete all cookies from these domains');
+  console.log('OR use the browser clear data functionality');
+  
+  return {
+    success: true,
+    message: 'Local Telegram cookies cleared. Manual cleanup may be needed for oauth.telegram.org',
+    instructions: [
+      'Open browser settings',
+      'Navigate to Privacy/Cookies section', 
+      'Search for telegram.org domains',
+      'Delete all related cookies'
+    ]
+  };
+}
+
+/**
+ * Comprehensive cleanup that includes browser-specific methods for Telegram OAuth
+ */
+export function performTelegramLogout() {
+  console.log('📱 Starting comprehensive Telegram logout...');
+  
+  // Standard cleanup
+  clearAuthCookies();
+  clearAuthLocalStorage();
+  
+  // Telegram-specific cleanup
+  clearTelegramOAuthCookies();
+  
+  // Try to use browser APIs if available (Chrome extension context)
+  if (typeof chrome !== 'undefined' && chrome.cookies) {
+    console.log('🌐 Chrome extension API detected - attempting advanced cookie clearing');
+    try {
+      // Clear cookies from Telegram domains
+      const telegramDomains = ['oauth.telegram.org', '.oauth.telegram.org', 'telegram.org', '.telegram.org'];
+      
+      telegramDomains.forEach(domain => {
+        chrome.cookies.getAll({ domain: domain }, (cookies) => {
+          cookies.forEach(cookie => {
+            chrome.cookies.remove({
+              url: `https://${domain}${cookie.path}`,
+              name: cookie.name
+            });
+            console.log(`🗑️ Removed Chrome cookie: ${cookie.name} from ${domain}`);
+          });
+        });
+      });
+    } catch (error) {
+      console.warn('⚠️ Chrome extension API not available:', error);
+    }
+  }
+  
+  // Force page reload to ensure all cached authentication is cleared
+  console.log('🔄 Telegram logout completed - page reload recommended');
+  
+  return {
+    success: true,
+    requiresReload: true,
+    message: 'Telegram logout completed. Page reload recommended for complete cleanup.'
+  };
 }
