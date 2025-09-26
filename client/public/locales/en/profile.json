@@ -114,23 +114,21 @@
     "accountOptions": "Account Options",
     "changePassword": "Change Password",
     "updatePassword": "Update Password",
-    "updatingPassword": "Updating Password..."
+    "updatingPassword": "Updating Password...",
+    "telegramLogout": "Logout from Telegram",
+    "telegramLogoutTooltip": "Logout from Telegram and switch accounts"
   },
   "messages": {
-    "profileUpdated": "Profile updated successfully",
-    "logoutSuccess": "Successfully logged out",
-    "accountCreated": "Your conference hub account has been created successfully!",
-    "loginSuccess": "Login successful!",
-    "logoutError": "Error logging out. Please try again.",
+    "updateSuccess": "Profile successfully updated",
     "updateError": "Error updating profile",
-    "phoneNumberExists": "A user with this phone number already exists",
-    "invalidPhoneFormat": "Please enter a valid phone number in international format",
-    "deleteSuccess": "Your account has been deleted successfully",
-    "deleteError": "Error deleting account. Please try again.",
-    "passwordUpdated": "Password updated successfully",
-    "passwordUpdateError": "Error updating password. Please try again.",
-    "userUpdated": "User updated successfully",
-    "userUpdateError": "Error updating user. Please try again."
+    "passwordUpdateSuccess": "Password successfully updated",
+    "passwordUpdateError": "Error updating password",
+    "logoutSuccess": "Successfully logged out",
+    "logoutError": "Error logging out",
+    "telegramLogoutSuccess": "Successfully logged out from Telegram. You can now login with a different account.",
+    "telegramLogoutError": "Error logging out from Telegram. Please try again.",
+    "deleteSuccess": "Account successfully deleted",
+    "deleteError": "Error deleting account"
   },
   "deleteConfirmation": {
     "title": "Delete Account",

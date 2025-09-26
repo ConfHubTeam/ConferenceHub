@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { withTranslationLoading } from "../i18n/hoc/withTranslationLoading";
 import { UserContext } from "./UserContext";
 import { useNotification } from "./NotificationContext";
+import { performAuthCleanup } from "../utils/cookieUtils";
 
 function TelegramAuthBase() {
   const { t, ready } = useTranslation(["auth", "common"]);
@@ -113,6 +114,31 @@ function TelegramAuthBase() {
     setRoleSelected(false);
   };
 
+  const handleTelegramLogout = async () => {
+    try {
+      // Use utility function to clear all auth data
+      performAuthCleanup();
+      
+      notify(
+        ready 
+          ? t("auth:telegram.sessionCleared") 
+          : "Telegram session cleared. You can now login with a different account.", 
+        "success"
+      );
+      
+      // Reload the page to clear all cached state and start fresh
+      window.location.reload();
+    } catch (error) {
+      console.error("Error clearing Telegram session:", error);
+      notify(
+        ready 
+          ? t("common:errors.sessionClear", "Error clearing session. Please refresh the page.")
+          : "Error clearing session. Please refresh the page.", 
+        "error"
+      );
+    }
+  };
+
   return (
     <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-xl shadow-md">
       <h1 className="text-2xl font-bold text-center mb-2">
@@ -218,6 +244,19 @@ function TelegramAuthBase() {
             </p>
             
             <div id="telegram-login-widget" className="mt-2 flex justify-center"></div>
+            
+            {/* Telegram Switch Account Button - shown only for already authenticated users */}
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <p className="text-xs text-gray-500 text-center mb-2">
+                {ready ? t("auth:telegram.alreadyAuthenticated") : "Already authenticated with a different Telegram account?"}
+              </p>
+              <button
+                onClick={handleTelegramLogout}
+                className="w-full text-sm py-2 px-4 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                {ready ? t("auth:telegram.switchAccount") : "Switch Telegram Account"}
+              </button>
+            </div>
           </>
         )}
       </div>

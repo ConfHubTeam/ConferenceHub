@@ -177,22 +177,39 @@ const login = async (req, res) => {
  * Logout a user
  */
 const logout = (req, res) => {
-  // Get all cookies and clear them
-  Object.keys(req.cookies).forEach(cookieName => {
+  // List of common cookie names to clear
+  const cookiesToClear = ['token', 'connect.sid', 'session', 'telegram_auth', 'auth'];
+  
+  // Clear all cookies from request
+  Object.keys(req.cookies || {}).forEach(cookieName => {
     res.clearCookie(cookieName, {
       path: '/',
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
     });
+    // Also clear without httpOnly for client-side cookies
+    res.clearCookie(cookieName, {
+      path: '/',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    });
   });
   
-  // Clear the main token cookie
-  res.clearCookie("token", {
-    path: '/',
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+  // Clear specific cookies that might not be in req.cookies
+  cookiesToClear.forEach(cookieName => {
+    res.clearCookie(cookieName, {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    });
+    // Also clear without httpOnly for client-side cookies
+    res.clearCookie(cookieName, {
+      path: '/',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    });
   });
   
   // Clear the session
@@ -204,7 +221,11 @@ const logout = (req, res) => {
     });
   }
   
-  res.json({ success: true, message: req.t("auth:logout.success") });
+  res.json({ 
+    success: true, 
+    message: req.t("auth:logout.success"),
+    clearCookies: true 
+  });
 };
 
 // In-memory storage for phone login sessions

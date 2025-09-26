@@ -32,7 +32,7 @@
       "description": "Бронирование конференц-залов"
     },
     "host": {
-      "label": "Аккаунт хоста", 
+      "label": "Аккаунт хоста",
       "description": "Управление конференц-залами и бронированиями"
     },
     "agent": {
@@ -114,23 +114,21 @@
     "accountOptions": "Опции аккаунта",
     "changePassword": "Изменить пароль",
     "updatePassword": "Обновить пароль",
-    "updatingPassword": "Обновление пароля..."
+    "updatingPassword": "Обновление пароля...",
+    "telegramLogout": "Выйти из Telegram",
+    "telegramLogoutTooltip": "Выйти из Telegram и сменить аккаунт"
   },
   "messages": {
-    "profileUpdated": "Профиль успешно обновлен",
+    "updateSuccess": "Профиль успешно обновлён",
+    "updateError": "Ошибка при обновлении профиля",
+    "passwordUpdateSuccess": "Пароль успешно обновлён",
+    "passwordUpdateError": "Ошибка при обновлении пароля",
     "logoutSuccess": "Успешный выход",
-    "accountCreated": "Ваш аккаунт в конференц-хабе был успешно создан!",
-    "loginSuccess": "Успешный вход!",
-    "logoutError": "Ошибка выхода. Пожалуйста, попробуйте снова.",
-    "updateError": "Ошибка обновления профиля",
-    "phoneNumberExists": "Пользователь с таким номером телефона уже существует",
-    "invalidPhoneFormat": "Пожалуйста, введите действительный номер телефона в международном формате",
-    "deleteSuccess": "Ваш аккаунт был успешно удален",
-    "deleteError": "Ошибка удаления аккаунта. Пожалуйста, попробуйте снова.",
-    "passwordUpdated": "Пароль успешно обновлен",
-    "passwordUpdateError": "Ошибка обновления пароля. Пожалуйста, попробуйте снова.",
-    "userUpdated": "Пользователь успешно обновлен",
-    "userUpdateError": "Ошибка обновления пользователя. Пожалуйста, попробуйте снова."
+    "logoutError": "Ошибка при выходе",
+    "telegramLogoutSuccess": "Успешный выход из Telegram. Теперь вы можете войти под другим аккаунтом.",
+    "telegramLogoutError": "Ошибка при выходе из Telegram. Попробуйте ещё раз.",
+    "deleteSuccess": "Аккаунт успешно удалён",
+    "deleteError": "Ошибка при удалении аккаунта"
   },
   "deleteConfirmation": {
     "title": "Удалить аккаунт",
@@ -154,7 +152,7 @@
     "userId": "ID: {{id}}",
     "userType": {
       "host": "Хост",
-      "agent": "Агент", 
+      "agent": "Агент",
       "client": "Клиент"
     },
     "passwordSection": {

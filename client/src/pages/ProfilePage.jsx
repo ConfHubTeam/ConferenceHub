@@ -10,6 +10,7 @@ import PhoneVerificationModal from "../components/PhoneVerificationModal";
 import { isValidPhoneNumber, isPossiblePhoneNumber } from "react-phone-number-input";
 import { checkPasswordSpecialChars } from "../utils/formUtils";
 import { RiKey2Line, RiEditLine } from "react-icons/ri";
+import { performAuthCleanup, clearAuthLocalStorage } from "../utils/cookieUtils";
 
 export default function ProfilePage({}) {
   const [redirect, setRedirect] = useState(); // control the redirect after logout
@@ -155,15 +156,8 @@ export default function ProfilePage({}) {
       // Regular logout
       await api.post("/auth/logout");
       
-      // Clear any token or auth data from local storage
-      localStorage.removeItem('token');
-      localStorage.removeItem('telegram_auth_user_type');
-      localStorage.removeItem('telegram_auth_error');
-      
-      // Clear all cookies by setting their expiration to past date
-      document.cookie.split(";").forEach(function(c) {
-        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-      });
+      // Use utility function to clear all auth data
+      performAuthCleanup();
       
       notify(t("profile:messages.logoutSuccess"), "success");
       setRedirect("/");
@@ -181,28 +175,31 @@ export default function ProfilePage({}) {
     setIsLoggingOut(true);
     try {
       // First log out from Telegram
-      await api.post("/telegram-auth/logout");
-      // Then perform regular logout
-      await api.post("/auth/logout");
+      const telegramLogoutResponse = await api.post("/telegram-auth/logout");
       
-      // Remove any Telegram-related data from local storage
-      localStorage.removeItem('telegram_auth_user_type');
-      localStorage.removeItem('telegram_auth_error');
-      localStorage.removeItem('token');
+      // Use utility function to clear all auth data
+      performAuthCleanup();
       
-      // Clear all cookies by setting their expiration to past date
-      document.cookie.split(";").forEach(function(c) {
-        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-      });
-      
-      notify(t("profile:messages.logoutSuccess"), "success");
-      setRedirect("/");
+      notify(
+        t("profile:messages.telegramLogoutSuccess", "Successfully logged out from Telegram. You can now login with a different account."), 
+        "success"
+      );
       setUser(null);
       
       // Dispatch custom event to notify other contexts about logout
       window.dispatchEvent(new CustomEvent("userLoggedOut"));
+      
+      // Force a page refresh to clear any cached authentication state
+      setTimeout(() => {
+        window.location.href = "/telegram-auth";
+      }, 1000);
+      
     } catch (error) {
-      notify(t("profile:messages.logoutError"), "error");
+      console.error("Telegram logout error:", error);
+      notify(
+        t("profile:messages.telegramLogoutError", "Error logging out from Telegram. Please try again."), 
+        "error"
+      );
       setIsLoggingOut(false);
     }
   }
@@ -365,9 +362,7 @@ export default function ProfilePage({}) {
       
       // Clear local storage and cookies
       localStorage.clear();
-      document.cookie.split(";").forEach(function(c) {
-        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-      });
+      performAuthCleanup();
       
       notify(t("profile:messages.deleteSuccess"), "success");
       setUser(null);
@@ -460,10 +455,22 @@ export default function ProfilePage({}) {
                 {user.telegramLinked !== undefined && (
                   <div className="flex justify-between items-center text-caption">
                     <span className="text-text-secondary">{t("profile:sections.overview.telegram.status")}</span>
-                    <span className={`font-medium flex items-center ${user.telegramLinked ? 'text-status-success' : 'text-text-muted'}`}>
-                      <div className={`w-2 h-2 rounded-full mr-2 ${user.telegramLinked ? 'bg-status-success' : 'bg-text-muted'}`}></div>
-                      {user.telegramLinked ? t("profile:sections.overview.telegram.connected") : t("profile:sections.overview.telegram.notConnected")}
-                    </span>
+                    <div className="flex items-center space-x-2">
+                      <span className={`font-medium flex items-center ${user.telegramLinked ? 'text-status-success' : 'text-text-muted'}`}>
+                        <div className={`w-2 h-2 rounded-full mr-2 ${user.telegramLinked ? 'bg-status-success' : 'bg-text-muted'}`}></div>
+                        {user.telegramLinked ? t("profile:sections.overview.telegram.connected") : t("profile:sections.overview.telegram.notConnected")}
+                      </span>
+                      {user.telegramLinked && (
+                        <button
+                          onClick={logoutTelegram}
+                          className="text-xs px-2 py-1 bg-red-100 text-red-700 hover:bg-red-200 rounded transition-colors"
+                          disabled={isLoggingOut}
+                          title={t("profile:actions.telegramLogoutTooltip", "Logout from Telegram and switch accounts")}
+                        >
+                          {isLoggingOut ? t("profile:actions.loggingOut") : t("profile:actions.telegramLogout", "Logout")}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
                 
