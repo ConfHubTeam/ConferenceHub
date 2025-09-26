@@ -39,6 +39,9 @@ router.post("/:id/check-payment-smart", authenticateToken, bookingController.che
 // Select cash payment method (client-only) - notifies agents
 router.post("/:id/select-cash", authenticateToken, bookingController.selectCashPayment);
 
+// Delete booking from database (agent-only) - permanent deletion
+router.delete("/:id/delete-from-database", authenticateToken, bookingController.deleteBookingFromDatabase);
+
 // Manual cleanup of expired bookings (agent only)
 router.post("/cleanup-expired", authenticateToken, bookingController.manualCleanupExpiredBookings);
 

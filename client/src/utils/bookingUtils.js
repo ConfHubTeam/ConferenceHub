@@ -300,6 +300,18 @@ export const getBookingActionButtons = (booking, user, competingBookings = [], t
       description: t('details.actions.confirmations.markPaid')
     });
   }
+
+  // Delete from Database button for agents (dangerous action)
+  if (canDeleteFromDatabase(user, booking)) {
+    buttons.push({
+      label: t('details.actions.buttons.deleteFromDatabase'),
+      action: "delete_from_database",
+      variant: "danger",
+      icon: "trash",
+      description: t('details.actions.confirmations.deleteFromDatabase'),
+      dangerous: true // Mark as dangerous action for special styling
+    });
+  }
   
   return { buttons, note };
 };
@@ -437,4 +449,15 @@ export const shouldShowPaidToHostStatus = (user, booking) => {
     (user?.userType === 'agent' || user?.userType === 'host') &&
     booking.status === 'approved'
   );
+};
+
+/**
+ * Check if user can delete booking from database
+ * @param {Object} user - Current user object
+ * @param {Object} booking - Booking object
+ * @returns {boolean} True if user can delete from database
+ */
+export const canDeleteFromDatabase = (user, booking) => {
+  // Only agents can delete bookings from database
+  return user?.userType === 'agent';
 };

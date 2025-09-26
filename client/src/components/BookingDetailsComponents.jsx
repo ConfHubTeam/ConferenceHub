@@ -639,10 +639,15 @@ export const ActionButtonsSection = ({
     return null;
   }
 
+  // Separate dangerous actions from regular actions
+  const regularButtons = actionButtons.filter(button => !button.dangerous);
+  const dangerousButtons = actionButtons.filter(button => button.dangerous);
+
   return (
     <SectionCard title={t('details.sections.actions')}>
       <div className="space-y-3">
-        {actionButtons.map((button, index) => (
+        {/* Regular action buttons */}
+        {regularButtons.map((button, index) => (
           <button
             key={index}
             onClick={() => !button.disabled && onActionClick(button)}
@@ -653,6 +658,26 @@ export const ActionButtonsSection = ({
             {isUpdating ? t('actions.processing') : button.label}
           </button>
         ))}
+        
+        {/* Separator and dangerous actions */}
+        {dangerousButtons.length > 0 && (
+          <>
+            {regularButtons.length > 0 && (
+              <div className="border-t border-gray-300 my-4"></div>
+            )}
+            {dangerousButtons.map((button, index) => (
+              <button
+                key={`dangerous-${index}`}
+                onClick={() => !button.disabled && onActionClick(button)}
+                disabled={isUpdating || button.disabled}
+                className={getActionButtonClasses(button.variant)}
+                title={button.description}
+              >
+                {isUpdating ? t('actions.processing') : button.label}
+              </button>
+            ))}
+          </>
+        )}
       </div>
     </SectionCard>
   );

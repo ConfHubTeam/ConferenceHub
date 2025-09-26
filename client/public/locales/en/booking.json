@@ -100,7 +100,9 @@
       "clientsOnly": "Only clients can book conference rooms. Hosts and agents cannot make bookings.",
       "reservationFailed": "Failed to make reservation. Please try again.",
       "accessDenied": "Access denied. You don't have permission to perform this action.",
-      "cleanupFailed": "Failed to delete expired bookings. Please try again."
+      "cleanupFailed": "Failed to delete expired bookings. Please try again.",
+      "deleteFailed": "Failed to delete booking from database. Please try again.",
+      "deleteSuccess": "Booking has been permanently deleted from database."
     }
   },
   "notifications": {
@@ -472,7 +474,8 @@
         "cancel": "Cancel",
         "markPaid": "Mark as Paid to Host",
         "select": "Select",
-        "selectBooking": "Select Booking"
+        "selectBooking": "Select Booking",
+        "deleteFromDatabase": "Delete from Database"
       },
       "confirmations": {
         "approve": "Are you sure you want to approve this booking?",
@@ -481,7 +484,8 @@
         "markPaid": "Are you sure you want to mark payment to host as complete?",
         "paymentConfirmed": "Payment Confirmed - Approve",
         "approveWithoutPayment": "Approve Without Payment Confirmation",
-        "select": "Are you sure you want to select this booking?"
+        "select": "Are you sure you want to select this booking?",
+        "deleteFromDatabase": "Are you sure you want to permanently delete this booking from the database? This action cannot be undone."
       }
     },
     "timing": {

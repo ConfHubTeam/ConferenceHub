@@ -50,7 +50,8 @@ import {
   getStatusBadgeClass, 
   getBookingStatusMessage,
   requiresPaymentBeforeApproval,
-  canPerformBookingAction
+  canPerformBookingAction,
+  canDeleteFromDatabase
 } from "../utils/bookingUtils";
 
 export default function BookingDetailsPage() {
@@ -398,6 +399,24 @@ export default function BookingDetailsPage() {
     }
   };
 
+  // Handle delete from database action (admin/agent only)
+  const handleDeleteFromDatabase = async () => {
+    setIsUpdating(true);
+    try {
+      const { data } = await api.delete(`/bookings/${bookingId}/delete-from-database`);
+      
+      notify(data.message || t('validation.errors.deleteSuccess'), "success");
+      setShowModal(false);
+      
+      // Navigate back to bookings list since the booking no longer exists
+      navigate("/account/bookings");
+    } catch (error) {
+      notify(error.response?.data?.message || t('validation.errors.deleteFailed'), "error");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   // Show confirmation modal for booking actions
   const showConfirmationModal = (actionButton) => {
     const { label, action, description, requiresPaymentCheck, agentApproval } = actionButton;
@@ -411,6 +430,17 @@ export default function BookingDetailsPage() {
         action: 'paid_to_host',
         requiresPaymentCheck: false,
         agentApproval: false
+      });
+    } else if (action === 'delete_from_database') {
+      // Handle delete from database action
+      setModalConfig({
+        title: `${label}`,
+        message: description || `Are you sure you want to permanently delete this booking from the database? This action cannot be undone.`,
+        status: action,
+        action: 'delete_from_database',
+        requiresPaymentCheck: false,
+        agentApproval: false,
+        dangerous: true // Mark as dangerous action
       });
     } else {
       setModalConfig({
@@ -698,6 +728,8 @@ export default function BookingDetailsPage() {
             onConfirm={() => {
               if (modalConfig.action === 'paid_to_host') {
                 handlePaidToHost();
+              } else if (modalConfig.action === 'delete_from_database') {
+                handleDeleteFromDatabase();
               } else if (modalConfig.requiresPaymentCheck && !modalConfig.agentApproval) {
                 // Show payment confirmation options for non-agent approvals
                 return;
