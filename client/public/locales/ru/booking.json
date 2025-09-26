@@ -260,7 +260,7 @@
   },
   "card": {
     "requestId": "ЗАП-{{id}}",
-    "guests": "{{count}} гость{{plural}}",
+    "guests": "{{count}} гость",
     "timeSlots": "Временные слоты:",
     "viewDetails": "Просмотр деталей",
     "paid": "Оплачено",
