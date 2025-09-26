@@ -8,11 +8,11 @@ import SearchFilter from "../components/SearchFilter";
 import { withTranslationLoading } from "../i18n/hoc/withTranslationLoading";
 import "../styles/landing.css";
 
-// Configuration for event space images
+// Configuration for professional conference and business event space images
+// Selected for navy/blue color harmony and conference booking theme
 const SPACE_IMAGES = [
-  "https://images.unsplash.com/photo-1582192730841-2a682d7375f9?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Conference setup with presenter
-  "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Audience in event space
-  "https://images.unsplash.com/photo-1607952885616-557c53a641c0?q=80&w=1626&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"  // Modern event hall setup
+  "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Executive boardroom with professional navy blue theme
+  "https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"  // Modern auditorium with sophisticated blue color scheme
 ];
 
 /**
@@ -63,9 +63,9 @@ function LandingPageBase() {
       {/* Background Carousel with Enhanced Styling */}
       <BackgroundCarousel 
         images={SPACE_IMAGES}
-        interval={5000}
-        overlayColor="from-accent-primary/10 via-navy-800/15 to-navy-900/20"
-        filterStyle="sepia(5%) saturate(115%) hue-rotate(15deg) brightness(0.92)"
+        interval={6000}
+        overlayColor="from-accent-primary/15 via-navy-700/20 to-navy-900/25"
+        filterStyle="sepia(8%) saturate(110%) hue-rotate(210deg) brightness(0.88) contrast(1.1)"
       />
 
       {/* Floating Decorative Elements */}
