@@ -36,6 +36,7 @@ export function clearAuthLocalStorage() {
   const authKeys = ['token', 'telegram_auth_user_type', 'telegram_auth_error'];
   authKeys.forEach(key => {
     localStorage.removeItem(key);
+    sessionStorage.removeItem(key); // Also clear from session storage
   });
 }
 
