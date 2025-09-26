@@ -39,7 +39,7 @@ export default function AddressSection({
   // Place ID for determining if this is creation or editing (kept for future extensibility)
   placeId = null
 }) {
-  const { t } = useTranslation('forms');
+  const { t } = useTranslation(['forms', 'places']);
   // Track whether the address was manually edited after pin placement
   const [addressManuallyEdited, setAddressManuallyEdited] = useState(false);
   // Track full screen state for the map - start with false (embedded view)
@@ -127,7 +127,7 @@ export default function AddressSection({
         <input
           id="place-address"
           type="text"
-          placeholder="Uzbekistan, Tashkent, Tashkent City Park Street, 1"
+          placeholder={t('places:placeCreate.addressPlaceholder')}
           value={address}
           onChange={handleAddressInputChange}
           className={`w-full border my-2 py-2 px-3 rounded-2xl ${

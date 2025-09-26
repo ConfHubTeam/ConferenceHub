@@ -160,9 +160,9 @@
   "filters": {
     "searchBookings": "Bron qilishlarni qidirish",
     "searchPlaceholders": {
-      "agent": "So'rov raqami, joy egasi, mijoz yoki joyga ko'ra qidiring...",
-      "host": "So'rov raqami yoki joyga ko'ra qidiring...",
-      "client": "Joy nomiga ko'ra qidiring..."
+      "agent": "So'rov raqami, joy egasi, mijoz, joy yoki telefon raqamiga ko'ra qidiring...",
+      "host": "So'rov raqami, joy yoki telefon raqamiga ko'ra qidiring...",
+      "client": "Joy nomi yoki telefon raqamiga ko'ra qidiring..."
     },
     "sortBy": "Saralash",
     "sortOptions": {

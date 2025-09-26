@@ -162,9 +162,9 @@
   "filters": {
     "searchBookings": "Search bookings",
     "searchPlaceholders": {
-      "agent": "Search by request ID, host, client, or property...",
-      "host": "Search by request ID or property...",
-      "client": "Search by property name..."
+      "agent": "Search by request ID, host, client, property, or phone number...",
+      "host": "Search by request ID, property, or phone number...",
+      "client": "Search by property name or phone number..."
     },
     "sortBy": "Sort by",
     "sortOptions": {

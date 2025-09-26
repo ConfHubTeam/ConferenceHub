@@ -30,7 +30,7 @@ export default function BookingsPage() {
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(12);
   const [stats, setStats] = useState({
     pending: 0,
     approved: 0,
@@ -192,6 +192,18 @@ export default function BookingsPage() {
           `req-${booking.id}`.toLowerCase().includes(term)
         );
         
+        // Phone number search - available for all user types
+        const phoneMatch = booking.guestPhone && (
+          booking.guestPhone.toLowerCase().includes(term) ||
+          booking.guestPhone.replace(/[^\d]/g, '').includes(term.replace(/[^\d]/g, ''))
+        );
+        
+        // User phone number search (for agents when user data includes phone)
+        const userPhoneMatch = user?.userType === 'agent' && booking.user?.phoneNumber && (
+          booking.user.phoneNumber.toLowerCase().includes(term) ||
+          booking.user.phoneNumber.replace(/[^\d]/g, '').includes(term.replace(/[^\d]/g, ''))
+        );
+        
         // For agents, also search in request ID, user name, and host name
         const agentRequestIdMatch = user?.userType === 'agent' && (
           booking.uniqueRequestId?.toLowerCase().includes(term) ||
@@ -208,7 +220,7 @@ export default function BookingsPage() {
             booking.place.owner.name.toLowerCase().includes(term)
           );
           
-        return placeMatch || requestIdMatch || userMatch || hostMatch || agentRequestIdMatch;
+        return placeMatch || requestIdMatch || userMatch || hostMatch || agentRequestIdMatch || phoneMatch || userPhoneMatch;
       });
     }
 
