@@ -6,10 +6,10 @@
     "size": "Size",
     "search": "Search",
     "placeholders": {
-      "when": "Anytime",
-      "price": "Any price",
-      "attendees": "Number of attendees",
-      "size": "Conference size"
+      "when": "Enter the date",
+      "price": "Enter the price",
+      "attendees": "Enter the attendees",
+      "size": "Enter the space size"
     },
     "aria_labels": {
       "select_dates": "Select dates and times",

@@ -6,10 +6,10 @@
     "size": "O'lcham",
     "search": "Qidirish",
     "placeholders": {
-      "when": "Har qanday vaqt",
-      "price": "Har qanday narx",
-      "attendees": "Ishtirokchilar soni",
-      "size": "Konferentsiya o'lchami"
+      "when": "Sanani kiriting",
+      "price": "Narxni kiriting",
+      "attendees": "Ishtirokchilarni kiriting",
+      "size": "Joy o'lchamini kiriting"
     },
     "aria_labels": {
       "select_dates": "Sana va vaqtni tanlang",
