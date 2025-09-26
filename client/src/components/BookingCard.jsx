@@ -272,7 +272,7 @@ export default function BookingCard({bookingDetail, onBookingUpdate, competingBo
                 </div>
               )}
               
-              {/* Action buttons for agent - can approve at any stage */}
+              {/* Action buttons for agent - can approve at any stage and reject at all stages */}
               {user?.userType === 'agent' && (bookingDetail.status === 'pending' || bookingDetail.status === 'selected') && (
                 <div className="flex gap-2">
                   <button 
@@ -290,6 +290,17 @@ export default function BookingCard({bookingDetail, onBookingUpdate, competingBo
                     {isUpdating ? 'Processing...' : 'Reject'}
                   </button>
                 </div>
+              )}
+              
+              {/* Reject button for agent on approved bookings */}
+              {user?.userType === 'agent' && bookingDetail.status === 'approved' && (
+                <button 
+                  onClick={() => showConfirmationModal('rejected')} 
+                  disabled={isUpdating}
+                  className="w-full bg-error-600 text-white py-2 px-4 rounded hover:bg-error-700 disabled:opacity-50"
+                >
+                  {isUpdating ? 'Processing...' : 'Reject (Admin)'}
+                </button>
               )}
               
               {/* Cancel button for client */}

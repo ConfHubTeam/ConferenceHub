@@ -490,7 +490,7 @@ class BookingService {
     const validTransitions = {
       "pending": ["selected", "approved", "rejected"],
       "selected": ["approved", "rejected"], // Removed pending transition
-      "approved": [],
+      "approved": ["rejected"], // Allow admins to reject approved bookings
       "rejected": [],
       "cancelled": []
     };
