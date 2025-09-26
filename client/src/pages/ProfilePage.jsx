@@ -153,10 +153,20 @@ export default function ProfilePage({}) {
   async function logout() {
     setIsLoggingOut(true);
     try {
+      // If user is logged in via Telegram, logout from Telegram first
+      if (user.telegramLinked) {
+        try {
+          await api.post("/telegram-auth/logout");
+        } catch (telegramError) {
+          console.warn("Telegram logout error (non-critical):", telegramError);
+          // Continue with regular logout even if Telegram logout fails
+        }
+      }
+      
       // Regular logout
       await api.post("/auth/logout");
       
-      // Use utility function to clear all auth data
+      // Use utility function to clear all auth data and cache
       performAuthCleanup();
       
       notify(t("profile:messages.logoutSuccess"), "success");
@@ -171,38 +181,7 @@ export default function ProfilePage({}) {
     }
   }
 
-  async function logoutTelegram() {
-    setIsLoggingOut(true);
-    try {
-      // First log out from Telegram
-      const telegramLogoutResponse = await api.post("/telegram-auth/logout");
-      
-      // Use utility function to clear all auth data
-      performAuthCleanup();
-      
-      notify(
-        t("profile:messages.telegramLogoutSuccess", "Successfully logged out from Telegram. You can now login with a different account."), 
-        "success"
-      );
-      setUser(null);
-      
-      // Dispatch custom event to notify other contexts about logout
-      window.dispatchEvent(new CustomEvent("userLoggedOut"));
-      
-      // Force a page refresh to clear any cached authentication state
-      setTimeout(() => {
-        window.location.href = "/telegram-auth";
-      }, 1000);
-      
-    } catch (error) {
-      console.error("Telegram logout error:", error);
-      notify(
-        t("profile:messages.telegramLogoutError", "Error logging out from Telegram. Please try again."), 
-        "error"
-      );
-      setIsLoggingOut(false);
-    }
-  }
+
   
   // Start editing profile
   function startEditing() {
@@ -460,16 +439,6 @@ export default function ProfilePage({}) {
                         <div className={`w-2 h-2 rounded-full mr-2 ${user.telegramLinked ? 'bg-status-success' : 'bg-text-muted'}`}></div>
                         {user.telegramLinked ? t("profile:sections.overview.telegram.connected") : t("profile:sections.overview.telegram.notConnected")}
                       </span>
-                      {user.telegramLinked && (
-                        <button
-                          onClick={logoutTelegram}
-                          className="text-xs px-2 py-1 bg-red-100 text-red-700 hover:bg-red-200 rounded transition-colors"
-                          disabled={isLoggingOut}
-                          title={t("profile:actions.telegramLogoutTooltip", "Logout from Telegram and switch accounts")}
-                        >
-                          {isLoggingOut ? t("profile:actions.loggingOut") : t("profile:actions.telegramLogout", "Logout")}
-                        </button>
-                      )}
                     </div>
                   </div>
                 )}
@@ -485,7 +454,7 @@ export default function ProfilePage({}) {
               {/* Action Buttons */}
               <div className="space-y-3">
                 <button 
-                  onClick={user.telegramLinked ? logoutTelegram : logout} 
+                  onClick={logout} 
                   className="btn-primary btn-size-md w-full flex items-center justify-center space-x-2"
                   disabled={isLoggingOut}
                 >
