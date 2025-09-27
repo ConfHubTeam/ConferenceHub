@@ -10,7 +10,7 @@ import PhoneVerificationModal from "../components/PhoneVerificationModal";
 import { isValidPhoneNumber, isPossiblePhoneNumber } from "react-phone-number-input";
 import { checkPasswordSpecialChars } from "../utils/formUtils";
 import { RiKey2Line, RiEditLine } from "react-icons/ri";
-import { performAuthCleanup, performAccountSwitchCleanup, clearAuthLocalStorage } from "../utils/cookieUtils";
+import { performAuthCleanup, performAccountSwitchCleanup, clearAuthLocalStorage, cleanupTelegramWidgetState } from "../utils/cookieUtils";
 
 export default function ProfilePage({}) {
   const [redirect, setRedirect] = useState(); // control the redirect after logout
@@ -156,7 +156,22 @@ export default function ProfilePage({}) {
       // If user is logged in via Telegram, logout from Telegram first
       if (user.telegramLinked) {
         try {
-          await api.post("/telegram-auth/logout");
+          const telegramLogoutResponse = await api.post("/telegram-auth/logout");
+          
+          // Check if server requests additional cleanup
+          if (telegramLogoutResponse.data?.clearBrowserStorage || 
+              telegramLogoutResponse.data?.reloadTelegramWidget) {
+            console.log("Server requested additional browser cleanup for Telegram");
+            
+            // Perform comprehensive cleanup to clear Telegram widget state
+            await performAccountSwitchCleanup();
+            
+            // Additional Telegram widget-specific cleanup
+            cleanupTelegramWidgetState();
+            
+            // Small delay to ensure cleanup completes
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
         } catch (telegramError) {
           console.warn("Telegram logout error (non-critical):", telegramError);
           // Continue with regular logout even if Telegram logout fails

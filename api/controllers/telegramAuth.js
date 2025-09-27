@@ -488,19 +488,9 @@ exports.logoutTelegram = async (req, res) => {
       });
     }
     
-    // Try to call Telegram's resetWebAuthorization API if we have telegramId
-    if (user.telegramId) {
-      try {
-        // Use Telegram API to reset web authorization
-        await axios.post('https://api.telegram.org/bot' + TELEGRAM_BOT_TOKEN + '/account.resetWebAuthorization', {
-          hash: user.telegramId // Use telegramId as the hash to identify the session
-        });
-        console.log('Successfully reset Telegram web authorization for user:', user.id);
-      } catch (telegramError) {
-        // Just log the error but continue with local logout
-        console.error('Error resetting Telegram web authorization:', telegramError.message);
-      }
-    }
+    // Note: Telegram Bot API doesn't provide resetWebAuthorization method
+    // The Telegram widget caches authentication state in browser cookies and storage
+    // Frontend needs to clear localStorage/sessionStorage and reload the widget
     
     // Update user's Telegram connection status
     user.telegramLinked = false;
@@ -537,7 +527,9 @@ exports.logoutTelegram = async (req, res) => {
     return res.json({
       ok: true,
       message: 'Successfully logged out from Telegram',
-      clearCookies: true // Signal to frontend to clear cookies as well
+      clearCookies: true, // Signal to frontend to clear cookies as well
+      clearBrowserStorage: true, // Signal to clear localStorage/sessionStorage
+      reloadTelegramWidget: true // Signal to reload Telegram widget
     });
   } catch (error) {
     console.error('Telegram logout error:', error);

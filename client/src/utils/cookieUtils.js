@@ -355,3 +355,49 @@ export function performTelegramLogout() {
     message: 'Telegram logout completed. Page reload recommended for complete cleanup.'
   };
 }
+
+/**
+ * Clean up Telegram Login Widget state for account switching
+ * This function specifically targets the Telegram widget's cached authentication
+ */
+export function cleanupTelegramWidgetState() {
+  console.log('🤖 Starting Telegram widget state cleanup...');
+  
+  try {
+    // Clear Telegram-specific localStorage items
+    const telegramKeys = [
+      'telegram_auth_user_type',
+      'telegram_auth_error', 
+      'telegramUser',
+      'telegram_session',
+      'tg_auth_data'
+    ];
+    
+    telegramKeys.forEach(key => {
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+    });
+    
+    // Remove any Telegram widget scripts from DOM
+    const telegramScripts = document.querySelectorAll('script[src*="telegram.org"]');
+    telegramScripts.forEach(script => script.remove());
+    
+    // Clear Telegram widget containers
+    const widgetContainers = document.querySelectorAll('#telegram-login-widget');
+    widgetContainers.forEach(container => {
+      while (container.firstChild) {
+        container.removeChild(container.firstChild);
+      }
+    });
+    
+    // Clear any Telegram iframes
+    const telegramIframes = document.querySelectorAll('iframe[src*="oauth.telegram.org"]');
+    telegramIframes.forEach(iframe => iframe.remove());
+    
+    console.log('🤖 Telegram widget state cleanup completed');
+    return true;
+  } catch (error) {
+    console.error('❌ Error during Telegram widget cleanup:', error);
+    return false;
+  }
+}

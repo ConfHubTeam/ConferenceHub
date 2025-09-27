@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { withTranslationLoading } from "../i18n/hoc/withTranslationLoading";
 import { UserContext } from "./UserContext";
 import { useNotification } from "./NotificationContext";
-import { performAuthCleanup, performAccountSwitchCleanup } from "../utils/cookieUtils";
+import { performAuthCleanup, performAccountSwitchCleanup, cleanupTelegramWidgetState } from "../utils/cookieUtils";
 
 function TelegramAuthBase() {
   const { t, ready } = useTranslation(["auth", "common"]);
@@ -119,6 +119,9 @@ function TelegramAuthBase() {
       // Use enhanced utility function for account switching cleanup
       await performAccountSwitchCleanup();
       
+      // Additional Telegram widget-specific cleanup
+      cleanupTelegramWidgetState();
+      
       notify(
         ready 
           ? t("auth:telegram.sessionCleared") 
@@ -126,8 +129,10 @@ function TelegramAuthBase() {
         "success"
       );
       
-      // Reload the page to clear all cached state and start fresh
-      window.location.reload();
+      // Small delay before reload to ensure cleanup completes
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
     } catch (error) {
       console.error("Error clearing Telegram session:", error);
       notify(
