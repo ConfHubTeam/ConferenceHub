@@ -9,10 +9,15 @@ import { withTranslationLoading } from "../i18n/hoc/withTranslationLoading";
 import "../styles/landing.css";
 
 // Configuration for professional conference and business event space images
-// Selected for navy/blue color harmony and conference booking theme
+// Using local images from landingpage directory for better performance and consistency
 const SPACE_IMAGES = [
-  "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Executive boardroom with professional navy blue theme
-  "https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"  // Modern auditorium with sophisticated blue color scheme
+  "/images/landingpage/1.jpg", // Professional business conference setting
+  "/images/landingpage/2.jpeg", // Modern coworking business center
+  "/images/landingpage/3.jpg", // Executive meeting space
+  "/images/landingpage/4.jpg", // Contemporary workspace
+  "/images/landingpage/5.png", // Modern rendered workspace view
+  "/images/landingpage/6.jpg", // Professional podcast/meeting setup
+  "/images/landingpage/7.jpg" // Business meeting environment
 ];
 
 /**
