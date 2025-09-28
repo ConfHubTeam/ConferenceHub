@@ -320,6 +320,18 @@
         "contactHours": "Aloqa soatlari",
         "agent": "Agent"
       },
+      "bankDetails": {
+        "title": "Bank o'tkazmasi rekvizitlari",
+        "companyName": "МЧЖ «GET SPACE»",
+        "director": "Direktor: Zafarov A.A.",
+        "address": "Manzil",
+        "accountNumber": "Hisob raqami",
+        "bankName": "Bank nomi",
+        "bankBranch": "Bank filiali",
+        "mfo": "MFO",
+        "inn": "INN",
+        "phone": "Telefon"
+      },
       "updated": "Yangilangan",
       "updateNote": "* Aloqa ma'lumotlari bron qilish yaratilgandan keyin yangilangan",
       "unavailable": "Aloqa ma'lumotlari hozir mavjud emas. Iltimos, keyinroq urinib ko'ring.",

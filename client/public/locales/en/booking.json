@@ -306,6 +306,18 @@
         "contactHours": "Contact Hours",
         "agent": "Agent"
       },
+      "bankDetails": {
+        "title": "Bank Transfer Details",
+        "companyName": "GET SPACE LLC",
+        "director": "Director: Zafarov A.A.",
+        "address": "Address",
+        "accountNumber": "Account Number",
+        "bankName": "Bank Name",
+        "bankBranch": "Bank Branch", 
+        "mfo": "MFO",
+        "inn": "Tax ID (INN)",
+        "phone": "Phone"
+      },
       "updated": "Updated",
       "updateNote": "* Contact information has been updated since booking was created",
       "unavailable": "Contact information is currently unavailable. Please try again later.",

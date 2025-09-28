@@ -49,13 +49,30 @@
   },
   "cash": {
     "modalTitle": "Cash Payment",
+    "title": "Cash Payment",
+    "bankTransferTitle": "Bank Transfer",
     "instruction": "Contact our agent to arrange cash payment for your booking.",
     "contactTitle": "Agent Contact",
     "contactUnavailable": "Agent contact information will be provided after confirmation.",
     "step1": "Our agent will be notified",
     "step2": "Agent will contact you",
     "step3": "Complete payment and confirm booking",
-    "confirm": "Notify Agent"
+    "confirm": "Notify Agent",
+    "bankTransferOption": "You can pay with the following direct bank payment",
+    "bankTransferButton": "I'll Transfer to Bank Account",
+    "companyName": "GET SPACE LLC",
+    "director": "Director: Zafarov A.A.",
+    "companyAddress": "Tashkent, Chilanzar district, Bunyodkor shoh street, 2-Charh Kamolon house 3A",
+    "accountNumber": "2020 8000 4072 4349 5001",
+    "bankName": "TOSHKENT SH., \"IPAK YULI\" AIT",
+    "bankBranch": "MIROBOD Branch",
+    "mfo": "01101",
+    "inn": "312 140 587",
+    "phoneNumber": "90 371 61 11",
+    "transferNote": "For direct bank transfers, please contact customer support after making the payment",
+    "notifyRequired": "Please notify agent by clicking 'Notify Agent' button",
+    "agentNotified": "Agent notified about cash payment/direct bank transfer. Please contact the agent.",
+    "alreadyNotified": "Agent already been notified. Please wait 5 minutes before sending another notification."
   },
   "providers": {
     "click": {
@@ -76,7 +93,15 @@
     }
   },
   "methods": {
-    "cash": "Cash"
+    "cash": "Cash",
+    "bankTransfer": "Bank Transfer",
+    "directBank": "Bank Transfer"
+  },
+  "bankTransfer": {
+    "modalTitle": "Bank Transfer Payment",
+    "instruction": "Please transfer the payment amount to our company bank account and contact our agent for confirmation.",
+    "contactTitle": "Bank Details",
+    "confirm": "I've Made the Transfer"
   },
   "errors": {
     "phoneRequired": "Phone number is required",

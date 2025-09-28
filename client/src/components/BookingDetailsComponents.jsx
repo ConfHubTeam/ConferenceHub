@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import i18n from "../i18n/config";
 import CloudinaryImage from "./CloudinaryImage";
 import PriceDisplay from "./PriceDisplay";
+import BankDetailsSection from "./BankDetailsSection";
 import { getLatestContactInfo, shouldShowUpdatedIndicator } from "../utils/bookingDetailsHelpers";
 
 // Get appropriate locale for date formatting
@@ -1063,4 +1064,5 @@ const ContactInfoRow = ({ icon, label, value, iconColor, titleColor, valueColor,
   );
 };
 
+export { BankDetailsSection };
 export default SectionCard;

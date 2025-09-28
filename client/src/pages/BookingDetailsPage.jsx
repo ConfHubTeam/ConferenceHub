@@ -28,6 +28,7 @@ import {
   PropertyDetailsSection,
   SupportContactSection,
   ActionButtonsSection,
+  BankDetailsSection,
   getIconComponent
 } from "../components/BookingDetailsComponents";
 import {
@@ -601,6 +602,11 @@ export default function BookingDetailsPage() {
                   getSupportContactHours={getSupportContactHours}
                 />
               )}
+
+              {/* Bank Details Section - Always visible for direct bank transfers */}
+              <div className="mt-6">
+                <BankDetailsSection />
+              </div>
             </SectionCard>
 
             {/* Cancellation & Refund Policy */}
