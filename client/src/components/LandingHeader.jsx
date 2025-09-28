@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useContext, useState, useMemo } from "react";
 import { GlobeAltIcon } from "@heroicons/react/24/outline";
+import { HiOutlineInformationCircle } from "react-icons/hi2";
 import { CurrencyContext } from "../contexts/CurrencyContext";
 import { MobileNavigation } from "./ResponsiveUtils";
 import CurrencySelector from "./CurrencySelector";
@@ -66,20 +67,6 @@ function LandingHeaderBase({
               }}
             />
         </Link>
-        {/* About Us button - styled inline with nav buttons */}
-        <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8 ml-6" role="navigation">
-          <Link
-            to="/about"
-            className="text-white hover:text-brand-orange hover:bg-white/10 hover:scale-[1.02] transition-all duration-200 flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg px-3 py-2 text-sm lg:text-base font-medium"
-          >
-            {(() => {
-              const lang = i18n.language ? i18n.language.split('-')[0] : 'en';
-              if (lang === 'uz') return 'Biz haqimizda';
-              if (lang === 'ru') return 'О нас';
-              return 'About Us';
-            })()}
-          </Link>
-        </nav>
       </div>
   {/* About Us Modal */}
 
@@ -115,6 +102,24 @@ function LandingHeaderBase({
 
       {/* Auth Section */}
       <div className="flex items-center space-x-2 sm:space-x-4">
+        {/* About Us button - Desktop only, matching currency selector format */}
+        <div className="hidden md:block">
+          <Link
+            to="/about"
+            className="flex items-center justify-center px-3 py-3 rounded-full bg-transparent text-white border border-white/20 hover:bg-accent-highlight/20 hover:border-accent-highlight/50 transition-all duration-200 hover:scale-[1.02] hover:shadow-md text-sm font-medium whitespace-nowrap space-x-1.5"
+          >
+            <HiOutlineInformationCircle className="w-5 h-5" aria-hidden="true" />
+            <span>
+              {(() => {
+                const lang = i18n.language ? i18n.language.split('-')[0] : 'en';
+                if (lang === 'uz') return 'Biz haqimizda';
+                if (lang === 'ru') return 'О нас';
+                return 'About Us';
+              })()}
+            </span>
+          </Link>
+        </div>
+
         {/* Currency Selector - Desktop only */}
         <div className="hidden md:block" style={{ width: '90px' }}>
           <CurrencySelector
