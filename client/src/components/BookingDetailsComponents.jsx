@@ -231,12 +231,6 @@ export const PricingSection = ({ booking, user, children }) => {
           <span>{t('details.pricing.subtotal')}</span>
           <PriceDisplay price={booking.totalPrice} currency={booking.place?.currency} />
         </div>
-        {booking.protectionPlanSelected && (
-          <div className="flex justify-between">
-            <span>{t('details.pricing.protectionPlan')}</span>
-            <PriceDisplay price={booking.protectionPlanFee} currency={booking.place?.currency} />
-          </div>
-        )}
         <hr />
         <div className="flex justify-between font-semibold text-lg">
           <span>{t('details.pricing.total')}</span>
@@ -410,16 +404,9 @@ export const RefundPolicySection = ({ booking, formatRefundOption }) => {
   
   // Get refund policy from booking snapshot, not from current place policy
   const refundPolicySnapshot = booking.refundPolicySnapshot;
-  const protectionPlanSelected = booking.protectionPlanSelected;
-
-  // Filter out protection plan if it wasn't selected by the client
+  // Filter out protection plan (no longer supported)
   const filteredRefundOptions = refundPolicySnapshot && Array.isArray(refundPolicySnapshot)
-    ? refundPolicySnapshot.filter(option => {
-        if (option === 'client_protection_plan') {
-          return protectionPlanSelected; // Only show if client selected protection
-        }
-        return true; // Show all other options
-      })
+    ? refundPolicySnapshot.filter(option => option !== 'client_protection_plan')
     : [];
 
   // Check if we have any valid refund options to display
@@ -467,32 +454,7 @@ export const RefundPolicySection = ({ booking, formatRefundOption }) => {
             </div>
           )}
           
-          {/* Show protection plan status */}
-          {refundPolicySnapshot && refundPolicySnapshot.includes('client_protection_plan') && (
-            <div className="mt-4 p-4 border border-green-200 rounded-lg bg-green-50">
-              <div className="flex items-center">
-                {protectionPlanSelected ? (
-                  <>
-                    <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span className="text-sm font-medium text-green-700">
-                      {t('details.refundPolicy.protectionPlan.active')}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-5 h-5 text-text-muted mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    <span className="text-sm text-text-muted">
-                      {t('details.refundPolicy.protectionPlan.notSelected')}
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
+
         </div>
       </div>
     </SectionCard>

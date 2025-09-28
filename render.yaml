@@ -52,10 +52,6 @@ services:
         sync: false
       - key: VITE_YANDEX_GEOCODER_API_KEY
         sync: false
-      - key: VITE_PROTECTION_PLAN_PERCENTAGE
-        sync: false
-      - key: PROTECTION_PLAN_PERCENTAGE
-        sync: false
       - key: ESKIZ_EMAIL
         sync: false
       - key: ESKIZ_SECRET_CODE

@@ -7,13 +7,11 @@ export default function PricingBreakdown({
   totalPrice, 
   breakdown = [], 
   placeDetail,
-  protectionPlanFee = 0,
   finalTotal,
   // New props for booking details display
   basePrice,
   currency,
   numOfGuests,
-  protectionPlanIncluded = false,
   title = "Pricing Breakdown",
   isBookingDetails = false // Flag to indicate this is showing saved booking data
 }) {
@@ -29,25 +27,14 @@ export default function PricingBreakdown({
         
         <div className="space-y-3">
           {/* Base Price */}
-          <div className="flex justify-between items-center">          <span className="text-gray-600">{t("pricing.breakdown.basePrice")}</span>
-          <PriceDisplay 
-            price={basePrice || totalPrice} 
-            currency={displayCurrency} 
-            bold={false}
-          />
-        </div>
-        
-        {/* Protection Plan Fee */}
-        {protectionPlanIncluded && protectionPlanFee > 0 && (
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">{t("pricing.breakdown.protectionPlan")}</span>
-              <PriceDisplay 
-                price={protectionPlanFee} 
-                currency={displayCurrency} 
-                bold={false}
-              />
-            </div>
-          )}
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">{t("pricing.breakdown.basePrice")}</span>
+            <PriceDisplay 
+              price={basePrice || totalPrice} 
+              currency={displayCurrency} 
+              bold={false}
+            />
+          </div>
           
           {/* Total */}
           <div className="border-t pt-3">
@@ -78,8 +65,8 @@ export default function PricingBreakdown({
     return null;
   }
 
-  // Use finalTotal from calculator if provided, otherwise calculate it
-  const displayTotal = finalTotal !== undefined ? finalTotal : totalPrice + protectionPlanFee;
+  // Use finalTotal from calculator if provided, otherwise use totalPrice
+  const displayTotal = finalTotal !== undefined ? finalTotal : totalPrice;
 
   return (
     <div className="border-t">
@@ -113,22 +100,6 @@ export default function PricingBreakdown({
               </p>
             </div>
           </>
-        )}
-        
-        {protectionPlanFee > 0 && (
-          <div className="flex px-3 pb-4 justify-between items-center text-blue-600">
-            <p className="underline flex items-center">
-              <span className="mr-2">🛡️</span>
-              {t("pricing.breakdown.protectionPlan")}
-            </p>
-            <p className="">
-              <PriceDisplay 
-                price={protectionPlanFee} 
-                currency={placeDetail.currency} 
-                bold={false}
-              />
-            </p>
-          </div>
         )}
       </div>
       <div>

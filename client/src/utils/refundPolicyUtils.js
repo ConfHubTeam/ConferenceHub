@@ -6,17 +6,12 @@
 
 // Re-export everything from the centralized config for backward compatibility
 export {
-  PROTECTION_PLAN_CONFIG,
   VALID_REFUND_OPTIONS,
   CONFLICTING_OPTIONS,
   getTranslatedRefundPolicyMetadata,
   getRefundPolicyDisplayData,
   getRefundPolicyDisplayInfo,
   getPolicySummary,
-  isProtectionPlanAvailable,
-  calculateProtectionPlanFee,
-  getProtectionPlanPercentage,
-  getProtectionPlanRate,
   getPrimaryRefundPolicy,
   validateRefundOptionConflicts,
   getRefundOptionsMetadata

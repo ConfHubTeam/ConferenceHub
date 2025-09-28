@@ -27,22 +27,10 @@ const Booking = sequelize.define('Booking', {
   totalPrice: {
     type: DataTypes.FLOAT
   },
-  protectionPlanSelected: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
-    allowNull: false,
-    comment: 'Whether client selected protection plan for this booking'
-  },
-  protectionPlanFee: {
-    type: DataTypes.FLOAT,
-    defaultValue: 0,
-    allowNull: false,
-    comment: 'Protection plan fee charged (0 if not selected)'
-  },
   finalTotal: {
     type: DataTypes.FLOAT,
     allowNull: true,
-    comment: 'Total amount including all fees and protection'
+    comment: 'Total amount including all fees'
   },
   refundPolicySnapshot: {
     type: DataTypes.JSON,

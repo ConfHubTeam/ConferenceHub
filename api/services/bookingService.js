@@ -20,8 +20,6 @@ class BookingService {
       guestName, 
       guestPhone, 
       totalPrice,
-      protectionPlanSelected = false,
-      protectionPlanFee = 0,
       finalTotal
     } = bookingData;
 
@@ -78,8 +76,6 @@ class BookingService {
       guestName, 
       guestPhone, 
       totalPrice,
-      protectionPlanSelected,
-      protectionPlanFee,
       finalTotal: finalTotal || totalPrice,
       refundPolicySnapshot,
       status: 'pending',

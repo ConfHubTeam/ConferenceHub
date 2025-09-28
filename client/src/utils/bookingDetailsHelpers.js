@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { enUS, ru, uz } from "date-fns/locale";
 import i18n from "../i18n/config";
-import { getTranslatedRefundPolicyMetadata, getProtectionPlanPercentage } from "./refundPolicyConfig";
+import { getTranslatedRefundPolicyMetadata } from "./refundPolicyConfig";
 
 /**
  * Helper functions for BookingDetailsPage
@@ -16,10 +16,6 @@ export const formatRefundOption = (option) => {
   const policy = translatedMetadata[option];
   
   if (policy) {
-    // For protection plan, include the percentage in the description
-    if (option === 'client_protection_plan') {
-      return policy.description;
-    }
     return `${policy.label}: ${policy.description}`;
   }
   
@@ -30,8 +26,7 @@ export const formatRefundOption = (option) => {
     'moderate_7_day': t('details.refundPolicy.options.moderate7Day', { default: 'Moderate 7-Day: 50% refund if canceled 7+ days before check-in' }),
     'strict': t('details.refundPolicy.options.strict', { default: 'Strict: No refund if canceled less than 6 days before check-in' }),
     'non_refundable': t('details.refundPolicy.options.nonRefundable', { default: 'Non-Refundable: No refunds allowed' }),
-    'reschedule_only': t('details.refundPolicy.options.rescheduleOnly', { default: 'Reschedule Only: No refund, but reschedule allowed with 3+ days notice' }),
-    'client_protection_plan': t('details.refundPolicy.options.protectionPlan', { default: `Client Protection Plan: Additional insurance coverage available (+${getProtectionPlanPercentage()}%)` })
+    'reschedule_only': t('details.refundPolicy.options.rescheduleOnly', { default: 'Reschedule Only: No refund, but reschedule allowed with 3+ days notice' })
   };
   return optionMap[option] || option;
 };
@@ -205,10 +200,6 @@ export const calculateTotalPrice = (booking) => {
     total += booking.serviceFee;
   }
   
-  if (booking.protectionPlanSelected && booking.protectionPlanFee) {
-    total += booking.protectionPlanFee;
-  }
-  
   return booking.finalTotal || total;
 };
 
@@ -236,22 +227,13 @@ export const shouldShowPaymentStatus = (user, booking) => {
 
 /**
  * Get refund policy display data from booking snapshot
- * Filters out protection plan if not selected by client
  */
 export const getRefundPolicyData = (booking) => {
   const snapshotOptions = booking?.refundPolicySnapshot || [];
   
-  // Filter out protection plan if client didn't select it
-  const filteredOptions = snapshotOptions.filter(option => {
-    if (option === 'client_protection_plan') {
-      return booking.protectionPlanSelected === true;
-    }
-    return true;
-  });
-  
   return {
-    refundOptions: filteredOptions,
-    hasRefundOptions: filteredOptions.length > 0,
+    refundOptions: snapshotOptions,
+    hasRefundOptions: snapshotOptions.length > 0,
     isFromSnapshot: true // Indicates this is from booking time, not current place policy
   };
 };
@@ -480,22 +462,7 @@ export const shouldShowUpdatedIndicator = (userType, booking, latestContactInfo)
   );
 };
 
-/**
- * Check if protection plan should be displayed for this booking
- */
-export const shouldShowProtectionPlan = (booking) => {
-  return booking.protectionPlanSelected === true;
-};
 
-/**
- * Get protection plan display text
- */
-export const getProtectionPlanText = (booking) => {
-  if (booking.protectionPlanSelected) {
-    return `Protection Plan Selected (+${booking.protectionPlanFee || 0} ${booking.place?.currency?.code || 'USD'})`;
-  }
-  return null;
-};
 
 // Update the default export
 export default {
@@ -526,7 +493,5 @@ export default {
   getSidebarSections,
   getMainContentSections,
   getLatestContactInfo,
-  shouldShowUpdatedIndicator,
-  shouldShowProtectionPlan,
-  getProtectionPlanText
+  shouldShowUpdatedIndicator
 };

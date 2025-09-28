@@ -1,19 +1,15 @@
 {
   "title": "Bekor qilish va pulni qaytarish siyosati",
-  "protectionPlanAvailable": "Himoya rejasi mavjud",
-  "protectionPlanDescription": "Xotirjam bekor qilish uchun bron paytida himoya qo'shing (+bron narxining {{percentage}}%)",
   "form": {
     "pleaseSelectOne": "Iltimos, kamida bitta qaytarish variantini tanlang",
     "pricingConsideration": "Narx to'g'risida fikr",
-    "protectionPlanWarning": "Qaytarilmaydigan siyosat bilan mijoz himoya rejasi ehtiyotkor narx tekshirishni talab qiladi. {{percentage}}% himoya to'lovi mijozlarga aniq tushuntirilishi kerak.",
     "selectedOptions": "Tanlangan qaytarish variantlari:"
   },
   "importantNotes": {
     "title": "Muhim eslatmalar",
     "timezone": "Bekor qilish siyosatlari O'zbekiston vaqt mintaqasida bron boshlanish vaqtiga tegishli",
     "processingTime": "Qaytarishlar 3-5 ish kuni ichida qayta ishlanadi",
-    "serviceFees": "Xizmat to'lovlari boshqacha ko'rsatilmagan bo'lsa, qaytarilmaydi",
-    "protectionFee": "Himoya rejasi to'lovi qaytarilmaydi, lekin to'liq bron summasi qoplanadi"
+    "serviceFees": "Xizmat to'lovlari boshqacha ko'rsatilmagan bo'lsa, qaytarilmaydi"
   },
   "policies": {
     "flexible_14_day": {
@@ -50,13 +46,6 @@
       "description": "Qaytarish yo'q, lekin 3+ kun oldin xabar berish bilan qayta rejalashtirish mumkin",
       "shortDescription": "Qayta rejalashtirish mumkin (3+ kun oldin xabar berish)",
       "detailedDescription": "Pul qaytarish mavjud emas, lekin kamida 3 kun oldin xabar bersangiz, bronni qayta rejalashtirish mumkin."
-    },
-    "client_protection_plan": {
-      "label": "Himoya rejasi mavjud",
-      "shortLabel": "Himoya rejasi",
-      "description": "Har qanday vaqtda bekor qilish himoyasi uchun {{percentage}}% to'lov qo'shing",
-      "shortDescription": "Himoya rejasi mavjud (+{{percentage}}%)",
-      "detailedDescription": "Qo'shimcha {{percentage}}% to'lov evaziga, istalgan vaqtda bekor qilishingiz va asosiy siyosat yoki yaxshiroq bo'yicha to'liq qaytarish olishingiz mumkin."
     }
   }
 }

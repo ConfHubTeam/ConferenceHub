@@ -9,10 +9,8 @@ import { validateForm } from "../utils/formUtils";
 import PriceDisplay from "./PriceDisplay";
 import SelectedTimeSlots from "./SelectedTimeSlots";
 import PricingBreakdown from "./PricingBreakdown";
-import ProtectionPlanOption from "./ProtectionPlanOption";
 import { isTimeRangeAvailable } from "../utils/TimeUtils";
 import { calculateBookingPricing } from "../utils/pricingCalculator";
-import { isProtectionPlanAvailable } from "../utils/refundPolicyUtils";
 
 export default function BookingWidget({ placeDetail, buttonDisabled, selectedCalendarDates = [] }) {
   const { t } = useTranslation('booking');
@@ -23,8 +21,6 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
   const [error, setError] = useState("");
   const [bookedTimeSlots, setBookedTimeSlots] = useState([]);
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
-  const [protectionPlanSelected, setProtectionPlanSelected] = useState(false);
-  const [protectionPlanFee, setProtectionPlanFee] = useState(0);
   const { user } = useContext(UserContext);
   const { notify } = useNotification();
   const location = useLocation();
@@ -58,14 +54,8 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
     }
   }, [placeDetail]);
 
-  const pricingData = calculateBookingPricing(selectedCalendarDates, placeDetail, protectionPlanSelected);
-  const { totalHours, totalPrice, breakdown, protectionPlanFee: calculatedProtectionFee, finalTotal } = pricingData;
-
-  // Handle protection plan selection
-  const handleProtectionPlanChange = (selected, fee) => {
-    setProtectionPlanSelected(selected);
-    setProtectionPlanFee(fee);
-  };
+  const pricingData = calculateBookingPricing(selectedCalendarDates, placeDetail, false);
+  const { totalHours, totalPrice, breakdown, finalTotal } = pricingData;
 
   // Function to handle login redirect with preserved state
   const handleLoginRedirect = () => {
@@ -206,8 +196,6 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
         guestName,
         guestPhone,
         totalPrice: totalPrice, // Base booking price
-        protectionPlanSelected,
-        protectionPlanFee: protectionPlanSelected ? calculatedProtectionFee : 0,
         finalTotal: finalTotal, // Total including all fees
         bookingType: 'calendar' // Indicate this is a calendar-based booking
       };
@@ -313,21 +301,8 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
             totalPrice={totalPrice}
             breakdown={breakdown}
             placeDetail={placeDetail}
-            protectionPlanFee={calculatedProtectionFee}
             finalTotal={finalTotal}
           />
-
-          {/* Protection Plan Option for unauthorized users */}
-          {totalPrice > 0 && (
-            <div className="mx-3 mb-3">
-              <ProtectionPlanOption
-                placeDetail={placeDetail}
-                totalBookingPrice={totalPrice}
-                isSelected={protectionPlanSelected}
-                onSelectionChange={handleProtectionPlanChange}
-              />
-            </div>
-          )}
         </div>
 
         {/* Login to book button */}
@@ -498,21 +473,8 @@ export default function BookingWidget({ placeDetail, buttonDisabled, selectedCal
             totalPrice={totalPrice}
             breakdown={breakdown}
             placeDetail={placeDetail}
-            protectionPlanFee={calculatedProtectionFee}
             finalTotal={finalTotal}
           />
-
-          {/* Protection Plan Option for authorized users */}
-          {totalPrice > 0 && (
-            <div className="px-3 pb-3">
-              <ProtectionPlanOption
-                placeDetail={placeDetail}
-                totalBookingPrice={totalPrice}
-                isSelected={protectionPlanSelected}
-                onSelectionChange={handleProtectionPlanChange}
-              />
-            </div>
-          )}
         </div>
         <button
           type="submit"

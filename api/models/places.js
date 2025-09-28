@@ -182,8 +182,7 @@ const Place = sequelize.define('Place', {
           'moderate_7_day', 
           'strict',
           'non_refundable',
-          'reschedule_only',
-          'client_protection_plan'
+          'reschedule_only'
         ];
         
         if (!Array.isArray(value) || value.length === 0) {

@@ -4,27 +4,22 @@
  * Uses centralized configuration for consistency with frontend
  */
 
-// Get protection plan configuration from environment
-const PROTECTION_PLAN_PERCENTAGE = parseInt(process.env.PROTECTION_PLAN_PERCENTAGE) || 20;
-
 // Valid refund options - must match frontend configuration
 const VALID_REFUND_OPTIONS = [
   'flexible_14_day',
   'moderate_7_day', 
   'strict',
   'non_refundable',
-  'reschedule_only',
-  'client_protection_plan'
+  'reschedule_only'
 ];
 
 // Define mutual exclusivity rules - must match frontend configuration
 const CONFLICTING_OPTIONS = {
-  'non_refundable': ['flexible_14_day', 'moderate_7_day', 'strict', 'reschedule_only', 'client_protection_plan'],
+  'non_refundable': ['flexible_14_day', 'moderate_7_day', 'strict', 'reschedule_only'],
   'flexible_14_day': ['non_refundable', 'reschedule_only'],
   'moderate_7_day': ['non_refundable', 'reschedule_only'],
   'strict': ['non_refundable', 'reschedule_only'],
-  'reschedule_only': ['non_refundable', 'flexible_14_day', 'moderate_7_day', 'strict'],
-  'client_protection_plan': ['non_refundable'] // Protection plan can work with reschedule_only but not with non_refundable
+  'reschedule_only': ['non_refundable', 'flexible_14_day', 'moderate_7_day', 'strict']
 };
 
 // Centralized refund policy metadata for backend use
@@ -76,11 +71,6 @@ const REFUND_POLICY_METADATA = {
       { minHours: 72, allowed: true }, // 3 days
       { minHours: 0, allowed: false }
     ]
-  },
-  'client_protection_plan': {
-    value: 'client_protection_plan',
-    displayName: 'Protection Plan Available',
-    description: `Add ${PROTECTION_PLAN_PERCENTAGE}% fee for enhanced cancellation coverage`
   }
 };
 
