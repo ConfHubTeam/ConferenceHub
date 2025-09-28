@@ -49,13 +49,30 @@
   },
   "cash": {
     "modalTitle": "Naqd pul to'lovi",
+    "title": "Naqd pul to'lovi",
+    "bankTransferTitle": "Bank o'tkazmasi",
     "instruction": "Bandlashingiz uchun naqd pul to'lovini tashkil qilish uchun bizning agentimiz bilan bog'laning.",
     "contactTitle": "Agent aloqa ma'lumotlari",
     "contactUnavailable": "Agent aloqa ma'lumotlari tasdiqlashdan keyin taqdim etiladi.",
     "step1": "Bizning agentimiz xabardor qilinadi",
     "step2": "Agent siz bilan bog'lanadi",
     "step3": "To'lovni yakunlang va bandlashni tasdiqlang",
-    "confirm": "Agentni xabardor qilish"
+    "confirm": "Agentni xabardor qilish",
+    "bankTransferOption": "Siz quyidagi to'g'ridan-to'g'ri bank o'tkazmasi orqali to'lashingiz mumkin",
+    "bankTransferButton": "Men bank hisobiga pul o'tkazaman",
+    "companyName": "МЧЖ «GET SPACE»",
+    "director": "Direktor: Zafarov A.A.",
+    "companyAddress": "Toshkent, Chilonzor tumani, Bunyodkor shoh ko'chasi, 2-Charh Kamolon uy 3A",
+    "accountNumber": "2020 8000 4072 4349 5001",
+    "bankName": "ТОШKENT Ш., \"ИПАK ЙУЛИ\" АИТ",
+    "bankBranch": "МИРОБОД Branch",
+    "mfo": "01101",
+    "inn": "312 140 587",
+    "phoneNumber": "90 371 61 11",
+    "transferNote": "To'g'ridan-to'g'ri bank o'tkazmalari uchun, to'lovni amalga oshirgandan keyin \"Yordam aloqasi\" bilan bog'laning",
+    "notifyRequired": "Iltimos, 'Agentni xabardor qilish' tugmasini bosib agentni xabardor qiling",
+    "agentNotified": "Agent naqd pul to'lovi/to'g'ridan-to'g'ri bank o'tkazmasi haqida xabardor qilindi. Iltimos, agent bilan bog'laning.",
+    "alreadyNotified": "Agent allaqachon xabardor qilingan. Iltimos, keyingi bildirishnomani yuborishdan oldin 5 daqiqa kuting."
   },
   "providers": {
     "click": {
@@ -76,7 +93,15 @@
     }
   },
   "methods": {
-    "cash": "Naqd pul"
+    "cash": "Naqd pul",
+    "bankTransfer": "Bank o'tkazmasi",
+    "directBank": "Bank o'tkazmasi"
+  },
+  "bankTransfer": {
+    "modalTitle": "Bank o'tkazmasi orqali to'lov",
+    "instruction": "Iltimos, to'lov miqdorini kompaniyamizning bank hisobiga o'tkazing va tasdiqlash uchun agentimiz bilan bog'laning.",
+    "contactTitle": "Bank rekvizitlari",
+    "confirm": "Men pul o'tkazdim"
   },
   "errors": {
     "phoneRequired": "Telefon raqami majburiy",

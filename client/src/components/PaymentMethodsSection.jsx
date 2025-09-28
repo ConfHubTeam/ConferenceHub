@@ -194,38 +194,18 @@ const PaymentMethodsSection = ({
               : 'border-gray-200 cursor-not-allowed opacity-50 grayscale'
           }`}
         >
-          {/* Paper Money Icon - SVG */}
+          {/* Bank Transfer Icon - SVG */}
           <svg 
             className="w-12 h-12 mb-2" 
-            viewBox="0 0 24 24" 
             fill="none" 
-            xmlns="http://www.w3.org/2000/svg"
+            stroke={isPaymentAvailable ? "#22c55e" : "#9ca3af"} 
+            viewBox="0 0 24 24"
           >
             <path 
-              d="M2 7C2 5.89543 2.89543 5 4 5H20C21.1046 5 22 5.89543 22 7V17C22 18.1046 21.1046 19 20 19H4C2.89543 19 2 18.1046 2 17V7Z" 
-              stroke={isPaymentAvailable ? "#22c55e" : "#9ca3af"} 
-              strokeWidth="2" 
-              fill={isPaymentAvailable ? "#dcfce7" : "#f9fafb"}
-            />
-            <circle 
-              cx="12" 
-              cy="12" 
-              r="3" 
-              stroke={isPaymentAvailable ? "#16a34a" : "#6b7280"} 
-              strokeWidth="2" 
-              fill="none"
-            />
-            <path 
-              d="M6 9C6 8.44772 6.44772 8 7 8C7.55228 8 8 8.44772 8 9"
-              stroke={isPaymentAvailable ? "#16a34a" : "#6b7280"} 
-              strokeWidth="1.5" 
-              strokeLinecap="round"
-            />
-            <path 
-              d="M16 15C16 15.5523 16.4477 16 17 16C17.5523 16 18 15.5523 18 15"
-              stroke={isPaymentAvailable ? "#16a34a" : "#6b7280"} 
-              strokeWidth="1.5" 
-              strokeLinecap="round"
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" 
             />
           </svg>
           <span className={`text-sm font-medium ${isPaymentAvailable ? 'text-gray-700' : 'text-gray-400'}`}>
