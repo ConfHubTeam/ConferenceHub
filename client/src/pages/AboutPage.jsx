@@ -48,11 +48,6 @@ const AboutPage = () => {
     }
   }
 
-  // Debug logging
-  console.log("Ready:", ready);
-  console.log("Safe body blocks:", safeBodyBlocks);
-  console.log("Block count:", safeBodyBlocks.length);
-
   // Enhanced Intersection Observer for sequential scroll animations
   useEffect(() => {
     if (!ready) return;
@@ -126,10 +121,18 @@ const AboutPage = () => {
 
         {/* Hero Content */}
         <div className="max-w-6xl mx-auto text-center">
-          <h1 className="text-5xl md:text-7xl font-bold text-[#1A2233] mb-6 font-montserrat leading-tight">
-            GetSpace
-          </h1>
-          <h2 className="text-2xl md:text-3xl text-[#2C3650] mb-2 font-montserrat font-medium max-w-4xl mx-auto leading-relaxed">
+          {/* Logo */}
+          <div className="mb-8 flex justify-center">
+            <img
+              src="/getSpace_logo.png"
+              alt="GetSpace"
+              className="h-12 md:h-16 lg:h-20 w-auto object-contain"
+              style={{
+                filter: "brightness(0) saturate(100%) invert(15%) sepia(25%) saturate(1200%) hue-rotate(210deg) brightness(94%) contrast(96%)"
+              }}
+            />
+          </div>
+          <h2 className="text-2xl md:text-3xl text-[#1A2233] mb-2 font-montserrat font-medium max-w-4xl mx-auto leading-relaxed">
             {t("page.subtitle")}
           </h2>
         </div>
