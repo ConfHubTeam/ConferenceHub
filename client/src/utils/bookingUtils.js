@@ -158,12 +158,11 @@ export const calculateBookingTotal = (booking) => {
   const {
     totalPrice = 0,
     serviceFee = 0,
-    protectionPlanFee = 0,
     finalTotal
   } = booking;
   
   // Use finalTotal if available, otherwise calculate
-  return finalTotal || (totalPrice + serviceFee + protectionPlanFee);
+  return finalTotal || (totalPrice + serviceFee);
 };
 
 /**

@@ -1,8 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { 
-  getRefundPolicyDisplayData, 
-  isProtectionPlanAvailable, 
-  getProtectionPlanPercentage 
+  getRefundPolicyDisplayData
 } from "../utils/refundPolicyConfig";
 
 /**
@@ -18,13 +16,8 @@ export default function RefundPolicyDisplay({ placeDetail, className = "" }) {
 
   const currentLanguage = i18n.language || 'en';
   const refundPolicies = getRefundPolicyDisplayData(placeDetail.refundOptions, currentLanguage);
-  const hasProtectionPlan = isProtectionPlanAvailable(placeDetail.refundOptions);
-  const protectionPercentage = getProtectionPlanPercentage();
-  
-  // Filter out protection plan from display since it's shown separately
-  const actualPolicies = refundPolicies.filter(policy => policy.type !== 'protection');
 
-  if (actualPolicies.length === 0 && !hasProtectionPlan) {
+  if (refundPolicies.length === 0) {
     return null;
   }
 
@@ -39,10 +32,10 @@ export default function RefundPolicyDisplay({ placeDetail, className = "" }) {
         </h2>
       
       <div className="space-y-4">
-        {/* Primary Refund Policies */}
-        {actualPolicies.length > 0 && (
+        {/* Refund Policies */}
+        {refundPolicies.length > 0 && (
           <div className="space-y-3">
-            {actualPolicies.map((policy, index) => (
+            {refundPolicies.map((policy, index) => (
               <div 
                 key={index}
                 className={`flex items-start gap-3 p-4 rounded-lg border ${
@@ -73,23 +66,6 @@ export default function RefundPolicyDisplay({ placeDetail, className = "" }) {
           </div>
         )}
 
-        {/* Protection Plan Availability Notice */}
-        {hasProtectionPlan && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
-            <div className="flex items-start gap-3">
-              <span className="text-2xl flex-shrink-0 mt-0.5">🛡️</span>
-              <div className="flex-1">
-                <h3 className="font-semibold text-lg text-blue-800">
-                  {t('protectionPlanAvailable')}
-                </h3>
-                <p className="text-sm text-blue-700 mt-1">
-                  {t('protectionPlanDescription', { percentage: protectionPercentage })}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Important Notes */}
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-4">
           <h4 className="font-medium text-gray-800 mb-2 flex items-center">
@@ -102,9 +78,6 @@ export default function RefundPolicyDisplay({ placeDetail, className = "" }) {
             <li>• {t('importantNotes.timezone')}</li>
             <li>• {t('importantNotes.processingTime')}</li>
             <li>• {t('importantNotes.serviceFees')}</li>
-            {hasProtectionPlan && (
-              <li>• {t('importantNotes.protectionFee')}</li>
-            )}
           </ul>
         </div>
       </div>

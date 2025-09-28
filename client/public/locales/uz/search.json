@@ -275,7 +275,6 @@
           "reschedule_only": "Faqat vaqtni o'zgartirish",
           "super_strict_30": "Juda qattiq 30 kun",
           "super_strict_60": "Juda qattiq 60 kun",
-          "client_protection_plan": "Mijoz himoya rejasi",
           "instant_book": "Zudlik bilan bron qilish",
           "verified_host": "Tasdiqlangan uy egasi"
         },
@@ -287,7 +286,6 @@
           "reschedule_only": "Qaytarim yo'q, lekin 3+ kun oldin xabar bergan holda vaqtni o'zgartirish mumkin",
           "super_strict_30": "30+ kun oldin bekor qilsangiz, to'liq qaytarim",
           "super_strict_60": "60+ kun oldin bekor qilsangiz, to'liq qaytarim",
-          "client_protection_plan": "Qo'shimcha himoya va sug'urta",
           "instant_book": "Tasdiqlashni kutmasdan darhol bron qiling",
           "verified_host": "Faqat tasdiqlangan joy egalarini ko'rsatish"
         },

@@ -1,0 +1,494 @@
+{
+  "widget": {
+    "title": "Booking Widget",
+    "pricing": {
+      "perHour": "soat uchun",
+      "fullDay": "To'liq kun",
+      "hours": "soat",
+      "priceBreakdown": "Narxning tafsiloti"
+    },
+    "timeSlots": {
+      "selectedTimeSlots": "Tanlangan vaqt oralig'i",
+      "selectTimeSlots": "Narx ko'rish uchun aniq vaqt oralig'ini tanlang",
+      "selectForBooking": "Yaxshi narx uchun aniq vaqt oralig'ini tanlang",
+      "useCalendar": "Alohida sanalar va vaqt oralig'ini tanlash uchun taqvimdan foydalaning. Bu aniq bron qilish imkonini beradi va to'liq kun chegirmasiga mos kelishi mumkin.",
+      "useCalendarGuest": "Umumiy xarajatni ko'rish uchun alohida sanalar va vaqt oralig'ini tanlash uchun taqvimdan foydalaning.",
+      "totalHours": "Jami soatlar"
+    },
+    "attendees": {
+      "label": "Ishtirokchilar",
+      "maximum": "Maksimal sig'im",
+      "people": "kishi",
+      "selectNumber": "⚠️ Iltimos, ishtirokchilar sonini belgilang"
+    },
+    "contactInfo": {
+      "title": "Sizning to'liq ismingiz",
+      "fullName": "To'liq ismingiz",
+      "phoneNumber": "Telefon raqami",
+      "required": "talab qilinadi"
+    },
+    "buttons": {
+      "notAvailable": "Bron qilish uchun mavjud emas",
+      "selectTimeSlots": "Bron qilish uchun vaqt oralig'ini tanlang",
+      "bookSelectedSlots": "Tanlangan vaqt oralig'ini bron qiling",
+      "login": "Tanlangan vaqt oralig'ini bron qilish uchun kirish",
+      "loginGeneral": "Ushbu anjuman xonasini bron qilish uchun kirish",
+      "signUp": "Bu yerdan ro'yxatdan o'ting"
+    },
+    "protectionPlan": {
+      "title": "Himoya rejasi",
+      "active": "Himoya rejasi faol",
+      "description": "Har qanday vaqtda bekor qiling va bron qilish summangizning to'liq pulini qaytarib oling.",
+      "ofBooking": "bron qilishning",
+      "coverage": {
+        "title": "Qamrab olinadigan:",
+        "fullRefund": "Bron narxining 100% qaytarilishi",
+        "noQuestions": "Savolsiz bekor qilish",
+        "feeNonRefundable": "Himoya to'lovi qaytarilmaydi"
+      },
+      "activeMessage": "Siz har qanday vaqtda bekor qiling va bron qilish summangizning to'liq pulini qaytarib olishingiz mumkin."
+    }
+  },
+  "timeSlotModal": {
+    "title": "Vaqt oralig'ini o'rnatish",
+    "dateLabel": "Sana",
+    "minimumBooking": "Minimal bron",
+    "hoursRequired": "soat talab qilinadi",
+    "cooldownPeriod": "Tozalash davri",
+    "afterEachBooking": "har bir bron qilishdan keyin",
+    "startTime": "Boshlanish vaqti",
+    "endTime": "Tugash vaqti",
+    "selectStartTime": "Boshlanish vaqtini tanlang",
+    "selectEndTime": "Tugash vaqtini tanlang",
+    "noAvailableStart": "Mavjud bron qilish va sovutish talablari tufayli boshlanish vaqti yo'q.",
+    "selectEndFirst": "Iltimos, avval tugash vaqtini tanlang",
+    "unavailable": "Mavjud emas",
+    "todaysAvailability": "Bugungi mavjudlik",
+    "legend": {
+      "booked": "Bron qilingan",
+      "cooldown": "Sovutish",
+      "unavailable": "Mavjud emas",
+      "available": "Mavjud"
+    },
+    "buttons": {
+      "cancel": "Bekor qilish",
+      "add": "Oralig'ni qo'shish",
+      "update": "Yangilash"
+    }
+  },
+  "pricing": {
+    "breakdown": {
+      "title": "Narxning tafsiloti",
+      "subtotal": "Oraliq jami",
+      "protectionPlan": "Himoya rejasi",
+      "total": "Jami",
+      "basePrice": "Asosiy narx",
+      "forGuests": "uchun"
+    }
+  },
+  "validation": {
+    "errors": {
+      "nameRequired": "Iltimos, ismingizni kiriting",
+      "phoneRequired": "Aloqa uchun telefon raqamingizni kiriting",
+      "phoneInvalid": "Iltimos, yaroqli telefon raqamini kiriting",
+      "attendeesRequired": "Iltimos, ishtirokchilar sonini belgilang (minimum 1)",
+      "attendeesMax": "Maksimal sig'im {{maxGuests}} kishi",
+      "timeSlotsRequired": "Iltimos, yuqoridagi taqvimdan sanalar va vaqt oralig'ini tanlang",
+      "timeSlotsUnavailable": "Tanlangan vaqt oralig'i mavjud emas. Iltimos, boshqa vaqtlarni tanlang.",
+      "loginRequired": "Anjuman xonasini bron qilish uchun tizimga kiring",
+      "cannotBookOwn": "Siz o'zingizning anjuman xonangizni bron qila olmaysiz",
+      "clientsOnly": "Faqat mijozlar anjuman xonalarini bron qilishlari mumkin. Joy egralari va agentlar bron qila olmaydi.",
+      "reservationFailed": "Bron qilishda xatolik yuz berdi. Iltimos, qaytadan urining.",
+      "accessDenied": "Kirish rad etildi. Sizda bu amalni bajarish uchun ruxsat yo'q.",
+      "cleanupFailed": "Muddati o'tgan bron qilishlarni o'chirishda xatolik yuz berdi. Iltimos, qaytadan urining.",
+      "deleteFailed": "Bron qilishni ma'lumotlar bazasidan o'chirishda xatolik yuz berdi. Iltimos, qaytadan urining.",
+      "deleteSuccess": "Bron qilish ma'lumotlar bazasidan butunlay o'chirildi."
+    }
+  },
+  "notifications": {
+    "success": "Bron qilish so'rovi muvaffaqiyatli yuborildi",
+    "processing": "Bron qilish jarayoni...",
+    "confirmed": "Bron qilish tasdiqlandi!",
+    "paymentFailed": "To'lov muvaffaqiyatsiz: {{error}}",
+    "paymentCompleted": "To'lov muvaffaqiyatli yakunlandi",
+    "paymentNotCompleted": "To'lov yakunlanmadi",
+    "paymentCancelled": "To'lov bekor qilindi",
+    "statusUpdated": "Bron qilish holati yangilandi",
+    "paymentWindowOpened": "To'lov oynasi ochildi"
+  },
+  "common": {
+    "unavailable": "Mavjud emas",
+    "noImage": "Rasm yo'q",
+    "processing": "Jarayonda...",
+    "buttons": {
+      "ok": "OK",
+      "cancel": "Bekor qilish"
+    }
+  },
+  "selectedDates": {
+    "title": "Tanlangan bron oralig'i",
+    "titleWithCount": "Tanlangan bron oralig'i ({{count}})",
+    "clearAll": "Hammasini tozalash",
+    "editTime": "Vaqtni o'zgartirish",
+    "removeDate": "Sanani o'chirish"
+  },
+  "status": {
+    "pending": "Kutilmoqda",
+    "confirmed": "Tasdiqlangan",
+    "cancelled": "Bekor qilingan",
+    "completed": "Yakunlangan",
+    "approved": "Tasdiqlangan",
+    "rejected": "Rad etilgan",
+    "selected": "Tanlangan",
+    "paid": "To'langan"
+  },
+  "userTypes": {
+    "client": "Mijoz",
+    "host": "Joy egasi",
+    "agent": "Agent"
+  },
+  "roleNotifications": {
+    "owner": {
+      "title": "Siz ushbu konferens zalining egasisiz",
+      "description": "Siz mavjudlikni ko'rish uchun kalendarni ko'rishingiz mumkin, lekin bronlash faqat mijozlar uchun."
+    },
+    "agent": {
+      "title": "Agent ko'rinishi",
+      "description": "Siz mavjudlikni ko'rish uchun kalendarni ko'rishingiz mumkin, lekin bronlash faqat mijozlar uchun."
+    },
+    "host": {
+      "title": "Joy egasi ko'rinishi",
+      "description": "Siz mavjudlikni ko'rish uchun kalendarni ko'rishingiz mumkin, lekin bronlash faqat mijozlar uchun."
+    }
+  },
+  "filters": {
+    "searchBookings": "Bron qilishlarni qidirish",
+    "searchPlaceholders": {
+      "agent": "So'rov raqami, joy egasi, mijoz, joy yoki telefon raqamiga ko'ra qidiring...",
+      "host": "So'rov raqami, joy yoki telefon raqamiga ko'ra qidiring...",
+      "client": "Joy nomi yoki telefon raqamiga ko'ra qidiring..."
+    },
+    "sortBy": "Saralash",
+    "sortOptions": {
+      "newestFirst": "Eng yangilari birinchi",
+      "oldestFirst": "Eng eskilari birinchi",
+      "checkInDate": "Kelish sanasi",
+      "highestPrice": "Eng yuqori narx",
+      "lowestPrice": "Eng past narx",
+      "propertyName": "Joy nomi"
+    },
+    "filterByStatus": "Holat bo'yicha filtrlash",
+    "agentActions": "Agent harakatlari",
+    "cleanupExpiredBookings": "Muddati tugagan bronlarni o'chirish",
+    "hideOptions": "Tanlovlarni yashirish",
+    "moreOptions": "Ko'proq tanlovlar",
+    "cleanupConfirmation": {
+      "title": "Muddati tugagan bronlarni o'chirish",
+      "message": "Barcha muddati tugagan \"kutilayotgan\" va \"tanlangan\" bron so'rovlarini o'chirishni xohlaysizmi? Bu amalni bekor qilib bo'lmaydi.",
+      "confirm": "Ha, muddati tugagan bronlarni o'chirish",
+      "cancel": "Bekor qilish"
+    },
+    "statusLabels": {
+      "client": {
+        "pending": "Kutilmoqda",
+        "approved": "Tasdiqlangan",
+        "rejected": "Rad etilgan",
+        "all": "Hammasi"
+      },
+      "host": {
+        "pending": "Kutilmoqda",
+        "approved": "Tasdiqlangan",
+        "rejected": "Rad etilgan",
+        "paid_to_host": "To'langan",
+        "all": "Hammasi"
+      },
+      "agent": {
+        "pending": "Kutilmoqda",
+        "approved": "Tasdiqlangan",
+        "rejected": "Rad etilgan",
+        "paid_to_host": "To'langan",
+        "all": "Hammasi"
+      }
+    },
+    "activeFilters": "Faol filtrlar:",
+    "clearAllFilters": "Barcha filtrlarni tozalash",
+    "filterLabels": {
+      "search": "Qidiruv: \"{{searchTerm}}\"",
+      "status": "Holat: {{status}}",
+      "user": "Foydalanuvchi: {{userName}}",
+      "host": "Joy egasi: {{hostName}}"
+    },
+    "removeFilter": "{{filterName}} filtrini olib tashlash"
+  },
+  "pages": {
+    "titles": {
+      "client": {
+        "allBookings": "Barcha bron qilishlar",
+        "pendingBookings": "Kutilayotgan bron qilishlar",
+        "confirmedBookings": "Tasdiqlangan bron qilishlar",
+        "rejectedBookings": "Rad etilgan bron qilishlar"
+      },
+      "host": {
+        "allRequests": "Barcha so'rovlar",
+        "pendingRequests": "Kutilayotgan so'rovlar",
+        "approvedRequests": "Tasdiqlangan so'rovlar",
+        "rejectedRequests": "Rad etilgan so'rovlar",
+        "paidRequests": "To'langan so'rovlar"
+      },
+      "agent": {
+        "allBookings": "Barcha bron qilishlar",
+        "pendingBookings": "Kutilayotgan bron qilishlar",
+        "approvedBookings": "Tasdiqlangan bron qilishlar",
+        "rejectedBookings": "Rad etilgan bron qilishlar",
+        "paidBookings": "To'langan bron qilishlar"
+      }
+    },
+    "emptyStates": {
+      "noBookingsFound": "Bron qilishlar topilmadi",
+      "noRequestsFound": "Bron so'rovlari topilmadi",
+      "adjustFilters": "Qidiruv yoki filtr mezonlarini o'zgartirib ko'ring.",
+      "noBookingsYet": {
+        "client": "Sizda hali bron qilishlar yo'q. Mavjud anjuman xonalarini ko'rib chiqing va bron qiling.",
+        "host": "Sizda hali bron so'rovlari yo'q. Mijozlar sizning anjuman xonalaringizni bron qilganda, ularning so'rovlari bu yerda ko'rinadi.",
+        "agent": "Tizimda hali bron qilishlar yo'q."
+      },
+      "findRooms": "Anjuman xonalarini topish"
+    },
+    "statusIndicators": {
+      "pendingBookings": "{{count}} bron qilish tasdiqlashni kutmoqda",
+      "pendingRequests": "{{count}} so'rov e'tiborni {{verb}}",
+      "awaitingApproval": "tasdiqlashni kutmoqda"
+    }
+  },
+  "card": {
+    "requestId": "SO'R-{{id}}",
+    "guests": "{{count}} mehmon",
+    "timeSlots": "Vaqt oralig'i:",
+    "viewDetails": "Tafsilotlarni ko'rish",
+    "paid": "To'langan",
+    "dateFormat": "MMM d, yyyy",
+    "timeSlotFormat": "MMM d",
+    "dateFormatting": {
+      "at": "da",
+      "from": "dan",
+      "to": "gacha",
+      "on": "sanasida"
+    },
+    "agentInfo": {
+      "client": "Mijoz",
+      "host": "Joy egasi",
+      "name": "Ism:",
+      "phone": "Telefon:",
+      "notAvailable": "Mavjud emas"
+    }
+  },
+  "details": {
+    "title": "Bron qilish tafsilotlari",
+    "backToBookings": "Bron qilishlarga qaytish",
+    "sections": {
+      "bookingProgress": "Bron qilish jarayoni",
+      "propertyDetails": "Joy tafsilotlari",
+      "bookingInformation": "Bron qilish ma'lumotlari",
+      "contactInformation": "Aloqa ma'lumotlari",
+      "cancellationRefund": "Bekor qilish va qaytarish siyosati",
+      "pricing": "Narxlash",
+      "payment": "To'lov",
+      "actions": "Amallar",
+      "supportContact": "Yordam aloqasi"
+    },
+    "bookingInfo": {
+      "guests": "Mehmonlar",
+      "guestsCount": "Mehmonlar soni",
+      "bookedDate": "Bron qilingan sana", 
+      "requestId": "So'rov ID",
+      "timeSlots": "Zahiralangan vaqt oralig'i",
+      "fullDayBooking": "To'liq kun broni",
+      "fullDayDescription": "Bu bron to'liq kunni qamrab oladi"
+    },
+    "contactInfo": {
+      "titles": {
+        "client": "Mijoz",
+        "host": "Joy egasi",
+        "agent": "Agent",
+        "supportContact": "Yordam aloqasi"
+      },
+      "labels": {
+        "name": "Ism",
+        "email": "Elektron pochta", 
+        "phone": "Telefon",
+        "hours": "Soatlar",
+        "contactHours": "Aloqa soatlari",
+        "agent": "Agent"
+      },
+      "updated": "Yangilangan",
+      "updateNote": "* Aloqa ma'lumotlari bron qilish yaratilgandan keyin yangilangan",
+      "unavailable": "Aloqa ma'lumotlari hozir mavjud emas. Iltimos, keyinroq urinib ko'ring.",
+      "support": {
+        "note": "Bron qilish bilan bog'liq savollar, savollar yoki yordam uchun",
+        "hours": "Du-Ju: 9:00 - 18:00, Sh: 10:00 - 16:00"
+      }
+    },
+    "pricing": {
+      "subtotal": "Oraliq jami",
+      "protectionPlan": "Himoya rejasi",
+      "total": "Jami"
+    },
+    "paymentStatus": {
+      "paymentCompleted": "To'lov yakunlandi",
+      "paymentCompletedAndPaid": "To'lov yakunlandi va joy egasiga to'landi",
+      "awaitingPayment": "To'lovni kutish",
+      "messages": {
+        "hostPaid": "Joy egasiga {{date}} sanasida to'landi",
+        "hostPaidGeneric": "Joy egasiga ushbu bron qilish uchun to'langan",
+        "readyToPayHost": "Joy egasiga to'lash uchun tayyor",
+        "paymentPendingFromAgent": "Agent tomonidan to'lov kutilmoqda",
+        "clientCanProceed": "Mijoz endi bron qilishni yakunlash uchun to'lov bilan davom eta oladi"
+      }
+    },
+    "payment": {
+      "selectedMessage": "Sizning bron qilishingiz tanlandi! Endi to'lov bilan davom eta olasiz.",
+      "pendingMessage": "To'lov variantlari broningiz joy egasi tomonidan tanlanganidan keyin mavjud bo'ladi.",
+      "notAvailableTitle": "To'lov qilish mavjud emas",
+      "notAvailableMessage": "Joy egasi ruhsat berganidan keyin to'lov usullari mavjud bo'ladi.",
+      "refreshStatus": "Holatni yangilash",
+      "providers": {
+        "click": "Click orqali to'lash",
+        "payme": "Payme orqali to'lash", 
+        "octo": "Octo orqali to'lash",
+        "clickAvailable": "Click Pay - Tanlanganidan keyin mavjud",
+        "paymeAvailable": "Payme - Tanlanganidan keyin mavjud",
+        "octoAvailable": "Octo Pay - Tanlanganidan keyin mavjud",
+        "genericAvailable": "Bron qilish tanlanganidan keyin mavjud"
+      }
+    },
+    "refundPolicy": {
+      "title": "Bekor qilish va qaytarish siyosati",
+      "policyAtTime": "Bron qilish vaqtidagi siyosat",
+      "noPolicy": "Bron qilish vaqtida aniq qaytarish siyosati qo'llanilmagan.",
+      "contactSupport": "Bekor qilish va qaytarish so'rovlari bo'yicha yordam uchun mijozlar xizmatiga murojaat qiling.",
+      "protectionPlan": {
+        "active": "Mijoz himoya rejasi: Faol",
+        "notSelected": "Mijoz himoya rejasi: Tanlanmagan"
+      },
+      "options": {
+        "flexible14Day": "Moslashuvchan 14-kun: Kelishdan 14+ kun oldin bekor qilsangiz to'liq qaytarish",
+        "moderate7Day": "O'rtacha 7-kun: Kelishdan 7+ kun oldin bekor qilsangiz 50% qaytarish",
+        "strict": "Qat'iy: Kelishdan 6 kun oldin bekor qilsangiz qaytarish yo'q",
+        "nonRefundable": "Qaytarilmaydigan: Qaytarish ruxsat etilmagan",
+        "rescheduleOnly": "Faqat qayta rejalashtirish: Qaytarish yo'q, ammo 3+ kun oldin xabar berish bilan qayta rejalashtirish mumkin",
+        "protectionPlan": "Mijoz himoya rejasi: Qo'shimcha sug'urta qamrovi mavjud"
+      }
+    },
+    "propertyDetails": {
+      "checkIn": "Kelish: {{time}}",
+      "checkOut": "Ketish: {{time}}"
+    },
+    "progress": {
+      "steps": {
+        "requestSubmitted": "So'rov yuborildi",
+        "selectedForPayment": "To'lov uchun tanlandi", 
+        "pendingPayment": "To'lovni kutish",
+        "paymentComplete": "To'lov yakunlandi",
+        "confirmed": "Tasdiqlandi",
+        "paidToHost": "Joy egasiga to'landi"
+      },
+      "descriptions": {
+        "requestSubmitted": "Bron qilish so'rovi yuborildi va ko'rib chiqilishi kutilmoqda",
+        "selectedForPayment": "Bron qilish joy egasi tomonidan tanlandi, to'lov bilan davom eting",
+        "pendingPayment": "Bron qilishni tasdiqlash uchun to'lov talab qilinadi",
+        "paymentComplete": "To'lov tasdiqlandi, yakuniy tasdiqlash kutilmoqda",
+        "confirmed": "Bron qilish tasdiqlandi va tayyor",
+        "paidToHost": {
+          "completed": "Agent joy egasiga to'ladi",
+          "agentPending": "To'lovni yakunlangan deb belgilash uchun tayyor",
+          "hostPending": "Agent tomonidan to'lovni kutish"
+        }
+      },
+      "status": {
+        "currentStep": "Joriy qadam",
+        "byAgent": "agent tomonidan"
+      },
+      "rejected": {
+        "title": "Bron qilish mavjud emas", 
+        "message": "Afsuski, so'ralgan vaqt oralig'i endi mavjud emas. Bu boshqa bron qilishning tasdiqlanishi yoki mavjudlikdagi o'zgarishlar bilan bog'liq bo'lishi mumkin. Noqulaylik uchun uzr so'raymiz.",
+        "requestDeclined": "So'rov rad etildi",
+        "viewAvailable": "Mavjud vaqtlarni ko'rish",
+        "browseOther": "Boshqa joylarni ko'rish"
+      },
+      "nextSteps": {
+        "title": "Keyingi qadamlar",
+        "selectedMessage": "Sizning bron qilishingiz joy egasi tomonidan tanlandi. Iltimos, rezervatsiyangizni tasdiqlash uchun to'lov bilan davom eting.",
+        "confirmedTitle": "Bron qilish tasdiqlandi"
+      }
+    },
+    "timeline": {
+      "title": "Bron qilish vaqt chizig'i",
+      "steps": {
+        "requestSubmitted": "So'rov yuborildi",
+        "selectedForPayment": "To'lov uchun tanlandi",
+        "pendingPayment": "To'lovni kutish",
+        "paymentComplete": "To'lov yakunlandi", 
+        "confirmed": "Tasdiqlandi",
+        "paidToHost": "Joy egasiga to'landi",
+        "rejected": "Rad etildi"
+      },
+      "status": {
+        "pending": "Kutilmoqda",
+        "unknown": "Holat o'tishi sodir bo'ldi",
+        "noTimestamp": "Vaqt belgisi mavjud emas"
+      },
+      "paidToHostDescription": {
+        "completed": "Agent to'lovni yakunlangan deb belgiladi",
+        "agentPending": "To'lovni yakunlangan deb belgilash uchun tayyor", 
+        "hostPending": "Agent tomonidan to'lovni kutish"
+      }
+    },
+    "actions": {
+      "processing": "Qayta ishlanmoqda...",
+      "buttons": {
+        "approve": "Tasdiqlash",
+        "reject": "Rad etish", 
+        "cancel": "Bekor qilish",
+        "markPaid": "Joy egasiga to'langan deb belgilash",
+        "select": "Tanlash",
+        "selectBooking": "Bron qilishni tanlash",
+        "deleteFromDatabase": "Ma'lumotlar bazasidan o'chirish"
+      },
+      "confirmations": {
+        "approve": "Ushbu bron qilishni tasdiqlashni xohlaysizmi?",
+        "reject": "Ushbu bron qilishni rad etishni xohlaysizmi?",
+        "cancel": "Ushbu bron qilishni bekor qilishni xohlaysizmi?",
+        "markPaid": "Joy egasiga to'lovni yakunlangan deb belgilashni xohlaysizmi?",
+        "paymentConfirmed": "To'lov tasdiqlandi - Tasdiqlash",
+        "approveWithoutPayment": "To'lov tasdiqlanmasdan tasdiqlash",
+        "select": "Ushbu bron qilishni tanlamoqchimisiz?",
+        "deleteFromDatabase": "Ushbu bron qilishni ma'lumotlar bazasidan butunlay o'chirishni xohlaysizmi? Bu amalni bekor qilish mumkin emas."
+      }
+    },
+    "paymentResponse": {
+      "title": "To'lov javobi (Nosozliklarni tuzatish)",
+      "labels": {
+        "bookingId": "Bron qilish raqami:",
+        "action": "Amal:",
+        "timestamp": "Vaqt belgisi:",
+        "errorCode": "Xato kodi:",
+        "fullClickResponse": "To'liq Click javobi:",
+        "completeResponse": "To'liq to'lov javobi obyekti:",
+        "paymentDate": "To'lov sanasi:",
+        "paymentId": "To'lov Invoice ID:",
+        "provider": "{{provider}} to'lovi",
+        "status": "Holat"
+      },
+      "status": {
+        "unknown": "NOMA'LUM",
+        "created": "Yaratilgan",
+        "processing": "Jarayonda", 
+        "success": "Muvaffaqiyatli",
+        "cancelled": "Bekor qilingan",
+        "failed": "Muvaffaqiyatsiz",
+        "expired": "Muddati tugagan",
+        "deleted": "O'chirilgan"
+      }
+    }
+  }
+}

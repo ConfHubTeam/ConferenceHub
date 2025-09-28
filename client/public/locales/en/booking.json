@@ -34,19 +34,6 @@
       "login": "Login to Book Selected Time Slots",
       "loginGeneral": "Login to Book This Conference Room",
       "signUp": "Sign up here"
-    },
-    "protectionPlan": {
-      "title": "Protection Plan",
-      "active": "Protection Plan Active",
-      "description": "Cancel anytime and get a full refund of your booking amount.",
-      "ofBooking": "of booking",
-      "coverage": {
-        "title": "What's covered:",
-        "fullRefund": "100% refund of booking price",
-        "noQuestions": "No questions asked cancellation",
-        "feeNonRefundable": "Protection fee is non-refundable"
-      },
-      "activeMessage": "You can cancel anytime and receive a full refund of your booking amount."
     }
   },
   "timeSlotModal": {
@@ -80,7 +67,6 @@
     "breakdown": {
       "title": "Pricing Breakdown",
       "subtotal": "Subtotal",
-      "protectionPlan": "Protection Plan",
       "total": "Total",
       "basePrice": "Base price",
       "forGuests": "for"
@@ -330,7 +316,6 @@
     },
     "pricing": {
       "subtotal": "Subtotal",
-      "protectionPlan": "Protection Plan",
       "total": "Total"
     },
     "paymentStatus": {
@@ -384,17 +369,12 @@
       "policyAtTime": "Policy at Time of Booking",
       "noPolicy": "No specific refund policy was captured at the time of booking.",
       "contactSupport": "Please contact customer support for assistance with cancellation and refund requests.",
-      "protectionPlan": {
-        "active": "Client Protection Plan: Active",
-        "notSelected": "Client Protection Plan: Not Selected"
-      },
       "options": {
         "flexible14Day": "Flexible 14-Day: Full refund if canceled 14+ days before check-in",
         "moderate7Day": "Moderate 7-Day: 50% refund if canceled 7+ days before check-in",
         "strict": "Strict: No refund if canceled less than 6 days before check-in",
         "nonRefundable": "Non-Refundable: No refunds allowed",
-        "rescheduleOnly": "Reschedule Only: No refund, but reschedule allowed with 3+ days notice",
-        "protectionPlan": "Client Protection Plan: Additional insurance coverage available"
+        "rescheduleOnly": "Reschedule Only: No refund, but reschedule allowed with 3+ days notice"
       }
     },
     "propertyDetails": {

@@ -21,14 +21,13 @@ export const getTranslationData = (namespace, language = 'en') => {
       en: {
         refundPolicies: {
           title: "Cancellation & Refund Policy",
-          protectionPlanAvailable: "Protection Plan Available",
-          protectionPlanDescription: "Add protection during booking for peace of mind cancellation (+{{percentage}}% of booking price)",
+
           importantNotes: {
             title: "Important Notes",
             timezone: "Cancellation policies apply to the booking start time in Uzbekistan timezone",
             processingTime: "Refunds are processed within 3-5 business days",
             serviceFees: "Service fees are non-refundable unless specified otherwise",
-            protectionFee: "Protection Plan fee is non-refundable but covers the full booking amount"
+
           },
           policies: {
             flexible_14_day: {
@@ -66,13 +65,7 @@ export const getTranslationData = (namespace, language = 'en') => {
               shortDescription: "Reschedule allowed (3+ days notice)",
               detailedDescription: "No monetary refunds available, but you can reschedule your booking if you provide at least 3 days notice."
             },
-            client_protection_plan: {
-              label: "Protection Plan Available",
-              shortLabel: "Protection Plan",
-              description: "Add {{percentage}}% fee for anytime cancellation protection",
-              shortDescription: "Protection plan available (+{{percentage}}%)",
-              detailedDescription: "For an additional {{percentage}}% fee, you can cancel anytime and receive a full refund according to the base policy or better."
-            }
+
           }
         }
       }

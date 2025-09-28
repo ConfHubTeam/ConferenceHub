@@ -3,16 +3,6 @@ export const PRICING_CONFIG = {
   DEFAULT_CURRENCY: 'UZS',
 };
 
-// Protection Plan Configuration
-export const PROTECTION_PLAN_CONFIG = {
-  // Get protection percentage from environment variable, default to 20%
-  PROTECTION_PERCENTAGE: parseInt(import.meta.env.VITE_PROTECTION_PLAN_PERCENTAGE) || 20,
-  // Calculate protection rate for calculations automatically from percentage
-  get PROTECTION_RATE() {
-    return this.PROTECTION_PERCENTAGE / 100;
-  },
-};
-
 // Helper function to format hour to 12-hour format
 const formatHourTo12 = (hour24) => {
   if (!hour24) return "";
@@ -24,7 +14,7 @@ const formatHourTo12 = (hour24) => {
 };
 
 // Calculate total hours and pricing from selected calendar dates
-export const calculateBookingPricing = (selectedCalendarDates, placeDetail, protectionPlanSelected = false) => {
+export const calculateBookingPricing = (selectedCalendarDates, placeDetail) => {
   if (!selectedCalendarDates || selectedCalendarDates.length === 0) {
     return {
       totalHours: 0,
@@ -33,7 +23,6 @@ export const calculateBookingPricing = (selectedCalendarDates, placeDetail, prot
       regularPrice: 0,
       fullDayPrice: 0,
       totalPrice: 0,
-      protectionPlanFee: 0,
       finalTotal: 0,
       breakdown: []
     };
@@ -88,16 +77,12 @@ export const calculateBookingPricing = (selectedCalendarDates, placeDetail, prot
     });
   });
 
-  // Calculate protection plan fee using configurable rate
-  const protectionPlanFee = protectionPlanSelected ? Math.round(totalPrice * PROTECTION_PLAN_CONFIG.PROTECTION_RATE) : 0;
-  
-  // Calculate final total with protection plan
-  const finalTotal = totalPrice + protectionPlanFee;
+  // Calculate final total
+  const finalTotal = totalPrice;
 
   return {
     totalHours,
     totalPrice,
-    protectionPlanFee,
     finalTotal,
     breakdown
   };

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { VALID_REFUND_OPTIONS, getTranslatedRefundPolicyMetadata, isProtectionPlanAvailable, getPrimaryRefundPolicy } from "../utils/refundPolicyConfig";
+import { VALID_REFUND_OPTIONS, getTranslatedRefundPolicyMetadata, getPrimaryRefundPolicy } from "../utils/refundPolicyConfig";
 
 // Context for managing policies filter state
 const PoliciesFilterContext = createContext();
@@ -85,8 +85,7 @@ export const PoliciesFilterProvider = ({ children }) => {
   const popularPolicies = useMemo(() => [
     'flexible_14_day',
     'moderate_7_day', 
-    'strict',
-    'client_protection_plan'
+    'strict'
   ], []);
 
   // Filter function for places based on selected policies
