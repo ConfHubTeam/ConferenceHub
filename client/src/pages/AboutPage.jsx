@@ -151,45 +151,45 @@ const AboutPage = () => {
                                       // Paragraph 1: Venues and spaces
                     [
                       {
-                        src: "https://plus.unsplash.com/premium_photo-1661879435429-a396d927c686?w=150&h=150&fit=crop&crop=center&auto=format&q=80",
+                        src: "/images/landingpage/about/1-1.avif",
                         alt: "Modern meeting room design concept"
                       },
                       {
-                        src: "https://plus.unsplash.com/premium_photo-1680807988328-7ba28ad24d9f?w=150&h=150&fit=crop&crop=center&auto=format&q=80",
+                        src: "/images/landingpage/about/1-2.avif",
                         alt: "Large auditorium with rows of blue chairs"
                       },
                       {
-                        src: "https://plus.unsplash.com/premium_photo-1664391631217-d53431f0effd?w=150&h=150&fit=crop&crop=center&auto=format&q=80",
+                        src: "/images/landingpage/about/1-3.png",
                         alt: "Large banquet hall with tables and chairs"
                       }
                     ],
                   // Paragraph 2: Search and booking
                   [
                     {
-                      src: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=120&h=120&fit=crop&crop=center&auto=format&q=80",
+                      src: "/images/landingpage/about/2-1.avif",
                       alt: "Digital search interface"
                     },
                     {
-                      src: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=120&h=120&fit=crop&crop=center&auto=format&q=80",
+                      src: "/images/landingpage/about/2-2.avif",
                       alt: "Online booking system"
                     },
                     {
-                      src: "https://images.unsplash.com/photo-1556740738-b6a63e27c4df?w=120&h=120&fit=crop&crop=center&auto=format&q=80",
+                      src: "/images/landingpage/about/2-3.jpg",
                       alt: "Mobile app interface"
                     }
                   ],
                   // Paragraph 3: Mission and freedom
                   [
                     {
-                      src: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=120&h=120&fit=crop&crop=center&auto=format&q=80",
+                      src: "/images/landingpage/about/3-1.avif",
                       alt: "Team collaboration"
                     },
                     {
-                      src: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=120&h=120&fit=crop&crop=center&auto=format&q=80",
+                      src: "/images/landingpage/about/3-2.jpg",
                       alt: "Creative workspace"
                     },
                     {
-                      src: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=120&h=120&fit=crop&crop=center&auto=format&q=80",
+                      src: "/images/landingpage/about/3-3.jpg",
                       alt: "Celebration event"
                     }
                   ]
