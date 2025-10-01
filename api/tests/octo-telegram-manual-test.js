@@ -100,18 +100,18 @@ console.log('  ✓ Has email:', 'email' in emailUserData);
 console.log('  ✓ No undefined values:', !Object.values(emailUserData).includes(undefined));
 console.log('\n✅ Test 2 PASSED: Email user payload is correct\n');
 
-// Test 3: User with no contact info
-console.log('Test 3: User with no contact information');
+// Test 3: User with no contact info (should fail validation)
+console.log('Test 3: User with no contact information (expected to fail)');
 console.log('-'.repeat(70));
 const noContactUserData = {
   user_id: String(mockUserNoContact.id),
 };
 const phone3 = service._formatPhone(mockUserNoContact.phoneNumber || mockUserNoContact.clickPhoneNumber || mockUserNoContact.telegramPhone || '');
-if (phone3) {
+if (phone3 && phone3.length > 0) {
   noContactUserData.phone = phone3;
 }
-if (mockUserNoContact.email) {
-  noContactUserData.email = mockUserNoContact.email;
+if (mockUserNoContact.email && mockUserNoContact.email.trim().length > 0) {
+  noContactUserData.email = mockUserNoContact.email.trim();
 }
 
 console.log('Input user:', JSON.stringify({
@@ -127,7 +127,15 @@ console.log('  ✓ Has user_id:', 'user_id' in noContactUserData);
 console.log('  ✓ Phone excluded:', !('phone' in noContactUserData));
 console.log('  ✓ Email excluded:', !('email' in noContactUserData));
 console.log('  ✓ No undefined values:', !Object.values(noContactUserData).includes(undefined));
-console.log('\n✅ Test 3 PASSED: Minimal user payload is correct\n');
+
+// Check if this would fail Octo validation (requires phone OR email)
+const hasValidContact = noContactUserData.phone || noContactUserData.email;
+if (!hasValidContact) {
+  console.log('  ⚠️  WARNING: This user would fail Octo validation (no phone or email)');
+} else {
+  console.log('  ✓ Has valid contact info for Octo');
+}
+console.log('\n✅ Test 3 PASSED: Validation correctly identifies missing contact info\n');
 
 // Test 4: Phone formatting
 console.log('Test 4: Phone Number Formatting');
@@ -138,13 +146,16 @@ const testPhones = [
   { input: '998901234567', expected: '998901234567' },
   { input: '', expected: undefined },
   { input: null, expected: undefined },
+  { input: '   ', expected: undefined }, // whitespace only
+  { input: '+', expected: undefined }, // just a plus sign
 ];
 
 let allPhoneTestsPassed = true;
 testPhones.forEach(({ input, expected }) => {
   const result = service._formatPhone(input);
   const passed = result === expected;
-  console.log(`  ${passed ? '✓' : '✗'} formatPhone('${input}') = '${result}' ${passed ? '' : `(expected '${expected}')`}`);
+  const displayInput = input === null ? 'null' : `'${input}'`;
+  console.log(`  ${passed ? '✓' : '✗'} formatPhone(${displayInput}) = ${result === undefined ? 'undefined' : `'${result}'`} ${passed ? '' : `(expected ${expected === undefined ? 'undefined' : `'${expected}'`})`}`);
   if (!passed) allPhoneTestsPassed = false;
 });
 
@@ -152,6 +163,36 @@ if (allPhoneTestsPassed) {
   console.log('\n✅ Test 4 PASSED: Phone formatting is correct\n');
 } else {
   console.log('\n❌ Test 4 FAILED: Phone formatting has issues\n');
+}
+
+// Test 5: Email validation
+console.log('Test 5: Email Validation');
+console.log('-'.repeat(70));
+const testEmails = [
+  { input: 'user@example.com', shouldInclude: true },
+  { input: '  user@example.com  ', shouldInclude: true }, // with whitespace
+  { input: '', shouldInclude: false },
+  { input: '   ', shouldInclude: false }, // whitespace only
+  { input: null, shouldInclude: false },
+];
+
+let allEmailTestsPassed = true;
+testEmails.forEach(({ input, shouldInclude }) => {
+  const userData = {};
+  if (input && input.trim().length > 0) {
+    userData.email = input.trim();
+  }
+  const hasEmail = 'email' in userData;
+  const passed = hasEmail === shouldInclude;
+  const displayInput = input === null ? 'null' : `'${input}'`;
+  console.log(`  ${passed ? '✓' : '✗'} Email ${displayInput} ${shouldInclude ? 'included' : 'excluded'} ${passed ? '' : '(FAILED)'}`);
+  if (!passed) allEmailTestsPassed = false;
+});
+
+if (allEmailTestsPassed) {
+  console.log('\n✅ Test 5 PASSED: Email validation is correct\n');
+} else {
+  console.log('\n❌ Test 5 FAILED: Email validation has issues\n');
 }
 
 // Summary

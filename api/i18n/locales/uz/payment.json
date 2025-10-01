@@ -8,5 +8,6 @@
   "insufficientFunds": "Mablag' yetarli emas",
   "cardDeclined": "Karta rad etildi",
   "expiredCard": "Karta muddati tugagan",
-  "processingError": "To'lovni qayta ishlash xatosi"
+  "processingError": "To'lovni qayta ishlash xatosi",
+  "phoneRequired": "Octo orqali to'lov uchun telefon raqami talab qilinadi. Iltimos, profilingizga telefon raqamini qo'shing."
 }

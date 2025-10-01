@@ -127,7 +127,22 @@ const prepare = async (req, res) => {
     });
   } catch (error) {
     console.error('Octo prepare error:', error);
-    return res.status(500).json({ error: 'Failed to prepare Octo payment', details: error.message });
+    
+    // Use translated error message based on error type
+    let errorMessage;
+    let statusCode = 500;
+    
+    if (error.message === 'OCTO_PHONE_REQUIRED') {
+      errorMessage = req.t('phoneRequired', { ns: 'payment' });
+      statusCode = 400; // Bad request - user action required
+    } else {
+      errorMessage = req.t('failed', { ns: 'payment' });
+    }
+    
+    return res.status(statusCode).json({ 
+      error: errorMessage,
+      code: error.message === 'OCTO_PHONE_REQUIRED' ? 'PHONE_REQUIRED' : 'PAYMENT_FAILED'
+    });
   }
 };
 

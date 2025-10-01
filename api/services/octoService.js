@@ -51,20 +51,29 @@ class OctoService {
       }
     };
 
-    // Build request payload - only include fields that exist
+    // Build user_data payload
     const userData = {
       user_id: String(user.id),
     };
     
-    // Only add phone if user has one
+    // Add phone (required by Octo API)
     const phone = this._formatPhone(user.phoneNumber || user.clickPhoneNumber || user.telegramPhone || '');
     if (phone) {
       userData.phone = phone;
     }
     
-    // Only add email if user has one (Telegram users might not have email)
-    if (user.email) {
-      userData.email = user.email;
+    // Add email with Telegram fallbacks
+    if (user.email && typeof user.email === 'string' && user.email.trim()) {
+      userData.email = user.email.trim();
+    } else if (user.telegramId) {
+      userData.email = `telegram_${user.telegramId}@getspace.uz`;
+    } else if (user.telegramUsername) {
+      userData.email = `${user.telegramUsername}@telegram.getspace.uz`;
+    }
+
+    // Validate: Phone is required
+    if (!userData.phone) {
+      throw new Error('OCTO_PHONE_REQUIRED');
     }
 
     const payload = {
@@ -150,6 +159,8 @@ class OctoService {
     if (!phone) return undefined;
     // Keep digits only, ensure starts with country code (998) if looks like UZ local
     const digits = phone.replace(/\D/g, '');
+    // Return undefined if no valid digits found
+    if (!digits || digits.length === 0) return undefined;
     if (digits.length === 9) return `998${digits}`;
     return digits;
   }

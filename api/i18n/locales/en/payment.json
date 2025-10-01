@@ -8,5 +8,6 @@
   "insufficientFunds": "Insufficient funds",
   "cardDeclined": "Card declined",
   "expiredCard": "Card expired",
-  "processingError": "Payment processing error"
+  "processingError": "Payment processing error",
+  "phoneRequired": "Phone number is required for Octo payments. Please add a phone number to your profile."
 }
