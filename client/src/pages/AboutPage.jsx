@@ -151,26 +151,26 @@ const AboutPage = () => {
                                       // Paragraph 1: Venues and spaces
                     [
                       {
-                        src: "/images/landingpage/about/1-1.avif",
+                        src: "/images/landingpage/about/1-1.jpg",
                         alt: "Modern meeting room design concept"
                       },
                       {
-                        src: "/images/landingpage/about/1-2.avif",
+                        src: "/images/landingpage/about/1-2.jpg",
                         alt: "Large auditorium with rows of blue chairs"
                       },
                       {
-                        src: "/images/landingpage/about/1-3.png",
+                        src: "/images/landingpage/about/1-3.jpg",
                         alt: "Large banquet hall with tables and chairs"
                       }
                     ],
                   // Paragraph 2: Search and booking
                   [
                     {
-                      src: "/images/landingpage/about/2-1.avif",
+                      src: "/images/landingpage/about/2-1.jpg",
                       alt: "Digital search interface"
                     },
                     {
-                      src: "/images/landingpage/about/2-2.avif",
+                      src: "/images/landingpage/about/2-2.jpg",
                       alt: "Online booking system"
                     },
                     {
@@ -181,7 +181,7 @@ const AboutPage = () => {
                   // Paragraph 3: Mission and freedom
                   [
                     {
-                      src: "/images/landingpage/about/3-1.avif",
+                      src: "/images/landingpage/about/3-1.jpg",
                       alt: "Team collaboration"
                     },
                     {
