@@ -1,0 +1,34 @@
+{
+  "navigation": {
+    "back": "Back"
+  },
+  "page": {
+    "title": "How to Use getspace",
+    "subtitle": "Learn how to make the most of our platform with these easy-to-follow video tutorials",
+    "videoPlaceholder": "Video Tutorial",
+    "clientTutorial": {
+      "title": "For Clients: Finding & Booking Spaces",
+      "description": "Learn how to search for the perfect space, filter by your requirements, view availability, and complete your booking in just a few clicks."
+    },
+    "hostTutorial": {
+      "title": "For Hosts: Listing Your Space",
+      "description": "Discover how to create compelling listings, manage your calendar, set pricing, handle bookings, and maximize your space's potential on our platform."
+    },
+    "features": {
+      "title": "Key Features You'll Learn",
+      "search": {
+        "title": "Smart Search",
+        "description": "Use filters to find exactly what you need by location, size, amenities, and availability."
+      },
+      "booking": {
+        "title": "Easy Booking",
+        "description": "Book spaces instantly with real-time availability and instant confirmation."
+      },
+      "payment": {
+        "title": "Secure Payment",
+        "description": "Pay safely with multiple payment options and automatic receipts."
+      }
+    },
+    "copyright": "© {{year}} GetSpace. All rights reserved."
+  }
+}
