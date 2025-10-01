@@ -7,7 +7,7 @@
  * - Authentication state sync
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 /**
  * Get user's current language preference
