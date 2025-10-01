@@ -108,6 +108,7 @@
     "invalidPhone": "Iltimos, to'g'ri telefon raqamini kiriting",
     "failedToLoadPhone": "Telefon raqamini yuklab bo'lmadi",
     "bookingNotSelected": "Xost sizning bandlashingizni tanlaganidan keyin to'lov mavjud bo'ladi",
-    "paymentFailed": "To'lov yaratilmadi. Iltimos, qayta urinib ko'ring."
+    "paymentFailed": "To'lov yaratilmadi. Iltimos, qayta urinib ko'ring.",
+    "octoPhoneRequired": "Octo orqali to'lov uchun telefon raqami talab qilinadi. Iltimos, profilingizga telefon raqamini qo'shing."
   }
 }

@@ -107,7 +107,8 @@
     "phoneRequired": "Phone number is required",
     "invalidPhone": "Please enter a valid phone number",
     "failedToLoadPhone": "Failed to load phone number",
-  "bookingNotSelected": "Payment will be available once the host selects your booking",
-  "paymentFailed": "Payment creation failed. Please try again."
+    "bookingNotSelected": "Payment will be available once the host selects your booking",
+    "paymentFailed": "Payment creation failed. Please try again.",
+    "octoPhoneRequired": "Phone number is required for Octo payments. Please add a phone number to your profile."
   }
 }
