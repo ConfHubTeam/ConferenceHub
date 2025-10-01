@@ -51,7 +51,22 @@ class OctoService {
       }
     };
 
-    // Build request payload
+    // Build request payload - only include fields that exist
+    const userData = {
+      user_id: String(user.id),
+    };
+    
+    // Only add phone if user has one
+    const phone = this._formatPhone(user.phoneNumber || user.clickPhoneNumber || user.telegramPhone || '');
+    if (phone) {
+      userData.phone = phone;
+    }
+    
+    // Only add email if user has one (Telegram users might not have email)
+    if (user.email) {
+      userData.email = user.email;
+    }
+
     const payload = {
       octo_shop_id: this.shopId,
       octo_secret: this.secret,
@@ -59,11 +74,7 @@ class OctoService {
       auto_capture: true,
       test: !!test,
       init_time: initTime,
-      user_data: {
-        user_id: String(user.id),
-        phone: this._formatPhone(user.phoneNumber || user.clickPhoneNumber || user.telegramPhone || ''),
-        email: user.email || undefined,
-      },
+      user_data: userData,
       total_sum: total,
   currency: 'UZS',
   // Avoid touching booking.place/uniqueRequestId to prevent extra queries/locks
