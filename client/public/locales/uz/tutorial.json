@@ -1,0 +1,34 @@
+{
+  "navigation": {
+    "back": "Orqaga"
+  },
+  "page": {
+    "title": "getspace dan qanday foydalanish kerak",
+    "subtitle": "Ushbu oson video darsliklar yordamida platformamizdan maksimal darajada foydalanishni o'rganing",
+    "videoPlaceholder": "Video darslik",
+    "clientTutorial": {
+      "title": "Mijozlar uchun: Joy topish va bronlash",
+      "description": "Mukammal joyni qanday qidirishni, talablaringiz bo'yicha filtrlashni, mavjudlikni ko'rishni va bir necha bosish bilan bronlashni yakunlashni o'rganing."
+    },
+    "hostTutorial": {
+      "title": "Xostlar uchun: Joyingizni ro'yxatga olish",
+      "description": "Jozibali e'lonlar yaratish, kalendaringizni boshqarish, narxlarni belgilash, bronlarni boshqarish va platformamizda joyingizning salohiyatini maksimal darajada oshirishni kashf eting."
+    },
+    "features": {
+      "title": "Siz o'rganadiganasosiy xususiyatlar",
+      "search": {
+        "title": "Aqlli qidiruv",
+        "description": "Joylashuv, hajmi, qulayliklar va mavjudlik bo'yicha kerak narsangizni topish uchun filtrlardan foydalaning."
+      },
+      "booking": {
+        "title": "Oson bronlash",
+        "description": "Real vaqtda mavjudlik va tezkor tasdiqlash bilan joylarni darhol bronlang."
+      },
+      "payment": {
+        "title": "Xavfsiz to'lov",
+        "description": "Bir nechta to'lov variantlari va avtomatik kvitansiyalar bilan xavfsiz to'lang."
+      }
+    },
+    "copyright": "© {{year}} GetSpace. Barcha huquqlar himoyalangan."
+  }
+}

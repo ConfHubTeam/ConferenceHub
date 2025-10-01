@@ -24,7 +24,8 @@
       "toggleMenu": "Переключить меню",
       "closeMenu": "Закрыть меню"
     },
-    "aboutUs": "О нас"
+    "aboutUs": "О нас",
+    "tutorial": "Учебник"
   },
   "accountNav": {
     "profile": "Профиль",
