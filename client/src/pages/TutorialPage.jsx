@@ -156,26 +156,16 @@ const TutorialPage = () => {
                 {t("page.clientTutorial.description")}
               </p>
 
-              {/* YouTube Video Placeholder */}
-              <div className="relative w-full aspect-video bg-gray-100 rounded-2xl overflow-hidden shadow-lg border-2 border-gray-200">
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  {/* YouTube Play Button Style */}
-                  <div className="mb-4">
-                    <svg
-                      className="w-20 h-20 text-red-600"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                    </svg>
-                  </div>
-                  <p className="text-gray-600 font-semibold text-lg">
-                    {t("page.videoPlaceholder")}
-                  </p>
-                  <p className="text-gray-500 text-sm mt-2">
-                    YouTube Video Embed Coming Soon
-                  </p>
-                </div>
+              {/* YouTube Video Embed */}
+              <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-lg">
+                <iframe
+                  className="w-full h-full"
+                  src="https://www.youtube.com/embed/9jbAx1mwvYM"
+                  title="Client Tutorial - How to Find and Book Spaces"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                ></iframe>
               </div>
             </div>
           </div>
@@ -212,26 +202,16 @@ const TutorialPage = () => {
                 {t("page.hostTutorial.description")}
               </p>
 
-              {/* YouTube Video Placeholder */}
-              <div className="relative w-full aspect-video bg-gray-100 rounded-2xl overflow-hidden shadow-lg border-2 border-gray-200">
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  {/* YouTube Play Button Style */}
-                  <div className="mb-4">
-                    <svg
-                      className="w-20 h-20 text-red-600"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                    </svg>
-                  </div>
-                  <p className="text-gray-600 font-semibold text-lg">
-                    {t("page.videoPlaceholder")}
-                  </p>
-                  <p className="text-gray-500 text-sm mt-2">
-                    YouTube Video Embed Coming Soon
-                  </p>
-                </div>
+              {/* YouTube Video Embed */}
+              <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-lg">
+                <iframe
+                  className="w-full h-full"
+                  src="https://www.youtube.com/embed/KiOSkW8Y15c"
+                  title="Host Tutorial - How to List Your Space"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                ></iframe>
               </div>
             </div>
           </div>
