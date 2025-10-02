@@ -160,11 +160,26 @@ const TutorialPage = () => {
               <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-lg">
                 <iframe
                   className="w-full h-full"
-                  src="https://www.youtube.com/embed/9jbAx1mwvYM"
+                  src={`https://www.youtube-nocookie.com/embed/9jbAx1mwvYM?${new URLSearchParams({
+                    autoplay: '0',
+                    rel: '0',
+                    modestbranding: '1',
+                    playsinline: '1',
+                    enablejsapi: '1',
+                    origin: typeof window !== 'undefined' ? window.location.origin : '',
+                    widget_referrer: typeof window !== 'undefined' ? window.location.href : '',
+                    iv_load_policy: '3',
+                    fs: '1',
+                    controls: '1',
+                    disablekb: '0'
+                  }).toString()}`}
                   title="Client Tutorial - How to Find and Book Spaces"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox"
                 ></iframe>
               </div>
             </div>
@@ -206,11 +221,26 @@ const TutorialPage = () => {
               <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-lg">
                 <iframe
                   className="w-full h-full"
-                  src="https://www.youtube.com/embed/KiOSkW8Y15c"
+                  src={`https://www.youtube-nocookie.com/embed/KiOSkW8Y15c?${new URLSearchParams({
+                    autoplay: '0',
+                    rel: '0',
+                    modestbranding: '1',
+                    playsinline: '1',
+                    enablejsapi: '1',
+                    origin: typeof window !== 'undefined' ? window.location.origin : '',
+                    widget_referrer: typeof window !== 'undefined' ? window.location.href : '',
+                    iv_load_policy: '3',
+                    fs: '1',
+                    controls: '1',
+                    disablekb: '0'
+                  }).toString()}`}
                   title="Host Tutorial - How to List Your Space"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox"
                 ></iframe>
               </div>
             </div>
