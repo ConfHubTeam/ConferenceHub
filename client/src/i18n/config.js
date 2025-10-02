@@ -27,7 +27,7 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    lng: undefined, // Let LanguageDetector determine the language
+    // Don't set lng explicitly - let LanguageDetector handle it, fallback to Russian
     fallbackLng: "ru", // Default to Russian when no language is detected
     debug: false, // Disable debug logs to reduce console noise
 
@@ -49,6 +49,12 @@ i18n
       excludeCacheFor: ["cimode"],
       // Check specific keys and ensure they persist
       checkWhitelist: true,
+      // Set to true to fall back to fallbackLng when detection fails
+      convertDetectedLanguage: (lng) => {
+        // Ensure we only use supported languages
+        const supportedLngs = ["en", "ru", "uz"];
+        return supportedLngs.includes(lng) ? lng : "ru";
+      }
     },
 
     // Backend configuration for lazy loading
