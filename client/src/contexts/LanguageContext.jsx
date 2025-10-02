@@ -24,7 +24,7 @@ export const LanguageProvider = ({ children }) => {
   const [availableLanguages] = useState(() => getAvailableLanguages());
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   
-  // Get current language from i18n or storage
+  // Get current language from i18n or storage - default to Russian
   const [currentLanguage, setCurrentLanguage] = useState(() => {
     // Check storage first for immediate language detection
     const storedLang = localStorage.getItem("preferred-language") || 
@@ -34,7 +34,8 @@ export const LanguageProvider = ({ children }) => {
       return storedLang;
     }
     
-    return getCurrentLanguage() || "ru";
+    // Always default to Russian
+    return "ru";
   });
 
   // Check authentication status and sync language with backend
@@ -46,7 +47,10 @@ export const LanguageProvider = ({ children }) => {
       if (userProfile) {
         setIsAuthenticated(true);
         
-        // If user has a preferred language, use it
+        // Get the current local preference
+        const storedLang = localStorage.getItem("preferred-language");
+        
+        // If user has a preferred language on backend, use it
         if (userProfile.preferredLanguage && 
             availableLanguages.some(lang => lang.code === userProfile.preferredLanguage)) {
           
@@ -57,15 +61,22 @@ export const LanguageProvider = ({ children }) => {
             await i18nChangeLanguage(userProfile.preferredLanguage);
             setCurrentLanguage(userProfile.preferredLanguage);
             
-            // Update local storage
+            // Update local storage to match backend
             localStorage.setItem("preferred-language", userProfile.preferredLanguage);
             sessionStorage.setItem("current-language", userProfile.preferredLanguage);
+          }
+        } else if (storedLang && availableLanguages.some(lang => lang.code === storedLang)) {
+          // User is authenticated but no backend preference - sync local preference to backend
+          try {
+            await updateLanguagePreference(storedLang);
+          } catch (error) {
+            console.error("Failed to sync local preference to backend:", error);
           }
         }
       } else {
         setIsAuthenticated(false);
         
-        // For unauthenticated users, use local storage preference
+        // For unauthenticated users, ensure local storage preference is applied
         const storedLang = localStorage.getItem("preferred-language");
         if (storedLang && availableLanguages.some(lang => lang.code === storedLang)) {
           const currentI18nLang = getCurrentLanguage();
@@ -85,28 +96,44 @@ export const LanguageProvider = ({ children }) => {
   useEffect(() => {
     const initializeLanguage = async () => {
       try {
-        // First, check for stored language preference
+        // Get what i18n detected/loaded
+        const detectedLang = getCurrentLanguage();
+        
+        // Check for stored language preference
         const storedLang = localStorage.getItem("preferred-language") || 
                            sessionStorage.getItem("current-language");
         
-        // If we have a stored language, set it immediately
+        // Determine which language to use
+        let languageToUse = detectedLang;
+        
         if (storedLang && availableLanguages.some(lang => lang.code === storedLang)) {
-          const currentI18nLang = getCurrentLanguage();
-          
-          if (storedLang !== currentI18nLang) {
+          // We have a stored preference - use it
+          languageToUse = storedLang;
+          if (storedLang !== detectedLang) {
             await i18nChangeLanguage(storedLang);
-            setCurrentLanguage(storedLang);
           }
+        } else if (!storedLang) {
+          // No stored preference - ensure we default to Russian and store it
+          languageToUse = "ru";
+          if (detectedLang !== "ru") {
+            await i18nChangeLanguage("ru");
+          }
+          // Store the default preference
+          localStorage.setItem("preferred-language", "ru");
+          sessionStorage.setItem("current-language", "ru");
         }
         
-        // Then sync with backend if authenticated
+        // Update state to match
+        setCurrentLanguage(languageToUse);
+        
+        // Then sync with backend if authenticated (this may override local preference)
         await syncLanguageWithBackend();
         
-        // Ensure current language state matches i18n
+        // Get final language after backend sync
         const finalI18nLang = getCurrentLanguage();
-        if (currentLanguage !== finalI18nLang) {
-          setCurrentLanguage(finalI18nLang);
-        }
+        
+        // Update state to match final language
+        setCurrentLanguage(finalI18nLang);
         
         // Set document attributes
         document.documentElement.lang = finalI18nLang;
