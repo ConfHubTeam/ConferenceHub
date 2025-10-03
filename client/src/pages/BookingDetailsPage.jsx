@@ -12,6 +12,7 @@ import BookingProgress from "../components/BookingProgress";
 import PaymentResponseDisplay from "../components/PaymentResponseDisplay";
 import ClickPaymentButton from "../components/ClickPaymentButton";
 import PaymentMethodsSection from "../components/PaymentMethodsSection";
+import RestrictedCategoriesCard from "../components/RestrictedCategoriesCard";
 import { 
   SectionCard, 
   InfoCard, 
@@ -614,6 +615,11 @@ export default function BookingDetailsPage() {
               booking={booking}
               formatRefundOption={formatRefundOption}
             />
+
+            {/* Restricted Categories Section */}
+            <SectionCard title={t('details.sections.restrictedCategories', 'Restricted Categories')}>
+              <RestrictedCategoriesCard />
+            </SectionCard>
           </div>
 
           {/* Sidebar */}

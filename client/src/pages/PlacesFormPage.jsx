@@ -13,58 +13,8 @@ import YouTubeSection, { extractYouTubeVideoId } from "../components/YouTubeSect
 import MatterportSection from "../components/MatterportSection";
 import HostSelector from "../components/HostSelector";
 import RefundOptions from "../components/RefundOptions";
+import RestrictedCategoriesCard from "../components/RestrictedCategoriesCard";
 import { useTranslation } from "react-i18next";
-
-// Modern warning card that updates on language switch
-function LanguageWarningCard() {
-  const { t } = useTranslation("forms");
-
-  const title = t("restrictedCategories.title", "Restricted Categories");
-  const subtitle = t("restrictedCategories.subtitle", "We specialize in business, educational and cultural events. To maintain professional format, we do not provide halls for events related to:");
-  const categories = t("restrictedCategories.categories", { returnObjects: true });
-  
-  // Ensure categories is an array, provide fallback if translation is missing
-  const categoriesList = Array.isArray(categories) ? categories : [
-    "Cryptocurrency, forex and trading",
-    "Network marketing (MLM)",
-    "Religious organizations and missionary activities",
-    "Betting, casinos and other gambling",
-    "18+ topics and intimate sphere",
-    "Promotion of alcohol, tobacco or similar products",
-    "Weapons, violence or discrimination",
-    "Discos, night parties and club-party formats",
-    "Illegal and suspicious activities"
-  ];
-  
-  const body = (
-    <ul className="list-disc pl-5 space-y-1 text-yellow-900">
-      {categoriesList.map((category, index) => (
-        <li key={index}>{category}</li>
-      ))}
-    </ul>
-  );
-
-  return (
-    <div className="relative overflow-hidden rounded-xl border border-yellow-300 bg-gradient-to-br from-yellow-50 to-yellow-100 shadow-lg p-6 mb-6 mt-2">
-      <div className="flex items-start gap-4">
-        <div className="flex-shrink-0 mt-1">
-          <svg className="h-8 w-8 text-yellow-500 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="#FEF3C7" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01" />
-          </svg>
-        </div>
-        <div>
-          <h3 className="text-xl font-bold text-yellow-800 mb-1 flex items-center gap-2">
-            <span className="inline-block bg-yellow-200 rounded px-2 py-0.5 text-yellow-900 text-base font-semibold shadow-sm">{title}</span>
-          </h3>
-          <div className="text-yellow-900 text-sm mb-2 font-medium">{subtitle}</div>
-          {body}
-        </div>
-      </div>
-      <div className="absolute right-0 top-0 h-16 w-16 bg-yellow-100 rounded-bl-full opacity-60 blur-2xl pointer-events-none" />
-    </div>
-  );
-}
 
 export default function PlacesFormPage() {
   const { t, i18n } = useTranslation(['places', 'forms', 'common']);
@@ -782,13 +732,10 @@ export default function PlacesFormPage() {
               {preInput("placeCreate.photos", "placeCreate.photosDescription", true)}
               <PhotoUploader
                 addedPhotos={addedPhotos}
-        setAddedPhotos={setAddedPhotos}
-        />
-      </div>
-      </div>
-
-      {/* Warning: Not Allowed Categories Section */}
-      <LanguageWarningCard />
+                setAddedPhotos={setAddedPhotos}
+              />
+            </div>
+          </div>
 
           {/* Media Section */}
           <div className="card-base mb-6">
@@ -901,6 +848,13 @@ export default function PlacesFormPage() {
                 onOptionsChange={setRefundOptions}
                 isRequired={true}
               />
+            </div>
+          </div>
+          
+          {/* Restricted Categories Section */}
+          <div className="card-base mb-6">
+            <div className="card-content">
+              <RestrictedCategoriesCard />
             </div>
           </div>
           
