@@ -129,6 +129,46 @@ nav,
   -webkit-overflow-scrolling: touch;
 }
 
+/* Place card image swipe optimization for smooth mobile experience */
+.place-card-image-swipe {
+  /* Hardware acceleration for smooth animations */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
+  
+  /* Optimize touch response */
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
+  
+  /* Prevent text selection during swipe */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  
+  /* Remove tap highlight */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* Optimize image rendering during swipe */
+.place-card-image-swipe img {
+  /* Hardware acceleration */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  
+  /* Optimize image rendering */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  
+  /* Prevent dragging */
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
 /* YouTube video fullscreen handling */
 .youtube-fullscreen {
   touch-action: manipulation; /* Prevent pinch zoom but allow basic touch */
