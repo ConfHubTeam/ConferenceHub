@@ -160,7 +160,7 @@ const TutorialPage = () => {
               <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-lg">
                 <iframe
                   className="w-full h-full"
-                  src={`https://www.youtube-nocookie.com/embed/9jbAx1mwvYM?${new URLSearchParams({
+                  src={`https://www.youtube-nocookie.com/embed/-1MLyAhxUNI?${new URLSearchParams({
                     autoplay: '0',
                     rel: '0',
                     modestbranding: '1',
@@ -221,7 +221,7 @@ const TutorialPage = () => {
               <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-lg">
                 <iframe
                   className="w-full h-full"
-                  src={`https://www.youtube-nocookie.com/embed/KiOSkW8Y15c?${new URLSearchParams({
+                  src={`https://www.youtube-nocookie.com/embed/ET8TuBnBldI?${new URLSearchParams({
                     autoplay: '0',
                     rel: '0',
                     modestbranding: '1',
